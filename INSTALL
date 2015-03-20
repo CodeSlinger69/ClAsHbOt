@@ -1,0 +1,32 @@
+REQUIREMENTS -or- STUFF TO INSTALL
+
+ClAsHbOt runs on Windows, uses BlueStacks as an Android emulator, and uses the AutoIt scripting language for the majority of the bot logic.  There is a small C++ DLL that calls the OpenCV library for some image search functions that would otherwise be too slow in AutoIt.
+
+Installation of BlueStacks, AutoIt, BlueStacks Easy and Apex Launcher is not described here.  There is plenty of information and support forums on the internet if you need help.
+
+Once everything is installed, to run the bot simply:
+1. Start up BlueStacks and start up Clash of Clans
+2. Double click on "ClAsHbOt.au3" to start the bot
+3. Adjust your filters and other settings, select your "Things To Do" and sit back and watch (or go to sleep)
+
+===========================================================
+Required: BlueStacks 0.9.6.4092 @ 1024x600
+http://forum.xda-developers.com/wiki/BlueStacks_App_Player
+===========================================================
+I've been running *this version exactly* since I started bot development.  Other versions may work, they may not, I can't help you if you choose to use another version.  I can tell you that different versions of BlueStacks render graphics differently.  Since the bot is highly dependent on image recognition to determine the game state, any differences in graphics rendering will likely result in the bot not working correctly.
+
+BlueStacks must be running at a 1024x600 resolution.  There is a .reg file in the BlueStacks folder that you can use to set the resolution if you don't know how to do it manually.
+
+===========================================================
+Required: AutoIt v3.3.12.0 or higher 
+https://www.autoitscript.com/site/autoit/downloads/
+===========================================================
+This is the scripting language that the main bot logic is written in.
+
+===========================================================
+Optional: Get root on your BlueStacks installation with BlueStacks Easy
+https://www.facebook.com/notes/freestacks-bluestacks-modding-community/bluestacks-easy-for-windows/700095653402221
+Optional: Apex Launcher (Install from Play Store)
+===========================================================
+The bot will detect when Clash of Clans force closes, and will restart it.  You need to root BlueStacks and then install Apex Launcher for this to work.
+

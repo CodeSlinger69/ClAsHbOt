@@ -1,0 +1,29 @@
+RELEASE NOTES
+
+03/19/2015
+- Added more template images for L5 and L6 dark storage, for greater confidence in lightning zaps
+- Adjusted collector identification on barch raid: now attacks from top if 65% or more of collectors are detected on the top half of the screen.  Threshold was 50% previously.
+
+01/23/2015
+- Moved safe click zone to top-right, from top-left, to avoid possible interation with chat pane
+- Fixed bug where some functions were not waiting for the correct screen
+- Image is saved when failed zap due to low confidence DE Storage search, for further diagnosis
+- Reverted images to pre-snow versions
+
+01/04/2015
+- Now monitors green life bar over King/Queen, and uses that to determine when to power up (around 50% health)
+- New function to dump cups > specified threshold
+- Fixed royalty deploy to make sure queen deploys on same side as king (follow your blocker)
+- Handle live replays correctly
+
+12/26/2014
+- Handle case where spell factory is upgrading
+
+12/25/2014
+- Initial complete version
+
+
+ENHANCEMENT QUEUE
+- Automatically snipe town halls - automatic trophy pushing
+- Other raid strategies besides barch
+- Other troop deployment strategies - detect the red box
