@@ -1,77 +1,23 @@
 Welcome to my automatic farming bot for Clash of Clans.
 
-As a bit of history, I decided to start creating this bot around August of 2014, when, after playing CoC for about 5 months, I arrived at the mid-TH8 level.  At this point, the game became a serious grind for me.  To keep up with upgrades, walls, and so on, would require hours and hours of time every day.  While I enjoyed the game, I did not enjoy it enough to dedicate that much of my life to it.
+Screenshot on the wiki: https://github.com/CodeSlinger69/ClAsHbOt/wiki
 
-I hacked together the basics of the bot in a couple of weeks, and have been tuning and adding various features since then.  Several family/friends have been running it with success.
+Key features:
+- Anti-detection
+- Auto raid, including troop queuing
+- Auto Dark Elixir zapping
+- Maintain trophy range
+- Snipable town hall search (for pushing)
 
-I am almost at the end of TH9 right now, and it still works just fine.  I fill my gold and elixir storages about once every 24 hours, and clear about 15k dark elixir per day.  This is more than enough to keep my heroes upgrading constantly.  Honestly, I can't spend the dark fast enough, and I am usually storing 200k while heroes upgrade.
+Why I wrote this bot: https://github.com/CodeSlinger69/ClAsHbOt/wiki/History
 
-Does it work at TH10?  Not sure yet, as I am not there.  Once I get to TH10, I'll make any needed updates and possibly add more advanced raid strategies.
+Walkthrough of the bot and its interface: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Walkthrough
 
-Does is work at TH7 or lower?  I don't know, and I don't care.  Really, until TH8, the grind is not a big factor anyway, so why bother with a bot before then?
+Anti-ban: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Anti-detection-and-anti-ban
 
-There are other farm bots out there, clashbot.org and Lazy Presser come to mind, as far as I know however, this is the only open source farm bot.  Free as in beer and free as in speech.  Please suggest improvements and/or bug fixes to the code base, and I'll be happy to consider your patches for inclusion in the master branch.
+Botting caution: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Botting-and-open-source
 
-===========================================================
-BOT WALKTHROUGH
-===========================================================
-Everything is controlled by one window.  Your settings are saved in a .ini file in between sessions.
 
-MATCH FILTERS
-On the top left of the window are "Match Filters".  These are the key settings for which most of the other bot's actions operate off of.  In here are filters for Gold, Elixir, Dark Elixir and Town Hall Level.  If all the filters are matched, then the bot proceeds with whatever it is doing.  It is a logical AND fitler.  As an example, if the bot is looking for a base to raid, and you have set Gold>=125000, Elixir>=125000, Dark>=0 and Town Hall<=8, then the bot will not execute a raid until all four of those conditions are true.
 
-These settings mentioned in the previous paragraph are my standard settings when farming at TH9, by the way.
-
-If all you were interested in was gold, you might set: Gold>=150000, Elixir>=0, Dark>=0 and Town Hall<=8.
-
-Note 1: In my experience you should be raiding town halls one level less than your current town hall, for best results, thus I set Town Hall<=8 as my target when I am at TH9.
-
-Note 2: The process the bot uses to check filters is gold, elixir and dark elixir first.  If those are a match, it checks if the TH level is a match.  The reason for this is that searching for the town hall and identifying its level is somewhat resource intensive.  By only doing this search if the other filters match, then it saves on CPU a bit. Also, since the Town Hall can be off of the visible screen, the bot may shift the screen up and down in its search; this is time consuming, which is another reason to only do this if the other filters match.
-
-THINGS TO DO
-On the middle left part of the window is where you select the actions for the bot to do.  
-
-:: Keep Online :: This will ensure that you stay online as long as possible, to avoid being raided and having your loot stolen.  The game will kick you out for a few minutes avery 6 hours or so.  There is nothing that any bot can do about this.
-
-:: Collect Loot ::  This will periodically click on your collectors and move their loot to your storages.
-
-:: Find Match :: This will begin a search for a base that meets the filters specified.  Once a base is found, the bot will pause for you to manually execute your raid.
-
-:: Find Snipable TH ::  This will try to find a base where the town hall is on the "outside" of the base, and thus available to easily snipe.  Once found, the bot will pause while you snipe the town hall and get the cups.  This is really only useful for trophy pushing.
-
-:: Auto Raid :: This will automatically search for bases to raid based on the filter specified, will execute a raid based on the selected strategy, and will queue up troops based on the selected Auto Raid Options.  Then it will repeat over and over again.  This is the "grindy" part of the game that I hate.
-
-"Find Match", "Find Snipable TH" and "Auto Raid" are mutually exclusive; in other words, only one can be chosen at a time.  My standard farming setup is "Keep Online", "Collect Loot" and "Auto Raid".
-
-AUTO RAID OPTIONS
-On the middle right part of the window is where you specify some detailed options for Auto Raiding.
-
-:: Use Breakers ::  If checked, the bot will deploy breakers in addition to the other troops specified in the selected strategy.  You can specify the number you want deployed.  I never use this, as in practice is has not resulted in better results.
-
-:: Zap DE :: If a bot finds a base with Dark Elixir available >= the specified amount (my default value is 1500), and the bot can locate the DE Storage with a high probability, and you have the maximum number of lightning spells queued up, then it will zap the storage.  The bot will queue up lightning spells for you automatically if this option is selected.  There are situations where the bot will not be able to find the storage with what it considers a safe probability; this might happen if a hero is walking by in front of the storage, or if there is a clan castle name overlapping the storage, for example.
-
-Zapping DE is an art, not a science.  The bot does not know how much DE is in storage versus collectors, but uses the numbers in the top left of the raid screen to see how much is available overall.  You might very well zap a base with zero in the storage but all in the collectors.  Such is the nature of auto farming; statistically over time, it works out well, but there will be individual zaps that seem to make no sense at all.
-
-:: Dump Cups :: If your Trophy Count exceeds the specified amount, the bot will dump trophies to keep you under this amount.  Useful for finding a good trophy level for farming, and staying there.  
-
-:: Strategy :: This is where the raid strategy is selected.  As of v20150319, there is only one strategy "Barcher, top or bottom".  I have never found a better farming strategy, but as I move to TH10, this very well might change.  The bot is modular, so adding new raiding strategies, such as GoWiPe, Lavaloon, GoWiWi, or Loonion is fairly trivial.
-
-The Barcher strategy will attempt to find the half of the screen with the most collectors, and will launch the attack from that half.  Due to text on the screen obscuring collectors, this is not always perfect.  It will then rapidly distribute the troops in waves, including heroes if avilable.  Rather than describing it here, it is really just best to watch it work.
-
-OTHER INFORMATION
-The other sections on the window are for displaying various elements of the bots operation, and should be self explanatory.
-
-===========================================================
-OTHER NOTABLES
-===========================================================
-Trust of people who write bots is always suspect, especially if they want your money.  As this bot is open source, I can not hide anything from you.  I am not stealing your gems, I am not sending your information anywhere.  Read the code if you don't believe me.  The ImageSearch DLL is compiled code, but if you want, feel free to compile one yourself - the source code is there.  I used Visual Studio Express 2010 to create this DLL.
-
-There is no need to layout your base in any particular way, the bot searches the play field for the elements it needs to act upon.  Some other bots make you lay out your base in a certain way, not mine.  Do whatever you want.
-
-Anti ban - I have a long history of botting, including Texas Hold'em bots, back in the mid to late 00's, when that scene was vibrant, before "Black Friday".  I made bots that made a lot of money, so I had a very strong interest in ensuring that those bots did not get detected as such by the casinos.  I have no evidence that SuperCell is actively searching for bots, but they very well might be, so lets err on the side of caution.
-
-As an example of bot detection methods, the main way to detect bots is by click patterns.  No human touches the same button in the same place every time, but rather in a clustered random fashion, both in space and time.  This bot uses the algorithm described here for every click: http://stackoverflow.com/questions/23700822/weighted-random-coordinates
-
-There are detection weaknesses in this bot as well.  The troop deployment method in particular, although still using the clustered random approach, has a fairly unique signature.  At the moment, there is not a better solution - detecting the red box that bounds where troops can be deployed is a non-trivial exercise, and thus there is not an implementation that I am happy with.  Also, the bot deploys troops a bit faster than most humans could do, but not unreasonably so.  Barching in particular is more effective the faster you can get your troops out there.
 
 -- CodeSlinger69
