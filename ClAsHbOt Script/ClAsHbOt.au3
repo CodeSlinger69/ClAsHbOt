@@ -54,8 +54,8 @@ Func Main()
 ;Debug
 ;Local $troopSlotIndex[$countOfSlots]
 ;FindTroopSlots($troopSlotIndex)
-;ConsoleWrite("JSpell: " & $troopSlotIndex[$jumpSpellSlot] & @CRLF)
-;ConsoleWrite("FSpell: " & $troopSlotIndex[$freezeSpellSlot] & @CRLF)
+;DebugWrite("JSpell: " & $troopSlotIndex[$jumpSpellSlot] & @CRLF)
+;DebugWrite("FSpell: " & $troopSlotIndex[$freezeSpellSlot] & @CRLF)
 ;Local $troopSlotIndex[$countOfSlots]
 ;GrabFrameToFile("frame.bmp")
 ;Exit
@@ -320,7 +320,7 @@ Func ResetToCoCMainScreen()
    ; Get our current screen
    Local $s = WhereAmI()
    ;If $s <> $ScreenMain And $s <> $ScreenLiveRaid And $s <> $ScreenWaitRaid Then
-	;  ConsoleWrite(_NowTime() & " Resetting to main screen, current = " & $s & @CRLF)
+	;  DebugWrite(_NowTime() & " Resetting to main screen, current = " & $s & @CRLF)
    ;EndIf
 
    Switch $s

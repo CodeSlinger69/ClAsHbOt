@@ -45,7 +45,7 @@ Global $BattleTimeRemainingTextBox[10] = [465, 24, 555, 41, 0xffffff, 9, 0, 0, 0
 
 Global $EndBattleGoldTextBox[10] = [410, 236, 523, 252, 0xffffff, 9, 0, 0, 0, 0]
 Global $EndBattleElixTextBox[10] = [410, 269, 523, 285, 0xffffff, 9, 0, 0, 0, 0]
-Global $EndBattleDarkTextBox[10] = [410, 302, 523, 318, 0xffffff, 9, 542, 311, 0xf4f5f8, 0]
+Global $EndBattleDarkTextBox[10] = [410, 302, 523, 318, 0xffffff, 9, 542, 311, 0xf4f4f8, 5]
 Global $EndBattleCups1TextBox[10] = [410, 302, 523, 318, 0xffffff, 9, 541, 304, 0xf0e77a, 0]
 Global $EndBattleCups2TextBox[10] = [410, 333, 523, 348, 0xffffff, 9, 541, 335, 0xf0e97b, 0]
 
@@ -248,7 +248,7 @@ Func InitScraper()
 	  $NWDeployBoxes[$i][1] = $y
 	  $NWDeployBoxes[$i][2] = $x+60
 	  $NWDeployBoxes[$i][3] = $y+40
-	  ;ConsoleWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
+	  ;DebugWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
 	  $i+=1
 	  $y-=14
    Next
@@ -260,7 +260,7 @@ Func InitScraper()
 	  $NEDeployBoxes[$i][1] = $y
 	  $NEDeployBoxes[$i][2] = $x
 	  $NEDeployBoxes[$i][3] = $y+40
-	  ;ConsoleWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
+	  ;DebugWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
 	  $i+=1
 	  $y-=14
    Next
@@ -272,7 +272,7 @@ Func InitScraper()
 	  $SWDeployBoxes[$i][1] = $y
 	  $SWDeployBoxes[$i][2] = $x+60
 	  $SWDeployBoxes[$i][3] = $y+40
-	  ;ConsoleWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
+	  ;DebugWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
 	  $i+=1
 	  $y+=14
    Next
@@ -284,7 +284,7 @@ Func InitScraper()
 	  $SEDeployBoxes[$i][1] = $y
 	  $SEDeployBoxes[$i][2] = $x
 	  $SEDeployBoxes[$i][3] = $y+40
-	  ;ConsoleWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
+	  ;DebugWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
 	  $i+=1
 	  $y+=14
    Next
@@ -389,16 +389,16 @@ Func ScrapeText(Const ByRef $charMapArray, Const ByRef $textBox, Const $x1 = 0, 
 
 			; Debug
 			If $ScraperDebug Then
-			   ConsoleWrite($charStart & " to " & $charEnd & ": ")
+			   DebugWrite($charStart & " to " & $charEnd & ": ")
 			   If $bestMatchIndex <> -1 Then
-				  ConsoleWrite($charMapArray[$bestMatchIndex][0] & ": ")
+				  DebugWrite($charMapArray[$bestMatchIndex][0] & ": ")
 			   Else
-				  ConsoleWrite("?" & ": ")
+				  DebugWrite("?" & ": ")
 			   EndIf
 			   For $cX = $charStart To $charEnd
-				  ConsoleWrite($colValues[$cX-$charStart] & ", ")
+				  DebugWrite($colValues[$cX-$charStart] & ", ")
 			   Next
-			   ConsoleWrite(@CRLF)
+			   DebugWrite(@CRLF)
 			EndIf
 
 			; Add char to growing String
@@ -425,20 +425,20 @@ Func ScrapeText(Const ByRef $charMapArray, Const ByRef $textBox, Const $x1 = 0, 
 
    ; Debug
    If $ScraperDebug Then
-	  ConsoleWrite($textString & @CRLF)
-	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
+	  DebugWrite($textString & @CRLF)
+	  DebugWrite("-------------------------------------------------------------------------" & @CRLF)
 	  For $y = 0 To $pY-1
-		ConsoleWrite("|")
+		DebugWrite("|")
 		 For $x = 0 To $w-1
 			If $pix[$x][$y] = 1 Then
-			   ConsoleWrite("x")
+			   DebugWrite("x")
 			Else
-			   ConsoleWrite(" ")
+			   DebugWrite(" ")
 			EndIf
 		 Next
-		 ConsoleWrite("|" & @CRLF)
+		 DebugWrite("|" & @CRLF)
 	  Next
-	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
+	  DebugWrite("-------------------------------------------------------------------------" & @CRLF)
    EndIf
 
    Return $textString
@@ -489,10 +489,10 @@ Func GetTownHallLevel(Const $x1 = -1, Const $y1 = -1, Const $x2 = -1, Const $y2 
    EndIf
 
    If $bestMatch = 99 Then
-	  ;ConsoleWrite("Unknown TH Level" & @CRLF)
+	  ;DebugWrite("Unknown TH Level" & @CRLF)
 	  Return 0
    Else
-	  ;ConsoleWrite("Likely TH Level " & $bestMatch+7 & @CRLF)
+	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & @CRLF)
 	  Return $bestMatch+7
    EndIf
 EndFunc
@@ -504,7 +504,7 @@ Func ScanFrameForBMP(Const $filename, Const ByRef $bmpArray, Const $threshold, B
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", $filename, _
 		 "str", "Images\"&$bmpArray[$i], "int", 3)
 
-	  ;ConsoleWrite($bmpArray[$i] & ": " & $res[0] & @CRLF)
+	  ;DebugWrite($bmpArray[$i] & ": " & $res[0] & @CRLF)
 
 	  Local $split = StringSplit($res[0], "|", 2)
 	  If $split[2] > $threshold And $split[2] > $bestConfidence Then
@@ -583,7 +583,7 @@ Func FindCharInArray(Const ByRef $charMapArray, Const ByRef $nums, Const $count)
    Next
 
    ; Debug
-   ;ConsoleWrite("Best " & $bestMatch & " " & $bestWeightedHD & @CRLF)
+   ;DebugWrite("Best " & $bestMatch & " " & $bestWeightedHD & @CRLF)
 
    Return $bestMatch
 EndFunc
@@ -619,8 +619,8 @@ Func RandomWeightedCoords(Const ByRef $boundingBox, ByRef $x, ByRef $y, $scale =
    Local $boxHeight = $boundingBox[3]-$boundingBox[1]
    Local $boxCenterX = $boundingBox[0] + $boxWidth/2 + $centerX
    Local $boxCenterY = $boundingBox[1] + $boxHeight/2 + $centerY
-   ;ConsoleWrite("Box coord: " & $boundingBox[0] & " " & $boundingBox[1] & " " & $boundingBox[2] & " " & $boundingBox[3] & @CRLF)
-   ;ConsoleWrite("Box center: " & $boxCenterX & "," & $boxCenterY & @CRLF)
+   ;DebugWrite("Box coord: " & $boundingBox[0] & " " & $boundingBox[1] & " " & $boundingBox[2] & " " & $boundingBox[3] & @CRLF)
+   ;DebugWrite("Box center: " & $boxCenterX & "," & $boxCenterY & @CRLF)
 
    Local $loopStartTime = TimerInit()
    Do
@@ -637,7 +637,7 @@ Func RandomWeightedCoords(Const ByRef $boundingBox, ByRef $x, ByRef $y, $scale =
 	  $x = $boxCenterX + $boxWidth * $offsetX/4
 	  $y = $boxCenterY + $boxHeight * $offsetY/4
 
-	  ;ConsoleWrite("Offset: " & $offsetX & "," & $offsetY & @CRLF)
+	  ;DebugWrite("Offset: " & $offsetX & "," & $offsetY & @CRLF)
 
 	  ; Check for long running loop
 	  If TimerDiff($loopStartTime)>5000 Then
@@ -653,7 +653,7 @@ Func RandomWeightedCoords(Const ByRef $boundingBox, ByRef $x, ByRef $y, $scale =
    $x = Int($x)
    $y = Int($y)
 
-   ;ConsoleWrite("Click point: " & $x & "," & $y & @CRLF)
+   ;DebugWrite("Click point: " & $x & "," & $y & @CRLF)
 EndFunc
 
 Func RandomCoords(Const ByRef $boundingBox, ByRef $x, ByRef $y)

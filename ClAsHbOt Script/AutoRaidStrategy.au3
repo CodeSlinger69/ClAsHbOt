@@ -68,7 +68,7 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $elixirCost = $availableBarbs*$myTroopCost[$barbarianSlot] + _
 					   $availableArchs*$myTroopCost[$archerSlot] + _
 					   $availableBreakers*$myTroopCost[$wallBreakerSlot]*(_GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED)
-   ConsoleWrite(_NowTime() & " Elix cost this match: " & $elixirCost & @CRLF)
+   DebugWrite(_NowTime() & " Elix cost this match: " & $elixirCost & @CRLF)
 
    ; Count the collectors, by top/bottom half
    DebugWrite("Counting Collectors...")
@@ -77,7 +77,7 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To UBound($matchX)-1
-	  ;ConsoleWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & @CRLF)
+	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & @CRLF)
 	  If $matchY[$i] < 250 Then
 		 $collectorsOnTop += 1
 	  Else

@@ -25,7 +25,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
    If $ExitApp Then Return False
 
    If $failCount = 0 Then
-	  ConsoleWrite(_NowTime() & " Find Match failed - timeout waiting for Find a Match button" & @CRLF)
+	  DebugWrite(_NowTime() & " Find Match failed - timeout waiting for Find a Match button" & @CRLF)
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
@@ -57,7 +57,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
    If $ExitApp Then Return False
 
    If $failCount = 0 Then
-	  ConsoleWrite(_NowTime() & " Find Match failed - timeout waiting for Wait Raid screen" & @CRLF)
+	  DebugWrite(_NowTime() & " Find Match failed - timeout waiting for Wait Raid screen" & @CRLF)
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
@@ -96,7 +96,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 
 	  If $ExitApp Then Return
 	  If $failCount = 0 Then
-		 ConsoleWrite(_NowTime() & " Find Match failed - timeout waiting for Wait Raid screen" & @CRLF)
+		 DebugWrite(_NowTime() & " Find Match failed - timeout waiting for Wait Raid screen" & @CRLF)
 		 ResetToCoCMainScreen()
 		 Return False
 	  EndIf
@@ -104,7 +104,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 
    ; Get ending gold, to calculate cost of Next'ing
    Local $endGold = GUICtrlRead($GUI_MyGold)
-   ConsoleWrite(_NowTime() & " Gold cost this match: " & $startGold - $endGold & @CRLF)
+   DebugWrite(_NowTime() & " Gold cost this match: " & $startGold - $endGold & @CRLF)
 
    If $match <> -1 Then
 
@@ -170,7 +170,7 @@ Func CheckForLootMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef
 
    ; Do we have a gold/elix/dark match?
    If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark And $townHall <= $GUITownHall And $townHall<>0 Then
-	  ConsoleWrite(_NowTime() & " Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & @CRLF)
+	  DebugWrite(_NowTime() & " Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & @CRLF)
 	  Return $AutoRaidExecuteRaid
    EndIf
 
@@ -178,7 +178,7 @@ Func CheckForLootMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef
    ; then we have a match
    If $GUIAutoRaid And $GUIZapDE And $dark>=$GUIZapDEMin Then
 	  If CountLightningSpells()>=$myMaxSpells Then
-		 ConsoleWrite(_NowTime() & " Found zappable base: " & $dark & @CRLF)
+		 DebugWrite(_NowTime() & " Found zappable base: " & $dark & @CRLF)
 		 Return $AutoRaidExecuteDEZap
 	  EndIf
    EndIf

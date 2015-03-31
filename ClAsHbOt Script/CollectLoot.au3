@@ -18,7 +18,7 @@ Func CollectLoot()
 			   "str", "Images\"&$CollectorFullBMPs[$loop], "int", 3, "int", 6, "double", $confidenceCollectorLootSearch)
 	  Local $split = StringSplit($res[0], "|", 2)
 	  $totalMatches += $split[0]
-	  ;ConsoleWrite("Num matches: " & %i & " " & $split[0] & @CRLF)
+	  ;DebugWrite("Num matches: " & %i & " " & $split[0] & @CRLF)
 	  ReDim $matchX[$totalMatches]
 	  ReDim $matchY[$totalMatches]
 	  Local $i
@@ -26,7 +26,7 @@ Func CollectLoot()
 		 $matchX[$currIndex] = $split[$i*3+1]
 		 $matchY[$currIndex] = $split[$i*3+2]
 		 $currIndex += 1
-		 ;ConsoleWrite("Match " & $currIndex & ": " & $split[$i*3+1] & "," & $split[$i*3+2] & @CRLF)
+		 ;DebugWrite("Match " & $currIndex & ": " & $split[$i*3+1] & "," & $split[$i*3+2] & @CRLF)
 	  Next
    Next
 
@@ -39,7 +39,7 @@ Func CollectLoot()
 	  ; Collect the gold and elixir loot
 	  For $i = 0 To $totalMatches-1
 		 RandomWeightedCoords($CollectorButton, $xClick, $yClick)
-		 ;ConsoleWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i] & " " & Int($xClick) & "," & Int($yClick) & " " & Int($cPos[0]+$sortedX[$i]+$xClick) & "," & Int($cPos[1]+$sortedY[$i]+$yClick) & @CRLF)
+		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i] & " " & Int($xClick) & "," & Int($yClick) & " " & Int($cPos[0]+$sortedX[$i]+$xClick) & "," & Int($cPos[1]+$sortedY[$i]+$yClick) & @CRLF)
 
 		 If $ExitApp Then ExitLoop
 

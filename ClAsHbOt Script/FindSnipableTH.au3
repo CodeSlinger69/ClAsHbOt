@@ -23,7 +23,7 @@ Func FindASnipableTH()
 
    If $ExitApp Then Return
    If $failCount = 0 Then
-	  ConsoleWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Find a Match button" & @CRLF)
+	  DebugWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Find a Match button" & @CRLF)
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
@@ -54,7 +54,7 @@ Func FindASnipableTH()
 
    If $ExitApp Then Return
    If $failCount = 0 Then
-	  ConsoleWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Wait Raid screen" & @CRLF)
+	  DebugWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Wait Raid screen" & @CRLF)
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
@@ -112,7 +112,7 @@ Func FindASnipableTH()
 
 	  If $ExitApp Then Return
 	  If $failCount = 0 Then
-		 ConsoleWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Wait Raid screen" & @CRLF)
+		 DebugWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Wait Raid screen" & @CRLF)
 		 ResetToCoCMainScreen()
 		 Return False
 	  EndIf
@@ -121,7 +121,7 @@ Func FindASnipableTH()
    ; Get ending gold, to calculate cost of Next'ing
    Local $endGold = GUICtrlRead($GUI_MyGold)
 
-   ConsoleWrite(_NowTime() & " Gold cost this search: " & $startGold - $endGold & _
+   DebugWrite(_NowTime() & " Gold cost this search: " & $startGold - $endGold & _
 	  " (" & $count & " nexts)." & @CRLF)
 
    If $match = True Then
