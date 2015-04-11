@@ -63,7 +63,7 @@ Global $LiveRaidScreenEndBattleButton[8] = [13, 406, 106, 435, 59, 430, 0xc00000
 Global $LiveRaidScreenEndBattleConfirmButton[8] = [522, 305, 644, 355, 627, 341, 0x60ac10, 0]
 Global $MainScreenOpenChatButton[8] = [274, 262, 296, 311, 282, 303, 0xD25018, 0]
 Global $BattleHasEndedScreenReturnHomeButton[8] = [450, 430, 572, 481, 514, 473, 0x60ac10, 0]
-Global $LiveReplayEndScreenReturnHomeButton[8] = [13, 458, 93, 538, 55, 493, 0xf0b096, 0]
+Global $LiveReplayEndScreenReturnHomeButton[8] = [13, 458, 93, 538, 55, 493, 0xf0b096, 3]
 Global $WindowVilliageWasAttackedOkayButton[8] = [450, 385, 574, 434, 475, 422, 0x5dac10, 0]
 Global $ShieldIsActivePopupButton[8] = [522, 305, 644, 355, 484, 348, 0xc83c10, 0]
 Global $SafeAreaButton[8] = [990, 0, 1023, 35, 0, 0, 0, 0]
@@ -610,57 +610,6 @@ Func BitCount($n)
    Return $c
 EndFunc
 
-Func RandomWeightedCoords(Const ByRef $boundingBox, ByRef $x, ByRef $y, $scale = 1, $density = 1, _
-						  $centerX = 0, $centerY = 0)
-   ; http://stackoverflow.com/questions/23700822/weighted-random-coordinates
-
-   Local Const $PI = 3.141592653589793
-   Local $boxWidth = $boundingBox[2]-$boundingBox[0]
-   Local $boxHeight = $boundingBox[3]-$boundingBox[1]
-   Local $boxCenterX = $boundingBox[0] + $boxWidth/2 + $centerX
-   Local $boxCenterY = $boundingBox[1] + $boxHeight/2 + $centerY
-   ;DebugWrite("Box coord: " & $boundingBox[0] & " " & $boundingBox[1] & " " & $boundingBox[2] & " " & $boundingBox[3] & @CRLF)
-   ;DebugWrite("Box center: " & $boxCenterX & "," & $boxCenterY & @CRLF)
-
-   Local $loopStartTime = TimerInit()
-   Do
-	  Local $angle = Random() * 2 *$PI
-	  Local $xR = Random()
-
-	  If $xR = 0 Then $xR = 0.000001
-
-	  Local $distance = $scale * (($xR ^ (-1.0/$density)) - 1)
-
-	  Local $offsetX = $distance * Sin($angle)
-	  Local $offsetY = $distance * Cos($angle)
-
-	  $x = $boxCenterX + $boxWidth * $offsetX/4
-	  $y = $boxCenterY + $boxHeight * $offsetY/4
-
-	  ;DebugWrite("Offset: " & $offsetX & "," & $offsetY & @CRLF)
-
-	  ; Check for long running loop
-	  If TimerDiff($loopStartTime)>5000 Then
-		 DebugWrite("ERROR in RandomWeightedCoords, long running loop.  Exiting.")
-		 $x = $boxCenterX
-		 $y = $boxCenterY
-		 ExitLoop
-	  EndIf
-
-   Until $x >= $boundingBox[0] And $x <= $boundingBox[2] And _
-		 $y >= $boundingBox[1] And $y <= $boundingBox[3]
-
-   $x = Int($x)
-   $y = Int($y)
-
-   ;DebugWrite("Click point: " & $x & "," & $y & @CRLF)
-EndFunc
-
-Func RandomCoords(Const ByRef $boundingBox, ByRef $x, ByRef $y)
-   $x = Random($boundingBox[0], $boundingBox[2], 1)
-   $y = Random($boundingBox[1], $boundingBox[3], 1)
-EndFunc
-
 ; Returns the absolute position of the client window
 Func GetClientPos()
    Local $cPos[4]
@@ -696,13 +645,4 @@ Func GrabFrameToFile(Const $filename, $x1=-1, $y1=-1, $x2=-1, $y2=-1)
    _GDIPlus_ImageSaveToFile($frame, $filename)
    _GDIPlus_BitmapDispose($frame)
    _WinAPI_DeleteObject($hBitmap)
-EndFunc
-
-Func _MouseClickFast(Const $x, Const $y)
-   Local $absX = $x * 65535/@DesktopWidth
-   Local $absY = $y * 65535/@DesktopHeight
-
-   _WinAPI_Mouse_Event(BitOR($MOUSEEVENTF_ABSOLUTE, $MOUSEEVENTF_MOVE), $absX, $absY)
-   _WinAPI_Mouse_Event(BitOR($MOUSEEVENTF_ABSOLUTE, $MOUSEEVENTF_LEFTDOWN), $absX, $absY)
-   _WinAPI_Mouse_Event(BitOR($MOUSEEVENTF_ABSOLUTE, $MOUSEEVENTF_LEFTUP), $absX, $absY)
 EndFunc

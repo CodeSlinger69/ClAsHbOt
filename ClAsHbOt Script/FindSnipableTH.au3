@@ -2,14 +2,13 @@
 Func FindASnipableTH()
    DebugWrite("FindASnipableTH()")
    Local $cPos = GetClientPos()
-   Local $xClick, $yClick, $failCount, $pixelColor, $pixMatch
+   Local $failCount, $pixelColor, $pixMatch
 
    ; Get starting gold, to calculate cost of Next'ing
    Local $startGold = GUICtrlRead($GUI_MyGold)
 
    ; Click Attack
-   RandomWeightedCoords($MainScreenAttackButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($MainScreenAttackButton)
 
    ; Wait for Find a Match button
    $failCount = 10
@@ -29,8 +28,7 @@ Func FindASnipableTH()
    EndIf
 
    ; Click Find a Match
-   RandomWeightedCoords($FindMatchScreenFindAMatchButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($FindMatchScreenFindAMatchButton)
 
    ; Wait for Next button
    $failCount = 30
@@ -41,8 +39,7 @@ Func FindASnipableTH()
 	  Local $scr = WhereAmI()
 
 	  If $scr = $ScreenShieldIsActive Then
-		 RandomWeightedCoords($ShieldIsActivePopupButton, $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+		 RandomWeightedClick($ShieldIsActivePopupButton)
 		 Sleep(500)
 	  EndIf
 
@@ -95,8 +92,7 @@ Func FindASnipableTH()
 	  EndIf
 
 	  ; Click Next button
-	  RandomWeightedCoords($WaitRaidScreenNextButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($WaitRaidScreenNextButton)
 	  $count+=1
 
 	  ; Sleep and wait for Next button to reappear

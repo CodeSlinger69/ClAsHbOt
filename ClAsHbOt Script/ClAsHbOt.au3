@@ -1,7 +1,7 @@
 #cs
 ClAsHbOt!
 #ce
-Global $version = "20150319"
+Global $version = "20150411"
 
 ; AutoIt includes
 #include <ScreenCapture.au3>
@@ -21,6 +21,7 @@ Global $version = "20150319"
 #include <FindSnipableTH.au3>
 #include <AutoRaid.au3>
 #include <AutoRaidStrategy.au3>
+#include <Mouse.au3>
 
 Opt("MustDeclareVars", 1)
 Opt("GUIOnEventMode", 1)
@@ -229,90 +230,77 @@ Func ZoomOut(Const $clearOnSafeSpot)
 	  Sleep(150)
 
 	  If $clearOnSafeSpot Then
-		 Local $cPos = GetClientPos()
-		 Local $xClick, $yClick
-		 RandomWeightedCoords($SafeAreaButton, $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick, 1)
+		 RandomWeightedClick($SafeAreaButton)
 		 Sleep(250)
 	  EndIf
    EndIf
 EndFunc
 
 Func MoveScreenDownToTop(Const $clearOnSafeSpot)
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick
-
-   ; Move down to top
-   Local $startX, $startY, $endX, $endY
+   Local $startX, $startY
    Local $startBox[4] = [300, 65, 725, 110]
    RandomWeightedCoords($startBox, $startX, $startY)
+
+   Local $endX, $endY
    Local $endBox[4] = [300, 365, 725, 410]
    RandomWeightedCoords($endBox, $endX, $endY)
-   Local $speed = Random(5, 25, 1)
 
    If $clearOnSafeSpot = True Then
-	  RandomWeightedCoords($SafeAreaButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick, 1)
+	  RandomWeightedClick($SafeAreaButton)
 	  Sleep(250)
    EndIf
 
-   MouseClickDrag("left", $cPos[0]+$startX, $cPos[1]+$startY, $cPos[0]+$endX, $cPos[1]+$endY, $speed)
+   ControlClickDrag($startX, $startY, $endX, $endY)
    Sleep(250)
 EndFunc
 
 Func MoveScreenUpToCenter(Const $dist=83)
-   Local $cPos = GetClientPos()
-
-   ; Move up to center; always 83 pixels up
-   Local $startX, $startY, $endX, $endY
+   ; Always 83 pixels up
+   Local $startX, $startY
    Local $startBox[4] = [450, 365, 575, 410]
    RandomWeightedCoords($startBox, $startX, $startY)
+
+   Local $endX, $endY
    Local $endBox[4] = [450, 365, 575, 410]
    RandomWeightedCoords($endBox, $endX, $endY)
-   Local $speed = Random(5, 25, 1)
-   MouseClickDrag("left", $cPos[0]+$startX, $cPos[1]+$startY, $cPos[0]+$endX, $cPos[1]+$startY-$dist, $speed)
+
+   ControlClickDrag($startX, $startY, $endX, $startY-$dist)
    Sleep(250)
 EndFunc
 
 Func MoveScreenUpToBottom(Const $clearOnSafeSpot)
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick
-
-   ; Move up to bottom
-   Local $startX, $startY, $endX, $endY
-   Local $startBox[4] = [300, 365, 725, 410]
-   RandomWeightedCoords($startBox, $startX, $startY)
-   Local $endBox[4] = [300, 65, 725, 110]
-   RandomWeightedCoords($endBox, $endX, $endY)
-   Local $speed = Random(5, 25, 1)
-
    If $clearOnSafeSpot = True Then
-	  RandomWeightedCoords($SafeAreaButton, $xClick, $yClick, 1)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($SafeAreaButton)
 	  Sleep(250)
    EndIf
 
-   MouseClickDrag("left", $cPos[0]+$startX, $cPos[1]+$startY, $cPos[0]+$endX, $cPos[1]+$endY, $speed)
+   Local $startX, $startY
+   Local $startBox[4] = [300, 365, 725, 410]
+   RandomWeightedCoords($startBox, $startX, $startY)
+
+   Local $endX, $endY
+   Local $endBox[4] = [300, 65, 725, 110]
+   RandomWeightedCoords($endBox, $endX, $endY)
+
+   ControlClickDrag($startX, $startY, $endX, $endY)
    Sleep(250)
 EndFunc
 
 Func MoveScreenDownToCenter(Const $dist=155)
-   Local $cPos = GetClientPos()
-
-   ; Move down to center; always 155 pixels down
-   Local $startX, $startY, $endX, $endY
+   ; Always 155 pixels down
+   Local $startX, $startY
    Local $startBox[4] = [450, 225, 575, 270]
    RandomWeightedCoords($startBox, $startX, $startY)
+
+   Local $endX, $endY
    Local $endBox[4] = [450, 225, 575, 270]
    RandomWeightedCoords($endBox, $endX, $endY)
-   Local $speed = Random(5, 25, 1)
-   MouseClickDrag("left", $cPos[0]+$startX, $cPos[1]+$startY, $cPos[0]+$endX, $cPos[1]+$startY+$dist, $speed)
+
+   ControlClickDrag($startX, $startY, $startY, $startY+$dist)
    Sleep(250)
 EndFunc
 
 Func ResetToCoCMainScreen()
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick
    Local $countdown = 5
 
    CheckForAndroidMessageBox()
@@ -343,18 +331,15 @@ Func ResetToCoCMainScreen()
 
    ; Barracks button panel - click on safe area
    Case $PanelBarracksButtons
-	  RandomWeightedCoords($SafeAreaButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick, 1)
+	  RandomWeightedClick($SafeAreaButton)
 
    ; Train troops window - close it
    Case $WindowTrainTroops
-	  RandomWeightedCoords($TrainTroopsWindowCloseButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($TrainTroopsWindowCloseButton)
 
    ; Train troops info window - close it
    Case $WindowTrainTroopsInfo
-	  RandomWeightedCoords($TrainTroopsWindowCloseButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($TrainTroopsWindowCloseButton)
 
    ; Android Home Screen - start CoC
    Case $ScreenAndroidHome
@@ -363,44 +348,37 @@ Func ResetToCoCMainScreen()
 	  GrabFrameToFile("HomeScanFrame.bmp")
 	  ScanFrameForBMP("HomeScanFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
 	  If $bestMatch <> 99 Then
-		 RandomWeightedCoords($ScreenAndroidHomeCoCIconButton, $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$bestX+$xClick, $cPos[1]+$bestY+$yClick)
+		 Local $button[8] = [$bestX, $bestY, $bestX+$ScreenAndroidHomeCoCIconButton[2], $bestY+$ScreenAndroidHomeCoCIconButton[3], 0, 0, 0, 0]
+		 RandomWeightedClick($button)
 		 $countdown = 30
 	  EndIf
 
    ; CoC Chat Open - Close it
    Case $ScreenChatOpen
-	  RandomWeightedCoords($MainScreenOpenChatButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($MainScreenOpenChatButton)
 
    ; CoC Find Match screen - exit
    Case $ScreenFindMatch
-	  RandomWeightedCoords($FindMatchScreenCloseWindowButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($FindMatchScreenCloseWindowButton)
 
    ; CoC Wait Raid screen - exit
    Case $ScreenWaitRaid
-	  RandomWeightedCoords($LiveRaidScreenEndBattleButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($LiveRaidScreenEndBattleButton)
 
    ; End Battle screen - click button
    Case $ScreenEndBattle
-	  RandomWeightedCoords($BattleHasEndedScreenReturnHomeButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($BattleHasEndedScreenReturnHomeButton)
 
    ; Live Replay End Battle screen - click "Return Home"
    Case $ScreenLiveReplayEndBattle
-	  RandomWeightedCoords($LiveReplayEndScreenReturnHomeButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($LiveReplayEndScreenReturnHomeButton)
 
    Case $WindowVilliageWasAttacked
-	  RandomWeightedCoords($WindowVilliageWasAttackedOkayButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($WindowVilliageWasAttackedOkayButton)
 
    ; Shield Is Active screen
    Case $ScreenShieldIsActive
-	  RandomWeightedCoords($ShieldIsActivePopupButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($ShieldIsActivePopupButton)
 
    EndSwitch
 
@@ -421,6 +399,7 @@ Func WhereAmI()
    Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
    GrabFrameToFile("HomeScanFrame.bmp")
    ScanFrameForBMP("HomeScanFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
+   ;DebugWrite("Android Home Scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
 
    If $bestMatch <> 99 Then
 	  Return $ScreenAndroidHome
@@ -504,48 +483,6 @@ Func WhereAmI()
    #ce
    Return $UnknownScreen
 
-EndFunc
-
-Func SortArrayByClosestNeighbor(Const $numElements, Const ByRef $x, Const ByRef $y, ByRef $sortedX, ByRef $sortedY)
-   ; Find leftmost point
-   Local $leftmost = 9999, $leftMatch
-   For $i = 0 To $numElements-1
-	  If $x[$i] < $leftmost Then
-		 $leftMatch = $i
-		 $leftmost = $x[$i]
-	  EndIf
-   Next
-
-   ; Build array of closest neighbors to leftmost match
-   $sortedX[0] = $x[$leftMatch]
-   $sortedY[0] = $y[$leftMatch]
-   Local $sortedCount=1
-   Local $alreadySorted[$numElements]
-   $alreadySorted[$leftMatch] = True
-
-   Local $nextClosest
-   Local $lastClosest=$leftMatch
-   Do
-	  Local $bestDist=999
-	  $nextClosest=999
-	  For $i = 0 To $numElements-1
-		 If $alreadySorted[$i]<>True Then
-			Local $dist = Sqrt(($x[$i]-$x[$lastClosest])^2 + ($y[$i]-$y[$lastClosest])^2)
-			If $dist<$bestDist Then
-			   $bestDist = $dist
-			   $nextClosest = $i
-			EndIf
-		 EndIf
-	  Next
-
-	  If $nextClosest<>999 Then
-		 $alreadySorted[$nextClosest] = True
-		 $sortedX[$sortedCount] = $x[$nextClosest]
-		 $sortedY[$sortedCount] = $y[$nextClosest]
-		 $sortedCount += 1
-		 $lastClosest = $nextClosest
-	  EndIf
-   Until $nextClosest=999
 EndFunc
 
 Func millisecondToMMSS(Const $ms)

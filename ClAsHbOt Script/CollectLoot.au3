@@ -4,7 +4,6 @@ Func CollectLoot()
    Local $totalMatches = 0, $currIndex = 0
    Local $cpos = GetClientPos()
    Local $matchX[1], $matchY[1]
-   Local $xClick, $yClick
 
    DebugWrite("CollectLoot()")
 
@@ -38,13 +37,57 @@ Func CollectLoot()
 
 	  ; Collect the gold and elixir loot
 	  For $i = 0 To $totalMatches-1
-		 RandomWeightedCoords($CollectorButton, $xClick, $yClick)
-		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i] & " " & Int($xClick) & "," & Int($yClick) & " " & Int($cPos[0]+$sortedX[$i]+$xClick) & "," & Int($cPos[1]+$sortedY[$i]+$yClick) & @CRLF)
 
 		 If $ExitApp Then ExitLoop
 
+		 Local $button[8] = [$sortedX[$i], $sortedY[$i], $sortedX[$i]+$CollectorButton[2], $sortedY[$i]+$CollectorButton[3], 0, 0, 0, 0]
+		 RandomWeightedClick($button)
+
+		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i] & @CRLF)
+
 		 Sleep(Random(100, 500, 1))
-		 MouseClick("left", $cPos[0]+$sortedX[$i]+$xClick, $cPos[1]+$sortedY[$i]+$yClick)
 	  Next
    EndIf
+EndFunc
+
+Func SortArrayByClosestNeighbor(Const $numElements, Const ByRef $x, Const ByRef $y, ByRef $sortedX, ByRef $sortedY)
+   ; Find leftmost point
+   Local $leftmost = 9999, $leftMatch
+   For $i = 0 To $numElements-1
+	  If $x[$i] < $leftmost Then
+		 $leftMatch = $i
+		 $leftmost = $x[$i]
+	  EndIf
+   Next
+
+   ; Build array of closest neighbors to leftmost match
+   $sortedX[0] = $x[$leftMatch]
+   $sortedY[0] = $y[$leftMatch]
+   Local $sortedCount=1
+   Local $alreadySorted[$numElements]
+   $alreadySorted[$leftMatch] = True
+
+   Local $nextClosest
+   Local $lastClosest=$leftMatch
+   Do
+	  Local $bestDist=999
+	  $nextClosest=999
+	  For $i = 0 To $numElements-1
+		 If $alreadySorted[$i]<>True Then
+			Local $dist = Sqrt(($x[$i]-$x[$lastClosest])^2 + ($y[$i]-$y[$lastClosest])^2)
+			If $dist<$bestDist Then
+			   $bestDist = $dist
+			   $nextClosest = $i
+			EndIf
+		 EndIf
+	  Next
+
+	  If $nextClosest<>999 Then
+		 $alreadySorted[$nextClosest] = True
+		 $sortedX[$sortedCount] = $x[$nextClosest]
+		 $sortedY[$sortedCount] = $y[$nextClosest]
+		 $sortedCount += 1
+		 $lastClosest = $nextClosest
+	  EndIf
+   Until $nextClosest=999
 EndFunc

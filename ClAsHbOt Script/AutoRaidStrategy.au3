@@ -12,10 +12,7 @@ Func AutoRaidExecuteDEZap()
 	  WaitForBattleEnd(False, False)
    Else ; Not enuf lightning spells, or couldn't find DE storage
 	  ; Click End Battle button
-	  Local $xClick, $yClick
-	  Local $cPos = GetClientPos()
-	  RandomWeightedCoords($LiveRaidScreenEndBattleButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($LiveRaidScreenEndBattleButton)
 	  Sleep(500)
    EndIf
 
@@ -98,15 +95,12 @@ Func AutoRaidExecuteRaidStrategy0()
    ;
    ; Deploy troops
    ;
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick
    Local $deployStart = TimerInit()
 
    ; Deploy 60% of barbs
    If $troopSlotIndex[$barbarianSlot] <> -1 Then
 	  DebugWrite("Deploying 60% of Barbarians (" & Int($availableBarbs/2) & ")")
-	  RandomWeightedCoords($barbButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($barbButton)
 	  Sleep(500)
 	  DeployTroopsToSides($barbTextBox, $deploySixtyPercent, $direction)
    EndIf
@@ -114,8 +108,7 @@ Func AutoRaidExecuteRaidStrategy0()
    ; Deploy 60% of archers
    If $troopSlotIndex[$archerSlot] <> -1 Then
 	  DebugWrite("Deploying 60% of Archers (" & Int($availableArchs/2) & ")")
-	  RandomWeightedCoords($archButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($archButton)
 	  Sleep(500)
 	  DeployTroopsToSides($archTextBox, $deploySixtyPercent, $direction)
    EndIf
@@ -127,14 +120,14 @@ Func AutoRaidExecuteRaidStrategy0()
 
    If $troopSlotIndex[$barbarianKingSlot] <> -1 Then
 	  DebugWrite("Deploying Barbarian King")
-	  RandomWeightedCoords($kingButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($kingButton)
 	  Sleep(500)
 
+	  Local $xClick, $yClick
 	  RandomWeightedCoords( ($direction = "Top") ? _
 		 (($royaltyDeploySide>0.5) ? $NWSafeDeployBox : $NESafeDeployBox) : _
 		 (($royaltyDeploySide>0.5) ? $SWSafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  _ControlClick($xClick, $yClick)
 	  Sleep(500)
 
 	  $kingDeployTime = TimerInit()
@@ -144,8 +137,7 @@ Func AutoRaidExecuteRaidStrategy0()
    ; Deploy rest of barbs
    If $troopSlotIndex[$barbarianSlot] <> -1 Then
 	  DebugWrite("Deploying remaining Barbarians")
-	  RandomWeightedCoords($barbButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($barbButton)
 	  Sleep(500)
 	  DeployTroopsToSides($barbTextBox, $deployRemaining, $direction)
    EndIf
@@ -153,8 +145,7 @@ Func AutoRaidExecuteRaidStrategy0()
    ; Deploy rest of archers
    If $troopSlotIndex[$archerSlot] <> -1 Then
 	  DebugWrite("Deploying remaining Archers")
-	  RandomWeightedCoords($archButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($archButton)
 	  Sleep(500)
 	  DeployTroopsToSides($archTextBox, $deployRemaining, $direction)
    EndIf
@@ -164,8 +155,7 @@ Func AutoRaidExecuteRaidStrategy0()
 	  _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 
 	  DebugWrite("Deploying Breakers")
-	  RandomWeightedCoords($breakerButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($breakerButton)
 	  Sleep(500)
 	  DeployTroopsToSafeBoxes($breakerTextBox, $direction)
    EndIf
@@ -182,6 +172,8 @@ Func AutoRaidExecuteRaidStrategy0()
 		 $ExitApp = False And _
 		 TimerDiff($deployStart) < 180000 ; 3 minutes
 
+	  Local $cPos = GetClientPos()
+
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then
 		 Local $kingColor = PixelGetColor($cPos[0]+$kingButton[0]+10, $cPos[1]+$kingButton[1]-7); health bar starts 6 pix in from left edge of button
@@ -190,8 +182,7 @@ Func AutoRaidExecuteRaidStrategy0()
 		 If $kingPixMatch = False Then
 			DebugWrite("Powering up King")
 			;MsgBox($MB_OK, "", "")
-			RandomWeightedCoords($kingButton, $xClick, $yClick)
-			MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+			RandomWeightedClick($kingButton)
 			$kingPoweredUp = True
 		 EndIf
 	  EndIf
@@ -203,8 +194,7 @@ Func AutoRaidExecuteRaidStrategy0()
 		 ;DebugWrite("Queen health " & $queenButton[0]+10 & "," & $queenButton[1]-7 & ": " & Hex($queenColor) & " " & $queenPixMatch)
 		 If $queenPixMatch = False Then
 			DebugWrite("Powering up Queen")
-			RandomWeightedCoords($queenButton, $xClick, $yClick)
-			MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+			RandomWeightedClick($queenButton)
 			$queenPoweredUp = True
 		 EndIf
 	  EndIf
@@ -212,14 +202,14 @@ Func AutoRaidExecuteRaidStrategy0()
 	  ; Deploy Queen after specified amount of time after king deploy
 	  If $troopSlotIndex[$archerQueenSlot]<>-1 And TimerDiff($kingDeployTime)>$queenDeployDelay And $queenDeployed=False Then
 		 DebugWrite("Deploying Archer Queen")
-		 RandomWeightedCoords($queenButton, $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+		 RandomWeightedClick($queenButton)
 		 Sleep(500)
 
+		 Local $xClick, $yClick
 		 RandomWeightedCoords( ($direction = "Top") ? _
 			(($royaltyDeploySide>0.5) ? $NWSafeDeployBox : $NESafeDeployBox) : _
 			(($royaltyDeploySide>0.5) ? $SWSafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+		 _ControlClick($xClick, $yClick)
 		 Sleep(500)
 
 		 $queenDeployed = True

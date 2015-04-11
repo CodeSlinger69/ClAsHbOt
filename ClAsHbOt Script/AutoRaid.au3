@@ -27,16 +27,14 @@ Func DoCupsDump()
    Local $barbButton[8], $barbTextBox[10]
    GetTroopSlotButton($troopSlotIndex[$barbarianSlot], $barbButton)
    GetTroopSlotTextBox($troopSlotIndex[$barbarianSlot], $barbTextBox)
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick
+
    Local $availableBarbs = $troopSlotIndex[$barbarianSlot]<>-1 ? StringMid(ScrapeText($smallCharacterMaps, $barbTextBox, 172, 456, 851, 531), 2) : 0
 
    If $availableBarbs<1 Then
 	  DebugWrite("Can't dump cups, no available barbarians.")
 
 	  ; Click End Battle button
-	  RandomWeightedCoords($LiveRaidScreenEndBattleButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($LiveRaidScreenEndBattleButton)
 	  Sleep(500)
 
 	  Return False
@@ -55,18 +53,17 @@ Func DoCupsDump()
    If $ExitApp=True Or _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
    ; Deploy one barb
-   RandomWeightedCoords($barbButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($barbButton)
    Sleep(500)
    DeployTroopsToSides($barbTextBox, $deployOneTroop, $direction)
    Sleep(500)
 
    ; Click End Battle button
    ;DebugWrite("Ending battle")
-   RandomWeightedCoords($LiveRaidScreenEndBattleButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($LiveRaidScreenEndBattleButton)
 
    ; Wait for confirmation button
+   Local $cPos = GetClientPos()
    Local $failCount=20
    Do
 	  Local $pixelColor = PixelGetColor($cPos[0]+$LiveRaidScreenEndBattleConfirmButton[4], $cPos[1]+$LiveRaidScreenEndBattleConfirmButton[5])
@@ -79,8 +76,7 @@ Func DoCupsDump()
 
    If $failCount>0 Then
 	  ;DebugWrite("Clicking end battle confirmation button")
-	  RandomWeightedCoords($LiveRaidScreenEndBattleConfirmButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($LiveRaidScreenEndBattleConfirmButton)
 	  Sleep(500)
    Else
 	  DebugWrite("Error getting end battle confirmation button.")
@@ -104,8 +100,7 @@ Func DoCupsDump()
    EndIf
 
    ; Close battle end screen
-   RandomWeightedCoords($BattleHasEndedScreenReturnHomeButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($BattleHasEndedScreenReturnHomeButton)
 
    ; Wait for main screen to reappear
    $failCount=20
@@ -211,7 +206,6 @@ EndFunc
 Func AutoRaidQueueTraining()
    DebugWrite("AutoRaidQueueTraining()")
 
-   Local $xClick, $yClick
    Local $cPos = GetClientPos()
    Local $failCount, $pixMatch1, $pixMatch2, $pixelColor1, $pixelColor2
 
@@ -244,6 +238,7 @@ Func AutoRaidQueueTraining()
 EndFunc
 
 Func FindSpellsQueueingWindow()
+   DebugWrite("FindSpellsQueueingWindow()")
    Local $cPos = GetClientPos()
 
    ; Click left arrow until the spells screen or a dark troops screen comes up
@@ -263,9 +258,7 @@ Func FindSpellsQueueingWindow()
 	  Local $pixMatch4 = InColorSphere($pixelColor4, $WindowTrainTroopsDarkColor2[2], $WindowTrainTroopsDarkColor2[3])
 
 	  If $pixMatch1 <> True And $pixMatch2 <> True And $pixMatch3 <> True And $pixMatch4 <> True Then
-		 Local $xClick, $yClick
-		 RandomWeightedCoords($TrainTroopsWindowPrevButton, $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+		 RandomWeightedClick($TrainTroopsWindowPrevButton)
 		 Sleep(500)
 	  EndIf
 
@@ -289,8 +282,7 @@ Func FindSpellsQueueingWindow()
 			$myMaxSpells = Number($queueStatSplit[2])
 
 			For $i = 1 To $troopsToFill
-			   RandomWeightedCoords($TrainTroopsWindowLightningButton, $xClick, $yClick)
-			   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+			   RandomWeightedClick($TrainTroopsWindowLightningButton)
 			   Sleep($deployClickDelay)
 			Next
 		 EndIf
@@ -301,8 +293,8 @@ Func FindSpellsQueueingWindow()
 EndFunc
 
 Func FillBarracksQueues(Const $initialFillFlag)
+   DebugWrite("FillBarracksQueues()")
    ; Loop through barracks until we get to a dark or spells screen, or we've done 4
-   Local $i, $xClick, $yClick
    Local $cPos = GetClientPos()
 
    ; Loop through each barracks and queue troops
@@ -312,8 +304,7 @@ Func FillBarracksQueues(Const $initialFillFlag)
    While $barracksCount <= 4 And $ExitApp <> True And $failCount>0
 
 	  ; Click right arrow to get the next standard troops window
-	  RandomWeightedCoords($TrainTroopsWindowNextButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($TrainTroopsWindowNextButton)
 	  Sleep(500)
 	  $failCount-=1
 
@@ -353,11 +344,9 @@ Func FillBarracksQueues(Const $initialFillFlag)
 			;DebugWrite("Dequeueing barracks " & $barracksCount & " try " & 7-$dequeueTries & @CRLF)
 
 			If $pixMatchQueue Then
+			   Local $xClick, $yClick
 			   RandomWeightedCoords($TrainTroopsWindowDequeueButton, $xClick, $yClick)
-			   MouseMove($cPos[0]+$xClick, $cPos[1]+$yClick)
-			   MouseDown("left")
-			   Sleep(4000)
-			   MouseUp("left")
+			   ControlClickHold($xClick, $yClick, 4000)
 			   $dequeueTries-=1
 			   Sleep(500)
 			EndIf
@@ -368,9 +357,9 @@ Func FillBarracksQueues(Const $initialFillFlag)
 
 	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag Then
+		 Local $i
 		 For $i = 1 To Int(Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit))/4)
-			RandomWeightedCoords($TrainTroopsWindowBreakerButton, $xClick, $yClick)
-			MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+			RandomWeightedClick($TrainTroopsWindowBreakerButton)
 			Sleep(500)
 		 Next
 	  EndIf
@@ -403,6 +392,7 @@ Func FillBarracksQueues(Const $initialFillFlag)
 
 			   ; Click and hold to fill up queue
 			   If $troopsToFill>0 Then
+				  Local $xClick, $yClick
 				  If $barracksCount/2 = Int($barracksCount/2) Then ; Alternate between archers and barbs
 					 RandomWeightedCoords($TrainTroopsWindowBarbarianButton, $xClick, $yClick)
 				  Else
@@ -410,10 +400,7 @@ Func FillBarracksQueues(Const $initialFillFlag)
 				  EndIf
 
 				  ;DebugWrite("Filling barracks " & $barracksCount & " try " & $fillTries & @CRLF)
-				  MouseMove($cPos[0]+$xClick, $cPos[1]+$yClick)
-				  MouseDown("left")
-				  Sleep($fillTime)
-				  MouseUp("left")
+				  ControlClickHold($xClick, $yClick, $fillTime)
 				  Sleep(500)
 			   EndIf
 			EndIf
@@ -427,10 +414,7 @@ Func FillBarracksQueues(Const $initialFillFlag)
 EndFunc
 
 Func OpenTrainTroopsWindow()
-   Local $i
-   Local $xClick, $yClick
-   Local $cPos = GetClientPos()
-   Local $failCount, $pixMatch1, $pixMatch2, $pixMatch3, $pixMatch4, $pixelColor1, $pixelColor2, $pixelColor3, $pixelColor4
+   DebugWrite("OpenTrainTroopsWindow()")
 
    ; Grab a frame
    GrabFrameToFile("BarracksFrame.bmp")
@@ -458,12 +442,15 @@ Func OpenTrainTroopsWindow()
    _ArraySort($barracksPoints, 1)
 
    ; Look through list of barracks for an available training screen
+   Local $failCount, $pixMatch1, $pixMatch2, $pixMatch3, $pixMatch4
+
    For $i = 0 To $barracksIndex - 1
 	  ;DebugWrite("Barracks " & $i & ": " & $barracksPoints[$i][0] & " " & $barracksPoints[$i][1] & " " & $barracksPoints[$i][2] & @CRLF)
 
 	  ; Click on barracks
+	  Local $xClick, $yClick
 	  RandomWeightedCoords($BarracksButton, $xClick, $yClick, .5, 3, 0, $BarracksButton[3]/2)
-	  MouseClick("left", $cPos[0]+$barracksPoints[$i][1]+$xClick, $cPos[1]+$barracksPoints[$i][2]+$yClick)
+	  _ControlClick($barracksPoints[$i][1]+$xClick, $barracksPoints[$i][2]+$yClick)
 
 	  ; Wait for barracks button panel to show up (Train Troops button)
 	  $failCount = 10 ; 2 seconds, should be instant
@@ -472,16 +459,18 @@ Func OpenTrainTroopsWindow()
 	  $pixMatch3 = False
 	  While $pixMatch1=False And $pixMatch2=False And $pixMatch3=False And $pixMatch4=False And $failCount>0 And $ExitApp=False
 		 Sleep(200)
-		 $pixelColor1 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops1Button[4], $cPos[1]+$BarracksPanelTrainTroops1Button[5])
+
+		 Local $cPos = GetClientPos()
+		 Local $pixelColor1 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops1Button[4], $cPos[1]+$BarracksPanelTrainTroops1Button[5])
 		 $pixMatch1 = InColorSphere($pixelColor1, $BarracksPanelTrainTroops1Button[6], $BarracksPanelTrainTroops1Button[7])
 
-		 $pixelColor2 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops2Button[4], $cPos[1]+$BarracksPanelTrainTroops2Button[5])
+		 Local $pixelColor2 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops2Button[4], $cPos[1]+$BarracksPanelTrainTroops2Button[5])
 		 $pixMatch2 = InColorSphere($pixelColor2, $BarracksPanelTrainTroops2Button[6], $BarracksPanelTrainTroops2Button[7])
 
-		 $pixelColor3 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops3Button[4], $cPos[1]+$BarracksPanelTrainTroops3Button[5])
+		 Local $pixelColor3 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops3Button[4], $cPos[1]+$BarracksPanelTrainTroops3Button[5])
 		 $pixMatch3 = InColorSphere($pixelColor3, $BarracksPanelTrainTroops3Button[6], $BarracksPanelTrainTroops3Button[7])
 
-		 $pixelColor4 = PixelGetColor($cPos[0]+$BarracksPanelUpgradingButton[4], $cPos[1]+$BarracksPanelUpgradingButton[5])
+		 Local $pixelColor4 = PixelGetColor($cPos[0]+$BarracksPanelUpgradingButton[4], $cPos[1]+$BarracksPanelUpgradingButton[5])
 		 $pixMatch4 = InColorSphere($pixelColor4, $BarracksPanelUpgradingButton[6], $BarracksPanelUpgradingButton[7])
 
 		 $failCount -= 1
@@ -500,14 +489,12 @@ Func OpenTrainTroopsWindow()
 
    ; Click on Train Troops button
    If $pixMatch1 Then
-	  RandomWeightedCoords($BarracksPanelTrainTroops1Button, $xClick, $yClick)
+	  RandomWeightedClick($BarracksPanelTrainTroops1Button)
    ElseIf $pixMatch2 Then
-	  RandomWeightedCoords($BarracksPanelTrainTroops2Button, $xClick, $yClick)
+	  RandomWeightedClick($BarracksPanelTrainTroops2Button)
    Else ; $pixmatch3
-	  RandomWeightedCoords($BarracksPanelTrainTroops3Button, $xClick, $yClick)
+	  RandomWeightedClick($BarracksPanelTrainTroops3Button)
    EndIf
-
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
 
    ; Wait for Train Troops window to show up
    $failCount = 10 ; 2 seconds, should be instant
@@ -515,7 +502,7 @@ Func OpenTrainTroopsWindow()
    While $pixMatch1 = False And $failCount>0 And $ExitApp = False
 	  Sleep(200)
 	  $failCount -= 1
-	  $pixelColor1 = PixelGetColor($cPos[0]+$TrainTroopsWindowNextButton[4], $cPos[1]+$TrainTroopsWindowNextButton[5])
+	  Local $pixelColor1 = PixelGetColor($cPos[0]+$TrainTroopsWindowNextButton[4], $cPos[1]+$TrainTroopsWindowNextButton[5])
 	  $pixMatch1 = InColorSphere($pixelColor1, $TrainTroopsWindowNextButton[6], $TrainTroopsWindowNextButton[7])
    WEnd
 
@@ -528,17 +515,13 @@ Func OpenTrainTroopsWindow()
 EndFunc
 
 Func CloseTrainTroopsWindow()
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick
-
+   DebugWrite("CloseTrainTroopsWindow()")
    ; Close Train Troops window
-   RandomWeightedCoords($TrainTroopsWindowCloseButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($TrainTroopsWindowCloseButton)
    Sleep(500)
 
    ; Click on safe area to close Barracks Toolbar
-   RandomWeightedCoords($SafeAreaButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick, 1)
+   RandomWeightedClick($SafeAreaButton)
    Sleep(500)
 EndFunc
 
@@ -572,13 +555,15 @@ EndFunc
 
 ; howMany: $deploySixtyPercent, $deployRemaining, $deployOneTroop
 Func DeployTroopsToSides(Const ByRef $textBox, Const $howMany, Const $dir)
+   DebugWrite("DeployTroopsToSides()")
    Local $cPos = GetClientPos()
    Local $xClick, $yClick
 
    ; Handle the deploy one troop situation first
    If $howMany=$deployOneTroop Then
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
-	  _MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
+	  ;_MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
+	  _ControlClick($xClick, $yClick)
 	  Return
    EndIf
 
@@ -593,8 +578,9 @@ Func DeployTroopsToSides(Const ByRef $textBox, Const $howMany, Const $dir)
 
    Local $i
    For $i = 0 To $troopsAvailable-1
-	  _MouseClickFast($cPos[0]+$clickPoints1[$i][0], $cPos[1]+$clickPoints1[$i][1])
-	  Sleep($deployClickDelay)
+	  ;_MouseClickFast($cPos[0]+$clickPoints1[$i][0], $cPos[1]+$clickPoints1[$i][1])
+	  ;Sleep($deployClickDelay)
+	  _ControlClick($clickPoints1[$i][0], $clickPoints1[$i][1], 1, $deployClickDelay)
 	  If $ExitApp Then ExitLoop
    Next
 
@@ -611,8 +597,9 @@ Func DeployTroopsToSides(Const ByRef $textBox, Const $howMany, Const $dir)
 
 	  Local $i
 	  For $i = 0 To $troopsAvailable-1
-		 _MouseClickFast($cPos[0]+$clickPoints2[$i][0], $cPos[1]+$clickPoints2[$i][1])
-		 Sleep($deployClickDelay)
+		 ;_MouseClickFast($cPos[0]+$clickPoints2[$i][0], $cPos[1]+$clickPoints2[$i][1])
+		 ;Sleep($deployClickDelay)
+		 _ControlClick($clickPoints2[$i][0], $clickPoints2[$i][1], 1, $deployClickDelay)
 		 If $ExitApp Then ExitLoop
 	  Next
    EndIf
@@ -623,6 +610,7 @@ Func DeployTroopsToSides(Const ByRef $textBox, Const $howMany, Const $dir)
 EndFunc
 
 Func DeployTroopsToSafeBoxes(Const ByRef $textBox, Const $dir)
+   DebugWrite("DeployTroopsToSafeBoxes()")
    Local $cPos = GetClientPos()
    Local $i, $xClick, $yClick, $count
 
@@ -633,8 +621,9 @@ Func DeployTroopsToSafeBoxes(Const ByRef $textBox, Const $dir)
    $count=0
    For $i = 1 To $troopsAvailable
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
-	  _MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
-	  Sleep($deployClickDelay)
+	  ;_MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
+	  ;Sleep($deployClickDelay)
+	  _ControlClick($xClick, $yClick, 1, $deployClickDelay)
 	  $count+=1
 	  If $ExitApp Then ExitLoop
    Next
@@ -645,14 +634,16 @@ Func DeployTroopsToSafeBoxes(Const ByRef $textBox, Const $dir)
    $count=0
    For $i = 1 To $troopsAvailable
    	  RandomWeightedCoords( ($dir = "Top" ? $NESafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
-	  _MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
-	  Sleep($deployClickDelay)
+	  ;_MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
+	  ;Sleep($deployClickDelay)
+	  _ControlClick($xClick, $yClick, 1, $deployClickDelay)
 	  $count+=1
 	  If $ExitApp Then ExitLoop
    Next
 EndFunc
 
 Func LocateCollectors(ByRef $matchX, ByRef $matchY)
+   DebugWrite("LocateCollectors()")
    Local $i
    Local $cPos = GetClientPos()
 
@@ -734,15 +725,14 @@ Func GetRandomSortedClickPoints(Const $order, Const $topBotDirection, Const $num
 EndFunc
 
 Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
-   Local $i
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick
-
+   DebugWrite("WaitForBattleEnd()")
    ; Wait for battle end screen
-   DebugWrite("Waiting for Battle End screen")
+
    Local $lastGold = 0, $lastElix = 0, $lastDark = 0
    Local $activeTimer = TimerInit()
    Local $darkStorageZapped = False
+
+   Local $i
    For $i = 1 To 180  ; 3 minutes max until battle end screen appears
 	  If WhereAmI() = $ScreenEndBattle Then ExitLoop
 	  If $ExitApp Then Return
@@ -788,12 +778,12 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 		 EndIf
 
 		 ; Click End Battle button
-		 RandomWeightedCoords($LiveRaidScreenEndBattleButton, $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+		 RandomWeightedClick($LiveRaidScreenEndBattleButton)
 
 		 ; Wait for confirmation button
 		 Local $failCount=20
 		 Do
+			Local $cPos = GetClientPos()
 			Local $pixelColor = PixelGetColor($cPos[0]+$LiveRaidScreenEndBattleConfirmButton[4], $cPos[1]+$LiveRaidScreenEndBattleConfirmButton[5])
 			Local $pixMatch = InColorSphere($pixelColor, $LiveRaidScreenEndBattleConfirmButton[6], $LiveRaidScreenEndBattleConfirmButton[7])
 			Sleep(100)
@@ -801,8 +791,7 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 		 Until $pixMatch=True Or $failCount<=0
 
 		 If $failCount>0 Then
-			RandomWeightedCoords($LiveRaidScreenEndBattleConfirmButton, $xClick, $yClick)
-			MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+			RandomWeightedClick($LiveRaidScreenEndBattleConfirmButton)
 			Sleep(500)
 		 EndIf
 	  EndIf
@@ -817,6 +806,7 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 	  Local $goldWin = ScrapeText($extraLargeCharacterMaps, $EndBattleGoldTextBox)
 	  Local $elixWin = ScrapeText($extraLargeCharacterMaps, $EndBattleElixTextBox)
 
+	  Local $cPos = GetClientPos()
 	  Local $pixelColor = PixelGetColor($cPos[0]+$EndBattleDarkTextBox[6], $cPos[1]+$EndBattleDarkTextBox[7])
 	  Local $pixMatch = InColorSphere($pixelColor, $EndBattleDarkTextBox[8], $EndBattleDarkTextBox[9])
 	  Local $darkWin = $pixMatch ? ScrapeText($extraLargeCharacterMaps, $EndBattleDarkTextBox) : 0
@@ -835,12 +825,11 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 	  GUICtrlSetData($GUI_Winnings, "Winnings: " & $goldWinnings & " / " & $elixWinnings & " / " & $darkWinnings & " / " & $cupsWinnings)
 
 	  ; Close battle end screen
-	  RandomWeightedCoords($BattleHasEndedScreenReturnHomeButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($BattleHasEndedScreenReturnHomeButton)
 
 	  ; Wait for main screen
 	  Local $failCount=10
-	  While WhereAmI()<>$ScreenMain And $ExitApp=False
+	  While WhereAmI()<>$ScreenMain And $ExitApp=False And $failCount>0
 		 Sleep(1000)
 		 $failCount-=1
 	  WEnd
@@ -891,6 +880,8 @@ Func GetTroopSlotButton(Const $slot, ByRef $button)
 EndFunc
 
 Func ZapDarkElixirStorage()
+   DebugWrite("ZapDarkElixirStorage()")
+
    Local $cPos = GetClientPos()
    Local $troopSlotIndex[$countOfSlots]
    FindTroopSlots($troopSlotIndex)
@@ -935,17 +926,16 @@ Func ZapDarkElixirStorage()
    DebugWrite("Zapping DE, " & $availableLightnings & " of " & $myMaxSpells & " lightning spells available, confidence: " & $bestConfidence)
 
    ; Select lightning spell
-   Local $xClick, $yClick
-   RandomWeightedCoords($lightningButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($lightningButton)
    Sleep(500)
 
    ; Zap away
    DebugWrite("Zapping at " & $cPos[0]+$bestX+235+10 & "," & $cPos[1]+$bestY+100+30)
    Local $i
    For $i = 1 To $availableLightnings
-	  _MouseClickFast($cPos[0]+$bestX+235+10, $cPos[1]+$bestY+100+30)
-	  Sleep(1000)
+	  ;_MouseClickFast($cPos[0]+$bestX+235+10, $cPos[1]+$bestY+100+30)
+	  ;Sleep(1000)
+	  _ControlClick($bestX+235+10, $bestY+100+30, 1, $deployClickDelay)
    Next
 
    Sleep(6000)

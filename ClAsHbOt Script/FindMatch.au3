@@ -2,23 +2,21 @@
 Func FindAValidMatch(Const $returnFirstMatch = False)
    DebugWrite("FindAValidMatch()")
 
-   Local $cPos = GetClientPos()
-   Local $xClick, $yClick, $failCount, $pixelColor, $pixMatch
-
    ; Get starting gold, to calculate cost of Next'ing
    Local $startGold = GUICtrlRead($GUI_MyGold)
 
    ; Click Attack
-   RandomWeightedCoords($MainScreenAttackButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($MainScreenAttackButton)
 
    ; Wait for Find a Match button
-   $failCount = 10
-   $pixMatch = False
+   Local $failCount = 10
+   Local $pixMatch = False
    While $pixMatch = False And $failCount>0 And $ExitApp = False
 	  Sleep(1000)
 	  $failCount -= 1
-	  $pixelColor = PixelGetColor($cPos[0]+$FindMatchScreenFindAMatchButton[4], $cPos[1]+$FindMatchScreenFindAMatchButton[5])
+
+	  Local $cPos = GetClientPos()
+	  Local $pixelColor = PixelGetColor($cPos[0]+$FindMatchScreenFindAMatchButton[4], $cPos[1]+$FindMatchScreenFindAMatchButton[5])
 	  $pixMatch = InColorSphere($pixelColor, $FindMatchScreenFindAMatchButton[6], $FindMatchScreenFindAMatchButton[7])
    WEnd
 
@@ -31,8 +29,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
    EndIf
 
    ; Click Find a Match
-   RandomWeightedCoords($FindMatchScreenFindAMatchButton, $xClick, $yClick)
-   MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+   RandomWeightedClick($FindMatchScreenFindAMatchButton)
 
    ; Wait for Next button
    $failCount = 30
@@ -43,14 +40,13 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 	  Local $scr = WhereAmI()
 
 	  If $scr = $ScreenShieldIsActive Then
-		 RandomWeightedCoords($ShieldIsActivePopupButton, $xClick, $yClick)
-		 MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+		 RandomWeightedClick($ShieldIsActivePopupButton)
 		 Sleep(500)
 	  EndIf
 
 	  Sleep(1000)
 	  $failCount -= 1
-	  $pixelColor = PixelGetColor($cPos[0]+$WaitRaidScreenNextButton[4], $cPos[1]+$WaitRaidScreenNextButton[5])
+	  Local $pixelColor = PixelGetColor($cPos[0]+$WaitRaidScreenNextButton[4], $cPos[1]+$WaitRaidScreenNextButton[5])
 	  $pixMatch = InColorSphere($pixelColor, $WaitRaidScreenNextButton[6], $WaitRaidScreenNextButton[7])
    WEnd
 
@@ -80,8 +76,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 
 	  ; Click Next button
 	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall)
-	  RandomWeightedCoords($WaitRaidScreenNextButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($WaitRaidScreenNextButton)
 
 	  ; Sleep and wait for Next button to reappear
 	  Sleep(500) ; So the click on the Wait button has time to register

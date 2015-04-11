@@ -8,9 +8,7 @@ Func CheckForAndroidMessageBox()
 	  WinActivate($title)
 	  WinWaitActive($title)
 
-	  Local $xClick, $yClick
-	  RandomWeightedCoords($AndroidMessageButton, $xClick, $yClick)
-	  MouseClick("left", $cPos[0]+$xClick, $cPos[1]+$yClick)
+	  RandomWeightedClick($AndroidMessageButton)
 	  Sleep(2000)
 
 	  ; Wait for main screen
