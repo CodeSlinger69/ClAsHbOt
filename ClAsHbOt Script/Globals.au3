@@ -1,7 +1,9 @@
 ; General
 Global $title = "BlueStacks App Player"
+Global $gBlueStacksWidth = 1024
+Global $gBlueStacksHeight = 600
 Global $ScraperDebug = False
-Global $Debug = False
+Global $Debug = True
 
 Global Enum $ScreenAndroidHome, $ScreenMain, $ScreenChatOpen, $ScreenFindMatch, _
    $ScreenWaitRaid, $ScreenLiveRaid, $ScreenEndBattle, $ScreenShieldIsActive, _
