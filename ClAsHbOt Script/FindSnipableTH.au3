@@ -1,8 +1,7 @@
 ; Returns true if base found, False otherwise
 Func FindASnipableTH()
    DebugWrite("FindASnipableTH()")
-   Local $cPos = GetClientPos()
-   Local $failCount, $pixelColor, $pixMatch
+   Local $failCount
 
    ; Get starting gold, to calculate cost of Next'ing
    Local $startGold = GUICtrlRead($GUI_MyGold)
@@ -12,17 +11,13 @@ Func FindASnipableTH()
 
    ; Wait for Find a Match button
    $failCount = 10
-   $pixMatch = False
-   While $pixMatch = False And $failCount>0 And $ExitApp = False
+   While IsButtonPresent($FindMatchScreenFindAMatchButton) = False And $failCount>0
 	  Sleep(1000)
 	  $failCount -= 1
-	  $pixelColor = PixelGetColor($cPos[0]+$FindMatchScreenFindAMatchButton[4], $cPos[1]+$FindMatchScreenFindAMatchButton[5])
-	  $pixMatch = InColorSphere($pixelColor, $FindMatchScreenFindAMatchButton[6], $FindMatchScreenFindAMatchButton[7])
    WEnd
 
-   If $ExitApp Then Return
    If $failCount = 0 Then
-	  DebugWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Find a Match button" & @CRLF)
+	  DebugWrite("Find Snipable TH failed - timeout waiting for Find a Match button")
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
@@ -32,26 +27,20 @@ Func FindASnipableTH()
 
    ; Wait for Next button
    $failCount = 30
-   $pixMatch = False
-   While $pixMatch = False And $failCount>0 And $ExitApp = False
+   While IsButtonPresent($WaitRaidScreenNextButton) = False And $failCount>0
 
 	  ; See if Shield Is Active screen pops up
-	  Local $scr = WhereAmI()
-
-	  If $scr = $ScreenShieldIsActive Then
+	  If WhereAmI() = $eScreenShieldIsActive Then
 		 RandomWeightedClick($ShieldIsActivePopupButton)
 		 Sleep(500)
 	  EndIf
 
 	  Sleep(1000)
 	  $failCount -= 1
-	  $pixelColor = PixelGetColor($cPos[0]+$WaitRaidScreenNextButton[4], $cPos[1]+$WaitRaidScreenNextButton[5])
-	  $pixMatch = InColorSphere($pixelColor, $WaitRaidScreenNextButton[6], $WaitRaidScreenNextButton[7])
    WEnd
 
-   If $ExitApp Then Return
    If $failCount = 0 Then
-	  DebugWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Wait Raid screen" & @CRLF)
+	  DebugWrite("Find Snipable TH failed - timeout waiting for Wait Raid screen")
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
@@ -59,7 +48,7 @@ Func FindASnipableTH()
    ; Loop with Next until we get two matches in a row
    Local $match = False, $count = 1
 
-   While $ExitApp = False
+   While 1
 	  If _GUICtrlButton_GetCheck($GUI_FindSnipableTHCheckBox) = $BST_UNCHECKED Then ExitLoop
 
 	  ; Update my loot status on GUI
@@ -98,17 +87,13 @@ Func FindASnipableTH()
 	  ; Sleep and wait for Next button to reappear
 	  Sleep(500) ; So the click on the Wait button has time to register
 	  $failCount = 30
-	  $pixMatch = False
-	  While $pixMatch = False And $failCount>0 And $ExitApp = False
+	  While IsButtonPresent($WaitRaidScreenNextButton) = False And $failCount>0
 		 Sleep(1000)
 		 $failCount -= 1
-		 $pixelColor = PixelGetColor($cPos[0]+$WaitRaidScreenNextButton[4], $cPos[1]+$WaitRaidScreenNextButton[5])
-		 $pixMatch = InColorSphere($pixelColor, $WaitRaidScreenNextButton[6], $WaitRaidScreenNextButton[7])
 	  WEnd
 
-	  If $ExitApp Then Return
 	  If $failCount = 0 Then
-		 DebugWrite(_NowTime() & " Find Snipable TH failed - timeout waiting for Wait Raid screen" & @CRLF)
+		 DebugWrite("Find Snipable TH failed - timeout waiting for Wait Raid screen")
 		 ResetToCoCMainScreen()
 		 Return False
 	  EndIf
@@ -117,13 +102,11 @@ Func FindASnipableTH()
    ; Get ending gold, to calculate cost of Next'ing
    Local $endGold = GUICtrlRead($GUI_MyGold)
 
-   DebugWrite(_NowTime() & " Gold cost this search: " & $startGold - $endGold & _
-	  " (" & $count & " nexts)." & @CRLF)
+   DebugWrite("Gold cost this search: " & $startGold - $endGold & " (" & $count & " nexts).")
 
    If $match = True Then
 	  ; Pop up a message box
 	  ; 5 beeps
-	  Local $i
 	  For $i = 1 To 5
 		 Beep(500, 200)
 		 Sleep(100)

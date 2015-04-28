@@ -20,17 +20,10 @@ Func DoCupsDump()
    FindAValidMatch(True)
 
    ; What troops are available?
-   Local $troopSlotIndex[$countOfSlots]
-   FindTroopSlots($troopSlotIndex)
+   Local $troopIndex[UBound($gTroopSlotBMPs)][4]
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
 
-   ; Get buttons and text boxes for troops
-   Local $barbButton[8], $barbTextBox[10]
-   GetTroopSlotButton($troopSlotIndex[$barbarianSlot], $barbButton)
-   GetTroopSlotTextBox($troopSlotIndex[$barbarianSlot], $barbTextBox)
-
-   Local $availableBarbs = $troopSlotIndex[$barbarianSlot]<>-1 ? StringMid(ScrapeText($smallCharacterMaps, $barbTextBox, 172, 456, 851, 531), 2) : 0
-
-   If $availableBarbs<1 Then
+   If GetAvailableTroops($eTroopBarbarian, $troopIndex)<1 Then
 	  DebugWrite("Can't dump cups, no available barbarians.")
 
 	  ; Click End Battle button
@@ -42,7 +35,6 @@ Func DoCupsDump()
 
    ; Deploy from top or bottom?
    Local $direction = (Random()>0.5) ? "Top" : "Bot"
-   ;DebugWrite("Deploying one barb from " & $direction)
 
    If $direction = "Top" Then
 	  MoveScreenDownToTop(False)
@@ -50,12 +42,14 @@ Func DoCupsDump()
 	  MoveScreenUpToBottom(False)
    EndIf
 
-   If $ExitApp=True Or _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
    ; Deploy one barb
+   Local $barbButton[8] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], _
+						$troopIndex[$eTroopBarbarian][3], 0, 0, 0, 0]
    RandomWeightedClick($barbButton)
    Sleep(500)
-   DeployTroopsToSides($barbTextBox, $deployOneTroop, $direction)
+   DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployOneTroop, $direction)
    Sleep(500)
 
    ; Click End Battle button
@@ -63,16 +57,13 @@ Func DoCupsDump()
    RandomWeightedClick($LiveRaidScreenEndBattleButton)
 
    ; Wait for confirmation button
-   Local $cPos = GetClientPos()
    Local $failCount=20
    Do
-	  Local $pixelColor = PixelGetColor($cPos[0]+$LiveRaidScreenEndBattleConfirmButton[4], $cPos[1]+$LiveRaidScreenEndBattleConfirmButton[5])
-	  Local $pixMatch = InColorSphere($pixelColor, $LiveRaidScreenEndBattleConfirmButton[6], $LiveRaidScreenEndBattleConfirmButton[7])
 	  Sleep(100)
 	  $failCount-=1
-   Until $pixMatch=True Or $failCount<=0 Or $ExitApp=True Or _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED
+   Until IsButtonPresent($LiveRaidScreenEndBattleConfirmButton) Or $failCount<=0 Or _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED
 
-   If $ExitApp=True Or _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
    If $failCount>0 Then
 	  ;DebugWrite("Clicking end battle confirmation button")
@@ -87,12 +78,12 @@ Func DoCupsDump()
    ;DebugWrite("Waiting for battle end screen")
 
    $failCount=20
-   While WhereAmI()<>$ScreenEndBattle And $failCount>0 And $ExitApp=False And _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_CHECKED
+   While WhereAmI()<>$eScreenEndBattle And $failCount>0 And _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_CHECKED
 	  Sleep(200)
 	  $failCount-=1
    WEnd
 
-   If $ExitApp=True Or _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
    If $failCount<=0 Then
 	  DebugWrite("Error getting end battle screen.")
@@ -104,12 +95,12 @@ Func DoCupsDump()
 
    ; Wait for main screen to reappear
    $failCount=20
-   While WhereAmI()<>$ScreenMain And $failCount>0 And $ExitApp=False And _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_CHECKED
+   While WhereAmI()<>$eScreenMain And $failCount>0 And _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_CHECKED
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
 
-   If $ExitApp=True Or _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
    If $failCount<=0 Then
 	  DebugWrite("Error waiting for main screen.")
@@ -119,61 +110,63 @@ Func DoCupsDump()
    Return True
 EndFunc
 
-Func AutoRaid()
+Func AutoRaid(ByRef $timer)
    ;DebugWrite("AutoRaid()")
 
-   Switch $autoRaidStage
+   Switch $gAutoRaidStage
 
    ; Stage Queue Training
-   Case $AutoRaidQueueTraining
+   Case $eAutoRaidQueueTraining
 	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Queue Training")
 
 	  ResetToCoCMainScreen()
-	  ZoomOut(True)
 
 	  AutoRaidQueueTraining()
-	  $lastTrainingCheck = TimerInit()
+	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
-   Case $AutoRaidWaitForTrainingToComplete
+   Case $eAutoRaidWaitForTrainingToComplete
 
-	  If TimerDiff($lastTrainingCheck) >= $troopTrainingCheckDelay Then
+	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 ResetToCoCMainScreen()
-		 ZoomOut(True)
 		 AutoRaidCheckIfTrainingComplete()
-		 $lastTrainingCheck = TimerInit()
+		 $timer = TimerInit()
 	  EndIf
 
    ; Stage Find Match
-   Case $AutoRaidFindMatch
+   Case $eAutoRaidFindMatch
 	  Local $findMatchResults = FindAValidMatch()
 
-	  If $findMatchResults = $AutoRaidExecuteRaid Then
-		 $autoRaidStage = $AutoRaidExecuteRaid
+	  If $findMatchResults = $eAutoRaidExecuteRaid Then
+		 $gAutoRaidStage = $eAutoRaidExecuteRaid
 		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Execute Raid")
-	  ElseIf $findMatchResults = $AutoRaidExecuteDEZap Then
-		 $autoRaidStage = $AutoRaidExecuteDEZap
+
+	  ElseIf $findMatchResults = $eAutoRaidExecuteDEZap Then
+		 $gAutoRaidStage = $eAutoRaidExecuteDEZap
 		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Execute DE Zap")
+
 	  EndIf
 
    ; Stage Execute DE Zap
-   Case $AutoRaidExecuteDEZap
+   Case $eAutoRaidExecuteDEZap
 	  If AutoRaidExecuteDEZap() = True Then
-		 $autoRaidStage = $AutoRaidQueueTraining
+		 $gAutoRaidStage = $eAutoRaidQueueTraining
 		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: DE Zap Complete")
 		 AutoRaidUpdateProgress()
+
 	  Else
 		 ResetToCoCMainScreen()
-		 $autoRaidStage = $AutoRaidFindMatch
+		 $gAutoRaidStage = $eAutoRaidFindMatch
 		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
+
 	  EndIf
 
    ; Stage Execute Raid
-   Case $AutoRaidExecuteRaid
+   Case $eAutoRaidExecuteRaid
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
 		 If AutoRaidExecuteRaidStrategy0() Then
-			$autoRaidStage = $AutoRaidQueueTraining
+			$gAutoRaidStage = $eAutoRaidQueueTraining
 			GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Raid Complete")
 			AutoRaidUpdateProgress()
 		 EndIf
@@ -192,98 +185,86 @@ EndFunc
 Func AutoRaidUpdateProgress()
    GetMyLootNumbers()
 
-   $endGold = GUICtrlRead($GUI_MyGold)
-   $endElix = GUICtrlRead($GUI_MyElix)
-   $endDark = GUICtrlRead($GUI_MyDark)
-   $endCups = GUICtrlRead($GUI_MyCups)
-   DebugWrite(_NowTime() & " AutoRaid Change: " & _
-	  " Gold:" & $endGold-$beginGold & _
-	  " Elix:" & $endElix-$beginElix & _
-	  " Dark:" & $endDark-$beginDark & _
-	  " Cups:" & $endCups-$beginCups & @CRLF & @CRLF)
+   $gAutoRaidEndLoot[0] = GUICtrlRead($GUI_MyGold)
+   $gAutoRaidEndLoot[1] = GUICtrlRead($GUI_MyElix)
+   $gAutoRaidEndLoot[2] = GUICtrlRead($GUI_MyDark)
+   $gAutoRaidEndLoot[3] = GUICtrlRead($GUI_MyCups)
+
+   DebugWrite(" AutoRaid Change: " & _
+	  " Gold:" & $gAutoRaidEndLoot[0] - $gAutoRaidBeginLoot[0] & _
+	  " Elix:" & $gAutoRaidEndLoot[1] - $gAutoRaidBeginLoot[1] & _
+	  " Dark:" & $gAutoRaidEndLoot[2] - $gAutoRaidBeginLoot[2] & _
+	  " Cups:" & $gAutoRaidEndLoot[3] - $gAutoRaidBeginLoot[3] & @CRLF)
 EndFunc
 
 Func AutoRaidQueueTraining()
    DebugWrite("AutoRaidQueueTraining()")
 
-   Local $cPos = GetClientPos()
-   Local $failCount, $pixMatch1, $pixMatch2, $pixelColor1, $pixelColor2
-
    OpenTrainTroopsWindow()
-   If WhereAmI() <> $WindowTrainTroops Then
+   If WhereAmI() <> $eScreenTrainTroops Then
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
 
    ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
-   $pixelColor1 = PixelGetColor($cPos[0]+$WindowTrainTroopsFullColor[0], $cPos[1]+$WindowTrainTroopsFullColor[1])
-   $pixMatch1 = InColorSphere($pixelColor1, $WindowTrainTroopsFullColor[2], $WindowTrainTroopsFullColor[3])
+   Local $redStripe = IsColorPresent($WindowTrainTroopsFullColor)
 
    If FindSpellsQueueingWindow() = False Then
-	 DebugWrite(_NowTime() & " Auto Raid, Queue Troops failed - can't find Spells or Dark window" & @CRLF)
+	 DebugWrite(" Auto Raid, Queue Troops failed - can't find Spells or Dark window")
 	 ResetToCoCMainScreen()
 	 Return
    EndIf
 
-   FillBarracksQueues(Not($pixMatch1))
+   FillBarracksQueues(Not($redStripe))
    CloseTrainTroopsWindow()
 
-   If $pixMatch1 Then
-	  $autoRaidStage = $AutoRaidFindMatch
+   If $redStripe Then
+	  $gAutoRaidStage = $eAutoRaidFindMatch
 	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
+
    Else
-      $autoRaidStage = $AutoRaidWaitForTrainingToComplete
+      $gAutoRaidStage = $eAutoRaidWaitForTrainingToComplete
 	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Waiting For Training (0:00)")
+
    EndIf
 EndFunc
 
 Func FindSpellsQueueingWindow()
    DebugWrite("FindSpellsQueueingWindow()")
-   Local $cPos = GetClientPos()
 
    ; Click left arrow until the spells screen or a dark troops screen comes up
    Local $failCount = 6
-   Local $pixMatch1 = False
-   Local $pixMatch2 = False
-   Local $pixMatch3 = False
-   Local $pixMatch4 = False
-   Do
-	  Local $pixelColor1 = PixelGetColor($cPos[0]+$WindowTrainTroopsSpellsColor1[0], $cPos[1]+$WindowTrainTroopsSpellsColor1[1])
-	  Local $pixMatch1 = InColorSphere($pixelColor1, $WindowTrainTroopsSpellsColor1[2], $WindowTrainTroopsSpellsColor1[3])
-	  Local $pixelColor2 = PixelGetColor($cPos[0]+$WindowTrainTroopsSpellsColor2[0], $cPos[1]+$WindowTrainTroopsSpellsColor2[1])
-	  Local $pixMatch2 = InColorSphere($pixelColor2, $WindowTrainTroopsSpellsColor2[2], $WindowTrainTroopsSpellsColor2[3])
-	  Local $pixelColor3 = PixelGetColor($cPos[0]+$WindowTrainTroopsDarkColor1[0], $cPos[1]+$WindowTrainTroopsDarkColor1[1])
-	  Local $pixMatch3 = InColorSphere($pixelColor3, $WindowTrainTroopsDarkColor1[2], $WindowTrainTroopsDarkColor1[3])
-	  Local $pixelColor4 = PixelGetColor($cPos[0]+$WindowTrainTroopsDarkColor2[0], $cPos[1]+$WindowTrainTroopsDarkColor2[1])
-	  Local $pixMatch4 = InColorSphere($pixelColor4, $WindowTrainTroopsDarkColor2[2], $WindowTrainTroopsDarkColor2[3])
 
-	  If $pixMatch1 <> True And $pixMatch2 <> True And $pixMatch3 <> True And $pixMatch4 <> True Then
-		 RandomWeightedClick($TrainTroopsWindowPrevButton)
-		 Sleep(500)
-	  EndIf
+   While IsColorPresent($WindowTrainTroopsSpellsColor1) = False And _
+		 IsColorPresent($WindowTrainTroopsSpellsColor2) = False And _
+		 IsColorPresent($WindowTrainTroopsDarkColor1) = False And _
+		 IsColorPresent($WindowTrainTroopsDarkColor2) = False And _
+		 $failCount > 0
 
+	  RandomWeightedClick($TrainTroopsWindowPrevButton)
+	  Sleep(500)
 	  $failCount -= 1
-   Until $pixMatch1 = True Or $pixMatch2 = True Or $pixMatch3 = True Or $pixMatch4 = True Or $failCount<=0 Or $ExitApp
-
-   If $ExitApp Then Return False
+   WEnd
 
    ; If spells queueing window, then maybe queue spells?
-   If $pixMatch1 = True Or $pixMatch2 = True And _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then
+   If IsColorPresent($WindowTrainTroopsSpellsColor1) = True Or IsColorPresent($WindowTrainTroopsSpellsColor2) = True And _
+	  _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then
+
 	  ; How many are queued/created?
-	  Local $queueStatus = ScrapeText($largeCharacterMaps, $TrainTroopsWindowTextBox)
+	  Local $queueStatus = ScrapeFuzzyText($largeCharacterMaps, $rTrainTroopsWindowTextBox)
 
 	  If (StringInStr($queueStatus, "CreateSpells")=1) Then
 		 $queueStatus = StringMid($queueStatus, 13)
 
 		 Local $queueStatSplit = StringSplit($queueStatus, "/")
 		 If $queueStatSplit[0] = 2 Then
-			Local $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
+			Local $spellsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
 
-			$myMaxSpells = Number($queueStatSplit[2])
+			$gMyMaxSpells = Number($queueStatSplit[2]) ; Used when deciding to DE Zap or not
 
-			For $i = 1 To $troopsToFill
+			For $i = 1 To $spellsToFill
 			   RandomWeightedClick($TrainTroopsWindowLightningButton)
-			   Sleep($deployClickDelay)
+			   Sleep($gDeployTroopClickDelay)
 			Next
 		 EndIf
 	  EndIf
@@ -294,14 +275,12 @@ EndFunc
 
 Func FillBarracksQueues(Const $initialFillFlag)
    DebugWrite("FillBarracksQueues()")
-   ; Loop through barracks until we get to a dark or spells screen, or we've done 4
-   Local $cPos = GetClientPos()
 
-   ; Loop through each barracks and queue troops
+   ; Loop through barracks and queue troops, until we get to a dark or spells screen, or we've done 4
    Local $barracksCount = 1
    Local $failCount = 5
 
-   While $barracksCount <= 4 And $ExitApp <> True And $failCount>0
+   While $barracksCount <= 4 And $failCount>0
 
 	  ; Click right arrow to get the next standard troops window
 	  RandomWeightedClick($TrainTroopsWindowNextButton)
@@ -309,55 +288,42 @@ Func FillBarracksQueues(Const $initialFillFlag)
 	  $failCount-=1
 
 	  ; Make sure we are on a standard troops window
-	  Local $pixelColor1 = PixelGetColor($cPos[0]+$WindowTrainTroopsStandardColor1[0], $cPos[1]+$WindowTrainTroopsStandardColor1[1])
-	  Local $pixMatch1 = InColorSphere($pixelColor1, $WindowTrainTroopsStandardColor1[2], $WindowTrainTroopsStandardColor1[3])
-	  Local $pixelColor2 = PixelGetColor($cPos[0]+$WindowTrainTroopsStandardColor2[0], $cPos[1]+$WindowTrainTroopsStandardColor2[1])
-	  Local $pixMatch2 = InColorSphere($pixelColor2, $WindowTrainTroopsStandardColor2[2], $WindowTrainTroopsStandardColor2[3])
-
-	  If ($pixMatch1 = False And $pixMatch2 = False) Then
-		 ;DebugWrite(_NowTime() & " Not on Standard Troops Window: " & Hex($pixelColor1) & "/" & Hex($WindowTrainTroopsStandardColor1[2])& _
-			;"  " & Hex($pixelColor2) & "/" & Hex($WindowTrainTroopsStandardColor2[2]) & @CRLF)
+	  If IsColorPresent($WindowTrainTroopsStandardColor1) = False And IsColorPresent($WindowTrainTroopsStandardColor2) = False Then
+		 ;DebugWrite(" Not on Standard Troops Window: " & Hex($pixelColor1) & "/" & Hex($WindowTrainTroopsStandardColor1[2])& _
+			;"  " & Hex($pixelColor2) & "/" & Hex($WindowTrainTroopsStandardColor2[2]))
 		 ExitLoop
 	  EndIf
 
 	  ; If we have not yet figured out troop costs, then get them now
-	  If $myTroopCost[$barbarianSlot] = 0 Then
-		 $myTroopCost[$barbarianSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowBarbarianCostTextBox)
-		 $myTroopCost[$archerSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowArcherCostTextBox)
-		 $myTroopCost[$giantSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowGiantCostTextBox)
-		 $myTroopCost[$goblinSlot]= ScrapeText($smallCharacterMaps, $TrainTroopsWindowGoblinCostTextBox)
-		 $myTroopCost[$wallBreakerSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowWallBreakerCostTextBox)
-		 $myTroopCost[$balloonSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowBalloonCostTextBox)
-		 $myTroopCost[$wizardSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowWizardCostTextBox)
-		 $myTroopCost[$healerSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowHealerCostTextBox)
-		 $myTroopCost[$dragonSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowDragonCostTextBox)
-		 $myTroopCost[$pekkaSlot] = ScrapeText($smallCharacterMaps, $TrainTroopsWindowPekkaCostTextBox)
+	  If $gMyTroopCost[$eTroopBarbarian] = 0 Then
+		 $gMyTroopCost[$eTroopBarbarian] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowBarbarianCostTextBox)
+		 $gMyTroopCost[$eTroopArcher] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowArcherCostTextBox)
+		 $gMyTroopCost[$eTroopGoblin]= ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowGoblinCostTextBox)
+		 $gMyTroopCost[$eTroopGiant] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowGiantCostTextBox)
+		 $gMyTroopCost[$eTroopWallBreaker] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowWallBreakerCostTextBox)
+		 $gMyTroopCost[$eTroopBalloon] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowBalloonCostTextBox)
+		 $gMyTroopCost[$eTroopWizard] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowWizardCostTextBox)
+		 $gMyTroopCost[$eTroopHealer] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowHealerCostTextBox)
+		 $gMyTroopCost[$eTroopDragon] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowDragonCostTextBox)
+		 $gMyTroopCost[$eTroopPekka] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowPekkaCostTextBox)
 	  EndIf
 
 	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
 	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 		 Local $dequeueTries = 6
-		 Do
-			Local $pixelColorQueue = PixelGetColor($cPos[0]+$TrainTroopsWindowDequeueButton[4], $cPos[1]+$TrainTroopsWindowDequeueButton[5])
-			Local $pixMatchQueue = InColorSphere($pixelColorQueue, $TrainTroopsWindowDequeueButton[6], $TrainTroopsWindowDequeueButton[7])
-			;DebugWrite("Dequeue button: " & Hex($pixelColorQueue) & " / " & Hex($TrainTroopsWindowDequeueButton[6]) & @CRLF)
-			;DebugWrite("Dequeueing barracks " & $barracksCount & " try " & 7-$dequeueTries & @CRLF)
-
-			If $pixMatchQueue Then
-			   Local $xClick, $yClick
-			   RandomWeightedCoords($TrainTroopsWindowDequeueButton, $xClick, $yClick)
-			   ControlClickHold($xClick, $yClick, 4000)
-			   $dequeueTries-=1
-			   Sleep(500)
-			EndIf
-		 Until $pixMatchQueue=False Or $ExitApp=True Or $dequeueTries=0 Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
+		 While IsButtonPresent($TrainTroopsWindowDequeueButton) And $dequeueTries>0 And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
+			Local $xClick, $yClick
+			RandomWeightedCoords($TrainTroopsWindowDequeueButton, $xClick, $yClick)
+			_ClickHold($xClick, $yClick, 4000)
+			$dequeueTries-=1
+			Sleep(500)
+		 WEnd
 	  EndIf
 
-	  If $ExitApp Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return
 
 	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag Then
-		 Local $i
 		 For $i = 1 To Int(Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit))/4)
 			RandomWeightedClick($TrainTroopsWindowBreakerButton)
 			Sleep(500)
@@ -369,7 +335,7 @@ Func FillBarracksQueues(Const $initialFillFlag)
 	  Local $troopsToFill
 	  Do
 		 ; Get number of troops already queued in this barracks
-		 Local $queueStatus = ScrapeText($largeCharacterMaps, $TrainTroopsWindowTextBox)
+		 Local $queueStatus = ScrapeFuzzyText($largeCharacterMaps, $rTrainTroopsWindowTextBox)
 
 		 If (StringInStr($queueStatus, "Train")=1) Then
 			$queueStatus = StringMid($queueStatus, 6)
@@ -399,15 +365,15 @@ Func FillBarracksQueues(Const $initialFillFlag)
 					 RandomWeightedCoords($TrainTroopsWindowArcherButton, $xClick, $yClick)
 				  EndIf
 
-				  ;DebugWrite("Filling barracks " & $barracksCount & " try " & $fillTries & @CRLF)
-				  ControlClickHold($xClick, $yClick, $fillTime)
+				  ;DebugWrite("Filling barracks " & $barracksCount & " try " & $fillTries)
+				  _ClickHold($xClick, $yClick, $fillTime)
 				  Sleep(500)
 			   EndIf
 			EndIf
 		 EndIf
 
 		 $fillTries+=1
-	  Until $troopsToFill=0 Or $fillTries>=6 Or $ExitApp=True Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
+	  Until $troopsToFill=0 Or $fillTries>=6 Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
 
 	  $barracksCount+=1
    WEnd
@@ -422,15 +388,14 @@ Func OpenTrainTroopsWindow()
    ; Find all the barracks on the screen
    Local $barracksIndex = 0
    Local $barracksPoints[1][3]
-   Local $i
    For $i = 0 To UBound($BarracksBMPs)-1
 	  ; Get matches for this resource
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", "BarracksFrame.bmp", _
-			   "str", "Images\"&$BarracksBMPs[$i], "int", 3, "int", 6, "double", $confidenceBarracksSearch)
+			   "str", "Images\"&$BarracksBMPs[$i], "int", 3, "int", 6, "double", $gConfidenceBarracks)
 	  Local $split = StringSplit($res[0], "|", 2)
 	  Local $j
 	  For $j = 0 To $split[0]-1
-		 If $split[$j*3+3] > $confidenceBarracksSearch Then
+		 If $split[$j*3+3] > $gConfidenceBarracks Then
 			$barracksIndex += 1
 			ReDim $barracksPoints[$barracksIndex][3]
 			$barracksPoints[$barracksIndex-1][0] = $split[$j*3+3] ; confidence
@@ -445,7 +410,7 @@ Func OpenTrainTroopsWindow()
    Local $failCount, $pixMatch1, $pixMatch2, $pixMatch3, $pixMatch4
 
    For $i = 0 To $barracksIndex - 1
-	  ;DebugWrite("Barracks " & $i & ": " & $barracksPoints[$i][0] & " " & $barracksPoints[$i][1] & " " & $barracksPoints[$i][2] & @CRLF)
+	  ;DebugWrite("Barracks " & $i & ": " & $barracksPoints[$i][0] & " " & $barracksPoints[$i][1] & " " & $barracksPoints[$i][2])
 
 	  ; Click on barracks
 	  Local $xClick, $yClick
@@ -454,61 +419,51 @@ Func OpenTrainTroopsWindow()
 
 	  ; Wait for barracks button panel to show up (Train Troops button)
 	  $failCount = 10 ; 2 seconds, should be instant
-	  $pixMatch1 = False
-	  $pixMatch2 = False
-	  $pixMatch3 = False
-	  While $pixMatch1=False And $pixMatch2=False And $pixMatch3=False And $pixMatch4=False And $failCount>0 And $ExitApp=False
+	  While IsButtonPresent($BarracksPanelTrainTroops1Button) = False And _
+			IsButtonPresent($BarracksPanelTrainTroops2Button) = False And _
+			IsButtonPresent($BarracksPanelTrainTroops3Button) = False And _
+			IsButtonPresent($BarracksPanelUpgradingButton) = False And _
+			$failCount>0
+
 		 Sleep(200)
-
-		 Local $cPos = GetClientPos()
-		 Local $pixelColor1 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops1Button[4], $cPos[1]+$BarracksPanelTrainTroops1Button[5])
-		 $pixMatch1 = InColorSphere($pixelColor1, $BarracksPanelTrainTroops1Button[6], $BarracksPanelTrainTroops1Button[7])
-
-		 Local $pixelColor2 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops2Button[4], $cPos[1]+$BarracksPanelTrainTroops2Button[5])
-		 $pixMatch2 = InColorSphere($pixelColor2, $BarracksPanelTrainTroops2Button[6], $BarracksPanelTrainTroops2Button[7])
-
-		 Local $pixelColor3 = PixelGetColor($cPos[0]+$BarracksPanelTrainTroops3Button[4], $cPos[1]+$BarracksPanelTrainTroops3Button[5])
-		 $pixMatch3 = InColorSphere($pixelColor3, $BarracksPanelTrainTroops3Button[6], $BarracksPanelTrainTroops3Button[7])
-
-		 Local $pixelColor4 = PixelGetColor($cPos[0]+$BarracksPanelUpgradingButton[4], $cPos[1]+$BarracksPanelUpgradingButton[5])
-		 $pixMatch4 = InColorSphere($pixelColor4, $BarracksPanelUpgradingButton[6], $BarracksPanelUpgradingButton[7])
-
 		 $failCount -= 1
 	  WEnd
 
-	  If $pixMatch1=True Or $pixMatch2=True Or $pixMatch3=True Then ExitLoop
-
-	  If $ExitApp Then Return
+	  If IsButtonPresent($BarracksPanelTrainTroops1Button) = True Or _
+		 IsButtonPresent($BarracksPanelTrainTroops2Button) = True Or _
+		 IsButtonPresent($BarracksPanelTrainTroops3Button) = True Then ExitLoop
    Next
 
-   If $pixMatch1=False And $pixMatch2=False And $pixMatch3=False Then
-	  DebugWrite(_NowTime() & " Auto Raid, Queue Troops failed - error finding available Barracks Button panel." & @CRLF)
+   If IsButtonPresent($BarracksPanelTrainTroops1Button) = False And _
+	  IsButtonPresent($BarracksPanelTrainTroops2Button) = False And _
+	  IsButtonPresent($BarracksPanelTrainTroops3Button) = False Then
+
+	  DebugWrite("Auto Raid, Queue Troops failed - error finding available Barracks Button panel.")
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
 
    ; Click on Train Troops button
-   If $pixMatch1 Then
+   If IsButtonPresent($BarracksPanelTrainTroops1Button) = True Then
 	  RandomWeightedClick($BarracksPanelTrainTroops1Button)
-   ElseIf $pixMatch2 Then
+
+   ElseIf IsButtonPresent($BarracksPanelTrainTroops2Button) = True Then
 	  RandomWeightedClick($BarracksPanelTrainTroops2Button)
-   Else ; $pixmatch3
+
+   Else ; Button type 3
 	  RandomWeightedClick($BarracksPanelTrainTroops3Button)
+
    EndIf
 
    ; Wait for Train Troops window to show up
    $failCount = 10 ; 2 seconds, should be instant
-   $pixMatch1 = False
-   While $pixMatch1 = False And $failCount>0 And $ExitApp = False
+   While IsColorPresent($TrainTroopsWindowNextButton) = False And $failCount>0
 	  Sleep(200)
 	  $failCount -= 1
-	  Local $pixelColor1 = PixelGetColor($cPos[0]+$TrainTroopsWindowNextButton[4], $cPos[1]+$TrainTroopsWindowNextButton[5])
-	  $pixMatch1 = InColorSphere($pixelColor1, $TrainTroopsWindowNextButton[6], $TrainTroopsWindowNextButton[7])
    WEnd
 
-   If $ExitApp Then Return
    If $failCount = 0 Then
-	  DebugWrite(_NowTime() & " Auto Raid, Queue Troops failed - timeout waiting for Train Troops window" & @CRLF)
+	  DebugWrite("Auto Raid, Queue Troops failed - timeout waiting for Train Troops window")
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
@@ -528,124 +483,105 @@ EndFunc
 Func AutoRaidCheckIfTrainingComplete()
    DebugWrite("AutoRaidCheckIfTrainingComplete()")
 
-   Local $cPos = GetClientPos()
-
    OpenTrainTroopsWindow()
 
-   If WhereAmI() <> $WindowTrainTroops Then
+   If WhereAmI() <> $eScreenTrainTroops Then
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
 
    ; See if we have a red stripe on the bottom of the train troops window, which means we are full up
-   Local $pixelColor = PixelGetColor($cPos[0]+$WindowTrainTroopsFullColor[0], $cPos[1]+$WindowTrainTroopsFullColor[1])
-   Local $pixMatch = InColorSphere($pixelColor, $WindowTrainTroopsFullColor[2], $WindowTrainTroopsFullColor[3])
-
-   If $pixMatch Then
-	  ;DebugWrite("Troop training is complete!" & @CRLF)
-	  $autoRaidStage = $AutoRaidFindMatch
+   If IsColorPresent($WindowTrainTroopsFullColor) Then
+	  ;DebugWrite("Troop training is complete!")
+	  $gAutoRaidStage = $eAutoRaidFindMatch
   	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
+
    Else
   	  FindSpellsQueueingWindow()
 	  FillBarracksQueues(False) ; Top off the barracks queues
+
    EndIf
 
    CloseTrainTroopsWindow()
 EndFunc
 
-; howMany: $deploySixtyPercent, $deployRemaining, $deployOneTroop
-Func DeployTroopsToSides(Const ByRef $textBox, Const $howMany, Const $dir)
+; howMany: $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
+Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const $dir)
    DebugWrite("DeployTroopsToSides()")
-   Local $cPos = GetClientPos()
    Local $xClick, $yClick
 
    ; Handle the deploy one troop situation first
-   If $howMany=$deployOneTroop Then
+   If $howMany=$eAutoRaidDeployOneTroop Then
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
-	  ;_MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
-	  _ControlClick($xClick, $yClick)
+	  _MouseClickFast($xClick, $yClick)
 	  Return
    EndIf
 
    ; Do initial deployment
-   Local $troopsAvailable = StringMid(ScrapeText($smallCharacterMaps, $textBox, 172, 456, 851, 531), 2)
-   If $howMany=$deploySixtyPercent Then $troopsAvailable = Int($troopsAvailable * 0.6)
-   ;DebugWrite("DeployTroopsToSides: " & ($howMany=$deploySixtyPercent ? "60% " : "Remaining ") & $troopsAvailable & @CRLF)
+   Local $troopsAvailable = GetAvailableTroops($troop, $index)
+   If $howMany=$eAutoRaidDeploySixtyPercent Then $troopsAvailable = Int($troopsAvailable * 0.6)
+   ;DebugWrite("DeployTroopsToSides: " & ($howMany=$deploySixtyPercent ? "60% " : "Remaining ") & $troopsAvailable)
 
    Local $clickPoints1[$troopsAvailable][2]
    ; Always deploy first set of troops left to right to avoid accidentally clicking the Next button
    GetRandomSortedClickPoints(0, $dir, $troopsAvailable, $clickPoints1)
 
-   Local $i
    For $i = 0 To $troopsAvailable-1
-	  ;_MouseClickFast($cPos[0]+$clickPoints1[$i][0], $cPos[1]+$clickPoints1[$i][1])
-	  ;Sleep($deployClickDelay)
-	  _ControlClick($clickPoints1[$i][0], $clickPoints1[$i][1], 1, $deployClickDelay)
-	  If $ExitApp Then ExitLoop
+	  _MouseClickFast($clickPoints1[$i][0], $clickPoints1[$i][1])
+	  Sleep($gDeployTroopClickDelay)
    Next
 
    ; If we are only deploying 60% then we are done
-   If $howMany=$deploySixtyPercent Then Return
+   If $howMany=$eAutoRaidDeploySixtyPercent Then Return
 
    ; If we are deploying all, then check remaining and continue to deploy to make sure they all get out there
-   $troopsAvailable = StringMid(ScrapeText($smallCharacterMaps, $textBox, 172, 456, 851, 531), 2)
+   $troopsAvailable = GetAvailableTroops($troop, $index)
 
    If $troopsAvailable>0 Then
-	  ;DebugWrite("DeployTroopsToSides: Continuing " & $troopsAvailable & " remaining" & @CRLF)
+	  ;DebugWrite("DeployTroopsToSides: Continuing " & $troopsAvailable & " remaining")
 	  Local $clickPoints2[$troopsAvailable][2]
 	  GetRandomSortedClickPoints(Random(0,1,1), $dir, $troopsAvailable, $clickPoints2)
 
-	  Local $i
 	  For $i = 0 To $troopsAvailable-1
-		 ;_MouseClickFast($cPos[0]+$clickPoints2[$i][0], $cPos[1]+$clickPoints2[$i][1])
-		 ;Sleep($deployClickDelay)
-		 _ControlClick($clickPoints2[$i][0], $clickPoints2[$i][1], 1, $deployClickDelay)
-		 If $ExitApp Then ExitLoop
+		 _MouseClickFast($clickPoints2[$i][0], $clickPoints2[$i][1])
+		 Sleep($gDeployTroopClickDelay)
 	  Next
    EndIf
 
-   $troopsAvailable = StringMid(ScrapeText($smallCharacterMaps, $textBox, 172, 456, 851, 531), 2)
+   $troopsAvailable = GetAvailableTroops($troop, $index)
 
-   If $troopsAvailable>0 Then DeployTroopsToSafeBoxes($textBox, $dir)
+   If $troopsAvailable>0 Then DeployTroopsToSafeBoxes($troop, $index, $dir)
 EndFunc
 
-Func DeployTroopsToSafeBoxes(Const ByRef $textBox, Const $dir)
+Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
    DebugWrite("DeployTroopsToSafeBoxes()")
-   Local $cPos = GetClientPos()
-   Local $i, $xClick, $yClick, $count
-
+   Local $xClick, $yClick, $count
 
    ; Deploy half to left
-   Local $troopsAvailable = Int(StringMid(ScrapeText($smallCharacterMaps, $textBox, 172, 456, 851, 531), 2) / 2)
-   ;DebugWrite("DeployTroopsToSafeBoxes, to left: " & $troopsAvailable & @CRLF)
+   Local $troopsAvailable = Int(GetAvailableTroops($troop, $index) / 2)
+   ;DebugWrite("DeployTroopsToSafeBoxes, to left: " & $troopsAvailable)
    $count=0
    For $i = 1 To $troopsAvailable
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
-	  ;_MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
-	  ;Sleep($deployClickDelay)
-	  _ControlClick($xClick, $yClick, 1, $deployClickDelay)
+	  _MouseClickFast($xClick, $yClick)
+	  Sleep($gDeployTroopClickDelay)
 	  $count+=1
-	  If $ExitApp Then ExitLoop
    Next
 
    ; Deploy half to right
-   $troopsAvailable = StringMid(ScrapeText($smallCharacterMaps, $textBox, 172, 456, 851, 531), 2)
-   ;DebugWrite("DeployTroopsToSafeBoxes, to right: " & $troopsAvailable & @CRLF)
+   $troopsAvailable = GetAvailableTroops($troop, $index)
+   ;DebugWrite("DeployTroopsToSafeBoxes, to right: " & $troopsAvailable)
    $count=0
    For $i = 1 To $troopsAvailable
    	  RandomWeightedCoords( ($dir = "Top" ? $NESafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
-	  ;_MouseClickFast($cPos[0]+$xClick, $cPos[1]+$yClick)
-	  ;Sleep($deployClickDelay)
-	  _ControlClick($xClick, $yClick, 1, $deployClickDelay)
+	  _MouseClickFast($xClick, $yClick)
+	  Sleep($gDeployTroopClickDelay)
 	  $count+=1
-	  If $ExitApp Then ExitLoop
    Next
 EndFunc
 
 Func LocateCollectors(ByRef $matchX, ByRef $matchY)
    DebugWrite("LocateCollectors()")
-   Local $i
-   Local $cPos = GetClientPos()
 
    ; Move screen up 65 pixels
    MoveScreenUpToCenter(65)
@@ -659,11 +595,10 @@ Func LocateCollectors(ByRef $matchX, ByRef $matchY)
    For $i = 0 To UBound($CollectorBMPs)-1
 	  ; Get matches for this resource
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", "AutoRaidCollectorFrame.bmp", _
-			   "str", "Images\"&$CollectorBMPs[$i], "int", 3, "int", 6, "double", $confidenceCollectorsSearch)
+			   "str", "Images\"&$CollectorBMPs[$i], "int", 3, "int", 6, "double", $gConfidenceCollector)
 	  Local $split = StringSplit($res[0], "|", 2)
-	  ;DebugWrite("Num matches " & $CollectorBMPs[$i] & ": " & $split[0] & @CRLF)
+	  ;DebugWrite("Num matches " & $CollectorBMPs[$i] & ": " & $split[0])
 
-	  Local $j
 	  For $j = 0 To $split[0]-1
 		 ; Loop through all captured points so far, if this one is within 8 pix of an existing one,
 		 ; then skip it.
@@ -671,15 +606,15 @@ Func LocateCollectors(ByRef $matchX, ByRef $matchY)
 		 For $k = 0 To $matchCount-1
 			If DistBetweenTwoPoints($split[$j*3+1], $split[$j*3+2], $matchX[$k], $matchY[$k]) < 8 Then
 			   $alreadyFound = True
-			   ;DebugWrite("    Already found " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3] & @CRLF)
+			   ;DebugWrite("    Already found " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
 			   ExitLoop
 			EndIf
 		 Next
 
-		 ; Otherwise add it to the growing list of matches, if it is $confidenceCollectorsSearch % or greater confidence
+		 ; Otherwise add it to the growing list of matches, if it is $gConfidenceCollectorsSearch % or greater confidence
 		 If $alreadyFound = False Then
-			If $split[$j*3+3] > $confidenceCollectorsSearch Then
-			   ;DebugWrite("    Adding " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3] & @CRLF)
+			If $split[$j*3+3] > $gConfidenceCollector Then
+			   ;DebugWrite("    Adding " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
 			   $matchCount += 1
 			   ReDim $matchX[$matchCount]
 			   ReDim $matchY[$matchCount]
@@ -697,7 +632,6 @@ EndFunc
 Func GetRandomDeployBox(Const $direction, ByRef $box)
    Local $side = Random()>0.5 ? "Left" : "Right"
    Local $boxIndex = Random(0, 20, 1)
-   Local $j
 
    If $direction = "Top" Then
 	  For $j = 0 To 3
@@ -713,8 +647,6 @@ EndFunc
 
 Func GetRandomSortedClickPoints(Const $order, Const $topBotDirection, Const $numberPoints, ByRef $points)
    ; First parameter is 0 = ascending, 1 = descending
-   Local $i
-
    For $i = 0 To $numberPoints-1
 	  Local $deployBox[4]
 	  GetRandomDeployBox($topBotDirection, $deployBox)
@@ -732,22 +664,20 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
    Local $activeTimer = TimerInit()
    Local $darkStorageZapped = False
 
-   Local $i
    For $i = 1 To 180  ; 3 minutes max until battle end screen appears
-	  If WhereAmI() = $ScreenEndBattle Then ExitLoop
-	  If $ExitApp Then Return
+	  If WhereAmI() = $eScreenEndBattle Then ExitLoop
 
 	  ; Get available loot remaining
-	  Local $goldRemaining = Number(ScrapeText($raidLootCharMaps, $goldTextBox))
-	  Local $elixRemaining = Number(ScrapeText($raidLootCharMaps, $elixTextBox))
-	  Local $darkRemaining = Number(ScrapeText($raidLootCharMaps, $darkTextBox))
+	  Local $goldRemaining = Number(ScrapeFuzzyText($raidLootCharMaps, $rGoldTextBox))
+	  Local $elixRemaining = Number(ScrapeFuzzyText($raidLootCharMaps, $rElixTextBox))
+	  Local $darkRemaining = Number(ScrapeFuzzyText($raidLootCharMaps, $rDarkTextBox))
 
 	  ; If < 1 min is left, then zap DE if the option is selected
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED And _
 		 $darkRemaining >= GUICtrlRead($GUI_AutoRaidZapDEMin) And _
 		 $darkStorageZapped = False Then
 
-		 Local $time = ScrapeText($extraLargeCharacterMaps, $BattleTimeRemainingTextBox)
+		 Local $time = ScrapeFuzzyText($extraLargeCharacterMaps, $rBattleTimeRemainingTextBox)
 		 If StringLen($time)>0 And StringInStr($time, "m")=0 Then  ; len>0 because red text will return null string
 			ZapDarkElixirStorage()
 			$darkStorageZapped = True
@@ -782,13 +712,10 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 
 		 ; Wait for confirmation button
 		 Local $failCount=20
-		 Do
-			Local $cPos = GetClientPos()
-			Local $pixelColor = PixelGetColor($cPos[0]+$LiveRaidScreenEndBattleConfirmButton[4], $cPos[1]+$LiveRaidScreenEndBattleConfirmButton[5])
-			Local $pixMatch = InColorSphere($pixelColor, $LiveRaidScreenEndBattleConfirmButton[6], $LiveRaidScreenEndBattleConfirmButton[7])
+		 While IsButtonPresent($LiveRaidScreenEndBattleConfirmButton)=False And $failCount>0
 			Sleep(100)
 			$failCount-=1
-		 Until $pixMatch=True Or $failCount<=0
+		 WEnd
 
 		 If $failCount>0 Then
 			RandomWeightedClick($LiveRaidScreenEndBattleConfirmButton)
@@ -801,35 +728,30 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 
    Sleep(2000)
 
-   If WhereAmI() = $ScreenEndBattle Then
+   If WhereAmI() = $eScreenEndBattle Then
 	  GrabFrameToFile("EndBattleFrame.bmp")
-	  Local $goldWin = ScrapeText($extraLargeCharacterMaps, $EndBattleGoldTextBox)
-	  Local $elixWin = ScrapeText($extraLargeCharacterMaps, $EndBattleElixTextBox)
+	  Local $goldWin = ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleGoldTextBox)
+	  Local $elixWin = ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleElixTextBox)
+	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleDarkTextBox) : 0
+	  Local $cupsWin = IsTextBoxPresent($rEndBattleCups1TextBox) ? _
+					   ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleCups1TextBox) : _
+					   ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleCups2TextBox)
 
-	  Local $cPos = GetClientPos()
-	  Local $pixelColor = PixelGetColor($cPos[0]+$EndBattleDarkTextBox[6], $cPos[1]+$EndBattleDarkTextBox[7])
-	  Local $pixMatch = InColorSphere($pixelColor, $EndBattleDarkTextBox[8], $EndBattleDarkTextBox[9])
-	  Local $darkWin = $pixMatch ? ScrapeText($extraLargeCharacterMaps, $EndBattleDarkTextBox) : 0
+	  DebugWrite("Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
 
-	  $pixelColor = PixelGetColor($cPos[0]+$EndBattleCups1TextBox[6], $cPos[1]+$EndBattleCups1TextBox[7])
-	  $pixMatch = InColorSphere($pixelColor, $EndBattleCups1TextBox[8], $EndBattleCups1TextBox[9])
-	  Local $cupsWin = $pixMatch ? ScrapeText($extraLargeCharacterMaps, $EndBattleCups1TextBox) _
-								 : ScrapeText($extraLargeCharacterMaps, $EndBattleCups2TextBox)
-
-	  DebugWrite(_NowTime() & " Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin & @CRLF)
-
-	  $goldWinnings += $goldWin
-	  $elixWinnings += $elixWin
-	  $darkWinnings += $darkWin
-	  $cupsWinnings += $cupsWin
-	  GUICtrlSetData($GUI_Winnings, "Winnings: " & $goldWinnings & " / " & $elixWinnings & " / " & $darkWinnings & " / " & $cupsWinnings)
+	  $gAutoRaidWinnings[0] += $goldWin
+	  $gAutoRaidWinnings[1] += $elixWin
+	  $gAutoRaidWinnings[2] += $darkWin
+	  $gAutoRaidWinnings[3] += $cupsWin
+	  GUICtrlSetData($GUI_Winnings, "Winnings: " & $gAutoRaidWinnings[0] & " / " & $gAutoRaidWinnings[1] & " / " _
+					 & $gAutoRaidWinnings[2] & " / " & $gAutoRaidWinnings[3])
 
 	  ; Close battle end screen
 	  RandomWeightedClick($BattleHasEndedScreenReturnHomeButton)
 
 	  ; Wait for main screen
 	  Local $failCount=10
-	  While WhereAmI()<>$ScreenMain And $ExitApp=False And $failCount>0
+	  While WhereAmI()<>$eScreenMain And $failCount>0
 		 Sleep(1000)
 		 $failCount-=1
 	  WEnd
@@ -840,76 +762,65 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
    EndIf
 EndFunc
 
-Func FindTroopSlots(ByRef $slotIndex)
-   Local $i, $j
-   Local $slotLocs[11][2] = [ [0,59], [62,121], [124,183], [186,245], [248,307], [310,369], [372,431], [434,493], [496,555], [558,617], [620,679] ]
+Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
+   ; Populates index with the client area coords of all available troop buttons
+   Local $buttonOffset[4] = [0, -15, 52, 54]
+   Global $raidTroopBox[4] = [0, 456, 1023, 531]
 
-   ; Grab a frame
-   GrabFrameToFile("AvailableTroopsFrame.bmp", 172, 456, 851, 531)
+   GrabFrameToFile("AvailableRaidTroopsFrame.bmp", $raidTroopBox[0], $raidTroopBox[1], $raidTroopBox[2], $raidTroopBox[3])
 
-   For $i = 0 To $countOfSlots-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableTroopsFrame.bmp", _
-		 "str", "Images\"&$TroopSlotBMPs[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2)
+   For $i = 0 To UBound($bitmaps)-1
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
+	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
-	  If $split[2] > $confidenceTroopSlotSearch Then
-		 For $j = 0 To UBound($slotLocs)-1
-			If $split[0]>=$slotLocs[$j][0] And $split[0]<=$slotLocs[$j][1] Then
-			   $slotIndex[$i] = $j
-			   ExitLoop
-			EndIf
-		 Next
+	  If $split[2] > $gConfidenceRaidTroopSlot Then
+		 $index[$i][0] = $split[0]+$raidTroopBox[0]+$buttonOffset[0]
+		 $index[$i][1] = $split[1]+$raidTroopBox[1]+$buttonOffset[1]
+		 $index[$i][2] = $split[0]+$raidTroopBox[0]+$buttonOffset[2]
+		 $index[$i][3] = $split[1]+$raidTroopBox[1]+$buttonOffset[3]
+		 DebugWrite("Troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
 	  Else
-		 $slotIndex[$i] = -1
+		 $index[$i][0] = -1
+		 $index[$i][1] = -1
+		 $index[$i][2] = -1
+		 $index[$i][3] = -1
 	  EndIf
    Next
 EndFunc
 
-Func GetTroopSlotTextBox(Const $slot, ByRef $box)
-   Local $i
-   For $i = 0 To 9
-	  $box[$i] = $slot<>-1 ? $TroopSlotTextBoxes[$slot][$i] : 0
-   Next
-EndFunc
+Func GetAvailableTroops(Const $troop, Const ByRef $index)
+   If $index[$troop][0] = -1 Then Return 0
 
-Func GetTroopSlotButton(Const $slot, ByRef $button)
-   Local $i
-   For $i = 0 To 7
-	  $button[$i] = $slot<>-1 ? $TroopSlotButtons[$slot][$i] : 0
-   Next
+   Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+10, _
+						 $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
+						 0, 0, 0, 0]
+
+   Local $t = ScrapeFuzzyText($smallCharacterMaps, $textBox)
+   Return StringMid($t, 2)
 EndFunc
 
 Func ZapDarkElixirStorage()
    DebugWrite("ZapDarkElixirStorage()")
 
-   Local $cPos = GetClientPos()
-   Local $troopSlotIndex[$countOfSlots]
-   FindTroopSlots($troopSlotIndex)
+   Local $spellIndex[UBound($gSpellSlotBMPs)][4]
+   FindRaidTroopSlots($gSpellSlotBMPs, $spellIndex)
 
-   Local $ltng = $troopSlotIndex[$lightningSpellSlot]
-
-   If $ltng = -1 Then Return False
-
-   Local $lightningButton[8]
-   GetTroopSlotButton($ltng, $lightningButton)
-
-   Local $availableLightnings = CountLightningSpells()
+   Local $availableLightnings = GetAvailableTroops($eSpellLightning, $spellIndex)
 
    ; Only zap if there are the maximum number of lightning spells available
-   If $availableLightnings<$myMaxSpells Then
-	  DebugWrite("Not zapping DE, " & $availableLightnings & " of " & $myMaxSpells & " lightning spells available.")
+   If $availableLightnings<$gMyMaxSpells Then
+	  DebugWrite("Not zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available.")
 	  Return False
    EndIf
-
 
    ; Find DE storage
    GrabFrameToFile("DEStorageFrame.bmp", 235, 100, 789, 450)
    Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-   ScanFrameForBMP("DEStorageFrame.bmp", $DarkStorageBMPs, $confidenceDEStorageZap, $bestMatch, $bestConfidence, $bestX, $bestY)
+   ScanFrameForBestBMP("DEStorageFrame.bmp", $DarkStorageBMPs, $gConfidenceDEStorage, $bestMatch, $bestConfidence, $bestX, $bestY)
    DebugWrite("DE search: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
 
-   ; If < $confidenceDEStorageZap confidence, then not good enough to spend spells
-   If $bestConfidence < $confidenceDEStorageZap Then
+   ; If < $gConfidenceDEStorageZap confidence, then not good enough to spend spells
+   If $bestConfidence < $gConfidenceDEStorage Then
 	  Local $datetimestamp = _
 		 StringMid(_NowCalc(), 1,4) & _
 		 StringMid(_NowCalc(), 6,2) & _
@@ -923,19 +834,19 @@ Func ZapDarkElixirStorage()
 	  Return False
    EndIf
 
-   DebugWrite("Zapping DE, " & $availableLightnings & " of " & $myMaxSpells & " lightning spells available, confidence: " & $bestConfidence)
+   DebugWrite("Zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available, confidence: " & $bestConfidence)
 
    ; Select lightning spell
+   Local $lightningButton[8] = [$spellIndex[$eSpellLightning][0], $spellIndex[$eSpellLightning][1], $spellIndex[$eSpellLightning][2], _
+							    $spellIndex[$eSpellLightning][3], 0, 0, 0, 0]
    RandomWeightedClick($lightningButton)
    Sleep(500)
 
    ; Zap away
-   DebugWrite("Zapping at " & $cPos[0]+$bestX+235+10 & "," & $cPos[1]+$bestY+100+30)
-   Local $i
+   DebugWrite("Zapping at client position: " & $bestX+235+10 & "," & $bestY+100+30)
    For $i = 1 To $availableLightnings
-	  ;_MouseClickFast($cPos[0]+$bestX+235+10, $cPos[1]+$bestY+100+30)
-	  ;Sleep(1000)
-	  _ControlClick($bestX+235+10, $bestY+100+30, 1, $deployClickDelay)
+	  _MouseClickFast($bestX+235+10, $bestY+100+30)
+	  Sleep(1000)
    Next
 
    Sleep(6000)
@@ -943,19 +854,4 @@ Func ZapDarkElixirStorage()
    Return True
 EndFunc
 
-Func CountLightningSpells()
-   Local $lightningTextBox[10]
 
-   Local $troopSlotIndex[$countOfSlots]
-   FindTroopSlots($troopSlotIndex)
-
-   Local $ltng = $troopSlotIndex[$lightningSpellSlot]
-
-   Local $count = 0
-   If $ltng <> -1 Then
-	  GetTroopSlotTextBox($ltng, $lightningTextBox)
-	  $count = StringMid(ScrapeText($smallCharacterMaps, $lightningTextBox, 172, 456, 851, 531), 2)
-   EndIf
-
-   Return $count
-EndFunc

@@ -7,13 +7,13 @@ Func AutoRaidExecuteDEZap()
    Local $res = ZapDarkElixirStorage()
 
    If $res = True Then ; Zap executed
-	  Local $troopSlotIndex[$countOfSlots]
-	  FindTroopSlots($troopSlotIndex)
 	  WaitForBattleEnd(False, False)
+
    Else ; Not enuf lightning spells, or couldn't find DE storage
 	  ; Click End Battle button
 	  RandomWeightedClick($LiveRaidScreenEndBattleButton)
 	  Sleep(500)
+
    EndIf
 
    Return $res
@@ -33,39 +33,24 @@ EndFunc
 Func AutoRaidExecuteRaidStrategy0()
    DebugWrite("AutoRaidExecuteRaidStrategy0()")
 
-   Local $i
-
    ; What troops are available?
-   Local $troopSlotIndex[$countOfSlots]
-   FindTroopSlots($troopSlotIndex)
-
-   ; Get buttons and text boxes for troops
-   Local $barbButton[8], $archButton[8], $breakerButton[8], $kingButton[8], $queenButton[8]
-   GetTroopSlotButton($troopSlotIndex[$barbarianSlot], $barbButton)
-   GetTroopSlotButton($troopSlotIndex[$archerSlot], $archButton)
-   GetTroopSlotButton($troopSlotIndex[$wallBreakerSlot], $breakerButton)
-   GetTroopSlotButton($troopSlotIndex[$barbarianKingSlot], $kingButton)
-   GetTroopSlotButton($troopSlotIndex[$archerQueenSlot], $queenButton)
-
-   Local $barbTextBox[10], $archTextBox[10], $breakerTextBox[10]
-   GetTroopSlotTextBox($troopSlotIndex[$barbarianSlot], $barbTextBox)
-   GetTroopSlotTextBox($troopSlotIndex[$archerSlot], $archTextBox)
-   GetTroopSlotTextBox($troopSlotIndex[$wallBreakerSlot], $breakerTextBox)
+   Local $troopIndex[UBound($gTroopSlotBMPs)][4]
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
 
    ; Get counts of available troops
-   Local $availableBarbs = $troopSlotIndex[$barbarianSlot]<>-1 ? StringMid(ScrapeText($smallCharacterMaps, $barbTextBox, 172, 456, 851, 531), 2) : 0
-   Local $availableArchs = $troopSlotIndex[$archerSlot]<>-1 ? StringMid(ScrapeText($smallCharacterMaps, $archTextBox, 172, 456, 851, 531), 2) : 0
-   Local $availableBreakers = $troopSlotIndex[$wallBreakerSlot]<>-1 ? StringMid(ScrapeText($smallCharacterMaps, $breakerTextBox, 172, 456, 851, 531), 2) : 0
+   Local $availableBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
+   Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
+   Local $availableBreakers = GetAvailableTroops($eTroopWallBreaker, $troopIndex)
 
-   DebugWrite("Available Barbarians: " & $availableBarbs & " @" & $myTroopCost[$barbarianSlot])
-   DebugWrite("Avaliable Archers: " & $availableArchs & " @" & $myTroopCost[$archerSlot])
-   If $Debug And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then _
-	  DebugWrite("Avaliable Breakers: " & $availableBreakers & " @" & $myTroopCost[$wallBreakerSlot])
+   DebugWrite("Available Barbarians: " & $availableBarbs & " @" & $gMyTroopCost[$eTroopBarbarian])
+   DebugWrite("Avaliable Archers: " & $availableArchs & " @" & $gMyTroopCost[$eTroopArcher])
+   If $gDebug And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then _
+	  DebugWrite("Avaliable Breakers: " & $availableBreakers & " @" & $gMyTroopCost[$eTroopWallBreaker])
 
-   Local $elixirCost = $availableBarbs*$myTroopCost[$barbarianSlot] + _
-					   $availableArchs*$myTroopCost[$archerSlot] + _
-					   $availableBreakers*$myTroopCost[$wallBreakerSlot]*(_GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED)
-   DebugWrite(_NowTime() & " Elix cost this match: " & $elixirCost & @CRLF)
+   Local $elixirCost = $availableBarbs*$gMyTroopCost[$eTroopBarbarian] + _
+					   $availableArchs*$gMyTroopCost[$eTroopArcher] + _
+					   $availableBreakers*$gMyTroopCost[$eTroopWallBreaker]*(_GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED)
+   DebugWrite("Elix cost this match: " & $elixirCost)
 
    ; Count the collectors, by top/bottom half
    DebugWrite("Counting Collectors...")
@@ -74,7 +59,7 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To UBound($matchX)-1
-	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & @CRLF)
+	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
 	  If $matchY[$i] < 250 Then
 		 $collectorsOnTop += 1
 	  Else
@@ -92,25 +77,37 @@ Func AutoRaidExecuteRaidStrategy0()
 	  MoveScreenUpToBottom(False)
    EndIf
 
+   ; Get buttons
+   Local $barbButton[8] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], _
+						   $troopIndex[$eTroopBarbarian][3], 0, 0, 0, 0]
+   Local $archButton[8] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], _
+						   $troopIndex[$eTroopArcher][3], 0, 0, 0, 0]
+   Local $breakerButton[8] = [$troopIndex[$eTroopWallBreaker][0], $troopIndex[$eTroopWallBreaker][1], $troopIndex[$eTroopWallBreaker][2], _
+						   $troopIndex[$eTroopWallBreaker][3], 0, 0, 0, 0]
+   Local $kingButton[8] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], _
+						   $troopIndex[$eTroopKing][3], 0, 0, 0, 0]
+   Local $queenButton[8] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], _
+						   $troopIndex[$eTroopQueen][3], 0, 0, 0, 0]
+
    ;
    ; Deploy troops
    ;
    Local $deployStart = TimerInit()
 
    ; Deploy 60% of barbs
-   If $troopSlotIndex[$barbarianSlot] <> -1 Then
+   If $barbButton[0] <> -1 Then
 	  DebugWrite("Deploying 60% of Barbarians (" & Int($availableBarbs/2) & ")")
 	  RandomWeightedClick($barbButton)
 	  Sleep(500)
-	  DeployTroopsToSides($barbTextBox, $deploySixtyPercent, $direction)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction)
    EndIf
 
    ; Deploy 60% of archers
-   If $troopSlotIndex[$archerSlot] <> -1 Then
+   If $archButton[0] <> -1 Then
 	  DebugWrite("Deploying 60% of Archers (" & Int($availableArchs/2) & ")")
 	  RandomWeightedClick($archButton)
 	  Sleep(500)
-	  DeployTroopsToSides($archTextBox, $deploySixtyPercent, $direction)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction)
    EndIf
 
    ; Deploy King
@@ -118,7 +115,7 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $kingDeployed = False
    Local $royaltyDeploySide = Random()
 
-   If $troopSlotIndex[$barbarianKingSlot] <> -1 Then
+   If $kingButton[0] <> -1 Then
 	  DebugWrite("Deploying Barbarian King")
 	  RandomWeightedClick($kingButton)
 	  Sleep(500)
@@ -135,29 +132,29 @@ Func AutoRaidExecuteRaidStrategy0()
    EndIf
 
    ; Deploy rest of barbs
-   If $troopSlotIndex[$barbarianSlot] <> -1 Then
+   If $barbButton[0] <> -1 Then
 	  DebugWrite("Deploying remaining Barbarians")
 	  RandomWeightedClick($barbButton)
 	  Sleep(500)
-	  DeployTroopsToSides($barbTextBox, $deployRemaining, $direction)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction)
    EndIf
 
    ; Deploy rest of archers
-   If $troopSlotIndex[$archerSlot] <> -1 Then
+   If $archButton[0] <> -1 Then
 	  DebugWrite("Deploying remaining Archers")
 	  RandomWeightedClick($archButton)
 	  Sleep(500)
-	  DeployTroopsToSides($archTextBox, $deployRemaining, $direction)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction)
    EndIf
 
    ; Deploy breakers
-   If $troopSlotIndex[$wallBreakerSlot] <> -1 And _
+   If $breakerButton[0] <> -1 And _
 	  _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 
 	  DebugWrite("Deploying Breakers")
 	  RandomWeightedClick($breakerButton)
 	  Sleep(500)
-	  DeployTroopsToSafeBoxes($breakerTextBox, $direction)
+	  DeployTroopsToSafeBoxes($eTroopWallBreaker, $troopIndex, $direction)
    EndIf
 
    ; Loop, while monitoring King / Queen health bars, power up king/queen when health falls below green (50%)
@@ -167,21 +164,18 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $queenDeployDelay = 20000 ; 20 seconds
    Local $queenDeployed = False
 
-   While (($kingPoweredUp=False And $troopSlotIndex[$barbarianKingSlot]<>-1) Or _
-	      ($queenPoweredUp=False And $troopSlotIndex[$archerQueenSlot]<>-1)) And _
-		 $ExitApp = False And _
+   While (($kingPoweredUp=False And $troopIndex[$eTroopKing][0]<>-1) Or _
+	      ($queenPoweredUp=False And $troopIndex[$eTroopQueen][0]<>-1)) And _
 		 TimerDiff($deployStart) < 180000 ; 3 minutes
-
-	  Local $cPos = GetClientPos()
 
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then
-		 Local $kingColor = PixelGetColor($cPos[0]+$kingButton[0]+10, $cPos[1]+$kingButton[1]-7); health bar starts 6 pix in from left edge of button
-		 Local $kingPixMatch = InColorSphere($kingColor, $RoyaltyHealthGreenColor[2], $RoyaltyHealthGreenColor[3])
-		 ;DebugWrite("King health " & $kingButton[0]+10 & "," & $kingButton[1]-7 & ": " & Hex($kingColor) & " " & $kingPixMatch)
-		 If $kingPixMatch = False Then
+		 Local $kingColor[4] = [$troopIndex[$eTroopKing][0]+6, $troopIndex[$eTroopKing][1]-8, _
+						    $RoyaltyHealthGreenColor[2], $RoyaltyHealthGreenColor[3]]
+
+	  If IsColorPresent($kingColor) = False Then
+			;GrabFrameToFile("PreKingPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up King")
-			;MsgBox($MB_OK, "", "")
 			RandomWeightedClick($kingButton)
 			$kingPoweredUp = True
 		 EndIf
@@ -189,10 +183,11 @@ Func AutoRaidExecuteRaidStrategy0()
 
 	  ; Get Queen's health color, and power up if needed
 	  If $queenDeployed And $queenPoweredUp = False Then
-		 Local $queenColor = PixelGetColor($cPos[0]+$queenButton[0]+10, $cPos[1]+$queenButton[1]-7); health bar starts 6 pix in from left edge of button
-		 Local $queenPixMatch = InColorSphere($queenColor, $RoyaltyHealthGreenColor[2], $RoyaltyHealthGreenColor[3])
-		 ;DebugWrite("Queen health " & $queenButton[0]+10 & "," & $queenButton[1]-7 & ": " & Hex($queenColor) & " " & $queenPixMatch)
-		 If $queenPixMatch = False Then
+		 Local $queenColor[4] = [$troopIndex[$eTroopQueen][0]+6, $troopIndex[$eTroopQueen][1]-8, _
+						    $RoyaltyHealthGreenColor[2], $RoyaltyHealthGreenColor[3]]
+
+		 If IsColorPresent($queenColor) = False Then
+			;GrabFrameToFile("PreQueenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up Queen")
 			RandomWeightedClick($queenButton)
 			$queenPoweredUp = True
@@ -200,7 +195,7 @@ Func AutoRaidExecuteRaidStrategy0()
 	  EndIf
 
 	  ; Deploy Queen after specified amount of time after king deploy
-	  If $troopSlotIndex[$archerQueenSlot]<>-1 And TimerDiff($kingDeployTime)>$queenDeployDelay And $queenDeployed=False Then
+	  If $queenButton[0]<>-1 And TimerDiff($kingDeployTime)>$queenDeployDelay And $queenDeployed=False Then
 		 DebugWrite("Deploying Archer Queen")
 		 RandomWeightedClick($queenButton)
 		 Sleep(500)

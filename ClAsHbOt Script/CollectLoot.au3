@@ -2,7 +2,6 @@
 Func CollectLoot()
    ; Method = 0: CV_TM_SQDIFF, 1: CV_TM_SQDIFF_NORMED 2: CV_TM_CCORR 3: CV_TM_CCORR_NORMED 4: CV_TM_CCOEFF 5: CV_TM_CCOEFF_NORMED
    Local $totalMatches = 0, $currIndex = 0
-   Local $cpos = GetClientPos()
    Local $matchX[1], $matchY[1]
 
    DebugWrite("CollectLoot()")
@@ -11,21 +10,21 @@ Func CollectLoot()
    GrabFrameToFile("CollectorsFrame.bmp")
 
    ; Find all the collectors that need clicking in the frame
-   For $loop = 0 To UBound($CollectorFullBMPs)-1
+   For $loop = 0 To UBound($CollectLootBMPs)-1
 	  ; Get matches for this resource
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", "CollectorsFrame.bmp", _
-			   "str", "Images\"&$CollectorFullBMPs[$loop], "int", 3, "int", 6, "double", $confidenceCollectorLootSearch)
+			   "str", "Images\"&$CollectLootBMPs[$loop], "int", 3, "int", 6, "double", $gConfidenceCollectLoot)
 	  Local $split = StringSplit($res[0], "|", 2)
 	  $totalMatches += $split[0]
-	  ;DebugWrite("Num matches: " & %i & " " & $split[0] & @CRLF)
+	  ;DebugWrite("Num matches: " & %i & " " & $split[0])
 	  ReDim $matchX[$totalMatches]
 	  ReDim $matchY[$totalMatches]
-	  Local $i
+
 	  For $i = 0 To $split[0]-1
 		 $matchX[$currIndex] = $split[$i*3+1]
 		 $matchY[$currIndex] = $split[$i*3+2]
 		 $currIndex += 1
-		 ;DebugWrite("Match " & $currIndex & ": " & $split[$i*3+1] & "," & $split[$i*3+2] & @CRLF)
+		 ;DebugWrite("Match " & $currIndex & ": " & $split[$i*3+1] & "," & $split[$i*3+2])
 	  Next
    Next
 
@@ -38,12 +37,10 @@ Func CollectLoot()
 	  ; Collect the gold and elixir loot
 	  For $i = 0 To $totalMatches-1
 
-		 If $ExitApp Then ExitLoop
-
 		 Local $button[8] = [$sortedX[$i], $sortedY[$i], $sortedX[$i]+$CollectorButton[2], $sortedY[$i]+$CollectorButton[3], 0, 0, 0, 0]
 		 RandomWeightedClick($button)
 
-		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i] & @CRLF)
+		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])
 
 		 Sleep(Random(100, 500, 1))
 	  Next
