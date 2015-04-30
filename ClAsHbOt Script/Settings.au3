@@ -65,6 +65,9 @@ Func ReadSettings()
    Global $gDonateMatchAirTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Air", _
 	  "Lava Hound|Minion|Dragon|Healer|Balloon"), "|")
 
+   Global $gDonateBarracksStandardMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Standard Maximum", 4)
+   Global $gDonateBarracksDarkMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Dark Maximum", 2)
+
    Global $gDonateTroopStock[$eTroopCount-2]
    $gDonateTroopStock[$eTroopBarbarian] = IniRead($gIniFile, "Donate", "Barbarian Stock Amount", 0)
    $gDonateTroopStock[$eTroopArcher] = IniRead($gIniFile, "Donate", "Archer Stock Amount", 0)

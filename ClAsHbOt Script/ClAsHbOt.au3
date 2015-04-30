@@ -105,6 +105,7 @@ Func MainApplicationLoop()
 		 EndIf
 
 		 ; Queue Troops for Donation
+		 #cs
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
 			TimerDiff($lastQueueDonatableTroopsTimer) >= $gQueueDonatableTroopsInterval Then
 
@@ -112,6 +113,7 @@ Func MainApplicationLoop()
 			If WhereAmI()=$eScreenMain Then QueueDonatableTroops()
 			$lastQueueDonatableTroopsTimer = TimerInit()
 		 EndIf
+		 #ce
 
 		 ; Collect loot
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED  And _
