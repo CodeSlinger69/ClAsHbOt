@@ -194,7 +194,7 @@ Func ParseRequestText(Const ByRef $text, Const ByRef $avail, ByRef $index)
    If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchFarmStrings, $gDonateMatchFarmTroops, $avail, "Farm")
    If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchAnyStrings, $gDonateMatchAnyTroops, $avail, "Any")
 
-   If $index = -1 Then
+   If $index < 0 Then
 	  DebugWrite("Could not find a fill for request, exiting.")
 	  ResetToCoCMainScreen()
 	  Return False
