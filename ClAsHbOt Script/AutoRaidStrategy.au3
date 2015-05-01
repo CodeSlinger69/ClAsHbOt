@@ -171,7 +171,7 @@ Func AutoRaidExecuteRaidStrategy0()
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then
 		 Local $kingColor[4] = [$troopIndex[$eTroopKing][0]+6, $troopIndex[$eTroopKing][1]-8, _
-						    $RoyaltyHealthGreenColor[2], $RoyaltyHealthGreenColor[3]]
+						    $rRoyaltyHealthGreenColor[2], $rRoyaltyHealthGreenColor[3]]
 
 	  If IsColorPresent($kingColor) = False Then
 			;GrabFrameToFile("PreKingPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
@@ -184,7 +184,7 @@ Func AutoRaidExecuteRaidStrategy0()
 	  ; Get Queen's health color, and power up if needed
 	  If $queenDeployed And $queenPoweredUp = False Then
 		 Local $queenColor[4] = [$troopIndex[$eTroopQueen][0]+6, $troopIndex[$eTroopQueen][1]-8, _
-						    $RoyaltyHealthGreenColor[2], $RoyaltyHealthGreenColor[3]]
+						    $rRoyaltyHealthGreenColor[2], $rRoyaltyHealthGreenColor[3]]
 
 		 If IsColorPresent($queenColor) = False Then
 			;GrabFrameToFile("PreQueenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")

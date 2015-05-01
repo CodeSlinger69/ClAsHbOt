@@ -268,6 +268,7 @@ EndFunc
 Func GUIDonateTroopsCheckBox()
    DebugWrite("Donate Troops clicked")
    $gDonateTroopsClicked = (_GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED) ? True : False
+   $gDonateTroopsStartup = $gDonateTroopsClicked
 EndFunc
 
 Func GUIFindMatchCheckBox()

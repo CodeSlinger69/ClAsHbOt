@@ -120,16 +120,16 @@ Func WhereAmI()
    If IsButtonPresent($TrainTroopsWindowNextButton) Then Return $eScreenTrainTroops
 
    ; Train troops info window is open
-   If IsColorPresent($WindowTrainTroopsInfoColor) Then Return $eScreenTrainTroopsInfo
+   If IsColorPresent($rWindowTrainTroopsInfoColor) Then Return $eScreenTrainTroopsInfo
 
    ; $ScreenMain
-   If IsColorPresent($ScreenMainColor) Then Return $eScreenMain
+   If IsColorPresent($rScreenMainColor) Then Return $eScreenMain
 
    ; $ScreenChatOpen
    If IsButtonPresent($MainScreenOpenChatButton) Then Return $eScreenChatOpen
 
    ; $WindowChatDimmed
-   If IsColorPresent($WindowChatDimmedColor) Then Return $eScreenChatDimmed
+   If IsColorPresent($rWindowChatDimmedColor) Then Return $eScreenChatDimmed
 
    ; $ScreenShieldIsActive
    If IsButtonPresent($ShieldIsActivePopupButton) Then Return $eScreenShieldIsActive
@@ -141,7 +141,7 @@ Func WhereAmI()
    If IsButtonPresent($WaitRaidScreenNextButton) Then Return $eScreenWaitRaid
 
    ; $ScreenLiveRaid (live attack)
-   If IsColorPresent($ScreenLiveRaid1Color) And IsColorPresent($ScreenLiveRaid2Color) Then Return $eScreenLiveRaid
+   If IsColorPresent($rScreenLiveRaid1Color) And IsColorPresent($rScreenLiveRaid2Color) Then Return $eScreenLiveRaid
 
    ; $ScreenEndBattle
    If IsButtonPresent($BattleHasEndedScreenReturnHomeButton) Then Return $eScreenEndBattle

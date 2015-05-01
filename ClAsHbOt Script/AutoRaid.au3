@@ -207,7 +207,7 @@ Func AutoRaidQueueTraining()
    EndIf
 
    ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
-   Local $redStripe = IsColorPresent($WindowTrainTroopsFullColor)
+   Local $redStripe = IsColorPresent($rWindowTrainTroopsFullColor)
 
    If FindSpellsQueueingWindow() = False Then
 	 DebugWrite(" Auto Raid, Queue Troops failed - can't find Spells or Dark window")
@@ -235,10 +235,10 @@ Func FindSpellsQueueingWindow()
    ; Click left arrow until the spells screen or a dark troops screen comes up
    Local $failCount = 6
 
-   While IsColorPresent($WindowTrainTroopsSpellsColor1) = False And _
-		 IsColorPresent($WindowTrainTroopsSpellsColor2) = False And _
-		 IsColorPresent($WindowTrainTroopsDarkColor1) = False And _
-		 IsColorPresent($WindowTrainTroopsDarkColor2) = False And _
+   While IsColorPresent($rWindowTrainTroopsSpellsColor1) = False And _
+		 IsColorPresent($rWindowTrainTroopsSpellsColor2) = False And _
+		 IsColorPresent($rWindowTrainTroopsDarkColor1) = False And _
+		 IsColorPresent($rWindowTrainTroopsDarkColor2) = False And _
 		 $failCount > 0
 
 	  RandomWeightedClick($TrainTroopsWindowPrevButton)
@@ -247,7 +247,7 @@ Func FindSpellsQueueingWindow()
    WEnd
 
    ; If spells queueing window, then maybe queue spells?
-   If IsColorPresent($WindowTrainTroopsSpellsColor1) = True Or IsColorPresent($WindowTrainTroopsSpellsColor2) = True And _
+   If IsColorPresent($rWindowTrainTroopsSpellsColor1) = True Or IsColorPresent($rWindowTrainTroopsSpellsColor2) = True And _
 	  _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then
 
 	  ; How many are queued/created?
@@ -288,7 +288,7 @@ Func FillBarracksQueues(Const $initialFillFlag)
 	  $failCount-=1
 
 	  ; Make sure we are on a standard troops window
-	  If IsColorPresent($WindowTrainTroopsStandardColor1) = False And IsColorPresent($WindowTrainTroopsStandardColor2) = False Then
+	  If IsColorPresent($rWindowTrainTroopsStandardColor1) = False And IsColorPresent($rWindowTrainTroopsStandardColor2) = False Then
 		 ;DebugWrite(" Not on Standard Troops Window: " & Hex($pixelColor1) & "/" & Hex($WindowTrainTroopsStandardColor1[2])& _
 			;"  " & Hex($pixelColor2) & "/" & Hex($WindowTrainTroopsStandardColor2[2]))
 		 ExitLoop
@@ -491,7 +491,7 @@ Func AutoRaidCheckIfTrainingComplete()
    EndIf
 
    ; See if we have a red stripe on the bottom of the train troops window, which means we are full up
-   If IsColorPresent($WindowTrainTroopsFullColor) Then
+   If IsColorPresent($rWindowTrainTroopsFullColor) Then
 	  ;DebugWrite("Troop training is complete!")
 	  $gAutoRaidStage = $eAutoRaidFindMatch
   	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
@@ -765,7 +765,7 @@ EndFunc
 Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
    Local $buttonOffset[4] = [0, -15, 52, 54]
-   Global $raidTroopBox[4] = [0, 456, 1023, 531]
+   Local $raidTroopBox[4] = [0, 456, 1023, 531]
 
    GrabFrameToFile("AvailableRaidTroopsFrame.bmp", $raidTroopBox[0], $raidTroopBox[1], $raidTroopBox[2], $raidTroopBox[3])
 

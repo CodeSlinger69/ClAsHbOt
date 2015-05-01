@@ -7,7 +7,7 @@ Global $gBlueStacksHeight = 600
 Global $gIniFile = "CoC Bot.ini"
 
 ; GUI
-Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False
+Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False, $gDonateTroopsStartup = False
 Global $gFindMatchClicked = False, $gFindSnipableTHClicked = False, $gAutoRaidClicked = False
 
 ; Lists of troop and spell types

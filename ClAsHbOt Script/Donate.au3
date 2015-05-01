@@ -17,7 +17,7 @@ Func DonateTroops()
 
    ; Loop until donate troops window goes away, no match for request, or loop limit reached
    Local $loopLimit = 5
-   While IsColorPresent($WindowChatDimmedColor) And $loopLimit>0
+   While IsColorPresent($rWindowChatDimmedColor) And $loopLimit>0
 	  DebugWrite("Donate loop " & 6-$loopLimit & " of " & 5)
 
 	  ; Locate troops that are available to donate
@@ -107,10 +107,10 @@ EndFunc
 
 Func OpenDonateTroopsWindow(Const ByRef $button)
    Local $topLeftDonateWindow[2] = [$button[0]+67, $button[1]-109]
-   Local $colorRegion[4] = [$topLeftDonateWindow[0]+$WindowDonateTroopsColor[0], _
-							$topLeftDonateWindow[1]+$WindowDonateTroopsColor[1], _
-							$WindowDonateTroopsColor[2], _
-							$WindowDonateTroopsColor[3]]
+   Local $colorRegion[4] = [$topLeftDonateWindow[0]+$rWindowDonateTroopsColor[0], _
+							$topLeftDonateWindow[1]+$rWindowDonateTroopsColor[1], _
+							$rWindowDonateTroopsColor[2], _
+							$rWindowDonateTroopsColor[3]]
 
    RandomWeightedClick($button)
 
@@ -188,10 +188,11 @@ Func ParseRequestText(Const ByRef $text, Const ByRef $avail, ByRef $index)
    Next
 
    ; Check other match terms
-   If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchAnyStrings, $gDonateMatchAnyTroops, $avail, "Any")
-   If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchFarmStrings, $gDonateMatchFarmTroops, $avail, "Farm")
-   If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchGroundStrings, $gDonateMatchGroundTroops, $avail, "Ground")
+   If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchDarkStrings, $gDonateMatchDarkTroops, $avail, "Dark")
    If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchAirStrings, $gDonateMatchAirTroops, $avail, "Air")
+   If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchGroundStrings, $gDonateMatchGroundTroops, $avail, "Ground")
+   If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchFarmStrings, $gDonateMatchFarmTroops, $avail, "Farm")
+   If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchAnyStrings, $gDonateMatchAnyTroops, $avail, "Any")
 
    If $index = -1 Then
 	  DebugWrite("Could not find a fill for request, exiting.")
@@ -224,7 +225,7 @@ Func FindMatchingTroop(Const $text, Const ByRef $strings, Const ByRef $troops, C
 	  EndIf
    Next
 
-   Return -1
+   Return -2
 EndFunc
 
 Func ClickDonateTroops(Const ByRef $donateIndexAbsolute, Const $indexOfTroopToDonate)
@@ -239,7 +240,7 @@ Func ClickDonateTroops(Const ByRef $donateIndexAbsolute, Const $indexOfTroopToDo
 
    Local $donateCount=0
    For $i = 1 To $DonateMaxClicks[$indexOfTroopToDonate]
-	  If IsColorPresent($WindowChatDimmedColor) Then
+	  If IsColorPresent($rWindowChatDimmedColor) Then
 		 RandomWeightedClick($button)
 		 $donateCount+=1
 		 Sleep($gDonateTroopClickDelay)
@@ -370,109 +371,58 @@ Func CountQueuedTroops(Const $troopIndex)
    EndIf
 
    ; Loop through barracks and count specified troops, until we get back to the spells screen
-
-#cs
-   Local $barracksCount = 1
-   Local $failCount = 5
-
-   While $barracksCount <= 4 And $failCount>0
-
-	  ; Click right arrow to get the next standard troops window
+   ; or the numBarracks is counted, or we've looked at 7 screens
+   Local $screenCount = 0
+   Local $targetCount = 0
+   Do
 	  RandomWeightedClick($TrainTroopsWindowNextButton)
 	  Sleep(500)
-	  $failCount-=1
+	  $screenCount += 1
 
-	  ; Make sure we are on a standard troops window
-	  If IsColorPresent($WindowTrainTroopsStandardColor1) = False And IsColorPresent($WindowTrainTroopsStandardColor2) = False Then
-		 ;DebugWrite(" Not on Standard Troops Window: " & Hex($pixelColor1) & "/" & Hex($WindowTrainTroopsStandardColor1[2])& _
-			;"  " & Hex($pixelColor2) & "/" & Hex($WindowTrainTroopsStandardColor2[2]))
-		 ExitLoop
-	  EndIf
+	  If $type = "Standard" And _
+		 (IsColorPresent($rWindowTrainTroopsStandardColor1) = True Or _
+		  IsColorPresent($rWindowTrainTroopsStandardColor2) ) Then
 
-	  ; If we have not yet figured out troop costs, then get them now
-	  If $gMyTroopCost[$eTroopBarbarian] = 0 Then
-		 $gMyTroopCost[$eTroopBarbarian] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowBarbarianCostTextBox)
-		 $gMyTroopCost[$eTroopArcher] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowArcherCostTextBox)
-		 $gMyTroopCost[$eTroopGoblin]= ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowGoblinCostTextBox)
-		 $gMyTroopCost[$eTroopGiant] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowGiantCostTextBox)
-		 $gMyTroopCost[$eTroopWallBreaker] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowWallBreakerCostTextBox)
-		 $gMyTroopCost[$eTroopBalloon] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowBalloonCostTextBox)
-		 $gMyTroopCost[$eTroopWizard] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowWizardCostTextBox)
-		 $gMyTroopCost[$eTroopHealer] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowHealerCostTextBox)
-		 $gMyTroopCost[$eTroopDragon] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowDragonCostTextBox)
-		 $gMyTroopCost[$eTroopPekka] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowPekkaCostTextBox)
-	  EndIf
+		 $targetCount += 1
 
-	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
-	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
-		 Local $dequeueTries = 6
-		 While IsButtonPresent($TrainTroopsWindowDequeueButton) And $dequeueTries>0 And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
-			Local $xClick, $yClick
-			RandomWeightedCoords($TrainTroopsWindowDequeueButton, $xClick, $yClick)
-			_ClickHold($xClick, $yClick, 4000)
-			$dequeueTries-=1
-			Sleep(500)
-		 WEnd
-	  EndIf
+		 ; Find troop
+		 Local $barracksTroopBox[4] = [262, 140, 584, 202]
+		 GrabFrameToFile("BarracksQueuedTroopsFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], _
+						 $barracksTroopBox[2], $barracksTroopBox[3])
+		 Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksQueuedTroopsFrame.bmp", _
+							  "str", "Images\"&$gBarracksTroopSlotBMPs[$troopIndex], "int", 3)
+		 Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return
+		 If $split[2] > $gConfidenceBarracksTroopSlot Then
+			Local $textBox[4] = [$barracksTroopBox[0] + $split[0], _
+								 $barracksTroopBox[1] + $split[1] - 22, _
+								 $barracksTroopBox[0] + $split[0] + 25, _
+								 $barracksTroopBox[1] + $split[1] - 11 ]
+			DebugWrite("Troop " & $gDonateSlotBMPs[$troopIndex] & " found at " & $barracksTroopBox[0] & ", " & $barracksTroopBox[1] & " conf: " & $split[2])
 
-	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag Then
-		 For $i = 1 To Int(Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit))/4)
-			RandomWeightedClick($TrainTroopsWindowBreakerButton)
-			Sleep(500)
-		 Next
-	  EndIf
+		  ; Parse count
 
-	  ; Fill up this barracks
-	  Local $fillTries=1
-	  Local $troopsToFill
-	  Do
-		 ; Get number of troops already queued in this barracks
-		 Local $queueStatus = ScrapeFuzzyText($largeCharacterMaps, $rTrainTroopsWindowTextBox)
-
-		 If (StringInStr($queueStatus, "Train")=1) Then
-			$queueStatus = StringMid($queueStatus, 6)
-
-			Local $queueStatSplit = StringSplit($queueStatus, "/")
-			If $queueStatSplit[0] = 2 Then
-			   $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
-
-			   ; How long to click and hold?
-			   Local $fillTime
-			   If $troopsToFill>60 Then
-				  $fillTime = 3500 + Random(-250, 250, 1)
-			   ElseIf $troopsToFill>25 Then
-				  $fillTime = 2700 + Random(-250, 250, 1)
-			   ElseIf $troopsToFill>10 Then
-				  $fillTime = 2300 + Random(-250, 250, 1)
-			   Else
-				  $fillTime = 1800 + Random(-250, 250, 1)
-			   EndIf
-
-			   ; Click and hold to fill up queue
-			   If $troopsToFill>0 Then
-				  Local $xClick, $yClick
-				  If $barracksCount/2 = Int($barracksCount/2) Then ; Alternate between archers and barbs
-					 RandomWeightedCoords($TrainTroopsWindowBarbarianButton, $xClick, $yClick)
-				  Else
-					 RandomWeightedCoords($TrainTroopsWindowArcherButton, $xClick, $yClick)
-				  EndIf
-
-				  ;DebugWrite("Filling barracks " & $barracksCount & " try " & $fillTries)
-				  _ClickHold($xClick, $yClick, $fillTime)
-				  Sleep(500)
-			   EndIf
-			EndIf
 		 EndIf
+	  EndIf
 
-		 $fillTries+=1
-	  Until $troopsToFill=0 Or $fillTries>=6 Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
+	  If $type = "Dark" And _
+		 (IsColorPresent($rWindowTrainTroopsDarkColor1) = True Or _
+		  IsColorPresent($rWindowTrainTroopsDarkColor2) ) Then
 
-	  $barracksCount+=1
-   WEnd
-#ce
+		  $targetCount += 1
+
+		  ; Find troop
+
+		  ; Parse count
+
+	  EndIf
+
+
+   Until IsColorPresent($rWindowTrainTroopsSpellsColor1) = True Or _
+		 IsColorPresent($rWindowTrainTroopsSpellsColor2) = True Or _
+		 $screenCount >= 7 Or _
+		 $targetCount >= $numBarracks
+
 EndFunc
 
 Func FindArmyCampTroopSlots(Const ByRef $bitmaps, ByRef $index)
@@ -510,6 +460,6 @@ Func GetArmyCampTroops(Const $troop, Const ByRef $index)
 
    Local $t = ScrapeFuzzyText($gArmyCampCharacterMaps, $textBox)
 
-   Return $t
+   Return Number($t)
 EndFunc
 

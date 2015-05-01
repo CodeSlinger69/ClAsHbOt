@@ -19,6 +19,7 @@ Func ReadSettings()
    Global $gConfidenceRaidTroopSlot = IniRead($gIniFile, "Confidence", "Raid Troop Slot", 0.98)
    Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.99)
    Global $gConfidenceArmyCampTroopSlot = IniRead($gIniFile, "Confidence", "Army Camp Troop Slot", 0.99)
+   Global $gConfidenceBarracksTroopSlot = IniRead($gIniFile, "Confidence", "Barracks Troop Slot", 0.99)
 
    ; Intervals
    Global $gOnlineCheckInterval = IniRead($gIniFile, "Interval", "Online Check", 15000)
@@ -49,42 +50,46 @@ Func ReadSettings()
 
    Global $gDonateMatchNegativeStrings = StringSplit(IniRead($gIniFile, "Donate", "Negative Match Strings", "but|except"), "|")
 
-   Global $gDonateMatchAnyStrings = StringSplit(IniRead($gIniFile, "Donate", "Any Match Strings", "any"), "|")
-   Global $gDonateMatchAnyTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Any", _
-	  "Lava Hound|Witch|Golem|Valkyrie|Minion|Pekka|Dragon|Wizard|Balloon|Giant|Archer|Barbarian"), "|")
-
-   Global $gDonateMatchFarmStrings = StringSplit(IniRead($gIniFile, "Donate", "Farm Match Strings", "farm|defense"), "|")
-   Global $gDonateMatchFarmTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Farm", _
-	  "Witch|Minion|Pekka|Dragon|Wizard|Balloon|Giant|Archer|Barbarian"), "|")
-
-   Global $gDonateMatchGroundStrings = StringSplit(IniRead($gIniFile, "Donate", "Gound Match Strings", "ground"), "|")
-   Global $gDonateMatchGroundTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Gound", _
-	  "Witch|Golem|Valkyrie|Hog Rider|Pekka|Wizard|Giant|Archer|Barbarian"), "|")
+   Global $gDonateMatchDarkStrings = StringSplit(IniRead($gIniFile, "Donate", "Dark Match Strings", "any"), "|")
+   Global $gDonateMatchDarkTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Dark", _
+	  "Lava Hound|Witch|Golem|Valkyrie|Minion"), "|")
 
    Global $gDonateMatchAirStrings = StringSplit(IniRead($gIniFile, "Donate", "Air Match Strings", "air|fly|flies"), "|")
    Global $gDonateMatchAirTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Air", _
 	  "Lava Hound|Minion|Dragon|Healer|Balloon"), "|")
 
+   Global $gDonateMatchGroundStrings = StringSplit(IniRead($gIniFile, "Donate", "Gound Match Strings", "ground"), "|")
+   Global $gDonateMatchGroundTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Gound", _
+	  "Witch|Golem|Valkyrie|Hog Rider|Pekka|Wizard|Giant|Archer|Barbarian"), "|")
+
+   Global $gDonateMatchFarmStrings = StringSplit(IniRead($gIniFile, "Donate", "Farm Match Strings", "farm|defense"), "|")
+   Global $gDonateMatchFarmTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Farm", _
+	  "Witch|Minion|Pekka|Dragon|Wizard|Balloon|Giant|Archer|Barbarian"), "|")
+
+   Global $gDonateMatchAnyStrings = StringSplit(IniRead($gIniFile, "Donate", "Any Match Strings", "any"), "|")
+   Global $gDonateMatchAnyTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Any", _
+	  "Lava Hound|Witch|Golem|Valkyrie|Minion|Pekka|Dragon|Wizard|Balloon|Giant|Archer|Barbarian"), "|")
+
    Global $gDonateBarracksStandardMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Standard Maximum", 4)
    Global $gDonateBarracksDarkMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Dark Maximum", 2)
 
    Global $gDonateTroopStock[$eTroopCount-2]
-   $gDonateTroopStock[$eTroopBarbarian] = IniRead($gIniFile, "Donate", "Barbarian Stock Amount", 0)
-   $gDonateTroopStock[$eTroopArcher] = IniRead($gIniFile, "Donate", "Archer Stock Amount", 0)
-   $gDonateTroopStock[$eTroopGoblin] = IniRead($gIniFile, "Donate", "Goblin Stock Amount", 0)
-   $gDonateTroopStock[$eTroopGiant] = IniRead($gIniFile, "Donate", "Giant Stock Amount", 0)
-   $gDonateTroopStock[$eTroopWallBreaker] = IniRead($gIniFile, "Donate", "Wall Breaker Stock Amount", 0)
-   $gDonateTroopStock[$eTroopBalloon] = IniRead($gIniFile, "Donate", "Balloon Stock Amount", 0)
-   $gDonateTroopStock[$eTroopWizard] = IniRead($gIniFile, "Donate", "Wizard Stock Amount", 0)
-   $gDonateTroopStock[$eTroopHealer] = IniRead($gIniFile, "Donate", "Healer Stock Amount", 0)
-   $gDonateTroopStock[$eTroopDragon] = IniRead($gIniFile, "Donate", "Dragon Stock Amount", 0)
-   $gDonateTroopStock[$eTroopPekka] = IniRead($gIniFile, "Donate", "Pekka Stock Amount", 0)
-   $gDonateTroopStock[$eTroopMinion] = IniRead($gIniFile, "Donate", "Minion Stock Amount", 0)
-   $gDonateTroopStock[$eTroopHogRider] = IniRead($gIniFile, "Donate", "Hog Rider Stock Amount", 0)
-   $gDonateTroopStock[$eTroopValkyrie] = IniRead($gIniFile, "Donate", "Valkyrie Stock Amount", 0)
-   $gDonateTroopStock[$eTroopGolem] = IniRead($gIniFile, "Donate", "Golem Stock Amount", 0)
-   $gDonateTroopStock[$eTroopWitch] = IniRead($gIniFile, "Donate", "Witch Stock Amount", 0)
-   $gDonateTroopStock[$eTroopLavaHound] = IniRead($gIniFile, "Donate", "Lava Hound Stock Amount", 0)
+   $gDonateTroopStock[$eTroopBarbarian] = Number(IniRead($gIniFile, "Donate", "Barbarian Stock Amount", 0))
+   $gDonateTroopStock[$eTroopArcher] = Number(IniRead($gIniFile, "Donate", "Archer Stock Amount", 0))
+   $gDonateTroopStock[$eTroopGoblin] = Number(IniRead($gIniFile, "Donate", "Goblin Stock Amount", 0))
+   $gDonateTroopStock[$eTroopGiant] = Number(IniRead($gIniFile, "Donate", "Giant Stock Amount", 0))
+   $gDonateTroopStock[$eTroopWallBreaker] = Number(IniRead($gIniFile, "Donate", "Wall Breaker Stock Amount", 0))
+   $gDonateTroopStock[$eTroopBalloon] = Number(IniRead($gIniFile, "Donate", "Balloon Stock Amount", 0))
+   $gDonateTroopStock[$eTroopWizard] = Number(IniRead($gIniFile, "Donate", "Wizard Stock Amount", 0))
+   $gDonateTroopStock[$eTroopHealer] = Number(IniRead($gIniFile, "Donate", "Healer Stock Amount", 0))
+   $gDonateTroopStock[$eTroopDragon] = Number(IniRead($gIniFile, "Donate", "Dragon Stock Amount", 0))
+   $gDonateTroopStock[$eTroopPekka] = Number(IniRead($gIniFile, "Donate", "Pekka Stock Amount", 0))
+   $gDonateTroopStock[$eTroopMinion] = Number(IniRead($gIniFile, "Donate", "Minion Stock Amount", 0))
+   $gDonateTroopStock[$eTroopHogRider] = Number(IniRead($gIniFile, "Donate", "Hog Rider Stock Amount", 0))
+   $gDonateTroopStock[$eTroopValkyrie] = Number(IniRead($gIniFile, "Donate", "Valkyrie Stock Amount", 0))
+   $gDonateTroopStock[$eTroopGolem] = Number(IniRead($gIniFile, "Donate", "Golem Stock Amount", 0))
+   $gDonateTroopStock[$eTroopWitch] = Number(IniRead($gIniFile, "Donate", "Witch Stock Amount", 0))
+   $gDonateTroopStock[$eTroopLavaHound] = Number(IniRead($gIniFile, "Donate", "Lava Hound Stock Amount", 0))
 
 EndFunc
 

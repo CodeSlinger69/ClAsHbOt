@@ -79,26 +79,26 @@ Global $TrainTroopsWindowRageButton[8] = [474, 263, 554, 305, 0, 0, 0, 0]
 Global $TrainTroopsWindowJumpButton[8] = [565, 263, 645, 305, 0, 0, 0, 0]
 Global $TrainTroopsWindowFreezeButton[8] = [657, 263, 737, 305, 0, 0, 0, 0]
 Global $TrainTroopsWindowDequeueButton[8] = [526, 143, 576, 193, 574, 157, 0xd20301, 0]
-Global $rArmyCampInfoButton[8] = [438, 455, 504, 522, 471, 498, 0x286da0, 0]
+Global $rArmyCampInfoButton[8] = [438, 454, 506, 522, 464, 481, 0x387cb0, 0]
 Global $rArmyCampInfoScreenCloseWindowButton[8] = [726, 98, 756, 127, 752, 123, 0xd80406, 0]
 
 ; Pixel color regions
 ; x, y, color, radius
-Global $ScreenMainColor[4] = [196, 27, 0x2880C0, 0]
-Global $ScreenLiveRaid1Color[4] = [949, 439, 0x000000, 0]
-Global $ScreenLiveRaid2Color[4] = [99, 429, 0xC00000, 0]
-Global $WindowTrainTroopsStandardColor1[4] = [334, 249, 0xf8ed4b, 2] ; colored
-Global $WindowTrainTroopsStandardColor2[4] = [334, 249, 0xdedede, 2] ; grayed-out
-Global $WindowTrainTroopsDarkColor1[4] = [317, 250, 0x285c90, 2] ; colored
-Global $WindowTrainTroopsDarkColor2[4] = [317, 250, 0x525252, 2] ; grayed-out
-Global $WindowTrainTroopsSpellsColor1[4] = [339, 271, 0x084ff1, 2] ; colored
-Global $WindowTrainTroopsSpellsColor2[4] = [339, 271, 0x4b4b4b, 2] ; grayed-out
-Global $WindowTrainTroopsFullColor[4] = [267, 422, 0xd04048, 2]
-Global $WindowTrainTroopsInfoColor[4] = [250, 124, 0x48c208, 2]
-Global $RoyaltyHealthGreenColor[4] = [0, 0, 0x005BE10A, 90] ; Health bar above king/queen in troop box
-Global $WindowDonateTroopsColor[4] = [6, 6, 0xf8fcff, 0]
-Global $WindowChatDimmedColor[4] = [235, 13, 0x3a3729, 0] ; Likely due to Donate Troops Window being open
-Global $NewChatMessagesColor[4] = [21, 262, 0xe00200, 0]
+Global $rScreenMainColor[4] = [196, 27, 0x2880C0, 0]
+Global $rScreenLiveRaid1Color[4] = [949, 439, 0x000000, 0]
+Global $rScreenLiveRaid2Color[4] = [99, 429, 0xC00000, 0]
+Global $rWindowTrainTroopsStandardColor1[4] = [334, 249, 0xf8ed4b, 2] ; colored
+Global $rWindowTrainTroopsStandardColor2[4] = [334, 249, 0xdedede, 2] ; grayed-out
+Global $rWindowTrainTroopsDarkColor1[4] = [317, 250, 0x285c90, 2] ; colored
+Global $rWindowTrainTroopsDarkColor2[4] = [317, 250, 0x525252, 2] ; grayed-out
+Global $rWindowTrainTroopsSpellsColor1[4] = [339, 271, 0x084ff1, 2] ; colored
+Global $rWindowTrainTroopsSpellsColor2[4] = [339, 271, 0x4b4b4b, 2] ; grayed-out
+Global $rWindowTrainTroopsFullColor[4] = [267, 422, 0xd04048, 2]
+Global $rWindowTrainTroopsInfoColor[4] = [250, 124, 0x48c208, 2]
+Global $rRoyaltyHealthGreenColor[4] = [0, 0, 0x005BE10A, 90] ; Health bar above king/queen in troop box
+Global $rWindowDonateTroopsColor[4] = [6, 6, 0xf8fcff, 0]
+Global $rWindowChatDimmedColor[4] = [235, 13, 0x3a3729, 0] ; Likely due to Donate Troops Window being open
+Global $rNewChatMessagesColor[4] = [21, 262, 0xe00200, 0]
 
 ; AutoRaid deploy locations
 Global $NWDeployBoxes[21][4], $NEDeployBoxes[21][4], $SWDeployBoxes[21][4], $SEDeployBoxes[21][4]

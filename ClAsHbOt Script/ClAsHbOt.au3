@@ -93,7 +93,7 @@ Func MainApplicationLoop()
 
 		 ; Donate Troops
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
-			(TimerDiff($lastDonateTroopsTimer) >= $gCheckChatWindowForDonateInterval Or $gDonateTroopsClicked Or IsColorPresent($NewChatMessagesColor)) Then
+			(TimerDiff($lastDonateTroopsTimer) >= $gCheckChatWindowForDonateInterval Or $gDonateTroopsClicked Or IsColorPresent($rNewChatMessagesColor)) Then
 
 			$gDonateTroopsClicked = False
 
@@ -101,13 +101,14 @@ Func MainApplicationLoop()
 			If WhereAmI()=$eScreenMain Then DonateTroops()
 			$lastDonateTroopsTimer = TimerInit()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
-			$lastDonateTroopsTimer = TimerInit()
 		 EndIf
 
 		 ; Queue Troops for Donation
 		 #cs
-		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
-			TimerDiff($lastQueueDonatableTroopsTimer) >= $gQueueDonatableTroopsInterval Then
+		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And _
+			(TimerDiff($lastQueueDonatableTroopsTimer) >= $gQueueDonatableTroopsInterval Or $gDonateTroopsStartup = True) Then
+
+			$gDonateTroopsStartup = False
 
 			ResetToCoCMainScreen()
 			If WhereAmI()=$eScreenMain Then QueueDonatableTroops()
@@ -263,7 +264,11 @@ EndFunc
 
 Func DebugWrite($text)
    If $gDebug Then
-	  ConsoleWrite(_NowTime() & " " & $text & @CRLF)
-	  FileWrite("ClashBotLog.txt", _NowTime() & " " & $text & @CRLF)
+	  ConsoleWrite(_NowDate() & " " & _NowTime() & " " & $text & @CRLF)
+	  FileWrite("ClashBotLog.txt", _NowDate() & " " & _NowTime() & " " & $text & @CRLF)
    EndIf
+EndFunc
+
+Func TimeStamp()
+   Return StringReplace(StringReplace(StringStripWS(_NowCalc(),$STR_STRIPALL),"/",""),":","")
 EndFunc

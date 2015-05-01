@@ -35,6 +35,12 @@ Global $gCampTroopSlotBMPs [$eTroopCount-2] = _
 		  "CampDragon.bmp", "CampPekka.bmp", _
 		  "CampMinion.bmp", "CampHogRider.bmp", "CampValkyrie.bmp", "CampGolem.bmp", _
 		  "CampWitch.bmp", "CampLavaHound.bmp"]
+Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = _
+		 ["BarracksBarbarian.bmp", "BarracksArcher.bmp", "BarracksGiant.bmp", "BarracksGoblin.bmp", _
+		  "BarracksWallBreaker.bmp", "BarracksBalloon.bmp", "BarracksWizard.bmp", "BarracksHealer.bmp", _
+		  "BarracksDragon.bmp", "BarracksPekka.bmp", _
+		  "BarracksMinion.bmp", "BarracksHogRider.bmp", "BarracksValkyrie.bmp", "BarracksGolem.bmp", _
+		  "BarracksWitch.bmp", "BarracksLavaHound.bmp"]
 
 Func InitScraper()
    _GDIPlus_Startup()
