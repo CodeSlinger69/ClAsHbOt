@@ -23,7 +23,7 @@ Global $GUI_Winnings, $GUI_Results, $GUI_AutoRaid
 
 Func InitGUI()
    Local $p = WinGetPos($gTitle)
-   $GUI = GUICreate("ClAsHbOt v" & $version, $GUI_Width, $GUI_Height, $p[0]+$p[2]+8, $p[1])
+   $GUI = GUICreate("ClAsHbOt v" & $gVersion, $GUI_Width, $GUI_Height, $p[0]+$p[2]+8, $p[1])
 
    ; Left side, match filters group
    Local $x=5, $y=10, $w=136, $h=90
@@ -118,7 +118,7 @@ Func InitGUI()
    $GUI_AutoRaidZapDEMin = GUICtrlCreateEdit(IniRead($gIniFile, "General", "Zap DE Min", 1200), $x+83, $y+4, 36, 17, $ES_NUMBER)
 
    $y += 19
-   $GUI_AutoRaidDumpCups = GUICtrlCreateCheckbox("Dump Cups >", $x+5, $y, 80, 25)
+   $GUI_AutoRaidDumpCups = GUICtrlCreateCheckbox("Dump Cups>", $x+5, $y, 80, 25)
    _GUICtrlButton_SetCheck($GUI_AutoRaidDumpCups, IniRead($gIniFile, "General", "Dump Cups", $BST_UNCHECKED))
    $GUI_AutoRaidDumpCupsThreshold = GUICtrlCreateEdit(IniRead($gIniFile, "General", "Dump Cups Threshold", 1700), $x+83, $y+4, 36, 17, $ES_NUMBER)
 

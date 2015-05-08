@@ -208,6 +208,7 @@ Func AutoRaidQueueTraining()
 
    ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
    Local $redStripe = IsColorPresent($rWindowTrainTroopsFullColor)
+   If $redStripe Then DebugWrite("Barracks full, moving immediately to next auto raid stage.")
 
    If FindSpellsQueueingWindow() = False Then
 	 DebugWrite(" Auto Raid, Queue Troops failed - can't find Spells or Dark window")
@@ -251,7 +252,8 @@ Func FindSpellsQueueingWindow()
 	  _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then
 
 	  ; How many are queued/created?
-	  Local $queueStatus = ScrapeFuzzyText($largeCharacterMaps, $rTrainTroopsWindowTextBox)
+	  Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rTrainTroopsWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+	  $gMyMaxSpells = 999
 
 	  If (StringInStr($queueStatus, "CreateSpells")=1) Then
 		 $queueStatus = StringMid($queueStatus, 13)
@@ -259,6 +261,7 @@ Func FindSpellsQueueingWindow()
 		 Local $queueStatSplit = StringSplit($queueStatus, "/")
 		 If $queueStatSplit[0] = 2 Then
 			Local $spellsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
+			DebugWrite("Spells queued / available = " & Number($queueStatSplit[1]) & " / " & Number($queueStatSplit[2]))
 
 			$gMyMaxSpells = Number($queueStatSplit[2]) ; Used when deciding to DE Zap or not
 
@@ -284,7 +287,7 @@ Func FillBarracksQueues(Const $initialFillFlag)
 
 	  ; Click right arrow to get the next standard troops window
 	  RandomWeightedClick($TrainTroopsWindowNextButton)
-	  Sleep(500)
+	  Sleep(250)
 	  $failCount-=1
 
 	  ; Make sure we are on a standard troops window
@@ -296,16 +299,16 @@ Func FillBarracksQueues(Const $initialFillFlag)
 
 	  ; If we have not yet figured out troop costs, then get them now
 	  If $gMyTroopCost[$eTroopBarbarian] = 0 Then
-		 $gMyTroopCost[$eTroopBarbarian] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowBarbarianCostTextBox)
-		 $gMyTroopCost[$eTroopArcher] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowArcherCostTextBox)
-		 $gMyTroopCost[$eTroopGoblin]= ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowGoblinCostTextBox)
-		 $gMyTroopCost[$eTroopGiant] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowGiantCostTextBox)
-		 $gMyTroopCost[$eTroopWallBreaker] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowWallBreakerCostTextBox)
-		 $gMyTroopCost[$eTroopBalloon] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowBalloonCostTextBox)
-		 $gMyTroopCost[$eTroopWizard] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowWizardCostTextBox)
-		 $gMyTroopCost[$eTroopHealer] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowHealerCostTextBox)
-		 $gMyTroopCost[$eTroopDragon] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowDragonCostTextBox)
-		 $gMyTroopCost[$eTroopPekka] = ScrapeFuzzyText($smallCharacterMaps, $rTrainTroopsWindowPekkaCostTextBox)
+		 $gMyTroopCost[$eTroopBarbarian] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowBarbarianCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopArcher] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowArcherCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopGoblin]= Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowGoblinCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopGiant] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowGiantCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopWallBreaker] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowWallBreakerCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopBalloon] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowBalloonCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopWizard] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowWizardCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopHealer] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowHealerCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopDragon] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowDragonCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $gMyTroopCost[$eTroopPekka] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowPekkaCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
 	  EndIf
 
 	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
@@ -335,7 +338,8 @@ Func FillBarracksQueues(Const $initialFillFlag)
 	  Local $troopsToFill
 	  Do
 		 ; Get number of troops already queued in this barracks
-		 Local $queueStatus = ScrapeFuzzyText($largeCharacterMaps, $rTrainTroopsWindowTextBox)
+		 Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rTrainTroopsWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 DebugWrite("Barracks " & $barracksCount & " queue status: " & $queueStatus)
 
 		 If (StringInStr($queueStatus, "Train")=1) Then
 			$queueStatus = StringMid($queueStatus, 6)
@@ -343,6 +347,8 @@ Func FillBarracksQueues(Const $initialFillFlag)
 			Local $queueStatSplit = StringSplit($queueStatus, "/")
 			If $queueStatSplit[0] = 2 Then
 			   $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
+
+			   DebugWrite("Adding " & $troopsToFill & " troops.")
 
 			   ; How long to click and hold?
 			   Local $fillTime
@@ -668,16 +674,16 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 	  If WhereAmI() = $eScreenEndBattle Then ExitLoop
 
 	  ; Get available loot remaining
-	  Local $goldRemaining = Number(ScrapeFuzzyText($raidLootCharMaps, $rGoldTextBox))
-	  Local $elixRemaining = Number(ScrapeFuzzyText($raidLootCharMaps, $rElixTextBox))
-	  Local $darkRemaining = Number(ScrapeFuzzyText($raidLootCharMaps, $rDarkTextBox))
+	  Local $goldRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $elixRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $darkRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 
 	  ; If < 1 min is left, then zap DE if the option is selected
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED And _
 		 $darkRemaining >= GUICtrlRead($GUI_AutoRaidZapDEMin) And _
 		 $darkStorageZapped = False Then
 
-		 Local $time = ScrapeFuzzyText($extraLargeCharacterMaps, $rBattleTimeRemainingTextBox)
+		 Local $time = ScrapeFuzzyText($gExtraLargeCharacterMaps, $rBattleTimeRemainingTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
 		 If StringLen($time)>0 And StringInStr($time, "m")=0 Then  ; len>0 because red text will return null string
 			ZapDarkElixirStorage()
 			$darkStorageZapped = True
@@ -730,12 +736,12 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 
    If WhereAmI() = $eScreenEndBattle Then
 	  GrabFrameToFile("EndBattleFrame.bmp")
-	  Local $goldWin = ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleGoldTextBox)
-	  Local $elixWin = ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleElixTextBox)
-	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleDarkTextBox) : 0
+	  Local $goldWin = ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleGoldTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $elixWin = ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleElixTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleDarkTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces) : 0
 	  Local $cupsWin = IsTextBoxPresent($rEndBattleCups1TextBox) ? _
-					   ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleCups1TextBox) : _
-					   ScrapeFuzzyText($extraLargeCharacterMaps, $rEndBattleCups2TextBox)
+					   ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleCups1TextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces) : _
+					   ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleCups2TextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
 
 	  DebugWrite("Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
 
@@ -794,8 +800,7 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
    Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+10, _
 						 $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
 						 0, 0, 0, 0]
-
-   Local $t = ScrapeFuzzyText($smallCharacterMaps, $textBox)
+   Local $t = ScrapeFuzzyText($gSmallCharacterMaps, $textBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
    Return StringMid($t, 2)
 EndFunc
 

@@ -41,6 +41,7 @@ Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = _
 		  "BarracksDragon.bmp", "BarracksPekka.bmp", _
 		  "BarracksMinion.bmp", "BarracksHogRider.bmp", "BarracksValkyrie.bmp", "BarracksGolem.bmp", _
 		  "BarracksWitch.bmp", "BarracksLavaHound.bmp"]
+Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
 
 Func InitScraper()
    _GDIPlus_Startup()
@@ -102,12 +103,12 @@ Func ExitScraper()
    _GDIPlus_Shutdown()
 EndFunc
 
-; Fuzzy character matching algorithm
-Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox)
+Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox, Const $maxCharSize, Const $keepSpaces)
    ; Grab frame
    Local $cPos = GetClientPos()
    Local $hBitmap = _ScreenCapture_Capture("", $cPos[0], $cPos[1], $cPos[2], $cPos[3], False)
    Local $frame = _GDIPlus_BitmapCreateFromHBITMAP($hBitmap)
+
 
    ; Figure out dimensions of text box
    Local $w = $textBox[2] - $textBox[0] + 1
@@ -123,86 +124,124 @@ Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox)
    _WinAPI_DeleteObject($hBitmap)
 
    ; Scan left to right through foreground pixel map to identify individual characters
-   Local $charStart = -1, $charEnd = -1, $blankCol, $textString = ""
-   For $x = 0 To $w-1
+   Local $textString = ""
+   Local $x = 0
+   Do
+	  ; Find start of char
+	  Local $charStart = -1
+	  Local $blankCol, $blankColCount = 0
+	  Do
+		 $blankCol = True
+		 For $by = 0 To $pY-1
+			If $pix[$x][$by] = 1 Then $blankCol = False
+		 Next
 
-	  ; See if this column is blank
-	  $blankCol = True
-	  Local $by
-	  For $by = 0 To $pY-1
-		 If $pix[$x][$by] = 1 Then
-			$blankCol = False
-			ExitLoop
+		 If $blankCol = True Then
+			$x+=1
+			$blankColCount+=1
+
+			; add a space if multiple blank columns are detected
+			If $blankColCount=3 And StringLen($textString)>0 And $keepSpaces=$eScrapeKeepSpaces Then
+			   $textString &= " "
+			EndIf
 		 EndIf
-	  Next
+	  Until $blankCol = False Or $x >= $w
 
-	  If $blankCol = True Or $charEnd-$charStart+1 = $MaxCharWidth Then
-		 ; If we have already found the start of a char, then we have a new char to process
-		 If $charStart <> -1 Then
+	  If $blankCol = False Then
+		 $charStart = $x
+	  EndIf
+
+	  ; Find end of char
+	  Local $nonBlankCol
+	  Local $charEnd = $charStart+1
+
+	  If $charEnd >= $w Then
+		 $charEnd = $w-1
+	  Else
+		 Do
+			$nonBlankCol = False
+			For $by = 0 To $pY-1
+			   If $pix[$charEnd][$by] = 1 Then $nonBlankCol = True
+			Next
+
+			If $nonBlankCol = True Then
+			   $charEnd+=1
+			EndIf
+		 Until $nonBlankCol = False Or $charEnd >= $w
+		 $charEnd-=1
+	  EndIf
+
+	  If $charEnd-$charStart+1>$maxCharSize Then $charEnd=$charStart+$maxCharSize-1
+
+	  If $gScraperDebug Then DebugWrite("Char start/end " & $charStart & "/" & $charEnd & " of " & $w-1)
+
+	  ; Find match with greatest width
+	  Local $largestMatchIndex=-1
+	  Local $bestWidth = -1
+	  Local $bestWeight = 999
+	  Local $colValues[$maxCharSize]
+
+	  If $charStart <> -1 Then
+		 ; Scan through varying sized character, starting at $charWidth, down to $charWidth/2
+		 Local $charWidth = $charEnd-$charStart+1
+		 For $testWidth = $charWidth To $charWidth ;Int($charWidth/2) Step -1
+
 			; Find the first non blank row, starting from the bottom
-			Local $cX, $cY, $bottomOfChar = -1
+			Local $bottomOfChar = -1
 			For $cY = $pY-1 To 0 Step -1
-			   For $cX = $charStart To $charEnd
-				  If $pix[$cX][$cY] = 1 Then
+			   For $cX = 0 To $testWidth-1
+				  If $pix[$charStart+$cX][$cY] = 1 Then
 					 $bottomOfChar = $cY
 					 ExitLoop
 				  EndIf
 			   Next
-			   If $bottomOfChar <> -1 Then
-				  ExitLoop
-			   EndIf
+			   If $bottomOfChar <> -1 Then ExitLoop
 			Next
 
-			; Calculate colValues for this character
-			Local $colValues[$charEnd-$charStart+1]
-			For $cX = $charStart To $charEnd
+			; Calculate colValues for this test width
+			If $gScraperDebug Then ConsoleWrite("TestWidth=" & $testWidth & " ColValues=")
+			For $cX = 0 To $testWidth-1
 			   Local $factor = 1
-			   $colValues[$cX-$charStart] = 0
+			   $colValues[$cX] = 0
 			   For $cY = $bottomOfChar To 0 Step -1
-				  $colValues[$cX-$charStart] += ($pix[$cX][$cY] * $factor)
+				  $colValues[$cX] += ($pix[$charStart+$cX][$cY] * $factor)
 				  $factor*=2
 			   Next
+			   If $gScraperDebug Then ConsoleWrite($colValues[$cX] & ", ")
 			Next
+			If $gScraperDebug Then ConsoleWrite(@CRLF)
 
 			; Find a match
-			Local $bestMatchIndex = FindFuzzyCharInArray($charMapArray, $colValues, $charEnd-$charStart+1)
+			Local $weight
+			Local $bestMatchIndex = FindFuzzyCharInArray($charMapArray, $colValues, $testWidth, $weight)
 
-
-			; Debug
-			If $gScraperDebug Then
-			   ConsoleWrite($charStart & " to " & $charEnd & ": ")
-			   If $bestMatchIndex <> -1 Then
-				  ConsoleWrite($charMapArray[$bestMatchIndex][0] & ": ")
-			   Else
-				  ConsoleWrite("?" & ": ")
-			   EndIf
-			   For $cX = $charStart To $charEnd
-				  ConsoleWrite($colValues[$cX-$charStart] & ", ")
-			   Next
-			   ConsoleWrite(@CRLF)
+			If $gScraperDebug Then ConsoleWrite("width=" & $testWidth & " index=" & $bestMatchIndex & " weight=" & $weight & "(bestweight=" & $bestWeight & ")" & @CRLF)
+			If $bestMatchIndex<>-1 And $weight<1 And $weight<$bestWeight Then
+			   $largestMatchIndex = $bestMatchIndex
+			   $bestWidth = $testWidth
+			   $bestWeight = $weight
 			EndIf
-
-			; Add char to growing String
-			If $bestMatchIndex <> -1 Then
-			   $textString &= $charMapArray[$bestMatchIndex][0]
-			Else
-			   $textString &= "?"
-			EndIf
-
-			; Reset char flags
-			$charStart = -1
-			$charEnd = -1
-		 EndIf
-
-	  Else
-		 ; This is not a blank column, so mark the char start/end as appropriate
-		 If $charStart = -1 Then
-			$charStart = $x
-		 EndIf
-
-		 $charEnd = $x
+		 Next
 	  EndIf
-   Next
+
+	  ; Debug
+	  If $gScraperDebug And $charEnd<>-1 Then
+		 ConsoleWrite($charStart & " to " & $charStart+$bestWidth-1 & ": " & _
+						($largestMatchIndex<>-1 ? $charMapArray[$largestMatchIndex][0] : "`" ) & @CRLF)
+	  EndIf
+
+	  ; Got a match or not?
+	  If $largestMatchIndex <> -1 Then
+		 $textString &= $charMapArray[$largestMatchIndex][0]
+		 $x = $charStart+$bestWidth
+	  ElseIf $charEnd<>-1 Then
+		 ;$textString &= "?"
+		 $x += 1
+	  EndIf
+
+   Until $x >= $w
+
+   $textString = StringStripWS($textString, $STR_STRIPTRAILING)
 
    ; Debug
    If $gScraperDebug Then
@@ -226,7 +265,7 @@ Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox)
 EndFunc
 
 ; Non fuzzy character matching - only good for chat box right now
-Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $textBox, Const $maxCharSize)
+Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $textBox, Const $maxCharSize, Const $keepSpaces)
    ; Grab frame
    Local $cPos = GetClientPos()
    Local $hBitmap = _ScreenCapture_Capture("", $cPos[0], $cPos[1], $cPos[2], $cPos[3], False)
@@ -264,7 +303,7 @@ Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $textBox, Const $max
 			$blankColCount+=1
 
 			; add a space if multiple blank columns are detected
-			If $blankColCount=3 And StringLen($textString)>0 Then $textString &= " "
+			If $blankColCount=3 And StringLen($textString)>0 And $keepSpaces=$eScrapeKeepSpaces Then $textString &= " "
 		 EndIf
 	  Until $blankCol = False Or $x > $w-1
 
@@ -276,19 +315,6 @@ Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $textBox, Const $max
 	  ; Find end of char
 	  If $charStart <> -1 Then
 		 $charEnd = ($charStart+$maxCharSize > $w-1) ? $w-1 : $charStart+$maxCharSize
-		 #cs
-		 Do
-			$blankCol = True
-			For $by = 0 To $pY-1
-			   If $pix[$x][$by] = 1 Then $blankCol = False
-			Next
-
-			If $blankCol = False Then
-			   $charEnd = $x
-			   $x+=1
-			EndIf
-		 Until $blankCol = True Or $x > $w-1
-		 #ce
 	  EndIf
 
 	  ; Find exact match with greatest width
@@ -405,23 +431,27 @@ Func GetForegroundPixels(Const $frame, Const ByRef $textBox, ByRef $pix, ByRef $
    Next
 EndFunc
 
-Func FindFuzzyCharInArray(Const ByRef $charMapArray, Const ByRef $nums, Const $count)
+Func FindFuzzyCharInArray(Const ByRef $charMapArray, Const ByRef $nums, Const $width, ByRef $bestWeightedHD)
    ; Loop through each row in the $charMapArray array
-   Local $bestWeightedHD = 9999, $bestMatch = -1
+   Local $bestMatch = -1
+   $bestWeightedHD = 9999
    For $i = 0 To UBound($charMapArray)-1
 
-	  ; Loop through each column in the passed in array of numbers
-	  Local $c, $totalHD = 0, $pixels = 0
-	  For $c = 0 To $count-1
-		 $totalHD += CalcHammingDistance($nums[$c], $charMapArray[$i][$c+2])
-		 $pixels += BitCount($nums[$c])
-	  Next
+	  If $charMapArray[$i][1] >= $width-1 And $charMapArray[$i][1] <= $width+1 Then
 
-	  Local $weightedHD = $totalHD / $pixels
+		 ; Loop through each column in the passed in array of numbers
+		 Local $c, $totalHD = 0, $pixels = 0
+		 For $c = 0 To ($width < $charMapArray[$i][1] ? $width-1 : $charMapArray[$i][1]-1)
+			$totalHD += CalcHammingDistance($nums[$c], $charMapArray[$i][$c+2])
+			$pixels += BitCount($nums[$c])
+		 Next
 
-	  If $weightedHD < $bestWeightedHD Then
-		 $bestWeightedHD = $weightedHD
-		 $bestMatch = $i
+		 Local $weightedHD = $totalHD / $pixels
+
+		 If $weightedHD < $bestWeightedHD Then
+			$bestWeightedHD = $weightedHD
+			$bestMatch = $i
+		 EndIf
 	  EndIf
    Next
 

@@ -101,7 +101,7 @@ Func GetRequestText(Const ByRef $button, ByRef $text)
 	;		  Hex($donateTextBox[4]) & " " & $donateTextBox[5] & " " & $donateTextBox[6] & " " & $donateTextBox[7] & " " & _
 	;		  $donateTextBox[8] & " " & $donateTextBox[9] )
 
-   $text = ScrapeExactText($chatCharacterMaps, $donateTextBox, 10)
+   $text = ScrapeExactText($gChatCharacterMaps, $donateTextBox, $gChatCharMapsMaxWidth, $eScrapeKeepSpaces)
    DebugWrite("Donate text: '" & $text & "'")
 EndFunc
 
@@ -230,7 +230,7 @@ EndFunc
 
 Func ClickDonateTroops(Const ByRef $donateIndexAbsolute, Const $indexOfTroopToDonate)
 
-   Local $DonateMaxClicks[16] = [5, 5, 5, 5,   5, 5, 5, 2,   1, 1, 5, 5,   4, 1, 2, 1]
+   Local $DonateMaxClicks[16] = [6, 6, 6, 6,   6, 6, 6, 2,   1, 1, 6, 6,   4, 1, 2, 1]
 
    Local $button[8] = [$donateIndexAbsolute[$indexOfTroopToDonate][0], _
 					   $donateIndexAbsolute[$indexOfTroopToDonate][1], _
@@ -255,31 +255,35 @@ EndFunc
 Func QueueDonatableTroops()
    DebugWrite("QueueDonatableTroops()")
 
-   ; See how many troops are built
-   Local $troopCounts[$eTroopCount-2]
-   CountAvailableTroops($troopCounts)
+   ; Count how many troops are built
+   Local $availableTroopCounts[$eTroopCount-2]
+   CountAvailableTroops($availableTroopCounts)
+
+   ; Oepn spell window
+   OpenTrainTroopsWindow()
+   If WhereAmI() <> $eScreenTrainTroops Then
+	  ResetToCoCMainScreen()
+	  Return
+   EndIf
+
+   If FindSpellsQueueingWindow() = False Then
+	 DebugWrite("Donate, Queue Troops failed - can't find Spells or Dark window")
+	 ResetToCoCMainScreen()
+	 Return
+   EndIf
+
+   ; Count queued troops
+   Local $queuedTroopCounts[$eTroopCount-2]
+   CountQueuedTroops($queuedTroopCounts)
+
+Return
 
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  If $gDonateTroopStock[$i] > 0 Then
-		 If $troopCounts[$i] < $gDonateTroopStock[$i] Then
+		 If $availableTroopCounts[$i] < $gDonateTroopStock[$i] Then
 			; queue troops
-			DebugWrite($gTroopNames[$i] & " stock LOW - built / needed: " & $troopCounts[$i] & " / " & $gDonateTroopStock[$i])
+			DebugWrite($gTroopNames[$i] & " stock LOW - built / needed: " & $availableTroopCounts[$i] & " / " & $gDonateTroopStock[$i])
 
-			; find spell queueing window, or last dark barracks
-			OpenTrainTroopsWindow()
-			If WhereAmI() <> $eScreenTrainTroops Then
-			   ResetToCoCMainScreen()
-			   Return
-			EndIf
-
-			If FindSpellsQueueingWindow() = False Then
-			  DebugWrite("Donate, Queue Troops failed - can't find Spells or Dark window")
-			  ResetToCoCMainScreen()
-			  Return
-			EndIf
-
-			; Count queued troops
-			CountQueuedTroops($i)
 
 			; Add to queue - standard or dark?
 			If $i >= $eTroopBarbarian And $i <= $eTroopPekka Then
@@ -291,7 +295,7 @@ Func QueueDonatableTroops()
 			CloseTrainTroopsWindow()
 
 		 Else
-			DebugWrite($gTroopNames[$i] & " stock FULL - built / needed: " & $troopCounts[$i] & " / " & $gDonateTroopStock[$i])
+			DebugWrite($gTroopNames[$i] & " stock FULL - built / needed: " & $availableTroopCounts[$i] & " / " & $gDonateTroopStock[$i])
 		 EndIf
 	  EndIf
    Next
@@ -299,7 +303,7 @@ Func QueueDonatableTroops()
 EndFunc
 
 Func CountAvailableTroops(ByRef $troopCounts)
-   ;DebugWrite("CountAvailableTroops()")
+   DebugWrite("CountAvailableTroops()")
 
    ; Locate Army Camp
    Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
@@ -350,7 +354,18 @@ Func CountAvailableTroops(ByRef $troopCounts)
 
    ; Count troops
    For $i = $eTroopBarbarian To $eTroopLavaHound
-	  $troopCounts[$i] = GetArmyCampTroops($i, $troopIndex)
+	  $troopCounts[$i] = -1
+
+	  If $troopIndex[$i][0] <> -1 Then
+		 Local $textBox[10] = [$troopIndex[$i][0]+16, $troopIndex[$i][1]+54, $troopIndex[$i][0]+50, $troopIndex[$i][1]+63, _
+							   $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
+							   0, 0, 0, 0]
+
+		 Local $t = Number(ScrapeFuzzyText($gArmyCampCharacterMaps, $textBox, $gArmyCampCharMapsMaxWidth, $eScrapeDropSpaces))
+
+		 $troopCounts[$i] = Number($t)
+		 DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " available: " & $troopCounts[$i])
+	  EndIf
    Next
 
    ; Close Army Camp info screen
@@ -358,70 +373,53 @@ Func CountAvailableTroops(ByRef $troopCounts)
 
 EndFunc
 
-Func CountQueuedTroops(Const $troopIndex)
+Func CountQueuedTroops(ByRef $troopCounts)
    DebugWrite("CountQueuedTroops()")
 
-   Local $type, $numBarracks
-   If $troopIndex >= $eTroopBarbarian And $troopIndex <= $eTroopPekka Then
-	  $type = "Standard"
-	  $numBarracks = 4
-   Else
-	  $type = "Dark"
-	  $numBarracks = 2
-   EndIf
+   For $i = $eTroopBarbarian To $eTroopLavaHound
+	  $troopCounts[$i] = 0
+   Next
 
    ; Loop through barracks and count specified troops, until we get back to the spells screen
-   ; or the numBarracks is counted, or we've looked at 7 screens
+   ; Or we've looked at 6 screens
    Local $screenCount = 0
-   Local $targetCount = 0
    Do
 	  RandomWeightedClick($TrainTroopsWindowNextButton)
-	  Sleep(500)
+	  Sleep(250)
 	  $screenCount += 1
 
-	  If $type = "Standard" And _
-		 (IsColorPresent($rWindowTrainTroopsStandardColor1) = True Or _
-		  IsColorPresent($rWindowTrainTroopsStandardColor2) ) Then
+	  ; Grab frame
+	  Local $barracksTroopBox[4] = [289, 224, 739, 400]
+	  GrabFrameToFile("BarracksQueuedTroopsFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], _
+					  $barracksTroopBox[2], $barracksTroopBox[3])
 
-		 $targetCount += 1
-
-		 ; Find troop
-		 Local $barracksTroopBox[4] = [262, 140, 584, 202]
-		 GrabFrameToFile("BarracksQueuedTroopsFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], _
-						 $barracksTroopBox[2], $barracksTroopBox[3])
+	  ; Count queued number of each troop
+	  For $i = $eTroopBarbarian To $eTroopLavaHound
 		 Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksQueuedTroopsFrame.bmp", _
-							  "str", "Images\"&$gBarracksTroopSlotBMPs[$troopIndex], "int", 3)
+							  "str", "Images\"&$gBarracksTroopSlotBMPs[$i], "int", 3)
 		 Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+		 ;DebugWrite("Troop " & $gBarracksTroopSlotBMPs[$i] & " conf: " & $split[2])
 
 		 If $split[2] > $gConfidenceBarracksTroopSlot Then
-			Local $textBox[4] = [$barracksTroopBox[0] + $split[0], _
-								 $barracksTroopBox[1] + $split[1] - 22, _
-								 $barracksTroopBox[0] + $split[0] + 25, _
-								 $barracksTroopBox[1] + $split[1] - 11 ]
-			DebugWrite("Troop " & $gDonateSlotBMPs[$troopIndex] & " found at " & $barracksTroopBox[0] & ", " & $barracksTroopBox[1] & " conf: " & $split[2])
+			Local $textBox[10] = [$barracksTroopBox[0] + $split[0], _
+								 $barracksTroopBox[1] + $split[1] - 15, _
+								 $barracksTroopBox[0] + $split[0] + 35, _
+								 $barracksTroopBox[1] + $split[1], _
+								 $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
+								 0, 0, 0, 0]
 
-		  ; Parse count
+			; Parse queue text
+			Local $rawText = "TODO" ; TODO - do I have a char map for this?
+			Local $rawText = ScrapeFuzzyText($gLargeCharacterMaps, $textBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+			Local $t = Number(StringReplace($rawText, "x", ""))
+			If $t>0 Then DebugWrite("Barracks " & $screenCount & ": " & $gTroopNames[$i] & " = " & $t)
 
 		 EndIf
-	  EndIf
-
-	  If $type = "Dark" And _
-		 (IsColorPresent($rWindowTrainTroopsDarkColor1) = True Or _
-		  IsColorPresent($rWindowTrainTroopsDarkColor2) ) Then
-
-		  $targetCount += 1
-
-		  ; Find troop
-
-		  ; Parse count
-
-	  EndIf
-
+	  Next
 
    Until IsColorPresent($rWindowTrainTroopsSpellsColor1) = True Or _
 		 IsColorPresent($rWindowTrainTroopsSpellsColor2) = True Or _
-		 $screenCount >= 7 Or _
-		 $targetCount >= $numBarracks
+		 $screenCount >= 6
 
 EndFunc
 
@@ -451,15 +449,4 @@ Func FindArmyCampTroopSlots(Const ByRef $bitmaps, ByRef $index)
    Next
 EndFunc
 
-Func GetArmyCampTroops(Const $troop, Const ByRef $index)
-   If $index[$troop][0] = -1 Then Return -1
-
-   Local $textBox[10] = [$index[$troop][0]+16, $index[$troop][1]+54, $index[$troop][0]+50, $index[$troop][1]+63, _
-						 $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
-						 0, 0, 0, 0]
-
-   Local $t = ScrapeFuzzyText($gArmyCampCharacterMaps, $textBox)
-
-   Return Number($t)
-EndFunc
 

@@ -1,11 +1,11 @@
 
 ; Text boxes - left, top, right, bottom, Text Color - center, radius,
 ; Present indicator x, y, color, radius
-Global $rGoldTextBox[10] = [42, 57, 120, 74, 0xfffbcc, 0, 30, 66, 0xe3c134, 6]
-Global $rElixTextBox[10] = [42, 81, 120, 98, 0xffe8fd, 0, 30, 93, 0xe054d0, 6]
-Global $rDarkTextBox[10] = [42, 107, 120, 124, 0xf3f3f3, 0, 30, 117, 0x503c58, 6]
-Global $rCupsTextBox1[10] = [42, 107, 120, 124, 0xffffff, 0, 30, 117, 0xc09220, 6]
-Global $rCupsTextBox2[10] = [42, 135, 120, 146, 0xffffff, 0, 30, 141, 0xc89822, 6]
+Global $rGoldTextBox[10] = [42, 57, 120, 74, 0xfffbcc, 9, 30, 66, 0xe3c134, 6]
+Global $rElixTextBox[10] = [42, 81, 120, 98, 0xffe8fd, 9, 30, 93, 0xe054d0, 6]
+Global $rDarkTextBox[10] = [42, 107, 120, 124, 0xf3f3f3, 9, 30, 117, 0x503c58, 6]
+Global $rCupsTextBox1[10] = [42, 107, 120, 124, 0xffffff, 9, 30, 117, 0xc09220, 6]
+Global $rCupsTextBox2[10] = [42, 135, 120, 146, 0xffffff, 9, 30, 141, 0xc89822, 6]
 
 Global $rMyGoldTextBox[10] = [895, 20, 976, 31, 0xffffff, 9, 990, 24, 0xF3EC53, 6]
 Global $rMyElixTextBox[10] = [895, 64, 976, 75, 0xffffff, 9, 0, 0, 0, 0]

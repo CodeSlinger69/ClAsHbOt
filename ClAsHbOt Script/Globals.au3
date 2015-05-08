@@ -1,3 +1,5 @@
+Global $gVersion = "20150411"
+
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
 Global $gBlueStacksWidth = 1024

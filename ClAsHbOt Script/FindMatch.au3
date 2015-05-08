@@ -112,15 +112,15 @@ Func CheckForLootMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef
    GetMyLootNumbers()
 
    ; Scrape text fields
-   $gold = Number(ScrapeFuzzyText($raidLootCharMaps, $rGoldTextBox))
-   $elix = Number(ScrapeFuzzyText($raidLootCharMaps, $rElixTextBox))
-   $dark = Number(ScrapeFuzzyText($raidLootCharMaps, $rDarkTextBox))
+   $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    $cups = 0
 
    If IsTextBoxPresent($rCupsTextBox1) Then
-	  $cups = Number(ScrapeFuzzyText($raidLootCharMaps, $rCupsTextBox1))
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox1, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    ElseIf IsTextBoxPresent($rCupsTextBox2) Then
-	  $cups = Number(ScrapeFuzzyText($raidLootCharMaps, $rCupsTextBox2))
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox2, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    EndIf
 
    $townHall = 0

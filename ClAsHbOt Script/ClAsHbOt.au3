@@ -10,8 +10,6 @@ don't unqueue expensive/long build troops
 Opt("MustDeclareVars", 1)
 Opt("GUIOnEventMode", 1)
 
-Global $version = "20150411"
-
 ; AutoIt includes
 #include <ScreenCapture.au3>
 #include <Date.au3>
@@ -49,7 +47,6 @@ Func Main()
    InitScraper()
 
    ReadSettings()
-
 ;ZoomOut(true)
 ;QueueDonatableTroops()
 ;Exit
@@ -66,8 +63,7 @@ Func MainApplicationLoop()
    Local $lastTrainingCheckTimer = TimerInit()
 
    While 1
-	  DebugWrite("Main loop: AR Stage " & $gAutoRaidStage & " clicked: " & $gKeepOnlineClicked & " " & $gDonateTroopsClicked & " " & _
-		 $gCollectLootClicked & " " & $gFindMatchClicked & " " & $gFindSnipableTHClicked & " " & $gAutoRaidClicked)
+	  DebugWrite("Main loop: AR Stage " & $gAutoRaidStage)
 
 	  ; Update status on GUI
 	  GetMyLootNumbers()
@@ -249,16 +245,16 @@ Func GetMyLootNumbers()
    If IsTextBoxPresent($rMyGoldTextBox) = False Then Return
 
    ; Scrape text fields
-   Local $MyGold = Number(ScrapeFuzzyText($smallCharacterMaps, $rMyGoldTextBox))
-   Local $MyElix = Number(ScrapeFuzzyText($smallCharacterMaps, $rMyElixTextBox))
-   Local $MyDark = Number(ScrapeFuzzyText($smallCharacterMaps, $rMyDarkTextBox))
-   Local $MyGems = Number(ScrapeFuzzyText($smallCharacterMaps, $rMyGemsTextBox))
+   Local $MyGold = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $MyElix = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $MyDark = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
    GUICtrlSetData($GUI_MyGold, $MyGold)
    GUICtrlSetData($GUI_MyElix, $MyElix)
    GUICtrlSetData($GUI_MyDark, $MyDark)
    GUICtrlSetData($GUI_MyGems, $MyGems)
 
-   Local $MyCups = Number(ScrapeFuzzyText($largeCharacterMaps, $rMyCupsTextBox))
+   Local $MyCups = Number(ScrapeFuzzyText($gLargeCharacterMaps, $rMyCupsTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces))
    GUICtrlSetData($GUI_MyCups, $MyCups)
 EndFunc
 
