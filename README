@@ -3,9 +3,10 @@ Welcome to my automatic farming bot for Clash of Clans.
 Download: https://github.com/CodeSlinger69/ClAsHbOt/releases/download/20150319/ClAsHbOt.20150319.7z
 
 Key features:
-- Anti-detection
-- Auto raid, including troop queuing
+- Auto farming
 - Auto Dark Elixir zapping
+- Auto donate
+- Anti-detection
 - Maintain trophy range
 - Snipable town hall search (for pushing)
 
