@@ -9,7 +9,7 @@
 
 ; GUI Globals
 Global $GUI, $GUIImage, $GUIGraphic
-Global $GUI_Width=285, $GUI_Height=417
+Global $GUI_Width=285, $GUI_Height=423
 Global $GUIImages[12] = [ "troop-archer.png", "troop-balloon.png", "troop-barbarian.png", _
    "troop-dragon.png", "troop-giant.png", "troop-goblin.png", "troop-healer.png", _
    "troop-pekka.png", "troop-wallbreaker.png", "troop-wizard.png" , "troop-bk.png", "troop-aq.png"]
@@ -17,7 +17,8 @@ Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheck
 	  $GUI_FindMatchCheckBox, $GUI_FindSnipableTHCheckBox, $GUI_AutoRaidCheckBox
 Global $GUI_CloseButton
 Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_AutoRaidUseBreakers, $GUI_AutoRaidBreakerCountEdit, _
-	  $GUI_AutoRaidZapDE, $GUI_AutoRaidZapDEMin, $GUI_AutoRaidDumpCups, $GUI_AutoRaidDumpCupsThreshold, $GUI_AutoRaidStrategyCombo
+	  $GUI_AutoRaidZapDE, $GUI_AutoRaidZapDEMin, $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidDumpCupsThreshold, _
+	  $GUI_AutoRaidStrategyCombo
 Global $GUI_MyGold, $GUI_MyElix, $GUI_MyDark, $GUI_MyGems, $GUI_MyCups
 Global $GUI_Winnings, $GUI_Results, $GUI_AutoRaid
 
@@ -47,7 +48,7 @@ Func InitGUI()
 
    ; Left side, things todo group
    $y+=31
-   $h=137
+   $h=143
    GUICtrlCreateGroup("Things Todo", $x, $y, $w, $h)
 
    $y += 15
@@ -104,10 +105,10 @@ Func InitGUI()
 
    ; Right side, auto raid options group
    $y += 29
-   $h=130
+   $h=136
    GUICtrlCreateGroup("Auto Raid Options", $x, $y, $w, $h)
 
-   $y += 15
+   $y += 12
    $GUI_AutoRaidUseBreakers = GUICtrlCreateCheckbox("Use Breakers", $x+5, $y, 80, 25)
    _GUICtrlButton_SetCheck($GUI_AutoRaidUseBreakers, IniRead($gIniFile, "General", "Use Breakers", $BST_UNCHECKED))
    $GUI_AutoRaidBreakerCountEdit = GUICtrlCreateEdit(IniRead($gIniFile, "General", "Breaker Count", 4), $x+93, $y+4, 26, 17, $ES_NUMBER)
@@ -122,7 +123,11 @@ Func InitGUI()
    _GUICtrlButton_SetCheck($GUI_AutoRaidDumpCups, IniRead($gIniFile, "General", "Dump Cups", $BST_UNCHECKED))
    $GUI_AutoRaidDumpCupsThreshold = GUICtrlCreateEdit(IniRead($gIniFile, "General", "Dump Cups Threshold", 1700), $x+83, $y+4, 36, 17, $ES_NUMBER)
 
-   $y += 27
+   $y += 19
+   $GUI_AutoRaidDeadBases = GUICtrlCreateCheckbox("Dead Bases Only", $x+5, $y, 110, 25)
+   _GUICtrlButton_SetCheck($GUI_AutoRaidDeadBases, IniRead($gIniFile, "General", "Dead Bases Only", $BST_UNCHECKED))
+
+   $y += 24
    GUICtrlCreateLabel("Strategy:", $x+5, $y, 116, 17)
 
    $y += 17
@@ -135,12 +140,12 @@ Func InitGUI()
 
    ; Bottom
    $x = 10
-   $y = 249
+   $y = 255
    $w = 265
-   $GUI_Winnings = GUICtrlCreateLabel("Winnings: 0 / 0 / 0 / 0", $x, $y, $w, 17)
+   $GUI_Winnings = GUICtrlCreateLabel("Winnings: - / - / - / -", $x, $y, $w, 17)
 
    $y += 19
-   $GUI_Results = GUICtrlCreateLabel("Last scan: 0 / 0 / 0 / 0 / 0", $x, $y, $w, 17)
+   $GUI_Results = GUICtrlCreateLabel("Last scan: - / - / - / - / - / -", $x, $y, $w, 17)
 
    $y += 19
    $GUI_AutoRaid = GUICtrlCreateLabel("Auto Raid: Not Auto Raiding", $x, $y, $w, 17)
@@ -370,5 +375,13 @@ Func ResetAutoRaidCounts()
    Next
 
    GUICtrlSetData($GUI_Winnings, "Winnings: 0 / 0 / 0 / 0")
+EndFunc
+
+Func SetAutoRaidResults(Const $gold, Const $elix, Const $dark, Const $cups, Const $townHall, Const $deadBase)
+   Local $townHallIndiator = $townHall<>-1 ? $townHall : "-"
+   Local $deadBaseIndicator = _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED ? ($deadBase=True ? "T" : "F") : "-"
+
+   GUICtrlSetData($GUI_Results, "Last scan: " & $gold & " / " & $elix & " / " & $dark & " / " & _
+				  $cups & " / " & $townHallIndiator & " / " & $deadBaseIndicator )
 EndFunc
 

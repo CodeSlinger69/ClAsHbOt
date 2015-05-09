@@ -129,6 +129,7 @@ Func SaveSettings()
    IniWrite($gIniFile, "General", "Zap DE Min", GUICtrlRead($GUI_AutoRaidZapDEMin))
    IniWrite($gIniFile, "General", "Dump Cups", _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups))
    IniWrite($gIniFile, "General", "Dump Cups Threshold", GUICtrlRead($GUI_AutoRaidDumpCupsThreshold))
+   IniWrite($gIniFile, "General", "Dead Bases Only", _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases))
    IniWrite($gIniFile, "General", "Raid Strategy", _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo))
 EndFunc
 

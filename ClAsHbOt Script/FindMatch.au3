@@ -49,7 +49,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 
    ; Loop with Next until we get a match
    Local $match = False
-   Local $gold, $elix, $dark, $cups, $townHall
+   Local $gold, $elix, $dark, $cups, $townHall, $deadBase
 
    While 1
 	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _
@@ -57,11 +57,11 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 		 ExitLoop
 	  EndIf
 
-	  $match = CheckForLootMatch($gold, $elix, $dark, $cups, $townHall)
+	  $match = CheckForMatch($gold, $elix, $dark, $cups, $townHall, $deadBase)
 	  If $match <> -1 Then ExitLoop
 
 	  ; Click Next button
-	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall)
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
 
@@ -94,8 +94,8 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 			Sleep(100)
 		 Next
 
-		 DebugWrite("Got match: " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups)
-		 MsgBox($MB_OK, "Match!", $gold & " / " & $elix & " / " & $dark &  " / " & $cups &  " / " & $townHall & _
+		 DebugWrite("Got match: " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $deadBase)
+		 MsgBox($MB_OK, "Match!", $gold & " / " & $elix & " / " & $dark &  " / " & $cups &  " / " & $townHall & " / " & $deadBase & _
 			@CRLF & @CRLF & "Click OK after completing raid," & @CRLF & _
 			"or deciding to skip this raid." & @CRLF & @CRLF & _
 			"Cost of this search: " & $startGold - $endGold)
@@ -107,7 +107,7 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
    Return -1
 EndFunc
 
-Func CheckForLootMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $townHall)
+Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $townHall, ByRef $deadBase)
    ; Update my loot status on GUI
    GetMyLootNumbers()
 
@@ -123,8 +123,13 @@ Func CheckForLootMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef
 	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox2, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    EndIf
 
-   $townHall = 0
-   GUICtrlSetData($GUI_Results, "Last scan: " & $gold & " / " & $elix & " / " & $dark & " / " & $cups & " / " & $townHall)
+   ; See if this is a dead base
+   $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
+
+   ; Default townhall
+   $townHall = -1
+
+   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Grab settings from the GUI
    Local $GUIGold = GUICtrlRead($GUI_GoldEdit)
@@ -134,17 +139,14 @@ Func CheckForLootMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef
    Local $GUIAutoRaid = (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED)
    Local $GUIZapDE = (_GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED)
    Local $GUIZapDEMin = GUICtrlRead($GUI_AutoRaidZapDEMin)
+   Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
 
    ; Only get Town Hall Level if the other criteria are a match
    If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
-	  $townHall = GetTownHallLevel()
-	  GUICtrlSetData($GUI_Results, "Last scan: " & $gold & " / " & $elix & " / " & $dark & " / " & $cups & " / " & $townHall)
-   EndIf
-
-   ; Do we have a gold/elix/dark match?
-   If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark And $townHall <= $GUITownHall And $townHall<>0 Then
-	  DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall)
-	  Return $eAutoRaidExecuteRaid
+	  If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
+		 $townHall = GetTownHallLevel()
+		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+	  EndIf
    EndIf
 
    ; If auto raiding, and zap DE is checked, and available DE > zap DE min, and we have all lightnings cooked up,
@@ -156,6 +158,16 @@ Func CheckForLootMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef
 	  If GetAvailableTroops($eSpellLightning, $spellIndexAbsolute) >= $gMyMaxSpells Then
 		 DebugWrite("Found zappable base: " & $dark)
 		 Return $eAutoRaidExecuteDEZap
+	  EndIf
+   EndIf
+
+   ; Do we have a gold/elix/dark/townhall/dead match?
+   If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
+	  If $townHall <= $GUITownHall And $townHall<>-1 Then
+		 If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
+			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & " / " & $deadBase)
+			Return $eAutoRaidExecuteRaid
+		 EndIf
 	  EndIf
    EndIf
 

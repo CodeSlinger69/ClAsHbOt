@@ -76,6 +76,7 @@ Global $rRoyaltyHealthGreenColor[4] = [0, 0, 0x005BE10A, 90] ; Health bar above 
 Global $rWindowDonateTroopsColor[4] = [6, 6, 0xf8fcff, 0]
 Global $rWindowChatDimmedColor[4] = [235, 13, 0x3a3729, 0] ; Likely due to Donate Troops Window being open
 Global $rNewChatMessagesColor[4] = [21, 262, 0xe00200, 0]
+Global $rDeadBaseIndicatorColor[4] = [23, 26, 0x5b5e60, 0]
 
 ; AutoRaid deploy locations
 Global $NWDeployBoxes[21][4], $NEDeployBoxes[21][4], $SWDeployBoxes[21][4], $SEDeployBoxes[21][4]
