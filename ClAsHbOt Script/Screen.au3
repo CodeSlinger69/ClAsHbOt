@@ -27,15 +27,15 @@ Func ResetToCoCMainScreen()
 
    ; Barracks button panel - click on safe area
    Case $eScreenBarracksButtons
-	  RandomWeightedClick($SafeAreaButton)
+	  RandomWeightedClick($rSafeAreaButton)
 
    ; Train troops window - close it
    Case $eScreenTrainTroops
-	  RandomWeightedClick($TrainTroopsWindowCloseButton)
+	  RandomWeightedClick($rBarracksWindowCloseButton)
 
    ; Train troops info window - close it
    Case $eScreenTrainTroopsInfo
-	  RandomWeightedClick($TrainTroopsWindowCloseButton)
+	  RandomWeightedClick($rBarracksWindowCloseButton)
 
    ; Android Home Screen - start CoC
    Case $eScreenAndroidHome
@@ -55,7 +55,7 @@ Func ResetToCoCMainScreen()
 
    ; Chat window open but dimmed - click on safe spot
    Case $eScreenChatDimmed
-	  RandomWeightedClick($SafeAreaButton)
+	  RandomWeightedClick($rSafeAreaButton)
 	  Sleep(1000)
 	  If WhereAmI()=$eScreenChatOpen Then RandomWeightedClick($MainScreenOpenChatButton)
 
@@ -84,7 +84,7 @@ Func ResetToCoCMainScreen()
 
    ; Army camp buttons - click on safe spot
    Case $eScreenArmyCampButtons
-	  RandomWeightedClick($SafeAreaButton)
+	  RandomWeightedClick($rSafeAreaButton)
 
    ; Army Camp info screen - close it
    Case $eScreenArmyCampInfo
@@ -113,14 +113,15 @@ Func WhereAmI()
    EndIf
 
    ; Barracks button panel is up
-   If IsButtonPresent($BarracksPanelTrainTroops1Button) Then Return $eScreenBarracksButtons
-   If IsButtonPresent($BarracksPanelTrainTroops2Button) Then Return $eScreenBarracksButtons
+   If IsButtonPresent($rBarracksPanelTrainTroops1Button) Then Return $eScreenBarracksButtons
+   If IsButtonPresent($rBarracksPanelTrainTroops2Button) Then Return $eScreenBarracksButtons
+   If IsButtonPresent($rBarracksPanelTrainTroops3Button) Then Return $eScreenBarracksButtons
 
    ; Train troops window is open
-   If IsButtonPresent($TrainTroopsWindowNextButton) Then Return $eScreenTrainTroops
+   If IsButtonPresent($rBarracksWindowNextButton) Then Return $eScreenTrainTroops
 
    ; Train troops info window is open
-   If IsColorPresent($rWindowTrainTroopsInfoColor) Then Return $eScreenTrainTroopsInfo
+   If IsColorPresent($rWindowBarracksInfoColor) Then Return $eScreenTrainTroopsInfo
 
    ; $ScreenMain
    If IsColorPresent($rScreenMainColor) Then Return $eScreenMain
@@ -187,7 +188,7 @@ Func ZoomOut(Const $clearOnSafeSpot)
 	  Sleep(150)
 
 	  If $clearOnSafeSpot Then
-		 RandomWeightedClick($SafeAreaButton)
+		 RandomWeightedClick($rSafeAreaButton)
 		 Sleep(250)
 	  EndIf
    EndIf
@@ -203,7 +204,7 @@ Func MoveScreenDownToTop(Const $clearOnSafeSpot)
    RandomWeightedCoords($endBox, $endX, $endY)
 
    If $clearOnSafeSpot = True Then
-	  RandomWeightedClick($SafeAreaButton)
+	  RandomWeightedClick($rSafeAreaButton)
 	  Sleep(250)
    EndIf
 
@@ -227,7 +228,7 @@ EndFunc
 
 Func MoveScreenUpToBottom(Const $clearOnSafeSpot)
    If $clearOnSafeSpot = True Then
-	  RandomWeightedClick($SafeAreaButton)
+	  RandomWeightedClick($rSafeAreaButton)
 	  Sleep(250)
    EndIf
 

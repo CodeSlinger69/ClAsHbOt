@@ -41,6 +41,8 @@ Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = _
 		  "BarracksDragon.bmp", "BarracksPekka.bmp", _
 		  "BarracksMinion.bmp", "BarracksHogRider.bmp", "BarracksValkyrie.bmp", "BarracksGolem.bmp", _
 		  "BarracksWitch.bmp", "BarracksLavaHound.bmp"]
+Global $gBarracksSpellSlotBMPs [$eSpellCount] = _
+		 ["BarracksLightningSpell.bmp", "BarracksHealSpell.bmp", "BarracksRageSpell.bmp", "BarracksJumpSpell.bmp", "SlotDummy.bmp"]
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
 
 Func InitScraper()

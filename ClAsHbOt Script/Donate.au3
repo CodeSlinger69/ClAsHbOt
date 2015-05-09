@@ -21,7 +21,7 @@ Func DonateTroops()
 	  DebugWrite("Donate loop " & 6-$loopLimit & " of " & 5)
 
 	  ; Locate troops that are available to donate
-	  Local $donateIndexAbsolute[UBound($gDonateSlotBMPs)][4] ; x1, y1, x2, y2
+	  Local $donateIndexAbsolute[$eTroopCount][4] ; x1, y1, x2, y2
 	  FindDonateTroopSlots($donateButtonAbsolute, $donateIndexAbsolute)
 
 	  ; Parse request text, matching with available troops
@@ -140,7 +140,7 @@ Func FindDonateTroopSlots(Const ByRef $button, ByRef $index)
    GrabFrameToFile("AvailableDonateFrame.bmp", $troopWindowAbsolute[0], $troopWindowAbsolute[1], _
 				   $troopWindowAbsolute[2], $troopWindowAbsolute[3])
 
-   For $i = 0 To UBound($gDonateSlotBMPs)-1
+   For $i = $eTroopBarbarian To $eTroopLavaHound
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableDonateFrame.bmp", "str", "Images\"&$gDonateSlotBMPs[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
@@ -232,11 +232,10 @@ Func ClickDonateTroops(Const ByRef $donateIndexAbsolute, Const $indexOfTroopToDo
 
    Local $DonateMaxClicks[16] = [6, 6, 6, 6,   6, 6, 6, 2,   1, 1, 6, 6,   4, 1, 2, 1]
 
-   Local $button[8] = [$donateIndexAbsolute[$indexOfTroopToDonate][0], _
+   Local $button[4] = [$donateIndexAbsolute[$indexOfTroopToDonate][0], _
 					   $donateIndexAbsolute[$indexOfTroopToDonate][1], _
 					   $donateIndexAbsolute[$indexOfTroopToDonate][2], _
-					   $donateIndexAbsolute[$indexOfTroopToDonate][3], _
-					   0, 0, 0, 0]
+					   $donateIndexAbsolute[$indexOfTroopToDonate][3]]
 
    Local $donateCount=0
    For $i = 1 To $DonateMaxClicks[$indexOfTroopToDonate]
@@ -255,12 +254,20 @@ EndFunc
 Func QueueDonatableTroops()
    DebugWrite("QueueDonatableTroops()")
 
-   ; Count how many troops are built
+   ; Count how many troops are in the Army Camps
    Local $availableTroopCounts[$eTroopCount-2]
-   CountAvailableTroops($availableTroopCounts)
 
-   ; Oepn spell window
-   OpenTrainTroopsWindow()
+   If OpenArmyCampWindow() = False Then
+	  DebugWrite("Donate: Unable to locate Army Camp.")
+	  Return
+   EndIf
+
+   GetArmyCampTroopCounts($availableTroopCounts)
+
+   CloseArmyCampWindow()
+
+   ; Open train troops window and find spell/dark window
+   OpenBarracksWindow()
    If WhereAmI() <> $eScreenTrainTroops Then
 	  ResetToCoCMainScreen()
 	  Return
@@ -276,100 +283,75 @@ Func QueueDonatableTroops()
    Local $queuedTroopCounts[$eTroopCount-2]
    CountQueuedTroops($queuedTroopCounts)
 
-Return
+   ; See if standard and/or dark are needed
+   Local $standardNeeded = False
+   Local $darkNeeded = False
 
-   For $i = $eTroopBarbarian To $eTroopLavaHound
-	  If $gDonateTroopStock[$i] > 0 Then
-		 If $availableTroopCounts[$i] < $gDonateTroopStock[$i] Then
-			; queue troops
-			DebugWrite($gTroopNames[$i] & " stock LOW - built / needed: " & $availableTroopCounts[$i] & " / " & $gDonateTroopStock[$i])
+   For $i = $eTroopBarbarian To $eTroopPekka
+	  If $gDonateTroopStock[$i] > 0 And $availableTroopCounts[$i]+$queuedTroopCounts[$i] < $gDonateTroopStock[$i] Then
+		 $standardNeeded = True
+		 DebugWrite($gTroopNames[$i] & " stock LOW - queued / needed: " & _
+			$availableTroopCounts[$i]+$queuedTroopCounts[$i] & " / " & $gDonateTroopStock[$i])
+	  EndIf
+   Next
 
+   For $i = $eTroopMinion To $eTroopLavaHound
+	  If $gDonateTroopStock[$i] > 0 And $availableTroopCounts[$i]+$queuedTroopCounts[$i] < $gDonateTroopStock[$i] Then
+		 $darkNeeded = True
+		 DebugWrite($gTroopNames[$i] & " stock LOW - queued / needed: " & _
+			$availableTroopCounts[$i]+$queuedTroopCounts[$i] & " / " & $gDonateTroopStock[$i])
+	  EndIf
+   Next
 
-			; Add to queue - standard or dark?
-			If $i >= $eTroopBarbarian And $i <= $eTroopPekka Then
-			   ;$gDonateBarracksStandardMaximum
-			   ;$gDonateBarracksDarkMaximum
-			Else
-			EndIf
+   ; Queue up standard
+   If $standardNeeded = True Then
+	  ; Find spell/dark window
+	  If FindSpellsQueueingWindow() = False Then
+		DebugWrite("Donate, Queue Troops failed - can't find Spells or Dark window")
+		ResetToCoCMainScreen()
+		Return
+	  EndIf
 
-			CloseTrainTroopsWindow()
+	  ; Loop through number of barracks allocated to donations
+	  For $barrackNum = 1 To $gDonateBarracksStandardMaximum
 
-		 Else
-			DebugWrite($gTroopNames[$i] & " stock FULL - built / needed: " & $availableTroopCounts[$i] & " / " & $gDonateTroopStock[$i])
+		 ; Next troop window
+		 RandomWeightedClick($rBarracksWindowNextButton)
+		 Sleep(250)
+
+		 ; Make sure we are on a standard troops window
+		 If IsColorPresent($rWindowBarracksStandardColor1) = False And IsColorPresent($rWindowBarracksStandardColor2) = False Then
+			ExitLoop
 		 EndIf
-	  EndIf
-   Next
 
-EndFunc
+		 ; Find buttons
+		 Local $barracksTroopBox[4] = [289, 224, 739, 400]
+		 GrabFrameToFile("BarracksQueuedTroopsFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], _
+			$barracksTroopBox[2], $barracksTroopBox[3])
 
-Func CountAvailableTroops(ByRef $troopCounts)
-   DebugWrite("CountAvailableTroops()")
 
-   ; Locate Army Camp
-   Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-   GrabFrameToFile("ArmyCampSearchFrame.bmp")
-   ScanFrameForBestBMP("ArmyCampSearchFrame.bmp", $gArmyCampBMPs, $gConfidenceArmyCamp, $bestMatch, $bestConfidence, $bestX, $bestY)
 
-   If $bestMatch = 99 Then
-	  DebugWrite("Unable to locate Army Camp.")
-	  Return False
+		 ;
+		 For $i = $eTroopBarbarian To $eTroopPekka
+			If $gDonateTroopStock[$i] > 0 And $availableTroopCounts[$i]+$queuedTroopCounts[$i] < $gDonateTroopStock[$i] Then
+			   ; queue troops
+
+
+			   ; Add to queue - standard or dark?
+			   If $i >= $eTroopBarbarian And $i <= $eTroopPekka Then
+				  ;$gDonateBarracksStandardMaximum
+				  ;$gDonateBarracksDarkMaximum
+			   Else
+			   EndIf
+
+			EndIf
+		 Next
+	  Next
    EndIf
 
-   DebugWrite("Located Level " & $bestMatch+6 & " Army Camp at " & $bestX & ", " & $bestY & " conf: " & $bestConfidence)
+   ; Queue up dark
 
-   ; Select Army Camp
-   Local $campButton[8] = [$bestX-8, $bestY-8, $bestX+40, $bestY+40, 0, 0, 0, 0]
-   RandomWeightedClick($campButton)
-
-   ; Wait for Army Camp info button
-   Local $failCount=10
-   Do
-	  Sleep(100)
-	  $failCount-=1
-   Until IsButtonPresent($rArmyCampInfoButton) Or $failCount<=0
-
-   If $failCount<=0 Then
-	  DebugWrite("Error getting Army Camp info button.")
-	  Return False
-   EndIf
-
-   ; Click Army Camp info button
-   RandomWeightedClick($rArmyCampInfoButton)
-
-   ; Wait for Army Camp info screen
-   Local $failCount=10
-   Do
-	  Sleep(100)
-	  $failCount-=1
-   Until IsButtonPresent($rArmyCampInfoScreenCloseWindowButton) Or $failCount<=0
-
-   If $failCount<=0 Then
-	  DebugWrite("Error getting Army Camp info screen.")
-	  Return False
-   EndIf
-
-   ; Get available troops
-   Local $troopIndex[UBound($gTroopSlotBMPs)][4]
-   FindArmyCampTroopSlots($gCampTroopSlotBMPs, $troopIndex)
-
-   ; Count troops
-   For $i = $eTroopBarbarian To $eTroopLavaHound
-	  $troopCounts[$i] = -1
-
-	  If $troopIndex[$i][0] <> -1 Then
-		 Local $textBox[10] = [$troopIndex[$i][0]+16, $troopIndex[$i][1]+54, $troopIndex[$i][0]+50, $troopIndex[$i][1]+63, _
-							   $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
-							   0, 0, 0, 0]
-
-		 Local $t = Number(ScrapeFuzzyText($gArmyCampCharacterMaps, $textBox, $gArmyCampCharMapsMaxWidth, $eScrapeDropSpaces))
-
-		 $troopCounts[$i] = Number($t)
-		 DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " available: " & $troopCounts[$i])
-	  EndIf
-   Next
-
-   ; Close Army Camp info screen
-   ResetToCoCMainScreen()
+   CloseBarracksWindow()
 
 EndFunc
 
@@ -384,69 +366,19 @@ Func CountQueuedTroops(ByRef $troopCounts)
    ; Or we've looked at 6 screens
    Local $screenCount = 0
    Do
-	  RandomWeightedClick($TrainTroopsWindowNextButton)
+	  RandomWeightedClick($rBarracksWindowNextButton)
 	  Sleep(250)
 	  $screenCount += 1
 
-	  ; Grab frame
-	  Local $barracksTroopBox[4] = [289, 224, 739, 400]
-	  GrabFrameToFile("BarracksQueuedTroopsFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], _
-					  $barracksTroopBox[2], $barracksTroopBox[3])
-
-	  ; Count queued number of each troop
+	  Local $counts[$eTroopCount-2]
+	  GetBarracksTroopCounts($gBarracksTroopSlotBMPs, $counts)
 	  For $i = $eTroopBarbarian To $eTroopLavaHound
-		 Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksQueuedTroopsFrame.bmp", _
-							  "str", "Images\"&$gBarracksTroopSlotBMPs[$i], "int", 3)
-		 Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-		 ;DebugWrite("Troop " & $gBarracksTroopSlotBMPs[$i] & " conf: " & $split[2])
-
-		 If $split[2] > $gConfidenceBarracksTroopSlot Then
-			Local $textBox[10] = [$barracksTroopBox[0] + $split[0], _
-								 $barracksTroopBox[1] + $split[1] - 15, _
-								 $barracksTroopBox[0] + $split[0] + 35, _
-								 $barracksTroopBox[1] + $split[1], _
-								 $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
-								 0, 0, 0, 0]
-
-			; Parse queue text
-			Local $rawText = "TODO" ; TODO - do I have a char map for this?
-			Local $rawText = ScrapeFuzzyText($gLargeCharacterMaps, $textBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-			Local $t = Number(StringReplace($rawText, "x", ""))
-			If $t>0 Then DebugWrite("Barracks " & $screenCount & ": " & $gTroopNames[$i] & " = " & $t)
-
-		 EndIf
+		 $troopCounts[$i] += $counts[$i]
 	  Next
 
-   Until IsColorPresent($rWindowTrainTroopsSpellsColor1) = True Or _
-		 IsColorPresent($rWindowTrainTroopsSpellsColor2) = True Or _
+   Until IsColorPresent($rWindowBarracksSpellsColor1) = True Or _
+		 IsColorPresent($rWindowBarracksSpellsColor2) = True Or _
 		 $screenCount >= 6
-
-EndFunc
-
-Func FindArmyCampTroopSlots(Const ByRef $bitmaps, ByRef $index)
-   ; Populates index with the absolute screen coords of all available troop buttons
-   Local $buttonOffset[4] = [0, -0, 51, 69]
-   Local $armyCampTroopBox[4] = [291, 287, 753, 331]
-
-   GrabFrameToFile("AvailableRaidTroopsFrame.bmp", $armyCampTroopBox[0], $armyCampTroopBox[1], $armyCampTroopBox[2], $armyCampTroopBox[3])
-
-   For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-
-	  If $split[2] > $gConfidenceArmyCampTroopSlot Then
-		 $index[$i][0] = $split[0]+$armyCampTroopBox[0]+$buttonOffset[0]
-		 $index[$i][1] = $split[1]+$armyCampTroopBox[1]+$buttonOffset[1]
-		 $index[$i][2] = $split[0]+$armyCampTroopBox[0]+$buttonOffset[2]
-		 $index[$i][3] = $split[1]+$armyCampTroopBox[1]+$buttonOffset[3]
-		 DebugWrite("Troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
-	  Else
-		 $index[$i][0] = -1
-		 $index[$i][1] = -1
-		 $index[$i][2] = -1
-		 $index[$i][3] = -1
-	  EndIf
-   Next
 EndFunc
 
 

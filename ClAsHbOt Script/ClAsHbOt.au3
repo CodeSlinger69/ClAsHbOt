@@ -25,11 +25,14 @@ Opt("GUIOnEventMode", 1)
 #include <GUI.au3>
 #include <Settings.au3>
 #include <Scraper.au3>
+#include <Barracks.au3>
+#include <ArmyCamp.au3>
 #include <KeepOnline.au3>
 #include <CollectLoot.au3>
 #include <FindMatch.au3>
 #include <FindSnipableTH.au3>
 #include <AutoRaid.au3>
+#include <AutoRaidDEZap.au3>
 #include <AutoRaidStrategy.au3>
 #include <Mouse.au3>
 #include <BlueStacks.au3>
@@ -63,7 +66,7 @@ Func MainApplicationLoop()
    Local $lastTrainingCheckTimer = TimerInit()
 
    While 1
-	  DebugWrite("Main loop: AR Stage " & $gAutoRaidStage)
+	  DebugWrite("Main loop: AutoRaid Stage " & $gAutoRaidStage)
 
 	  ; Update status on GUI
 	  GetMyLootNumbers()

@@ -20,7 +20,7 @@ Func DoCupsDump()
    FindAValidMatch(True)
 
    ; What troops are available?
-   Local $troopIndex[UBound($gTroopSlotBMPs)][4]
+   Local $troopIndex[$eTroopCount][4]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
 
    If GetAvailableTroops($eTroopBarbarian, $troopIndex)<1 Then
@@ -45,8 +45,8 @@ Func DoCupsDump()
    If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
    ; Deploy one barb
-   Local $barbButton[8] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], _
-						$troopIndex[$eTroopBarbarian][3], 0, 0, 0, 0]
+   Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], _
+						   $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    RandomWeightedClick($barbButton)
    Sleep(500)
    DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployOneTroop, $direction)
@@ -200,24 +200,38 @@ EndFunc
 Func AutoRaidQueueTraining()
    DebugWrite("AutoRaidQueueTraining()")
 
-   OpenTrainTroopsWindow()
+   OpenBarracksWindow()
    If WhereAmI() <> $eScreenTrainTroops Then
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
 
    ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
-   Local $redStripe = IsColorPresent($rWindowTrainTroopsFullColor)
+   Local $redStripe = IsColorPresent($rWindowBarracksFullColor)
    If $redStripe Then DebugWrite("Barracks full, moving immediately to next auto raid stage.")
 
+   ; Get spells window
    If FindSpellsQueueingWindow() = False Then
 	 DebugWrite(" Auto Raid, Queue Troops failed - can't find Spells or Dark window")
 	 ResetToCoCMainScreen()
 	 Return
    EndIf
 
-   FillBarracksQueues(Not($redStripe))
-   CloseTrainTroopsWindow()
+   ; Queue spells?
+   QueueSpells()
+
+   Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
+   Case 0
+	  FillBarracksAutoRaidStrategy0(Not($redStripe))
+   Case 1
+	  ContinueCase
+   Case 2
+	  ContinueCase
+   Case 3
+	  ContinueCase
+   EndSwitch
+
+   CloseBarracksWindow()
 
    If $redStripe Then
 	  $gAutoRaidStage = $eAutoRaidFindMatch
@@ -230,30 +244,63 @@ Func AutoRaidQueueTraining()
    EndIf
 EndFunc
 
-Func FindSpellsQueueingWindow()
-   DebugWrite("FindSpellsQueueingWindow()")
+Func AutoRaidCheckIfTrainingComplete()
+   DebugWrite("AutoRaidCheckIfTrainingComplete()")
 
-   ; Click left arrow until the spells screen or a dark troops screen comes up
-   Local $failCount = 6
+   OpenBarracksWindow()
 
-   While IsColorPresent($rWindowTrainTroopsSpellsColor1) = False And _
-		 IsColorPresent($rWindowTrainTroopsSpellsColor2) = False And _
-		 IsColorPresent($rWindowTrainTroopsDarkColor1) = False And _
-		 IsColorPresent($rWindowTrainTroopsDarkColor2) = False And _
-		 $failCount > 0
+   If WhereAmI() <> $eScreenTrainTroops Then
+	  ResetToCoCMainScreen()
+	  Return
+   EndIf
 
-	  RandomWeightedClick($TrainTroopsWindowPrevButton)
-	  Sleep(500)
-	  $failCount -= 1
-   WEnd
+   ; See if we have a red stripe on the bottom of the train troops window, which means we are full up
+   If IsColorPresent($rWindowBarracksFullColor) Then
+	  ;DebugWrite("Troop training is complete!")
+	  $gAutoRaidStage = $eAutoRaidFindMatch
+  	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
 
-   ; If spells queueing window, then maybe queue spells?
-   If IsColorPresent($rWindowTrainTroopsSpellsColor1) = True Or IsColorPresent($rWindowTrainTroopsSpellsColor2) = True And _
-	  _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then
+   Else
+	  ; Top off the barracks queues
+	  If FindSpellsQueueingWindow() = False Then
+		DebugWrite(" Auto Raid, Queue Troops failed - can't find Spells or Dark window")
+		ResetToCoCMainScreen()
+		Return
+	  EndIf
+
+	  QueueSpells()
+
+	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
+	  Case 0
+		 FillBarracksAutoRaidStrategy0(False)
+	  Case 1
+		 ContinueCase
+	  Case 2
+		 ContinueCase
+	  Case 3
+		 ContinueCase
+	  EndSwitch
+   EndIf
+
+   CloseBarracksWindow()
+EndFunc
+
+Func QueueSpells()
+   ; If not spells queueing window, then return
+   If IsColorPresent($rWindowBarracksSpellsColor1) <> True And IsColorPresent($rWindowBarracksSpellsColor2) <> True Then
+	  Return
+   EndIf
+
+   ; maybe queue spells?
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then
+
+	  ; Get count
+	  Local $spellSlots[$eSpellCount][4]
+	  FindBarracksTroopSlots($gBarracksSpellSlotBMPs, $spellSlots)
 
 	  ; How many are queued/created?
-	  Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rTrainTroopsWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-	  $gMyMaxSpells = 999
+	  Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rBarracksWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+	  ;DebugWrite("$queueStatus: " & $queueStatus)
 
 	  If (StringInStr($queueStatus, "CreateSpells")=1) Then
 		 $queueStatus = StringMid($queueStatus, 13)
@@ -265,250 +312,15 @@ Func FindSpellsQueueingWindow()
 
 			$gMyMaxSpells = Number($queueStatSplit[2]) ; Used when deciding to DE Zap or not
 
+			Local $lightningButton[4] = [$spellSlots[$eSpellLightning][0], $spellSlots[$eSpellLightning][1], _
+									     $spellSlots[$eSpellLightning][2], $spellSlots[$eSpellLightning][3]]
 			For $i = 1 To $spellsToFill
-			   RandomWeightedClick($TrainTroopsWindowLightningButton)
+			   RandomWeightedClick($lightningButton)
 			   Sleep($gDeployTroopClickDelay)
 			Next
 		 EndIf
 	  EndIf
    EndIf
-
-   Return True
-EndFunc
-
-Func FillBarracksQueues(Const $initialFillFlag)
-   DebugWrite("FillBarracksQueues()")
-
-   ; Loop through barracks and queue troops, until we get to a dark or spells screen, or we've done 4
-   Local $barracksCount = 1
-   Local $failCount = 5
-
-   While $barracksCount <= 4 And $failCount>0
-
-	  ; Click right arrow to get the next standard troops window
-	  RandomWeightedClick($TrainTroopsWindowNextButton)
-	  Sleep(250)
-	  $failCount-=1
-
-	  ; Make sure we are on a standard troops window
-	  If IsColorPresent($rWindowTrainTroopsStandardColor1) = False And IsColorPresent($rWindowTrainTroopsStandardColor2) = False Then
-		 ;DebugWrite(" Not on Standard Troops Window: " & Hex($pixelColor1) & "/" & Hex($WindowTrainTroopsStandardColor1[2])& _
-			;"  " & Hex($pixelColor2) & "/" & Hex($WindowTrainTroopsStandardColor2[2]))
-		 ExitLoop
-	  EndIf
-
-	  ; If we have not yet figured out troop costs, then get them now
-	  If $gMyTroopCost[$eTroopBarbarian] = 0 Then
-		 $gMyTroopCost[$eTroopBarbarian] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowBarbarianCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopArcher] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowArcherCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopGoblin]= Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowGoblinCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopGiant] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowGiantCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopWallBreaker] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowWallBreakerCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopBalloon] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowBalloonCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopWizard] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowWizardCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopHealer] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowHealerCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopDragon] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowDragonCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 $gMyTroopCost[$eTroopPekka] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rTrainTroopsWindowPekkaCostTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-	  EndIf
-
-	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
-	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
-		 Local $dequeueTries = 6
-		 While IsButtonPresent($TrainTroopsWindowDequeueButton) And $dequeueTries>0 And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
-			Local $xClick, $yClick
-			RandomWeightedCoords($TrainTroopsWindowDequeueButton, $xClick, $yClick)
-			_ClickHold($xClick, $yClick, 4000)
-			$dequeueTries-=1
-			Sleep(500)
-		 WEnd
-	  EndIf
-
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return
-
-	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag Then
-		 For $i = 1 To Int(Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit))/4)
-			RandomWeightedClick($TrainTroopsWindowBreakerButton)
-			Sleep(500)
-		 Next
-	  EndIf
-
-	  ; Fill up this barracks
-	  Local $fillTries=1
-	  Local $troopsToFill
-	  Do
-		 ; Get number of troops already queued in this barracks
-		 Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rTrainTroopsWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 DebugWrite("Barracks " & $barracksCount & " queue status: " & $queueStatus)
-
-		 If (StringInStr($queueStatus, "Train")=1) Then
-			$queueStatus = StringMid($queueStatus, 6)
-
-			Local $queueStatSplit = StringSplit($queueStatus, "/")
-			If $queueStatSplit[0] = 2 Then
-			   $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
-
-			   DebugWrite("Adding " & $troopsToFill & " troops.")
-
-			   ; How long to click and hold?
-			   Local $fillTime
-			   If $troopsToFill>60 Then
-				  $fillTime = 3500 + Random(-250, 250, 1)
-			   ElseIf $troopsToFill>25 Then
-				  $fillTime = 2700 + Random(-250, 250, 1)
-			   ElseIf $troopsToFill>10 Then
-				  $fillTime = 2300 + Random(-250, 250, 1)
-			   Else
-				  $fillTime = 1800 + Random(-250, 250, 1)
-			   EndIf
-
-			   ; Click and hold to fill up queue
-			   If $troopsToFill>0 Then
-				  Local $xClick, $yClick
-				  If $barracksCount/2 = Int($barracksCount/2) Then ; Alternate between archers and barbs
-					 RandomWeightedCoords($TrainTroopsWindowBarbarianButton, $xClick, $yClick)
-				  Else
-					 RandomWeightedCoords($TrainTroopsWindowArcherButton, $xClick, $yClick)
-				  EndIf
-
-				  ;DebugWrite("Filling barracks " & $barracksCount & " try " & $fillTries)
-				  _ClickHold($xClick, $yClick, $fillTime)
-				  Sleep(500)
-			   EndIf
-			EndIf
-		 EndIf
-
-		 $fillTries+=1
-	  Until $troopsToFill=0 Or $fillTries>=6 Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
-
-	  $barracksCount+=1
-   WEnd
-EndFunc
-
-Func OpenTrainTroopsWindow()
-   DebugWrite("OpenTrainTroopsWindow()")
-
-   ; Grab a frame
-   GrabFrameToFile("BarracksFrame.bmp")
-
-   ; Find all the barracks on the screen
-   Local $barracksIndex = 0
-   Local $barracksPoints[1][3]
-   For $i = 0 To UBound($BarracksBMPs)-1
-	  ; Get matches for this resource
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", "BarracksFrame.bmp", _
-			   "str", "Images\"&$BarracksBMPs[$i], "int", 3, "int", 6, "double", $gConfidenceBarracks)
-	  Local $split = StringSplit($res[0], "|", 2)
-	  Local $j
-	  For $j = 0 To $split[0]-1
-		 If $split[$j*3+3] > $gConfidenceBarracks Then
-			$barracksIndex += 1
-			ReDim $barracksPoints[$barracksIndex][3]
-			$barracksPoints[$barracksIndex-1][0] = $split[$j*3+3] ; confidence
-			$barracksPoints[$barracksIndex-1][1] = $split[$j*3+1] ; X
-			$barracksPoints[$barracksIndex-1][2] = $split[$j*3+2] ; Y
-		 EndIf
-	  Next
-   Next
-   _ArraySort($barracksPoints, 1)
-
-   ; Look through list of barracks for an available training screen
-   Local $failCount, $pixMatch1, $pixMatch2, $pixMatch3, $pixMatch4
-
-   For $i = 0 To $barracksIndex - 1
-	  ;DebugWrite("Barracks " & $i & ": " & $barracksPoints[$i][0] & " " & $barracksPoints[$i][1] & " " & $barracksPoints[$i][2])
-
-	  ; Click on barracks
-	  Local $xClick, $yClick
-	  RandomWeightedCoords($BarracksButton, $xClick, $yClick, .5, 3, 0, $BarracksButton[3]/2)
-	  _ControlClick($barracksPoints[$i][1]+$xClick, $barracksPoints[$i][2]+$yClick)
-
-	  ; Wait for barracks button panel to show up (Train Troops button)
-	  $failCount = 10 ; 2 seconds, should be instant
-	  While IsButtonPresent($BarracksPanelTrainTroops1Button) = False And _
-			IsButtonPresent($BarracksPanelTrainTroops2Button) = False And _
-			IsButtonPresent($BarracksPanelTrainTroops3Button) = False And _
-			IsButtonPresent($BarracksPanelUpgradingButton) = False And _
-			$failCount>0
-
-		 Sleep(200)
-		 $failCount -= 1
-	  WEnd
-
-	  If IsButtonPresent($BarracksPanelTrainTroops1Button) = True Or _
-		 IsButtonPresent($BarracksPanelTrainTroops2Button) = True Or _
-		 IsButtonPresent($BarracksPanelTrainTroops3Button) = True Then ExitLoop
-   Next
-
-   If IsButtonPresent($BarracksPanelTrainTroops1Button) = False And _
-	  IsButtonPresent($BarracksPanelTrainTroops2Button) = False And _
-	  IsButtonPresent($BarracksPanelTrainTroops3Button) = False Then
-
-	  DebugWrite("Auto Raid, Queue Troops failed - error finding available Barracks Button panel.")
-	  ResetToCoCMainScreen()
-	  Return
-   EndIf
-
-   ; Click on Train Troops button
-   If IsButtonPresent($BarracksPanelTrainTroops1Button) = True Then
-	  RandomWeightedClick($BarracksPanelTrainTroops1Button)
-
-   ElseIf IsButtonPresent($BarracksPanelTrainTroops2Button) = True Then
-	  RandomWeightedClick($BarracksPanelTrainTroops2Button)
-
-   Else ; Button type 3
-	  RandomWeightedClick($BarracksPanelTrainTroops3Button)
-
-   EndIf
-
-   ; Wait for Train Troops window to show up
-   $failCount = 10 ; 2 seconds, should be instant
-   While IsColorPresent($TrainTroopsWindowNextButton) = False And $failCount>0
-	  Sleep(200)
-	  $failCount -= 1
-   WEnd
-
-   If $failCount = 0 Then
-	  DebugWrite("Auto Raid, Queue Troops failed - timeout waiting for Train Troops window")
-	  ResetToCoCMainScreen()
-	  Return
-   EndIf
-EndFunc
-
-Func CloseTrainTroopsWindow()
-   DebugWrite("CloseTrainTroopsWindow()")
-   ; Close Train Troops window
-   RandomWeightedClick($TrainTroopsWindowCloseButton)
-   Sleep(500)
-
-   ; Click on safe area to close Barracks Toolbar
-   RandomWeightedClick($SafeAreaButton)
-   Sleep(500)
-EndFunc
-
-Func AutoRaidCheckIfTrainingComplete()
-   DebugWrite("AutoRaidCheckIfTrainingComplete()")
-
-   OpenTrainTroopsWindow()
-
-   If WhereAmI() <> $eScreenTrainTroops Then
-	  ResetToCoCMainScreen()
-	  Return
-   EndIf
-
-   ; See if we have a red stripe on the bottom of the train troops window, which means we are full up
-   If IsColorPresent($rWindowTrainTroopsFullColor) Then
-	  ;DebugWrite("Troop training is complete!")
-	  $gAutoRaidStage = $eAutoRaidFindMatch
-  	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
-
-   Else
-  	  FindSpellsQueueingWindow()
-	  FillBarracksQueues(False) ; Top off the barracks queues
-
-   EndIf
-
-   CloseTrainTroopsWindow()
 EndFunc
 
 ; howMany: $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
@@ -784,7 +596,7 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][1] = $split[1]+$raidTroopBox[1]+$buttonOffset[1]
 		 $index[$i][2] = $split[0]+$raidTroopBox[0]+$buttonOffset[2]
 		 $index[$i][3] = $split[1]+$raidTroopBox[1]+$buttonOffset[3]
-		 DebugWrite("Troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
+		 DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1
@@ -798,65 +610,9 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
    If $index[$troop][0] = -1 Then Return 0
 
    Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+10, _
-						 $rTroopSlotCountTextBox[4], $rTroopSlotCountTextBox[5], _
+						 $rBarracksTroopCountTextBox[4], $rBarracksTroopCountTextBox[5], _
 						 0, 0, 0, 0]
    Local $t = ScrapeFuzzyText($gSmallCharacterMaps, $textBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
    Return StringMid($t, 2)
 EndFunc
-
-Func ZapDarkElixirStorage()
-   DebugWrite("ZapDarkElixirStorage()")
-
-   Local $spellIndex[UBound($gSpellSlotBMPs)][4]
-   FindRaidTroopSlots($gSpellSlotBMPs, $spellIndex)
-
-   Local $availableLightnings = GetAvailableTroops($eSpellLightning, $spellIndex)
-
-   ; Only zap if there are the maximum number of lightning spells available
-   If $availableLightnings<$gMyMaxSpells Then
-	  DebugWrite("Not zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available.")
-	  Return False
-   EndIf
-
-   ; Find DE storage
-   GrabFrameToFile("DEStorageFrame.bmp", 235, 100, 789, 450)
-   Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-   ScanFrameForBestBMP("DEStorageFrame.bmp", $DarkStorageBMPs, $gConfidenceDEStorage, $bestMatch, $bestConfidence, $bestX, $bestY)
-   DebugWrite("DE search: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
-
-   ; If < $gConfidenceDEStorageZap confidence, then not good enough to spend spells
-   If $bestConfidence < $gConfidenceDEStorage Then
-	  Local $datetimestamp = _
-		 StringMid(_NowCalc(), 1,4) & _
-		 StringMid(_NowCalc(), 6,2) & _
-		 StringMid(_NowCalc(), 9,2) & _
-		 StringMid(_NowCalc(), 12,2) & _
-		 StringMid(_NowCalc(), 15,2) & _
-		 StringMid(_NowCalc(), 18,2)
-	  FileMove("DEStorageFrame.bmp", "ZapNoConfidence-" & $datetimestamp & ".bmp")
-
-	  DebugWrite("Not zapping DE, could not find high enough confidence DE Storage to zap.")
-	  Return False
-   EndIf
-
-   DebugWrite("Zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available, confidence: " & $bestConfidence)
-
-   ; Select lightning spell
-   Local $lightningButton[8] = [$spellIndex[$eSpellLightning][0], $spellIndex[$eSpellLightning][1], $spellIndex[$eSpellLightning][2], _
-							    $spellIndex[$eSpellLightning][3], 0, 0, 0, 0]
-   RandomWeightedClick($lightningButton)
-   Sleep(500)
-
-   ; Zap away
-   DebugWrite("Zapping at client position: " & $bestX+235+10 & "," & $bestY+100+30)
-   For $i = 1 To $availableLightnings
-	  _MouseClickFast($bestX+235+10, $bestY+100+30)
-	  Sleep(1000)
-   Next
-
-   Sleep(6000)
-
-   Return True
-EndFunc
-
 

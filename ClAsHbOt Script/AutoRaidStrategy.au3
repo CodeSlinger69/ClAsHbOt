@@ -1,25 +1,4 @@
 ;
-; Dak Elixir Storage Zap Strategy
-;
-Func AutoRaidExecuteDEZap()
-   DebugWrite("AutoRaidExecuteDEZap()")
-
-   Local $res = ZapDarkElixirStorage()
-
-   If $res = True Then ; Zap executed
-	  WaitForBattleEnd(False, False)
-
-   Else ; Not enuf lightning spells, or couldn't find DE storage
-	  ; Click End Battle button
-	  RandomWeightedClick($LiveRaidScreenEndBattleButton)
-	  Sleep(500)
-
-   EndIf
-
-   Return $res
-EndFunc
-
-;
 ; Strategy 0 - Barcher, top or bottom
 ; Deploy from either NW/NE or SW/SE sides
 ; 50% barbs, then 50% archers
@@ -68,7 +47,7 @@ Func AutoRaidExecuteRaidStrategy0()
    Next
 
    ; Attack from top or bottom?
-   Local $direction = $collectorsOnTop/($collectorsOnTop+$collectorsOnBot) > 0.65 ? "Top" : "Bot"  ;(Random()>0.5) ? "Top" : "Bot"
+   Local $direction = $collectorsOnTop/($collectorsOnTop+$collectorsOnBot) > 0.65 ? "Top" : "Bot"
    DebugWrite("Collectors: Top=" & $collectorsOnTop & " Bot=" & $collectorsOnBot & ", thus Direction=" & $direction)
 
    If $direction = "Top" Then
@@ -78,16 +57,16 @@ Func AutoRaidExecuteRaidStrategy0()
    EndIf
 
    ; Get buttons
-   Local $barbButton[8] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], _
-						   $troopIndex[$eTroopBarbarian][3], 0, 0, 0, 0]
-   Local $archButton[8] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], _
-						   $troopIndex[$eTroopArcher][3], 0, 0, 0, 0]
-   Local $breakerButton[8] = [$troopIndex[$eTroopWallBreaker][0], $troopIndex[$eTroopWallBreaker][1], $troopIndex[$eTroopWallBreaker][2], _
-						   $troopIndex[$eTroopWallBreaker][3], 0, 0, 0, 0]
-   Local $kingButton[8] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], _
-						   $troopIndex[$eTroopKing][3], 0, 0, 0, 0]
-   Local $queenButton[8] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], _
-						   $troopIndex[$eTroopQueen][3], 0, 0, 0, 0]
+   Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], _
+						   $troopIndex[$eTroopBarbarian][3]]
+   Local $archButton[4] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], _
+						   $troopIndex[$eTroopArcher][3]]
+   Local $breakerButton[4] = [$troopIndex[$eTroopWallBreaker][0], $troopIndex[$eTroopWallBreaker][1], $troopIndex[$eTroopWallBreaker][2], _
+						   $troopIndex[$eTroopWallBreaker][3]]
+   Local $kingButton[4] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], _
+						   $troopIndex[$eTroopKing][3]]
+   Local $queenButton[4] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], _
+						   $troopIndex[$eTroopQueen][3]]
 
    ;
    ; Deploy troops
@@ -223,4 +202,112 @@ Func AutoRaidExecuteRaidStrategy0()
    WaitForBattleEnd($kingDeployed, $queenDeployed)
 
    Return True
+EndFunc
+
+Func FillBarracksAutoRaidStrategy0(Const $initialFillFlag)
+   DebugWrite("FillBarracksQueues()")
+
+   ; Loop through barracks and queue troops, until we get to a dark or spells screen, or we've done 4
+   Local $barracksCount = 1
+   Local $failCount = 5
+
+   While $barracksCount <= 4 And $failCount>0
+
+	  ; Click right arrow to get the next standard troops window
+	  RandomWeightedClick($rBarracksWindowNextButton)
+	  Sleep(250)
+	  $failCount-=1
+
+	  ; Make sure we are on a standard troops window
+	  If IsColorPresent($rWindowBarracksStandardColor1) = False And IsColorPresent($rWindowBarracksStandardColor2) = False Then
+		 ;DebugWrite(" Not on Standard Troops Window: " & Hex($pixelColor1) & "/" & Hex($WindowTrainTroopsStandardColor1[2])& _
+			;"  " & Hex($pixelColor2) & "/" & Hex($WindowTrainTroopsStandardColor2[2]))
+		 ExitLoop
+	  EndIf
+
+	  ; If we have not yet figured out troop costs, then get them now
+	  If $gMyTroopCost[$eTroopBarbarian] = 0 Then
+		 GetBarracksTroopCosts($gMyTroopCost)
+	  EndIf
+
+	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
+	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
+		 Local $dequeueTries = 6
+		 While IsButtonPresent($TrainTroopsWindowDequeueButton) And $dequeueTries>0 And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
+			Local $xClick, $yClick
+			RandomWeightedCoords($TrainTroopsWindowDequeueButton, $xClick, $yClick)
+			_ClickHold($xClick, $yClick, 4000)
+			$dequeueTries-=1
+			Sleep(500)
+		 WEnd
+	  EndIf
+
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return
+
+	  ; Find the slots for the troops
+	  Local $troopSlots[$eTroopCount][4]
+	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+
+	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag Then
+		 For $i = 1 To Int(Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit))/4)
+			RandomWeightedClick($troopSlots[$eTroopWallBreaker])
+			Sleep(500)
+		 Next
+	  EndIf
+
+	  ; Fill up this barracks
+	  Local $fillTries=1
+	  Local $troopsToFill
+	  Do
+		 ; Get number of troops already queued in this barracks
+		 Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rBarracksWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 ;DebugWrite("Barracks " & $barracksCount & " queue status: " & $queueStatus)
+
+		 If (StringInStr($queueStatus, "Train")=1) Then
+			$queueStatus = StringMid($queueStatus, 6)
+
+			Local $queueStatSplit = StringSplit($queueStatus, "/")
+			If $queueStatSplit[0] = 2 Then
+			   $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
+
+			   ; How long to click and hold?
+			   Local $fillTime
+			   If $troopsToFill>60 Then
+				  $fillTime = 3500 + Random(-250, 250, 1)
+			   ElseIf $troopsToFill>25 Then
+				  $fillTime = 2700 + Random(-250, 250, 1)
+			   ElseIf $troopsToFill>10 Then
+				  $fillTime = 2300 + Random(-250, 250, 1)
+			   Else
+				  $fillTime = 1800 + Random(-250, 250, 1)
+			   EndIf
+
+			   ; Click and hold to fill up queue
+			   If $troopsToFill>0 Then
+				  DebugWrite("Barracks " & $barracksCount & ": Adding " & $troopsToFill & " troops.")
+
+				  Local $xClick, $yClick
+				  If $barracksCount/2 = Int($barracksCount/2) Then ; Alternate between archers and barbs
+					 Local $button[4] = [$troopSlots[$eTroopBarbarian][0], $troopSlots[$eTroopBarbarian][1], _
+										 $troopSlots[$eTroopBarbarian][2], $troopSlots[$eTroopBarbarian][3]]
+					 RandomWeightedCoords($button, $xClick, $yClick)
+				  Else
+					 Local $button[4] = [$troopSlots[$eTroopArcher][0], $troopSlots[$eTroopArcher][1], _
+										 $troopSlots[$eTroopArcher][2], $troopSlots[$eTroopArcher][3]]
+					 RandomWeightedCoords($button, $xClick, $yClick)
+				  EndIf
+
+				  ;DebugWrite("Filling barracks " & $barracksCount & " try " & $fillTries)
+				  _ClickHold($xClick, $yClick, $fillTime)
+				  Sleep(500)
+			   EndIf
+			EndIf
+		 EndIf
+
+		 $fillTries+=1
+	  Until $troopsToFill=0 Or $fillTries>=6 Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
+
+	  $barracksCount+=1
+   WEnd
 EndFunc

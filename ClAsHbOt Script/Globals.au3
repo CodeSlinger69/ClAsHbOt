@@ -13,17 +13,15 @@ Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroops
 Global $gFindMatchClicked = False, $gFindSnipableTHClicked = False, $gAutoRaidClicked = False
 
 ; Lists of troop and spell types
-Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGoblin, $eTroopGiant, _
-			$eTroopWallBreaker, $eTroopBalloon, $eTroopWizard, $eTroopHealer, _
-			$eTroopDragon, $eTroopPekka, _
-			$eTroopMinion, $eTroopHogRider, $eTroopValkyrie, $eTroopGolem, _
-			$eTroopWitch, $eTroopLavaHound, _
+Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroopWallBreaker, _
+			$eTroopBalloon, $eTroopWizard, $eTroopHealer, $eTroopDragon, $eTroopPekka, _
+			$eTroopMinion, $eTroopHogRider, $eTroopValkyrie, $eTroopGolem, $eTroopWitch, _
+			$eTroopLavaHound, _
 			$eTroopKing, $eTroopQueen, $eTroopCount
-Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Goblin", "Giant", _
-									 "Wall Breaker", "Balloon", "Wizard", "Healer", _
-									 "Dragon", "Pekka", _
-									 "Minion", "Hog Rider", "Valkyrie", "Golem", _
-									 "Witch", "Lava Hound", _
+Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", _
+									 "Balloon", "Wizard", "Healer", "Dragon", "Pekka", _
+									 "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", _
+									 "Lava Hound", _
 									 "Barbarian King", "Archer Queen"]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellCount
 Global $gSpellNames[$eSpellCount] = ["Lightning", "Rage", "Heal", "Jump", "Freeze"]
@@ -42,11 +40,11 @@ Global $gAutoRaidStage = $eAutoRaidNotStarted
 
 ; Auto Raid troop deployment
 Global Enum $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
-Global $gMyMaxSpells
+Global $gMyMaxSpells = 999
 
 ; Auto Raid statistics
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 Global $gAutoRaidEndLoot[4] ; gold, elix, dark, cups
-Global $gMyTroopCost[$eTroopCount]
+Global $gMyTroopCost[$eTroopCount-2]
 $gMyTroopCost[$eTroopBarbarian] = 0
 Global $gAutoRaidWinnings[4]  ; gold, elix, dark, cups

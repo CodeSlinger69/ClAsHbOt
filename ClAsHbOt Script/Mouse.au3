@@ -12,9 +12,9 @@ Func _MouseClickFast(Const $x, Const $y)
    EndIf
 EndFunc
 
-Func RandomWeightedClick(Const $button)
+Func RandomWeightedClick(Const $button, Const $scale = 1, Const $density = 1, Const $centerX = 0, Const $centerY = 0)
    Local $xClick, $yClick
-   RandomWeightedCoords($button, $xClick, $yClick)
+   RandomWeightedCoords($button, $xClick, $yClick, $scale, $density, $centerX, $centerY)
 
    If $gMouseClickMethod = "MouseClick" Then
 	  Local $cPos = GetClientPos()
@@ -105,14 +105,12 @@ Func RandomWeightedCoords(Const ByRef $boundingBox, ByRef $x, ByRef $y, $scale =
 	  $x = $boxCenterX + $boxWidth * $offsetX/4
 	  $y = $boxCenterY + $boxHeight * $offsetY/4
 
-	  ;DebugWrite("Offset: " & $offsetX & "," & $offsetY)
-
 	  ; Check for long running loop
 	  If TimerDiff($loopStartTime)>5000 Then
 		 DebugWrite("ERROR in RandomWeightedCoords, long running loop.  Exiting.")
 		 $x = $boxCenterX
 		 $y = $boxCenterY
-		 ExitLoop
+		 Return
 	  EndIf
 
    Until $x >= $boundingBox[0] And $x <= $boundingBox[2] And _

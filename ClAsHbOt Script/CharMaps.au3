@@ -34,8 +34,9 @@ Global $gSmallCharacterMaps[14][$gSmallCharMapsMaxWidth+2] = [ _
 
 ; MyCups, TrainTroops Window
 Global $gLargeCharMapsMaxWidth = 10
-Global $gLargeCharacterMaps[25][$gLargeCharMapsMaxWidth+2] = [ _
+Global $gLargeCharacterMaps[26][$gLargeCharMapsMaxWidth+2] = [ _
 ["0", 10, 508, 1023, 2047, 1795, 1539, 1539, 1539, 2047, 2047, 1022], _
+["1", 4, 256, 511, 511, 384], _
 ["1", 4, 512, 1023, 1023, 1023], _
 ["2", 8, 1055, 1087, 1087, 3187, 3171, 4067, 4034, 1922], _
 ["3", 8, 1025, 3075, 3139, 3171, 3687, 2047, 1982, 798], _
