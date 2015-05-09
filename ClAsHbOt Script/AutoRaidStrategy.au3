@@ -233,9 +233,11 @@ Func FillBarracksAutoRaidStrategy0(Const $initialFillFlag)
 	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
 	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 		 Local $dequeueTries = 6
-		 While IsButtonPresent($TrainTroopsWindowDequeueButton) And $dequeueTries>0 And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
+		 While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
+			   _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
+
 			Local $xClick, $yClick
-			RandomWeightedCoords($TrainTroopsWindowDequeueButton, $xClick, $yClick)
+			RandomWeightedCoords($rTrainTroopsWindowDequeueButton, $xClick, $yClick)
 			_ClickHold($xClick, $yClick, 4000)
 			$dequeueTries-=1
 			Sleep(500)

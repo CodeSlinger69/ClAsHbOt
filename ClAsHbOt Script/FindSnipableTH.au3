@@ -7,11 +7,11 @@ Func FindASnipableTH()
    Local $startGold = GUICtrlRead($GUI_MyGold)
 
    ; Click Attack
-   RandomWeightedClick($MainScreenAttackButton)
+   RandomWeightedClick($rMainScreenAttackButton)
 
    ; Wait for Find a Match button
    $failCount = 10
-   While IsButtonPresent($FindMatchScreenFindAMatchButton) = False And $failCount>0
+   While IsButtonPresent($rFindMatchScreenFindAMatchButton) = False And $failCount>0
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
@@ -23,15 +23,15 @@ Func FindASnipableTH()
    EndIf
 
    ; Click Find a Match
-   RandomWeightedClick($FindMatchScreenFindAMatchButton)
+   RandomWeightedClick($rFindMatchScreenFindAMatchButton)
 
    ; Wait for Next button
    $failCount = 30
-   While IsButtonPresent($WaitRaidScreenNextButton) = False And $failCount>0
+   While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
 
 	  ; See if Shield Is Active screen pops up
 	  If WhereAmI() = $eScreenShieldIsActive Then
-		 RandomWeightedClick($ShieldIsActivePopupButton)
+		 RandomWeightedClick($rShieldIsActivePopupButton)
 		 Sleep(500)
 	  EndIf
 
@@ -81,13 +81,13 @@ Func FindASnipableTH()
 	  EndIf
 
 	  ; Click Next button
-	  RandomWeightedClick($WaitRaidScreenNextButton)
+	  RandomWeightedClick($rWaitRaidScreenNextButton)
 	  $count+=1
 
 	  ; Sleep and wait for Next button to reappear
 	  Sleep(500) ; So the click on the Wait button has time to register
 	  $failCount = 30
-	  While IsButtonPresent($WaitRaidScreenNextButton) = False And $failCount>0
+	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
 		 Sleep(1000)
 		 $failCount -= 1
 	  WEnd

@@ -5,7 +5,7 @@ Func DonateTroops()
    If OpenChatWindow() = False Then Return False
 
    ; Search for donate button
-   Local $donateButtonAbsolute[8]
+   Local $donateButtonAbsolute[4]
    If FindDonateButton($donateButtonAbsolute) = False Then Return False
 
    ; Get the request text
@@ -40,14 +40,14 @@ Func DonateTroops()
 EndFunc
 
 Func OpenChatWindow()
-   If IsButtonPresent($MainScreenClosedChatButton) = False And _
-	  IsButtonPresent($MainScreenOpenChatButton) = False Then Return False
+   If IsButtonPresent($rMainScreenClosedChatButton) = False And _
+	  IsButtonPresent($rMainScreenOpenChatButton) = False Then Return False
 
-   RandomWeightedClick($MainScreenClosedChatButton)
+   RandomWeightedClick($rMainScreenClosedChatButton)
 
    ; Wait for OpenChatButton button
    Local $failCount = 10
-   While IsButtonPresent($MainScreenOpenChatButton) = False And $failCount>0
+   While IsButtonPresent($rMainScreenOpenChatButton) = False And $failCount>0
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
@@ -76,12 +76,8 @@ Func FindDonateButton(ByRef $button)
 
    $button[0] = $bestX+9
    $button[1] = $bestY+103
-   $button[2] = $bestX+9+$ChatWindowDonateButton[2]
-   $button[3] = $bestY+103+$ChatWindowDonateButton[3]
-   $button[4] = 0
-   $button[5] = 0
-   $button[6] = 0
-   $button[7] = 0
+   $button[2] = $bestX+9+$rChatWindowDonateButton[2]
+   $button[3] = $bestY+103+$rChatWindowDonateButton[3]
 
    DebugWrite("Donate button found at absolute: " & $button[0] & ", " & $button[1] & ", " _
 	  & $button[2] & ", " & $button[3])
@@ -93,13 +89,9 @@ Func GetRequestText(Const ByRef $button, ByRef $text)
    ; Grab text of donate request
    Local $textOffset[2] = [-68, -25] ; relative to donate button
    Local $donateTextBox[10] = [$button[0]+$textOffset[0], $button[1]+$textOffset[1], _
-							   $button[0]+$textOffset[0]+$ChatTextBox[2], $button[1]+$textOffset[1]+$ChatTextBox[3], _
-							   $ChatTextBox[4], $ChatTextBox[5], $ChatTextBox[6], _
-							   $ChatTextBox[7], $ChatTextBox[8], $ChatTextBox[9]]
-
-   ;DebugWrite("textbox: " & $donateTextBox[0] & " " & $donateTextBox[1] & " " & $donateTextBox[2] & " " & $donateTextBox[3] & " " & _
-	;		  Hex($donateTextBox[4]) & " " & $donateTextBox[5] & " " & $donateTextBox[6] & " " & $donateTextBox[7] & " " & _
-	;		  $donateTextBox[8] & " " & $donateTextBox[9] )
+							   $button[0]+$textOffset[0]+$rChatTextBox[2], $button[1]+$textOffset[1]+$rChatTextBox[3], _
+							   $rChatTextBox[4], $rChatTextBox[5], $rChatTextBox[6], _
+							   $rChatTextBox[7], $rChatTextBox[8], $rChatTextBox[9]]
 
    $text = ScrapeExactText($gChatCharacterMaps, $donateTextBox, $gChatCharMapsMaxWidth, $eScrapeKeepSpaces)
    DebugWrite("Donate text: '" & $text & "'")
@@ -253,6 +245,13 @@ EndFunc
 
 Func QueueDonatableTroops()
    DebugWrite("QueueDonatableTroops()")
+   #cs
+
+
+   ; TODO: This is not complete yet...inventory of built/queued troops is complete
+   ; Need to figure out good logic for how to "stock" troops for donation.
+   ; For now, the donate function just donates troops already in stock that have
+   ; been queued manually, or are there due to auto-raid queueing.
 
    ; Count how many troops are in the Army Camps
    Local $availableTroopCounts[$eTroopCount-2]
@@ -303,6 +302,8 @@ Func QueueDonatableTroops()
 	  EndIf
    Next
 
+   ; TODO: This is where the "queue to stock" logic needs to be figured out
+
    ; Queue up standard
    If $standardNeeded = True Then
 	  ; Find spell/dark window
@@ -352,6 +353,8 @@ Func QueueDonatableTroops()
    ; Queue up dark
 
    CloseBarracksWindow()
+
+   #ce
 
 EndFunc
 

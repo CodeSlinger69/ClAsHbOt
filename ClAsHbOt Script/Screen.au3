@@ -44,43 +44,43 @@ Func ResetToCoCMainScreen()
 	  GrabFrameToFile("HomeScanFrame.bmp")
 	  ScanFrameForBestBMP("HomeScanFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
 	  If $bestMatch <> 99 Then
-		 Local $button[8] = [$bestX, $bestY, $bestX+$ScreenAndroidHomeCoCIconButton[2], $bestY+$ScreenAndroidHomeCoCIconButton[3], 0, 0, 0, 0]
+		 Local $button[4] = [$bestX, $bestY, $bestX+$rScreenAndroidHomeCoCIconButton[2], $bestY+$rScreenAndroidHomeCoCIconButton[3]]
 		 RandomWeightedClick($button)
 		 $countdown = 30
 	  EndIf
 
    ; CoC Chat Open - Close it
    Case $eScreenChatOpen
-	  RandomWeightedClick($MainScreenOpenChatButton)
+	  RandomWeightedClick($rMainScreenOpenChatButton)
 
    ; Chat window open but dimmed - click on safe spot
    Case $eScreenChatDimmed
 	  RandomWeightedClick($rSafeAreaButton)
 	  Sleep(1000)
-	  If WhereAmI()=$eScreenChatOpen Then RandomWeightedClick($MainScreenOpenChatButton)
+	  If WhereAmI()=$eScreenChatOpen Then RandomWeightedClick($rMainScreenOpenChatButton)
 
    ; CoC Find Match screen - exit
    Case $eScreenFindMatch
-	  RandomWeightedClick($FindMatchScreenCloseWindowButton)
+	  RandomWeightedClick($rFindMatchScreenCloseWindowButton)
 
    ; CoC Wait Raid screen - exit
    Case $eScreenWaitRaid
-	  RandomWeightedClick($LiveRaidScreenEndBattleButton)
+	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 
    ; End Battle screen - click button
    Case $eScreenEndBattle
-	  RandomWeightedClick($BattleHasEndedScreenReturnHomeButton)
+	  RandomWeightedClick($rBattleHasEndedScreenReturnHomeButton)
 
    ; Live Replay End Battle screen - click "Return Home"
    Case $eScreenLiveReplayEndBattle
-	  RandomWeightedClick($LiveReplayEndScreenReturnHomeButton)
+	  RandomWeightedClick($rLiveReplayEndScreenReturnHomeButton)
 
    Case $eScreenVilliageWasAttacked
-	  RandomWeightedClick($WindowVilliageWasAttackedOkayButton)
+	  RandomWeightedClick($rWindowVilliageWasAttackedOkayButton)
 
    ; Shield Is Active screen
    Case $eScreenShieldIsActive
-	  RandomWeightedClick($ShieldIsActivePopupButton)
+	  RandomWeightedClick($rShieldIsActivePopupButton)
 
    ; Army camp buttons - click on safe spot
    Case $eScreenArmyCampButtons
@@ -127,31 +127,31 @@ Func WhereAmI()
    If IsColorPresent($rScreenMainColor) Then Return $eScreenMain
 
    ; $ScreenChatOpen
-   If IsButtonPresent($MainScreenOpenChatButton) Then Return $eScreenChatOpen
+   If IsButtonPresent($rMainScreenOpenChatButton) Then Return $eScreenChatOpen
 
    ; $WindowChatDimmed
    If IsColorPresent($rWindowChatDimmedColor) Then Return $eScreenChatDimmed
 
    ; $ScreenShieldIsActive
-   If IsButtonPresent($ShieldIsActivePopupButton) Then Return $eScreenShieldIsActive
+   If IsButtonPresent($rShieldIsActivePopupButton) Then Return $eScreenShieldIsActive
 
    ; $ScreenFindMatch
-   If IsButtonPresent($FindMatchScreenFindAMatchButton) Then Return $eScreenFindMatch
+   If IsButtonPresent($rFindMatchScreenFindAMatchButton) Then Return $eScreenFindMatch
 
    ; $ScreenWaitRaid (with "Next")
-   If IsButtonPresent($WaitRaidScreenNextButton) Then Return $eScreenWaitRaid
+   If IsButtonPresent($rWaitRaidScreenNextButton) Then Return $eScreenWaitRaid
 
    ; $ScreenLiveRaid (live attack)
    If IsColorPresent($rScreenLiveRaid1Color) And IsColorPresent($rScreenLiveRaid2Color) Then Return $eScreenLiveRaid
 
    ; $ScreenEndBattle
-   If IsButtonPresent($BattleHasEndedScreenReturnHomeButton) Then Return $eScreenEndBattle
+   If IsButtonPresent($rBattleHasEndedScreenReturnHomeButton) Then Return $eScreenEndBattle
 
    ; $ScreenLiveReplayEndBattle
-   If IsButtonPresent($LiveReplayEndScreenReturnHomeButton) Then Return $eScreenLiveReplayEndBattle
+   If IsButtonPresent($rLiveReplayEndScreenReturnHomeButton) Then Return $eScreenLiveReplayEndBattle
 
    ; $WindowVilliageWasAttacked
-   If IsButtonPresent($WindowVilliageWasAttackedOkayButton) Then Return $eScreenVilliageWasAttacked
+   If IsButtonPresent($rWindowVilliageWasAttackedOkayButton) Then Return $eScreenVilliageWasAttacked
 
    ; $eScreenArmyCampButtons
    If IsButtonPresent($rArmyCampInfoButton) Then Return $eScreenArmyCampButtons

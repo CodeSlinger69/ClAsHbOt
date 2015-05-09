@@ -9,9 +9,10 @@ Func AutoRaidExecuteDEZap()
    If $res = True Then ; Zap executed
 	  WaitForBattleEnd(False, False)
 
-   Else ; Not enuf lightning spells, or couldn't find DE storage
+   Else
+	  ; Not enuf lightning spells, or couldn't find DE storage
 	  ; Click End Battle button
-	  RandomWeightedClick($LiveRaidScreenEndBattleButton)
+	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 	  Sleep(500)
 
    EndIf

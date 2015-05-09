@@ -1,10 +1,5 @@
 #cs
 ClAsHbOt!
-
-TODO:
-queue up troops for donating in barracks
-don't unqueue expensive/long build troops
-
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -32,6 +27,7 @@ Opt("GUIOnEventMode", 1)
 #include <FindMatch.au3>
 #include <FindSnipableTH.au3>
 #include <AutoRaid.au3>
+#include <AutoRaidDumpCups.au3>
 #include <AutoRaidDEZap.au3>
 #include <AutoRaidStrategy.au3>
 #include <Mouse.au3>
@@ -50,9 +46,7 @@ Func Main()
    InitScraper()
 
    ReadSettings()
-;ZoomOut(true)
-;QueueDonatableTroops()
-;Exit
+
    InitGUI()
 
    MainApplicationLoop()
@@ -162,7 +156,7 @@ Func MainApplicationLoop()
 	  ; Auto Raid, Dump Cups
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
-		 IsButtonPresent($AndroidMessageButton) = False Then
+		 IsButtonPresent($rAndroidMessageButton) = False Then
 
 		 ResetToCoCMainScreen()
 		 If WhereAmI()=$eScreenMain Then DumpCups()
@@ -170,7 +164,7 @@ Func MainApplicationLoop()
 
 	  ; Auto Raid, Attack
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
-		 IsButtonPresent($AndroidMessageButton) = False Then
+		 IsButtonPresent($rAndroidMessageButton) = False Then
 
 		 If $gAutoRaidBeginLoot[0]=-1 Or $gAutoRaidBeginLoot[1]=-1 Or _
 			$gAutoRaidBeginLoot[2]=-1 Or $gAutoRaidBeginLoot[3]=-1 Then

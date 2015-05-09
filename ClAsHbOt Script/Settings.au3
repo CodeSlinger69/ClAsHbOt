@@ -70,26 +70,50 @@ Func ReadSettings()
    Global $gDonateMatchAnyTroops = StringSplit(IniRead($gIniFile, "Donate", "Use For Any", _
 	  "Lava Hound|Witch|Golem|Valkyrie|Minion|Pekka|Dragon|Wizard|Balloon|Giant|Archer|Barbarian"), "|")
 
-   Global $gDonateBarracksStandardMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Standard Maximum", 4)
-   Global $gDonateBarracksDarkMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Dark Maximum", 2)
+   ;Global $gDonateBarracksStandardMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Standard Maximum", 4)
+   ;Global $gDonateBarracksDarkMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Dark Maximum", 2)
 
-   Global $gDonateTroopStock[$eTroopCount-2]
-   $gDonateTroopStock[$eTroopBarbarian] = Number(IniRead($gIniFile, "Donate", "Barbarian Stock Amount", 0))
-   $gDonateTroopStock[$eTroopArcher] = Number(IniRead($gIniFile, "Donate", "Archer Stock Amount", 0))
-   $gDonateTroopStock[$eTroopGoblin] = Number(IniRead($gIniFile, "Donate", "Goblin Stock Amount", 0))
-   $gDonateTroopStock[$eTroopGiant] = Number(IniRead($gIniFile, "Donate", "Giant Stock Amount", 0))
-   $gDonateTroopStock[$eTroopWallBreaker] = Number(IniRead($gIniFile, "Donate", "Wall Breaker Stock Amount", 0))
-   $gDonateTroopStock[$eTroopBalloon] = Number(IniRead($gIniFile, "Donate", "Balloon Stock Amount", 0))
-   $gDonateTroopStock[$eTroopWizard] = Number(IniRead($gIniFile, "Donate", "Wizard Stock Amount", 0))
-   $gDonateTroopStock[$eTroopHealer] = Number(IniRead($gIniFile, "Donate", "Healer Stock Amount", 0))
-   $gDonateTroopStock[$eTroopDragon] = Number(IniRead($gIniFile, "Donate", "Dragon Stock Amount", 0))
-   $gDonateTroopStock[$eTroopPekka] = Number(IniRead($gIniFile, "Donate", "Pekka Stock Amount", 0))
-   $gDonateTroopStock[$eTroopMinion] = Number(IniRead($gIniFile, "Donate", "Minion Stock Amount", 0))
-   $gDonateTroopStock[$eTroopHogRider] = Number(IniRead($gIniFile, "Donate", "Hog Rider Stock Amount", 0))
-   $gDonateTroopStock[$eTroopValkyrie] = Number(IniRead($gIniFile, "Donate", "Valkyrie Stock Amount", 0))
-   $gDonateTroopStock[$eTroopGolem] = Number(IniRead($gIniFile, "Donate", "Golem Stock Amount", 0))
-   $gDonateTroopStock[$eTroopWitch] = Number(IniRead($gIniFile, "Donate", "Witch Stock Amount", 0))
-   $gDonateTroopStock[$eTroopLavaHound] = Number(IniRead($gIniFile, "Donate", "Lava Hound Stock Amount", 0))
+   ;Global $gDonateTroopStock[$eTroopCount-2]
+   ;$gDonateTroopStock[$eTroopBarbarian] = Number(IniRead($gIniFile, "Donate", "Barbarian Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopArcher] = Number(IniRead($gIniFile, "Donate", "Archer Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopGoblin] = Number(IniRead($gIniFile, "Donate", "Goblin Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopGiant] = Number(IniRead($gIniFile, "Donate", "Giant Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopWallBreaker] = Number(IniRead($gIniFile, "Donate", "Wall Breaker Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopBalloon] = Number(IniRead($gIniFile, "Donate", "Balloon Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopWizard] = Number(IniRead($gIniFile, "Donate", "Wizard Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopHealer] = Number(IniRead($gIniFile, "Donate", "Healer Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopDragon] = Number(IniRead($gIniFile, "Donate", "Dragon Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopPekka] = Number(IniRead($gIniFile, "Donate", "Pekka Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopMinion] = Number(IniRead($gIniFile, "Donate", "Minion Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopHogRider] = Number(IniRead($gIniFile, "Donate", "Hog Rider Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopValkyrie] = Number(IniRead($gIniFile, "Donate", "Valkyrie Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopGolem] = Number(IniRead($gIniFile, "Donate", "Golem Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopWitch] = Number(IniRead($gIniFile, "Donate", "Witch Stock Amount", 0))
+   ;$gDonateTroopStock[$eTroopLavaHound] = Number(IniRead($gIniFile, "Donate", "Lava Hound Stock Amount", 0))
+
+   ; TODO: Here are lines for the .ini file, once the "Queue to stock" logic is figured out
+#cs
+; This setting specifies the maximum number of barracks to use for stocking troops
+Donate Barracks Standard Maximum=2
+Donate Barracks Dark Maximum=2
+; These settings dictate how much of each troop type to keep stocked for donations
+Barbarian Stock Amount=5
+Archer Stock Amount=5
+Goblin Stock Amount=0
+Giant Stock Amount=0
+Wall Breaker Stock Amount=0
+Balloon Stock Amount=0
+Wizard Stock Amount=0
+Healer Stock Amount=0
+Dragon Stock Amount=0
+Pekka Stock Amount=2
+Minion Stock Amount=0
+Hog Rider Stock Amount=0
+Valkyrie Stock Amount=0
+Golem Stock Amount=0
+Witch Stock Amount=0
+Lava Hound Stock Amount=0
+#ce
 
 EndFunc
 

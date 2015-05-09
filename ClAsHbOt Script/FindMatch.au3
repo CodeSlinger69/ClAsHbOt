@@ -6,11 +6,11 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
    Local $startGold = GUICtrlRead($GUI_MyGold)
 
    ; Click Attack
-   RandomWeightedClick($MainScreenAttackButton)
+   RandomWeightedClick($rMainScreenAttackButton)
 
    ; Wait for Find a Match button
    Local $failCount = 10
-   While IsButtonPresent($FindMatchScreenFindAMatchButton) = False And $failCount>0
+   While IsButtonPresent($rFindMatchScreenFindAMatchButton) = False And $failCount>0
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
@@ -22,15 +22,15 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
    EndIf
 
    ; Click Find a Match
-   RandomWeightedClick($FindMatchScreenFindAMatchButton)
+   RandomWeightedClick($rFindMatchScreenFindAMatchButton)
 
    ; Wait for Next button
    $failCount = 30
-   While IsButtonPresent($WaitRaidScreenNextButton) = False And $failCount>0
+   While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
 
 	  ; See if Shield Is Active screen pops up
 	  If WhereAmI() = $eScreenShieldIsActive Then
-		 RandomWeightedClick($ShieldIsActivePopupButton)
+		 RandomWeightedClick($rShieldIsActivePopupButton)
 		 Sleep(500)
 	  EndIf
 
@@ -63,12 +63,12 @@ Func FindAValidMatch(Const $returnFirstMatch = False)
 	  ; Click Next button
 	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall)
 	  Sleep($gPauseBetweenNexts)
-	  RandomWeightedClick($WaitRaidScreenNextButton)
+	  RandomWeightedClick($rWaitRaidScreenNextButton)
 
 	  ; Sleep and wait for Next button to reappear
 	  Sleep(500) ; So the click on the Wait button has time to register
 	  $failCount = 30
-	  While IsButtonPresent($WaitRaidScreenNextButton) = False And $failCount>0
+	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
 		 Sleep(1000)
 		 $failCount -= 1
 	  WEnd

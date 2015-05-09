@@ -1,13 +1,13 @@
 Func CheckForAndroidMessageBox()
 
    ; Check for Android message boxes
-   If IsButtonPresent($AndroidMessageButton) Then
+   If IsButtonPresent($rAndroidMessageButton) Then
 	  DebugWrite("Online check: Clicking Android Msg Box")
 
 	  WinActivate($gTitle)
 	  WinWaitActive($gTitle)
 
-	  RandomWeightedClick($AndroidMessageButton)
+	  RandomWeightedClick($rAndroidMessageButton)
 	  Sleep(2000)
 
 	  ; Wait for main screen
