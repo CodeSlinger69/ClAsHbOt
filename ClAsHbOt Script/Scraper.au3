@@ -553,7 +553,7 @@ Func GetTownHallLevel(Const $x1 = -1, Const $y1 = -1, Const $x2 = -1, Const $y2 
 
    If $bestMatch = 99 Then
 	  ;DebugWrite("Unknown TH Level" & @CRLF)
-	  Return 0
+	  Return -1
    Else
 	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & @CRLF)
 	  Return $bestMatch+7

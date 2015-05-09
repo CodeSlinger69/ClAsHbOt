@@ -163,7 +163,7 @@ Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $to
 
    ; Do we have a gold/elix/dark/townhall/dead match?
    If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
-	  If $townHall <= $GUITownHall And $townHall<>-1 Then
+	  If $townHall <= $GUITownHall And $townHall > 0 Then
 		 If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
 			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & " / " & $deadBase)
 			Return $eAutoRaidExecuteRaid
