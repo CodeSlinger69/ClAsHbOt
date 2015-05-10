@@ -1,4 +1,4 @@
-Global $gVersion = "20150509"
+Global $gVersion = "20150510"
 
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
