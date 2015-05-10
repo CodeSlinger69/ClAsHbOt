@@ -78,7 +78,7 @@ Func AutoRaidUpdateProgress()
    $gAutoRaidEndLoot[2] = GUICtrlRead($GUI_MyDark)
    $gAutoRaidEndLoot[3] = GUICtrlRead($GUI_MyCups)
 
-   DebugWrite(" AutoRaid Change: " & _
+   DebugWrite("AutoRaid Change: " & _
 	  " Gold:" & $gAutoRaidEndLoot[0] - $gAutoRaidBeginLoot[0] & _
 	  " Elix:" & $gAutoRaidEndLoot[1] - $gAutoRaidBeginLoot[1] & _
 	  " Dark:" & $gAutoRaidEndLoot[2] - $gAutoRaidBeginLoot[2] & _
@@ -196,7 +196,7 @@ Func QueueSpells()
 		 Local $queueStatSplit = StringSplit($queueStatus, "/")
 		 If $queueStatSplit[0] = 2 Then
 			Local $spellsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
-			DebugWrite("Spells queued / available = " & Number($queueStatSplit[1]) & " / " & Number($queueStatSplit[2]))
+			DebugWrite("Spells queued: " & Number($queueStatSplit[1]) & " of " & Number($queueStatSplit[2]))
 
 			$gMyMaxSpells = Number($queueStatSplit[2]) ; Used when deciding to DE Zap or not
 
@@ -225,14 +225,16 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 
    ; Do initial deployment
    Local $troopsAvailable = GetAvailableTroops($troop, $index)
-   If $howMany=$eAutoRaidDeploySixtyPercent Then $troopsAvailable = Int($troopsAvailable * 0.6)
-   ;DebugWrite("DeployTroopsToSides: " & ($howMany=$deploySixtyPercent ? "60% " : "Remaining ") & $troopsAvailable)
+   Local $troopsToDeploy = ($howMany=$eAutoRaidDeploySixtyPercent ? Int($troopsAvailable * 0.6) : $troopsAvailable)
 
-   Local $clickPoints1[$troopsAvailable][2]
+   DebugWrite("Available: " & $troopsAvailable & ", deploying " & ($howMany=$eAutoRaidDeploySixtyPercent ? "60% " : "Remaining ") & _
+	  " =" & $troopsToDeploy)
+
+   Local $clickPoints1[$troopsToDeploy][2]
    ; Always deploy first set of troops left to right to avoid accidentally clicking the Next button
-   GetRandomSortedClickPoints(0, $dir, $troopsAvailable, $clickPoints1)
+   GetRandomSortedClickPoints(0, $dir, $troopsToDeploy, $clickPoints1)
 
-   For $i = 0 To $troopsAvailable-1
+   For $i = 0 To $troopsToDeploy-1
 	  _MouseClickFast($clickPoints1[$i][0], $clickPoints1[$i][1])
 	  Sleep($gDeployTroopClickDelay)
    Next
@@ -244,7 +246,8 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
    $troopsAvailable = GetAvailableTroops($troop, $index)
 
    If $troopsAvailable>0 Then
-	  ;DebugWrite("DeployTroopsToSides: Continuing " & $troopsAvailable & " remaining")
+	  DebugWrite("Continuing: " & $troopsAvailable & " troops available.")
+
 	  Local $clickPoints2[$troopsAvailable][2]
 	  GetRandomSortedClickPoints(Random(0,1,1), $dir, $troopsAvailable, $clickPoints2)
 
@@ -255,8 +258,10 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
    EndIf
 
    $troopsAvailable = GetAvailableTroops($troop, $index)
-
-   If $troopsAvailable>0 Then DeployTroopsToSafeBoxes($troop, $index, $dir)
+   If $troopsAvailable>0 Then
+	  DebugWrite("Finishing to safe boxes: " & $troopsAvailable & " troops available.")
+	  DeployTroopsToSafeBoxes($troop, $index, $dir)
+   EndIf
 EndFunc
 
 Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
@@ -265,7 +270,7 @@ Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
 
    ; Deploy half to left
    Local $troopsAvailable = Int(GetAvailableTroops($troop, $index) / 2)
-   ;DebugWrite("DeployTroopsToSafeBoxes, to left: " & $troopsAvailable)
+   DebugWrite("Deploying to left safe box: " & $troopsAvailable & " troops.")
    $count=0
    For $i = 1 To $troopsAvailable
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
@@ -276,7 +281,7 @@ Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
 
    ; Deploy half to right
    $troopsAvailable = GetAvailableTroops($troop, $index)
-   ;DebugWrite("DeployTroopsToSafeBoxes, to right: " & $troopsAvailable)
+   DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
    $count=0
    For $i = 1 To $troopsAvailable
    	  RandomWeightedCoords( ($dir = "Top" ? $NESafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
@@ -501,6 +506,8 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
 						 $rBarracksTroopCountTextBox[4], $rBarracksTroopCountTextBox[5], _
 						 0, 0, 0, 0]
    Local $t = ScrapeFuzzyText($gSmallCharacterMaps, $textBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+   ;DebugWrite("GetAvailableTroops() = " & $t)
+
    Return StringMid($t, 2)
 EndFunc
 

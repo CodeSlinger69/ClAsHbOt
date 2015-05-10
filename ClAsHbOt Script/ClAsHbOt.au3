@@ -60,7 +60,7 @@ Func MainApplicationLoop()
    Local $lastTrainingCheckTimer = TimerInit()
 
    While 1
-	  DebugWrite("Main loop: AutoRaid Stage " & $gAutoRaidStage)
+	  ;DebugWrite("Main loop: AutoRaid Stage " & $gAutoRaidStage)
 
 	  ; Update status on GUI
 	  GetMyLootNumbers()

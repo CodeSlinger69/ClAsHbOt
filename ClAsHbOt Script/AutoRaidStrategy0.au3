@@ -75,7 +75,7 @@ Func AutoRaidExecuteRaidStrategy0()
 
    ; Deploy 60% of barbs
    If $barbButton[0] <> -1 Then
-	  DebugWrite("Deploying 60% of Barbarians (" & Int($availableBarbs/2) & ")")
+	  DebugWrite("Deploying 60% of Barbarians (" & Int($availableBarbs*0.6) & ")")
 	  RandomWeightedClick($barbButton)
 	  Sleep(500)
 	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction)
@@ -83,7 +83,7 @@ Func AutoRaidExecuteRaidStrategy0()
 
    ; Deploy 60% of archers
    If $archButton[0] <> -1 Then
-	  DebugWrite("Deploying 60% of Archers (" & Int($availableArchs/2) & ")")
+	  DebugWrite("Deploying 60% of Archers (" & Int($availableArchs*0.6) & ")")
 	  RandomWeightedClick($archButton)
 	  Sleep(500)
 	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction)
@@ -99,11 +99,9 @@ Func AutoRaidExecuteRaidStrategy0()
 	  RandomWeightedClick($kingButton)
 	  Sleep(500)
 
-	  Local $xClick, $yClick
-	  RandomWeightedCoords( ($direction = "Top") ? _
+	  RandomWeightedClick( ($direction = "Top") ? _
 		 (($royaltyDeploySide>0.5) ? $NWSafeDeployBox : $NESafeDeployBox) : _
-		 (($royaltyDeploySide>0.5) ? $SWSafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
-	  _ControlClick($xClick, $yClick)
+		 (($royaltyDeploySide>0.5) ? $SWSafeDeployBox : $SESafeDeployBox))
 	  Sleep(500)
 
 	  $kingDeployTime = TimerInit()
@@ -143,6 +141,11 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $queenDeployDelay = 20000 ; 20 seconds
    Local $queenDeployed = False
 
+   If $queenButton[0]<>-1 Then
+	  DebugWrite("Deploying Archer Queen in " & _
+		 Int(($queenDeployDelay-TimerDiff($kingDeployTime))/1000) & " seconds")
+   EndIf
+
    While (($kingPoweredUp=False And $troopIndex[$eTroopKing][0]<>-1) Or _
 	      ($queenPoweredUp=False And $troopIndex[$eTroopQueen][0]<>-1)) And _
 		 TimerDiff($deployStart) < 180000 ; 3 minutes
@@ -179,11 +182,9 @@ Func AutoRaidExecuteRaidStrategy0()
 		 RandomWeightedClick($queenButton)
 		 Sleep(500)
 
-		 Local $xClick, $yClick
-		 RandomWeightedCoords( ($direction = "Top") ? _
+		 RandomWeightedClick( ($direction = "Top") ? _
 			(($royaltyDeploySide>0.5) ? $NWSafeDeployBox : $NESafeDeployBox) : _
-			(($royaltyDeploySide>0.5) ? $SWSafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
-		 _ControlClick($xClick, $yClick)
+			(($royaltyDeploySide>0.5) ? $SWSafeDeployBox : $SESafeDeployBox) )
 		 Sleep(500)
 
 		 $queenDeployed = True

@@ -15,10 +15,12 @@ Global $gRaidLootCharMaps[12][$gRaidLootCharMapsMaxWidth+2] = [ _
 ["9", 8, 480, 993, 995, 563, 562, 566, 1022, 508] ]
 
 ; MyGold, MyElixir, MyDark, MyGems, RaidTroopCounts
-Global $gSmallCharMapsMaxWidth = 8
-Global $gSmallCharacterMaps[14][$gSmallCharMapsMaxWidth+2] = [ _
+Global $gSmallCharMapsMaxWidth = 9
+Global $gSmallCharacterMaps[16][$gSmallCharMapsMaxWidth+2] = [ _
  ["0", 7, 126, 255, 129, 129, 129, 255, 255], _
+ ["0", 9, 254, 511, 511, 385, 257, 259, 511, 511, 124], _
  ["1", 2, 128, 128], _
+ ["1", 2, 127, 224], _
  ["1", 3, 256, 511, 510], _
  ["2", 6, 15, 271, 283, 305, 481, 224], _
  ["3", 6, 257, 273, 273, 499, 222, 14], _

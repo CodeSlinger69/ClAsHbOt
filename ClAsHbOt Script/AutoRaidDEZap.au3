@@ -55,7 +55,7 @@ Func ZapDarkElixirStorage()
 	  Return False
    EndIf
 
-   DebugWrite("Zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available, confidence: " & $bestConfidence)
+   DebugWrite("Zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available, conf: " & $bestConfidence)
 
    ; Select lightning spell
    Local $lightningButton[8] = [$spellIndex[$eSpellLightning][0], $spellIndex[$eSpellLightning][1], $spellIndex[$eSpellLightning][2], _
