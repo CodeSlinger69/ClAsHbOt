@@ -77,10 +77,7 @@ Global $rWindowDonateTroopsColor[4] = [6, 6, 0xf8fcff, 0]
 Global $rWindowChatDimmedColor[4] = [235, 13, 0x3a3829, 6] ; Likely due to Donate Troops Window being open
 Global $rNewChatMessagesColor[4] = [21, 262, 0xe00200, 0]
 Global $rDeadBaseIndicatorColor[4] = [23, 26, 0x5b5e60, 0]
+Global $rFirstStarColor[4] = [925, 402, 0xc7c8c0, 6]
 
-; AutoRaid deploy locations
-Global $NWDeployBoxes[21][4], $NEDeployBoxes[21][4], $SWDeployBoxes[21][4], $SEDeployBoxes[21][4]
-Global $NWSafeDeployBox[4] = [280, 170, 300, 190]
-Global $NESafeDeployBox[4] = [735, 170, 755, 190]
-Global $SWSafeDeployBox[4] = [280, 295, 300, 315]
-Global $SESafeDeployBox[4] = [735, 295, 755, 315]
+; "Central" town hall region - used for auto sniping
+Global $rCentralTownHall[4] = [300, 125, 724, 425]

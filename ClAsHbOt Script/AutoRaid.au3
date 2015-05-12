@@ -1,61 +1,54 @@
 Func AutoRaid(ByRef $timer)
    ;DebugWrite("AutoRaid()")
 
-   Switch $gAutoRaidStage
+   Switch $gAutoStage
 
    ; Stage Queue Training
-   Case $eAutoRaidQueueTraining
-	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Queue Training")
+   Case $eAutoQueueTraining
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Queue Training")
 
 	  ResetToCoCMainScreen()
 
-	  AutoRaidQueueTraining()
+	  AutoQueueTroops()
 	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
-   Case $eAutoRaidWaitForTrainingToComplete
+   Case $eAutoWaitForTrainingToComplete
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 ResetToCoCMainScreen()
-		 AutoRaidCheckIfTrainingComplete()
+		 AutoCheckIfTroopsReady()
 		 $timer = TimerInit()
 	  EndIf
 
    ; Stage Find Match
-   Case $eAutoRaidFindMatch
-	  Local $findMatchResults = FindAValidMatch()
+Case $eAutoFindMatch
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
 
-	  If $findMatchResults = $eAutoRaidExecuteRaid Then
-		 $gAutoRaidStage = $eAutoRaidExecuteRaid
-		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Execute Raid")
+	  Local $zappable
+	  Local $findMatchResults = AutoRaidFindMatch($zappable)
 
-	  ElseIf $findMatchResults = $eAutoRaidExecuteDEZap Then
-		 $gAutoRaidStage = $eAutoRaidExecuteDEZap
-		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Execute DE Zap")
-
+	  If $zappable Then
+		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
+		 AutoDEZap()
+		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
-   ; Stage Execute DE Zap
-   Case $eAutoRaidExecuteDEZap
-	  If AutoRaidExecuteDEZap() = True Then
-		 $gAutoRaidStage = $eAutoRaidQueueTraining
-		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: DE Zap Complete")
-		 AutoRaidUpdateProgress()
-
+	  If $findMatchResults = $eAutoExecute Then
+		 $gAutoStage = $eAutoExecute
 	  Else
 		 ResetToCoCMainScreen()
-		 $gAutoRaidStage = $eAutoRaidFindMatch
-		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
-
+		 $gAutoStage = $eAutoFindMatch
 	  EndIf
 
    ; Stage Execute Raid
-   Case $eAutoRaidExecuteRaid
+   Case $eAutoExecute
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Raid")
+
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
 		 If AutoRaidExecuteRaidStrategy0() Then
-			$gAutoRaidStage = $eAutoRaidQueueTraining
-			GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Raid Complete")
+			$gAutoStage = $eAutoQueueTraining
 			AutoRaidUpdateProgress()
 		 EndIf
 	  Case 1
@@ -63,11 +56,179 @@ Func AutoRaid(ByRef $timer)
 	  Case 2
 		 ContinueCase
 	  Case 3
-		 GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Unimplemented strategy")
+		 GUICtrlSetData($GUI_AutoStatus, "Auto: Unimplemented strategy")
 		 MsgBox($MB_OK, "Unimplemented strategy", "This strategy has not yet been implemented")
 	  EndSwitch
 
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Raid Complete")
    EndSwitch
+EndFunc
+
+Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
+   DebugWrite("FindAValidMatch()")
+
+   ; Get starting gold, to calculate cost of Next'ing
+   GetMyLootNumbers()
+   Local $startGold = GUICtrlRead($GUI_MyGold)
+
+   ; Click Attack
+   RandomWeightedClick($rMainScreenAttackButton)
+
+   ; Wait for Find a Match button
+   Local $failCount = 10
+   While IsButtonPresent($rFindMatchScreenFindAMatchButton) = False And $failCount>0
+	  Sleep(1000)
+	  $failCount -= 1
+   WEnd
+
+   If $failCount = 0 Then
+	  DebugWrite("Find Match failed - timeout waiting for Find a Match button")
+	  ResetToCoCMainScreen()
+	  Return False
+   EndIf
+
+   ; Click Find a Match
+   RandomWeightedClick($rFindMatchScreenFindAMatchButton)
+
+   ; Wait for Next button
+   $failCount = 30
+   While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
+
+	  ; See if Shield Is Active screen pops up
+	  If WhereAmI() = $eScreenShieldIsActive Then
+		 RandomWeightedClick($rShieldIsActivePopupButton)
+		 Sleep(500)
+	  EndIf
+
+	  Sleep(1000)
+	  $failCount -= 1
+   WEnd
+
+   If $failCount = 0 Then
+	  DebugWrite("Find Match failed - timeout waiting for Wait Raid screen")
+	  ResetToCoCMainScreen()
+	  Return False
+   EndIf
+
+   ; Return now, if we are calling this function to dump cups
+   If $returnFirstMatch Then Return True
+
+   ; Loop with Next until we get a match
+   Local $match = False
+   Local $gold, $elix, $dark, $cups, $townHall, $deadBase
+
+   While 1
+	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _
+		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
+		 ExitLoop
+	  EndIf
+
+	  $zappable = False
+	  $match = CheckForMatch($gold, $elix, $dark, $cups, $townHall, $deadBase, $zappable)
+	  If $match <> -1 Then ExitLoop
+
+	  ; Click Next button
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  Sleep($gPauseBetweenNexts)
+	  RandomWeightedClick($rWaitRaidScreenNextButton)
+
+	  ; Sleep and wait for Next button to reappear
+	  Sleep(500) ; So the click on the Wait button has time to register
+	  $failCount = 30
+	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
+		 Sleep(1000)
+		 $failCount -= 1
+	  WEnd
+
+	  If $failCount = 0 Then
+		 DebugWrite("Find Match failed - timeout waiting for Wait Raid screen")
+		 ResetToCoCMainScreen()
+		 Return False
+	  EndIf
+   WEnd
+
+   ; Get ending gold, to calculate cost of Next'ing
+   GetMyLootNumbers()
+   Local $endGold = GUICtrlRead($GUI_MyGold)
+   DebugWrite("Gold cost this match: " & $startGold - $endGold)
+
+   If $match <> -1 Then
+
+	  ; Pop up a message box if we are not auto raiding right now
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
+		 ; 5 beeps
+		 For $i = 1 To 5
+			Beep(500, 200)
+			Sleep(100)
+		 Next
+
+		 DebugWrite("Got match: " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $deadBase)
+		 MsgBox($MB_OK, "Match!", $gold & " / " & $elix & " / " & $dark &  " / " & $cups &  " / " & $townHall & " / " & $deadBase & _
+			@CRLF & @CRLF & "Click OK after completing raid," & @CRLF & _
+			"or deciding to skip this raid." & @CRLF & @CRLF & _
+			"Cost of this search: " & $startGold - $endGold)
+	  EndIf
+
+	  Return $match
+   EndIf
+
+   Return -1
+EndFunc
+
+Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $townHall, ByRef $deadBase, ByRef $zappable)
+   ; Update my loot status on GUI
+   GetMyLootNumbers()
+
+   ; Scrape text fields
+   $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $cups = 0
+
+   If IsTextBoxPresent($rCupsTextBox1) Then
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox1, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   ElseIf IsTextBoxPresent($rCupsTextBox2) Then
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox2, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   EndIf
+
+   ; See if this is a dead base
+   $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
+
+   ; Default townhall
+   $townHall = -1
+
+   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+
+   ; Grab settings from the GUI
+   Local $GUIGold = GUICtrlRead($GUI_GoldEdit)
+   Local $GUIElix = GUICtrlRead($GUI_ElixEdit)
+   Local $GUIDark = GUICtrlRead($GUI_DarkEdit)
+   Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
+   Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
+
+   ; Check zappable base
+   $zappable = CheckZappableBase()
+
+   ; Only get Town Hall Level if the other criteria are a match
+   If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
+	  If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
+		 Local $location, $top, $left
+		 $townHall = GetTownHallLevel($location, $left, $top)
+		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+	  EndIf
+   EndIf
+
+   ; Do we have a gold/elix/dark/townhall/dead match?
+   If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
+	  If $townHall <= $GUITownHall And $townHall > 0 Then
+		 If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
+			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & " / " & $deadBase)
+			Return $eAutoExecute
+		 EndIf
+	  EndIf
+   EndIf
+
+   Return -1
 EndFunc
 
 Func AutoRaidUpdateProgress()
@@ -83,132 +244,6 @@ Func AutoRaidUpdateProgress()
 	  " Elix:" & $gAutoRaidEndLoot[1] - $gAutoRaidBeginLoot[1] & _
 	  " Dark:" & $gAutoRaidEndLoot[2] - $gAutoRaidBeginLoot[2] & _
 	  " Cups:" & $gAutoRaidEndLoot[3] - $gAutoRaidBeginLoot[3] & @CRLF)
-EndFunc
-
-Func AutoRaidQueueTraining()
-   DebugWrite("AutoRaidQueueTraining()")
-
-   OpenBarracksWindow()
-   If WhereAmI() <> $eScreenTrainTroops Then
-	  ResetToCoCMainScreen()
-	  Return
-   EndIf
-
-   ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
-   Local $redStripe = IsColorPresent($rWindowBarracksFullColor)
-   If $redStripe Then DebugWrite("Barracks full, moving immediately to next auto raid stage.")
-
-   ; Get spells window
-   If FindSpellsQueueingWindow() = False Then
-	 DebugWrite(" Auto Raid, Queue Troops failed - can't find Spells or Dark window")
-	 ResetToCoCMainScreen()
-	 Return
-   EndIf
-
-   ; Queue spells?
-   QueueSpells()
-
-   Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
-   Case 0
-	  FillBarracksAutoRaidStrategy0(Not($redStripe))
-   Case 1
-	  ContinueCase
-   Case 2
-	  ContinueCase
-   Case 3
-	  ContinueCase
-   EndSwitch
-
-   CloseBarracksWindow()
-
-   If $redStripe Then
-	  $gAutoRaidStage = $eAutoRaidFindMatch
-	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
-
-   Else
-      $gAutoRaidStage = $eAutoRaidWaitForTrainingToComplete
-	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Waiting For Training (0:00)")
-
-   EndIf
-EndFunc
-
-Func AutoRaidCheckIfTrainingComplete()
-   DebugWrite("AutoRaidCheckIfTrainingComplete()")
-
-   OpenBarracksWindow()
-
-   If WhereAmI() <> $eScreenTrainTroops Then
-	  ResetToCoCMainScreen()
-	  Return
-   EndIf
-
-   ; See if we have a red stripe on the bottom of the train troops window, which means we are full up
-   If IsColorPresent($rWindowBarracksFullColor) Then
-	  ;DebugWrite("Troop training is complete!")
-	  $gAutoRaidStage = $eAutoRaidFindMatch
-  	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Find Match")
-
-   Else
-	  ; Top off the barracks queues
-	  If FindSpellsQueueingWindow() = False Then
-		DebugWrite(" Auto Raid, Queue Troops failed - can't find Spells or Dark window")
-		ResetToCoCMainScreen()
-		Return
-	  EndIf
-
-	  QueueSpells()
-
-	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
-	  Case 0
-		 FillBarracksAutoRaidStrategy0(False)
-	  Case 1
-		 ContinueCase
-	  Case 2
-		 ContinueCase
-	  Case 3
-		 ContinueCase
-	  EndSwitch
-   EndIf
-
-   CloseBarracksWindow()
-EndFunc
-
-Func QueueSpells()
-   ; If not spells queueing window, then return
-   If IsColorPresent($rWindowBarracksSpellsColor1) <> True And IsColorPresent($rWindowBarracksSpellsColor2) <> True Then
-	  Return
-   EndIf
-
-   ; maybe queue spells?
-   If _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then
-
-	  ; Get count
-	  Local $spellSlots[$eSpellCount][4]
-	  FindBarracksTroopSlots($gBarracksSpellSlotBMPs, $spellSlots)
-
-	  ; How many are queued/created?
-	  Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rBarracksWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-	  ;DebugWrite("$queueStatus: " & $queueStatus)
-
-	  If (StringInStr($queueStatus, "CreateSpells")=1) Then
-		 $queueStatus = StringMid($queueStatus, 13)
-
-		 Local $queueStatSplit = StringSplit($queueStatus, "/")
-		 If $queueStatSplit[0] = 2 Then
-			Local $spellsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
-			DebugWrite("Spells queued: " & Number($queueStatSplit[1]) & " of " & Number($queueStatSplit[2]))
-
-			$gMyMaxSpells = Number($queueStatSplit[2]) ; Used when deciding to DE Zap or not
-
-			Local $lightningButton[4] = [$spellSlots[$eSpellLightning][0], $spellSlots[$eSpellLightning][1], _
-									     $spellSlots[$eSpellLightning][2], $spellSlots[$eSpellLightning][3]]
-			For $i = 1 To $spellsToFill
-			   RandomWeightedClick($lightningButton)
-			   Sleep($gDeployTroopClickDelay)
-			Next
-		 EndIf
-	  EndIf
-   EndIf
 EndFunc
 
 ; howMany: $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
@@ -382,18 +417,6 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 	  Local $goldRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 	  Local $elixRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 	  Local $darkRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-
-	  ; If < 1 min is left, then zap DE if the option is selected
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED And _
-		 $darkRemaining >= GUICtrlRead($GUI_AutoRaidZapDEMin) And _
-		 $darkStorageZapped = False Then
-
-		 Local $time = ScrapeFuzzyText($gExtraLargeCharacterMaps, $rBattleTimeRemainingTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 If StringLen($time)>0 And StringInStr($time, "m")=0 Then  ; len>0 because red text will return null string
-			ZapDarkElixirStorage()
-			$darkStorageZapped = True
-		 EndIf
-	  EndIf
 
 	  ; If loot has changed, then reset timer
 	  If $goldRemaining<>$lastGold Or $elixRemaining<>$lastElix Or $darkRemaining<>$lastDark Then

@@ -20,15 +20,16 @@ Opt("GUIOnEventMode", 1)
 #include <GUI.au3>
 #include <Settings.au3>
 #include <Scraper.au3>
+#include <TownHall.au3>
 #include <Barracks.au3>
 #include <ArmyCamp.au3>
 #include <KeepOnline.au3>
 #include <CollectLoot.au3>
-#include <FindMatch.au3>
-#include <FindSnipableTH.au3>
+#include <AutoSnipe.au3>
 #include <AutoRaid.au3>
+#include <AutoQueue.au3>
 #include <AutoRaidDumpCups.au3>
-#include <AutoRaidDEZap.au3>
+#include <AutoDEZap.au3>
 #include <AutoRaidStrategy0.au3>
 #include <Mouse.au3>
 #include <BlueStacks.au3>
@@ -58,6 +59,7 @@ Func MainApplicationLoop()
    Local $lastDonateTroopsTimer = TimerInit()
    Local $lastQueueDonatableTroopsTimer = TimerInit()
    Local $lastTrainingCheckTimer = TimerInit()
+   Local $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop
 
    While 1
 	  ;DebugWrite("Main loop: AutoRaid Stage " & $gAutoRaidStage)
@@ -80,9 +82,8 @@ Func MainApplicationLoop()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
 		 EndIf
 
-	  Local $autoRaidInProgress = $gAutoRaidStage=$eAutoRaidFindMatch Or $gAutoRaidStage=$eAutoRaidExecuteRaid Or $gAutoRaidStage=$eAutoRaidExecuteDEZap
-
-	  If $autoRaidInProgress = False Then
+	  Local $autoInProgress = $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute
+	  If $autoInProgress=False Then
 
 		 ; Donate Troops
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
@@ -121,36 +122,31 @@ Func MainApplicationLoop()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
 		 EndIf
 
-	  Endif ; If $autoRaidInProgress = False
+	  Endif ; If $autoRaidInProgress=False And $autoSnipeInProgress=False
 
-	  ; Find a raiding match
+	  ; Find a match
 	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then
 
 		 $gFindMatchClicked = False
 
 		 ResetToCoCMainScreen()
 		 If WhereAmI()=$eScreenMain Then
-			If FindAValidMatch() = True Then
+			Local $zappable
+			If AutoRaidFindMatch($zappable) = True Then
 			   _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
-			   _GUICtrlButton_Enable($GUI_FindSnipableTHCheckBox, True)
+			   _GUICtrlButton_Enable($GUI_AutoSnipeCheckBox, True)
 			   _GUICtrlButton_Enable($GUI_AutoRaidCheckBox, True)
 			EndIf
 		 EndIf
 	  EndIf
 
-	  ; Find a snipable TH
-	  If _GUICtrlButton_GetCheck($GUI_FindSnipableTHCheckBox) = $BST_CHECKED Then
+	  ; Auto Snipe
+	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED And _
+		 IsButtonPresent($rAndroidMessageButton) = False Then
 
-		 $gFindSnipableTHClicked = False
-
-		 ResetToCoCMainScreen()
-		 If WhereAmI()=$eScreenMain Then
-			If FindASnipableTH() = True Then
-			   _GUICtrlButton_SetCheck($GUI_FindSnipableTHCheckBox, $BST_UNCHECKED)
-			   _GUICtrlButton_Enable($GUI_FindMatchCheckBox, True)
-			   _GUICtrlButton_Enable($GUI_AutoRaidCheckBox, True)
-			EndIf
-		 EndIf
+		 $gAutoSnipeClicked = False
+		 CheckForAndroidMessageBox()
+		 AutoSnipe($lastTrainingCheckTimer, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop)
 	  EndIf
 
 	  ; Auto Raid, Dump Cups
@@ -181,8 +177,8 @@ Func MainApplicationLoop()
 	  For $i = 1 To 10
 		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
 
-		 If $gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gFindMatchClicked Or $gFindSnipableTHClicked Or $gAutoRaidClicked Then ExitLoop
-		 If $gAutoRaidStage=$eAutoRaidFindMatch Or $gAutoRaidStage=$eAutoRaidExecuteRaid Or $gAutoRaidStage=$eAutoRaidExecuteDEZap Then ExitLoop
+		 If $gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gFindMatchClicked Or $gAutoSnipeClicked Or $gAutoRaidClicked Then ExitLoop
+		 If $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And TimerDiff($lastDonateTroopsTimer) >= $gCheckChatWindowForDonateInterval Then ExitLoop
@@ -217,11 +213,12 @@ Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $troopsTi
 	  GUICtrlSetData($GUI_DonateTroopsCheckBox, "F7 Donate Troops " & millisecondToMMSS($ms))
    EndIf
 
-   If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
-	  $gAutoRaidStage = $eAutoRaidWaitForTrainingToComplete Then
+   If (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED) And _
+	  $gAutoStage = $eAutoWaitForTrainingToComplete Then
+
 	  Local $ms = $gTroopTrainingCheckInterval - TimerDiff($trainingTimer)
 	  If $ms < 0 Then $ms = 0
-	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Waiting For Training " & millisecondToMMSS($ms))
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Waiting For Training " & millisecondToMMSS($ms))
    EndIf
 EndFunc
 

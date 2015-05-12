@@ -7,7 +7,7 @@ Func DumpCups()
 		 $myCups > $cupsThreshold
 
 	  DebugWrite("Dumping cups, current=" & $myCups & ", threshold=" & $cupsThreshold)
-	  GUICtrlSetData($GUI_AutoRaid, "Auto Raid: Dumping Cups")
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Dumping Cups")
 	  If DoCupsDump()=False Then Return
 
 	  GetMyLootNumbers()
@@ -17,7 +17,8 @@ EndFunc
 
 Func DoCupsDump()
    ; Get first available match
-   FindAValidMatch(True)
+   Local $zappable
+   AutoRaidFindMatch($zappable, True)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][4]

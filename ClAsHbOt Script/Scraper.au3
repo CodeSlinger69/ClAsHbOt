@@ -47,58 +47,6 @@ Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
 
 Func InitScraper()
    _GDIPlus_Startup()
-
-   ; Auto Raid deploy locations
-   Local $x, $y, $i
-
-   $y = 325
-   $i=0
-   For $x = 70 To 470 Step 20
-	  $NWDeployBoxes[$i][0] = $x
-	  $NWDeployBoxes[$i][1] = $y
-	  $NWDeployBoxes[$i][2] = $x+60
-	  $NWDeployBoxes[$i][3] = $y+40
-	  ;DebugWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
-	  $i+=1
-	  $y-=14
-   Next
-
-   $y = 325
-   $i=0
-   For $x = 950 To 550 Step -20
-	  $NEDeployBoxes[$i][0] = $x-60
-	  $NEDeployBoxes[$i][1] = $y
-	  $NEDeployBoxes[$i][2] = $x
-	  $NEDeployBoxes[$i][3] = $y+40
-	  ;DebugWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
-	  $i+=1
-	  $y-=14
-   Next
-
-   $y = 125
-   $i=0
-   For $x = 70 To 470 Step 20
-	  $SWDeployBoxes[$i][0] = $x
-	  $SWDeployBoxes[$i][1] = $y
-	  $SWDeployBoxes[$i][2] = $x+60
-	  $SWDeployBoxes[$i][3] = $y+40
-	  ;DebugWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
-	  $i+=1
-	  $y+=14
-   Next
-
-   $y = 125
-   $i=0
-   For $x = 950 To 550 Step -20
-	  $SEDeployBoxes[$i][0] = $x-60
-	  $SEDeployBoxes[$i][1] = $y
-	  $SEDeployBoxes[$i][2] = $x
-	  $SEDeployBoxes[$i][3] = $y+40
-	  ;DebugWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
-	  $i+=1
-	  $y+=14
-   Next
-
 EndFunc
 
 Func ExitScraper()
@@ -510,54 +458,6 @@ Func BitCount($n)
    WEnd
 
    Return $c
-EndFunc
-
-Func GetTownHallLevel(Const $x1 = -1, Const $y1 = -1, Const $x2 = -1, Const $y2 = -1)
-   DebugWrite("GetTownHallLevel()")
-
-   ; Method = 0: CV_TM_SQDIFF, 1: CV_TM_SQDIFF_NORMED, 2: CV_TM_CCORR, 3: CV_TM_CCORR_NORMED
-   ;          4: CV_TM_CCOEFF, 5: CV_TM_CCOEFF_NORMED
-
-   ; Returns best TH level match, 0 if no good match
-   Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-
-   ; Grab and scan frame
-   If $x1 = -1 Then
-	   ; full frame
-	  GrabFrameToFile("TownHallCenterFrame.bmp")
-   Else
-	  ; Partial frame for Snipable TH search
-	  GrabFrameToFile("TownHallCenterFrame.bmp", $x1, $y1, $x2, $y2)
-   EndIf
-
-   ScanFrameForBestBMP("TownHallCenterFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $bestX, $bestY)
-
-   If $x1 = -1 Then
-	  ; No good match, scan top of screen
-	  If $bestMatch = 99 Then
-		 ZoomOut(False)
-		 MoveScreenDownToTop(False)
-		 GrabFrameToFile("TownHallTopFrame.bmp")
-		 MoveScreenUpToCenter()
-		 ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $bestX, $bestY)
-	  EndIf
-
-	  ; No good match, scan bottom of screen
-	  If $bestMatch = 99 Then
-		 MoveScreenUpToBottom(False)
-		 GrabFrameToFile("TownHallBotFrame.bmp")
-		 MoveScreenDownToCenter()
-		 ScanFrameForBestBMP("TownHallBotFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $bestX, $bestY)
-	  EndIf
-   EndIf
-
-   If $bestMatch = 99 Then
-	  ;DebugWrite("Unknown TH Level" & @CRLF)
-	  Return -1
-   Else
-	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & @CRLF)
-	  Return $bestMatch+7
-   EndIf
 EndFunc
 
 Func IsTextBoxPresent(Const ByRef $textBox)

@@ -10,7 +10,7 @@ Global $gIniFile = "CoC Bot.ini"
 
 ; GUI
 Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False, $gDonateTroopsStartup = False
-Global $gFindMatchClicked = False, $gFindSnipableTHClicked = False, $gAutoRaidClicked = False
+Global $gFindMatchClicked = False, $gAutoSnipeClicked = False, $gAutoRaidClicked = False
 
 ; Lists of troop and spell types
 Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroopWallBreaker, _
@@ -33,14 +33,16 @@ Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMat
    $eScreenLiveReplayEndBattle, $eScreenVilliageWasAttacked, $eScreenChatDimmed, _
    $eScreenArmyCampButtons, $eScreenArmyCampInfo, $eScreenUnknown
 
-; Auto Raid Stages
-Global Enum $eAutoRaidNotStarted, $eAutoRaidQueueTraining, $eAutoRaidWaitForTrainingToComplete, _
-   $eAutoRaidFindMatch, $eAutoRaidExecuteRaid, $eAutoRaidExecuteDEZap
-Global $gAutoRaidStage = $eAutoRaidNotStarted
+; Auto Raid/Snipe Stages
+Global Enum $eAutoNotStarted, $eAutoQueueTraining, $eAutoWaitForTrainingToComplete, $eAutoFindMatch, $eAutoExecute
+Global $gAutoStage = $eAutoNotStarted
 
 ; Auto Raid troop deployment
 Global Enum $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
 Global $gMyMaxSpells = 999
+
+; TownHall location on screen
+Global Enum $eTownHallCenter, $eTownHallTop, $eTownHallBottom
 
 ; Auto Raid statistics
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
@@ -48,3 +50,62 @@ Global $gAutoRaidEndLoot[4] ; gold, elix, dark, cups
 Global $gMyTroopCost[$eTroopCount-2]
 $gMyTroopCost[$eTroopBarbarian] = 0
 Global $gAutoRaidWinnings[4]  ; gold, elix, dark, cups
+
+; Deploy locations
+Global $NWSafeDeployBox[4] = [280, 170, 300, 190]
+Global $NESafeDeployBox[4] = [735, 170, 755, 190]
+Global $SWSafeDeployBox[4] = [280, 295, 300, 315]
+Global $SESafeDeployBox[4] = [735, 295, 755, 315]
+
+Global $NWDeployBoxes[21][4]
+Local $y = 325
+Local $i = 0
+For $x = 70 To 470 Step 20
+   $NWDeployBoxes[$i][0] = $x
+   $NWDeployBoxes[$i][1] = $y
+   $NWDeployBoxes[$i][2] = $x+60
+   $NWDeployBoxes[$i][3] = $y+40
+   ;DebugWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
+   $i+=1
+   $y-=14
+Next
+
+Global $NEDeployBoxes[21][4]
+$y = 325
+$i=0
+For $x = 950 To 550 Step -20
+   $NEDeployBoxes[$i][0] = $x-60
+   $NEDeployBoxes[$i][1] = $y
+   $NEDeployBoxes[$i][2] = $x
+   $NEDeployBoxes[$i][3] = $y+40
+   ;DebugWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
+   $i+=1
+   $y-=14
+Next
+
+Global $SWDeployBoxes[21][4]
+$y = 125
+$i=0
+For $x = 70 To 470 Step 20
+   $SWDeployBoxes[$i][0] = $x
+   $SWDeployBoxes[$i][1] = $y
+   $SWDeployBoxes[$i][2] = $x+60
+   $SWDeployBoxes[$i][3] = $y+40
+   ;DebugWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
+   $i+=1
+   $y+=14
+Next
+
+Global $SEDeployBoxes[21][4]
+$y = 125
+$i=0
+For $x = 950 To 550 Step -20
+   $SEDeployBoxes[$i][0] = $x-60
+   $SEDeployBoxes[$i][1] = $y
+   $SEDeployBoxes[$i][2] = $x
+   $SEDeployBoxes[$i][3] = $y+40
+   ;DebugWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
+   $i+=1
+   $y+=14
+Next
+

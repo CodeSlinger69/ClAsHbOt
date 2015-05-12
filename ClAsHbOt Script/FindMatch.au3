@@ -136,28 +136,16 @@ Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $to
    Local $GUIElix = GUICtrlRead($GUI_ElixEdit)
    Local $GUIDark = GUICtrlRead($GUI_DarkEdit)
    Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
-   Local $GUIAutoRaid = (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED)
-   Local $GUIZapDE = (_GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED)
-   Local $GUIZapDEMin = GUICtrlRead($GUI_AutoRaidZapDEMin)
    Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
 
-   ; If auto raiding, and zap DE is checked, and available DE > zap DE min, and we have all lightnings cooked up,
-   ; then we have a match
-   If $GUIAutoRaid And $GUIZapDE And $dark>=$GUIZapDEMin Then
-	  Local $spellIndexAbsolute[$eSpellCount][4]
-	  FindRaidTroopSlots($gSpellSlotBMPs, $spellIndexAbsolute)
-
-	  Local $lightningAvailable = GetAvailableTroops($eSpellLightning, $spellIndexAbsolute)
-	  DebugWrite("Found zappable base with " & $dark & " DE. " & _
-		 $lightningAvailable & " of " & $gMyMaxSpells & " lightning spells available.")
-
-	  If $lightningAvailable >= $gMyMaxSpells Then Return $eAutoRaidExecuteDEZap
-   EndIf
+   ; Check zappable base
+   If CheckZappableBase() Then Return $eAutoDEZap
 
    ; Only get Town Hall Level if the other criteria are a match
    If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
 	  If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
-		 $townHall = GetTownHallLevel()
+		 Local $location, $top, $left
+		 $townHall = GetTownHallLevel($location, $left, $top)
 		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 	  EndIf
    EndIf
@@ -167,7 +155,7 @@ Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $to
 	  If $townHall <= $GUITownHall And $townHall > 0 Then
 		 If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
 			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & " / " & $deadBase)
-			Return $eAutoRaidExecuteRaid
+			Return $eAutoExecute
 		 EndIf
 	  EndIf
    EndIf

@@ -1,8 +1,33 @@
 ;
 ; Dark Elixir Storage Zap
 ;
-Func AutoRaidExecuteDEZap()
-   DebugWrite("AutoRaidExecuteDEZap()")
+Func CheckZappableBase()
+   Local $GUIAutoRaid = (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED)
+   Local $GUIAutoSnipe = (_GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED)
+   Local $GUIZapDE = (_GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED)
+   Local $GUIZapDEMin = GUICtrlRead($GUI_AutoRaidZapDEMin)
+   Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
+
+   Local $baseDark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+
+   ; If auto raiding, and zap DE is checked, and available DE > zap DE min, and we have all lightnings cooked up,
+   ; then we have a match
+   If ($GUIAutoRaid Or $GUIAutoSnipe) And $GUIZapDE And $baseDark>=$GUIZapDEMin Then
+	  Local $spellIndexAbsolute[$eSpellCount][4]
+	  FindRaidTroopSlots($gSpellSlotBMPs, $spellIndexAbsolute)
+
+	  Local $lightningAvailable = GetAvailableTroops($eSpellLightning, $spellIndexAbsolute)
+	  DebugWrite("Found zappable base with " & $baseDark & " DE. " & _
+		 $lightningAvailable & " of " & $gMyMaxSpells & " lightning spells available.")
+
+	  If $lightningAvailable >= $gMyMaxSpells Then Return True
+   EndIf
+
+   Return False
+EndFunc
+
+Func AutoDEZap()
+   DebugWrite("AutoDEZap()")
 
    Local $res = ZapDarkElixirStorage()
 
