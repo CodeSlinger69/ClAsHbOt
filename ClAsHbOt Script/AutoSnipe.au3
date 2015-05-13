@@ -211,7 +211,7 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
    ; send troops in waves, check star color region for success
    Local $kingDeployed = False, $queenDeployed = False
    Local $waveDelay = 15000
-   Loval $waveTroops = 10
+   Local $waveTroops = 10
 
    While IsColorPresent($rFirstStarColor) = False
 	  Local $waveTimer = TimerInit()

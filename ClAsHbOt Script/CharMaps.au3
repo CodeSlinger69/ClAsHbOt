@@ -85,13 +85,14 @@ Global $gExtraLargeCharacterMaps[13][$gExtraLargeCharMapsMaxWidth+2] = [ _
 ; Note, no difference between lower L and upper I and pipe
 ; Note, no difference between number 8 and Upper B
 Global $gChatCharMapsMaxWidth = 8
-Global $gChatCharacterMaps[90][$gChatCharMapsMaxWidth+2] = [ _
+Global $gChatCharacterMaps[91][$gChatCharMapsMaxWidth+2] = [ _
 ["a", 5, 7, 23, 21, 29, 31], _
 ["a", 5, 2, 23, 21, 29, 31], _
 ["b", 4, 127, 17, 17, 14], _
 ["c", 5, 14, 31, 17, 17, 26], _
 ["c", 5, 6, 31, 17, 17, 26], _
 ["d", 5, 6, 27, 17, 17, 127], _
+["d", 5, 14, 27, 17, 17, 127], _
 ["e", 5, 14, 31, 21, 21, 14], _
 ["e", 5, 6, 31, 21, 21, 14], _
 ["f", 4, 127, 76, 64, 32], _
