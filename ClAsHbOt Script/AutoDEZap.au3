@@ -31,15 +31,10 @@ Func AutoDEZap()
 
    Local $res = ZapDarkElixirStorage()
 
-   If $res = True Then ; Zap executed
-	  WaitForBattleEnd(False, False)
-
-   Else
-	  ; Not enuf lightning spells, or couldn't find DE storage
-	  ; Click End Battle button
+   If $res = False Then
+	  ; Not enuf lightning spells, or couldn't find DE storage; click End Battle button
 	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 	  Sleep(500)
-
    EndIf
 
    Return $res

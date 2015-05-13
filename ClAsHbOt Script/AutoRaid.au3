@@ -22,7 +22,7 @@ Func AutoRaid(ByRef $timer)
 	  EndIf
 
    ; Stage Find Match
-Case $eAutoFindMatch
+   Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
 
 	  Local $zappable

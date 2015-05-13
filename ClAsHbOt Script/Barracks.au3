@@ -158,13 +158,13 @@ Func FillBarracks(Const $initialFillFlag)
 
 	  ; Click right arrow to get the next standard troops window
 	  RandomWeightedClick($rBarracksWindowNextButton)
-	  Sleep(250)
+	  Sleep(400)
 	  $failCount-=1
 
 	  ; Make sure we are on a standard troops window
 	  If IsColorPresent($rWindowBarracksStandardColor1) = False And IsColorPresent($rWindowBarracksStandardColor2) = False Then
-Local $cPos = GetClientPos()
-DebugWrite(" Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWindowBarracksStandardColor1[0], $cPos[1]+$rWindowBarracksStandardColor1[1])))
+		 Local $cPos = GetClientPos()
+		 DebugWrite(" Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWindowBarracksStandardColor1[0], $cPos[1]+$rWindowBarracksStandardColor1[1])))
 		 ExitLoop
 	  EndIf
 
@@ -177,7 +177,8 @@ DebugWrite(" Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWin
 	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 		 Local $dequeueTries = 6
 		 While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
-			   _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
+			   (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
+			    _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_CHECKED)
 
 			Local $xClick, $yClick
 			RandomWeightedCoords($rTrainTroopsWindowDequeueButton, $xClick, $yClick)
@@ -187,7 +188,8 @@ DebugWrite(" Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWin
 		 WEnd
 	  EndIf
 
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _
+		 _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_UNCHECKED Then Return
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$eTroopCount][4]
@@ -207,7 +209,7 @@ DebugWrite(" Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWin
 	  Do
 		 ; Get number of troops already queued in this barracks
 		 Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rBarracksWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 ;DebugWrite("Barracks " & $barracksCount & " queue status: " & $queueStatus)
+		 ;DebugWrite("Barracks debug " & $barracksCount & " queue status: " & $queueStatus)
 
 		 If (StringInStr($queueStatus, "Train")=1) Then
 			$queueStatus = StringMid($queueStatus, 6)
@@ -251,7 +253,8 @@ DebugWrite(" Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWin
 		 EndIf
 
 		 $fillTries+=1
-	  Until $troopsToFill=0 Or $fillTries>=6 Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
+	  Until $troopsToFill=0 Or $fillTries>=6 Or _
+		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_UNCHECKED)
 
 	  $barracksCount+=1
    WEnd

@@ -232,8 +232,10 @@ EndFunc
 Func GetMyLootNumbers()
    ;DebugWrite("GetMyLootNumbers()")
 
-   ; My loot is only scrapable on main screen
-   If WhereAmI()<>$eScreenMain Then Return
+   ; My loot is only scrapable on some screens
+   If WhereAmI()<>$eScreenMain And WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
+	  Return
+   EndIf
 
    ; My loot info can't be seen for some reason
    If IsTextBoxPresent($rMyGoldTextBox) = False Then Return

@@ -24,7 +24,7 @@ Func AutoQueueTroops()
    ; Fill
    Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
    Case 0
-	  FillBarracks(Not($redStripe))
+	  FillBarracks(True)
    Case 1
 	  ContinueCase
    Case 2

@@ -42,7 +42,7 @@ Global Enum $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidD
 Global $gMyMaxSpells = 999
 
 ; TownHall location on screen
-Global Enum $eTownHallCenter, $eTownHallTop, $eTownHallBottom
+Global Enum $eTownHallMiddle, $eTownHallTop, $eTownHallBottom
 
 ; Auto Raid statistics
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
@@ -52,6 +52,7 @@ $gMyTroopCost[$eTroopBarbarian] = 0
 Global $gAutoRaidWinnings[4]  ; gold, elix, dark, cups
 
 ; Deploy locations
+Global Enum $eDeployBoxNWCorner, $eDeployBoxNECorner, $eDeployBoxSWCorner, $eDeployBoxSECorner
 Global $NWSafeDeployBox[4] = [280, 170, 300, 190]
 Global $NESafeDeployBox[4] = [735, 170, 755, 190]
 Global $SWSafeDeployBox[4] = [280, 295, 300, 315]

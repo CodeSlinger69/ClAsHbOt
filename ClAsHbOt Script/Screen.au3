@@ -1,4 +1,3 @@
-
 Func ResetToCoCMainScreen()
    Local $countdown = 5
 
