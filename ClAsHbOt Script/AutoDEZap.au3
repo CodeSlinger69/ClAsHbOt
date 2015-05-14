@@ -26,22 +26,8 @@ Func CheckZappableBase()
    Return False
 EndFunc
 
-Func AutoDEZap()
+Func AutoDEZap(Const $immediatelyEnd)
    DebugWrite("AutoDEZap()")
-
-   Local $res = ZapDarkElixirStorage()
-
-   If $res = False Then
-	  ; Not enuf lightning spells, or couldn't find DE storage; click End Battle button
-	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
-	  Sleep(500)
-   EndIf
-
-   Return $res
-EndFunc
-
-Func ZapDarkElixirStorage()
-   DebugWrite("ZapDarkElixirStorage()")
 
    Local $spellIndex[$eSpellCount][4]
    FindRaidTroopSlots($gSpellSlotBMPs, $spellIndex)
@@ -90,7 +76,27 @@ Func ZapDarkElixirStorage()
 	  Sleep(1000)
    Next
 
+   ; Wait for lightning strikes to finish
    Sleep(6000)
+
+   If $immediatelyEnd <> False Then
+	  ; Click End Battle button
+	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
+
+	  ; Wait for confirmation button
+	  Local $failCount=20
+	  While IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton)=False And $failCount>0
+		 Sleep(100)
+		 $failCount-=1
+	  WEnd
+
+	  If $failCount>0 Then
+		 RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
+		 Sleep(500)
+	  EndIf
+
+	  WaitForBattleEnd(False, False)
+   EndIf
 
    Return True
 EndFunc

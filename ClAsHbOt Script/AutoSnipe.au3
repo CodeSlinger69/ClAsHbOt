@@ -30,7 +30,7 @@ Func AutoSnipe(ByRef $timer, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
 
 	  If $zappable Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
-		 AutoDEZap()
+		 AutoDEZap($findMatchResults = False)
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
@@ -56,17 +56,12 @@ EndFunc
 
 Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappable)
    DebugWrite("AutoSnipeFindMatch()")
-   Local $failCount
-
-   ; Get starting gold, to calculate cost of Next'ing
-   GetMyLootNumbers()
-   Local $startGold = GUICtrlRead($GUI_MyGold)
 
    ; Click Attack
    RandomWeightedClick($rMainScreenAttackButton)
 
    ; Wait for Find a Match button
-   $failCount = 10
+   Local $failCount = 10
    While IsButtonPresent($rFindMatchScreenFindAMatchButton) = False And $failCount>0
 	  Sleep(1000)
 	  $failCount -= 1
@@ -102,67 +97,31 @@ Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappabl
    EndIf
 
    ; Loop with Next until we find a snipable TH
-   Local $nextCount = 1
-
    While 1
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
-
-	  Local $continue = True
 
 	  ; Update my loot status on GUI
 	  GetMyLootNumbers()
 
-	  ; Get my settings
-	  Local $GUIZapDE = (_GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED)
-	  Local $GUIZapDEMin = GUICtrlRead($GUI_AutoRaidZapDEMin)
-	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
-
 	  ; Check dead base settings
-	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor) Then
-		 $continue = False
+	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
+	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
 		 DebugWrite("Not dead base, skipping.")
+		 ContinueLoop
 	  EndIf
 
 	  ; First see if this is a zappable base
-	  If $continue Then
-		 $zappable = CheckZappableBase()
-	  EndIf
+	  $zappable = CheckZappableBase()
 
-	  ; Next, see if we have a TH in the central box area
-	  Local $townHall
-	  If $continue Then
-		 $townHall = GetTownHallLevel($location, $left, $top, $rCentralTownHall[0], $rCentralTownHall[1], $rCentralTownHall[2], $rCentralTownHall[3])
-		 If $townHall <> -1 Then
-			$continue = False
-			DebugWrite("Town Hall level " & $townHall & " found in center, not snipable")
-		 EndIf
-	  EndIf
+	  ; Next, see if we have a snipable TH
+	  Local $snipable = CheckForSnipableTH($location, $left, $top)
 
-	  ; Now find the actual location of the Town Hall: top, middle or bottom
-	  If $continue = True Then
-		 $townHall = GetTownHallLevel($location, $left, $top)
-		 If $townHall <> -1 Then
-			If $location = $eTownHallMiddle Then
-			   DebugWrite("Snipable TH found in: Middle at " & $left & ", " & $top)
-			ElseIf $location = $eTownHallTop Then
-			   DebugWrite("Snipable TH found at: Top at " & $left & ", " & $top)
-			ElseIf $location = $eTownHallBottom Then
-			   DebugWrite("Snipable TH found at: Bottom at " & $left & ", " & $top)
-			Else
-			   DebugWrite("Snipable TH problem: loc=" & $location & " townhall=" & $townHall)
-			EndIf
-
-			ExitLoop
-		 Else
-			DebugWrite("Could not find Town Hall for sniping.  Obscured?")
-		 EndIf
-	  EndIf
-
+	  ; If zappable and/or snipable, then go do it
+	  If $zappable Or $snipable<>False Then Return $snipable
 
 	  ; Something didn't match - click Next
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
-	  $nextCount+=1
 
 	  ; Sleep and wait for Next button to reappear
 	  Sleep(500) ; So the click on the Wait button has time to register
@@ -178,14 +137,37 @@ Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappabl
 		 Return False
 	  EndIf
    WEnd
+EndFunc
 
-   ; Get ending gold, to calculate cost of Next'ing
-   GetMyLootNumbers()
-   Local $endGold = GUICtrlRead($GUI_MyGold)
+Func CheckForSnipableTH($location, $left, $top)
+   ; Next, see if we have a TH in the central box area
+   Local $townHall = GetTownHallLevel($location, $left, $top, $rCentralTownHall[0], $rCentralTownHall[1], $rCentralTownHall[2], $rCentralTownHall[3])
+   If $townHall <> -1 Then
+	  DebugWrite("Town Hall level " & $townHall & " found in center, not snipable")
+	  Return False
+   EndIf
 
-   DebugWrite("Gold cost this search: " & $startGold - $endGold & " (" & $nextCount & " nexts).")
+   ; Now find the actual location of the Town Hall: top, middle or bottom
+   $townHall = GetTownHallLevel($location, $left, $top)
+   If $townHall <> -1 Then
+	  If $location = $eTownHallMiddle Then
+		 DebugWrite("Snipable TH found in: Middle at " & $left & ", " & $top)
+	  ElseIf $location = $eTownHallTop Then
+		 DebugWrite("Snipable TH found at: Top at " & $left & ", " & $top)
+	  ElseIf $location = $eTownHallBottom Then
+		 DebugWrite("Snipable TH found at: Bottom at " & $left & ", " & $top)
+	  Else
+		 DebugWrite("Snipable TH problem: loc=" & $location & " townhall=" & $townHall)
+	  EndIf
 
-   Return $eAutoExecute
+	  Return True
+
+   Else
+	  DebugWrite("Could not find Town Hall for sniping.  Obscured?")
+	  Return False
+
+   EndIf
+
 EndFunc
 
 Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)

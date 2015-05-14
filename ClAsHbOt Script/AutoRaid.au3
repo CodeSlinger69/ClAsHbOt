@@ -30,7 +30,7 @@ Func AutoRaid(ByRef $timer)
 
 	  If $zappable Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
-		 AutoDEZap()
+		 AutoDEZap($findMatchResults = False)
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
@@ -66,10 +66,6 @@ EndFunc
 
 Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
    DebugWrite("FindAValidMatch()")
-
-   ; Get starting gold, to calculate cost of Next'ing
-   GetMyLootNumbers()
-   Local $startGold = GUICtrlRead($GUI_MyGold)
 
    ; Click Attack
    RandomWeightedClick($rMainScreenAttackButton)
@@ -114,21 +110,36 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
    If $returnFirstMatch Then Return True
 
    ; Loop with Next until we get a match
-   Local $match = False
-   Local $gold, $elix, $dark, $cups, $townHall, $deadBase
-
    While 1
 	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
-		 ExitLoop
+		 Return False
 	  EndIf
 
-	  $zappable = False
-	  $match = CheckForMatch($gold, $elix, $dark, $cups, $townHall, $deadBase, $zappable)
-	  If $match <> -1 Then ExitLoop
+	  ; Update my loot status on GUI
+	  GetMyLootNumbers()
 
-	  ; Click Next button
-	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  ; Check dead base settings
+	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
+	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
+		 DebugWrite("Not dead base, skipping.")
+		 SetAutoRaidResults("-", "-", "-", "-", "-", False)
+		 ContinueLoop
+	  EndIf
+
+	  ; First see if this is a zappable base
+	  $zappable = CheckZappableBase()
+
+	  ; Next, see if we have a raidable base
+	  Local $raidable = CheckForRaidableBase()
+
+	  ; If zappable and/or raidable, then go do it
+	  If $zappable Or $raidable<>False Then
+		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
+		 Return $raidable
+	  EndIf
+
+	  ; Something didn't match - click Next
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
 
@@ -146,44 +157,24 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 		 Return False
 	  EndIf
    WEnd
-
-   ; Get ending gold, to calculate cost of Next'ing
-   GetMyLootNumbers()
-   Local $endGold = GUICtrlRead($GUI_MyGold)
-   DebugWrite("Gold cost this match: " & $startGold - $endGold)
-
-   If $match <> -1 Then
-
-	  ; Pop up a message box if we are not auto raiding right now
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
-		 ; 5 beeps
-		 For $i = 1 To 5
-			Beep(500, 200)
-			Sleep(100)
-		 Next
-
-		 DebugWrite("Got match: " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $deadBase)
-		 MsgBox($MB_OK, "Match!", $gold & " / " & $elix & " / " & $dark &  " / " & $cups &  " / " & $townHall & " / " & $deadBase & _
-			@CRLF & @CRLF & "Click OK after completing raid," & @CRLF & _
-			"or deciding to skip this raid." & @CRLF & @CRLF & _
-			"Cost of this search: " & $startGold - $endGold)
-	  EndIf
-
-	  Return $match
-   EndIf
-
-   Return -1
 EndFunc
 
-Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $townHall, ByRef $deadBase, ByRef $zappable)
-   ; Update my loot status on GUI
-   GetMyLootNumbers()
+Func ShowFindMatchPopup()
+   ; 5 beeps
+   For $i = 1 To 5
+	  Beep(500, 200)
+	  Sleep(100)
+   Next
 
-   ; Scrape text fields
-   $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   $cups = 0
+   MsgBox($MB_OK, "Match!", "Click OK after completing raid," & @CRLF & "or deciding to skip this raid.")
+EndFunc
+
+Func CheckForRaidableBase()
+   ; Scrape info
+   Local $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $cups = 0
 
    If IsTextBoxPresent($rCupsTextBox1) Then
 	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox1, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
@@ -191,11 +182,10 @@ Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $to
 	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox2, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    EndIf
 
-   ; See if this is a dead base
-   $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
+   Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
 
    ; Default townhall
-   $townHall = -1
+   Local $townHall = -1
 
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
@@ -204,31 +194,26 @@ Func CheckForMatch(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $to
    Local $GUIElix = GUICtrlRead($GUI_ElixEdit)
    Local $GUIDark = GUICtrlRead($GUI_DarkEdit)
    Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
-   Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
-
-   ; Check zappable base
-   $zappable = CheckZappableBase()
 
    ; Only get Town Hall Level if the other criteria are a match
    If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
-	  If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
-		 Local $location, $top, $left
-		 $townHall = GetTownHallLevel($location, $left, $top)
-		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-	  EndIf
+	  Local $location, $top, $left
+	  $townHall = GetTownHallLevel($location, $left, $top)
+	  SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
    EndIf
 
    ; Do we have a gold/elix/dark/townhall/dead match?
    If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
 	  If $townHall <= $GUITownHall And $townHall > 0 Then
-		 If ($GUIDeadBasesOnly=True And $deadBase=True) Or $GUIDeadBasesOnly=False Then
-			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & " / " & $deadBase)
-			Return $eAutoExecute
-		 EndIf
+		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & " / " & $deadBase)
+		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+		 Return $eAutoExecute
 	  EndIf
    EndIf
 
-   Return -1
+   DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+   Return False
 EndFunc
 
 Func AutoRaidUpdateProgress()
@@ -408,7 +393,6 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 
    Local $lastGold = 0, $lastElix = 0, $lastDark = 0
    Local $activeTimer = TimerInit()
-   Local $darkStorageZapped = False
 
    For $i = 1 To 180  ; 3 minutes max until battle end screen appears
 	  If WhereAmI() = $eScreenEndBattle Then ExitLoop
@@ -431,15 +415,6 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 	  If TimerDiff($activeTimer) > 30000 And $kingDeployed = False And $queenDeployed = False Then
 		 $activeTimer = TimerInit()
 		 DebugWrite("No change in available loot for 30 seconds, ending battle.")
-
-		 ; See if we should zap DE first
-		 If _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED And _
-			$darkRemaining >= GUICtrlRead($GUI_AutoRaidZapDEMin) And _
-			$darkStorageZapped = False Then
-
-			ZapDarkElixirStorage()
-			$darkStorageZapped = True
-		 EndIf
 
 		 ; Click End Battle button
 		 RandomWeightedClick($rLiveRaidScreenEndBattleButton)
