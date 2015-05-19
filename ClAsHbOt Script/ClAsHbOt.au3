@@ -250,8 +250,11 @@ Func GetMyLootNumbers()
    GUICtrlSetData($GUI_MyDark, $MyDark)
    GUICtrlSetData($GUI_MyGems, $MyGems)
 
-   Local $MyCups = Number(ScrapeFuzzyText($gLargeCharacterMaps, $rMyCupsTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces))
-   GUICtrlSetData($GUI_MyCups, $MyCups)
+   ; My cups can only be scraped from the main screen
+   If WhereAmI() = $eScreenMain Then
+	  Local $MyCups = Number(ScrapeFuzzyText($gLargeCharacterMaps, $rMyCupsTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces))
+	  GUICtrlSetData($GUI_MyCups, $MyCups)
+   EndIf
 EndFunc
 
 Func DebugWrite($text)

@@ -139,18 +139,28 @@ Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappabl
    WEnd
 EndFunc
 
-Func CheckForSnipableTH($location, $left, $top)
+Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
    ; Next, see if we have a TH in the central box area
-   Local $townHall = GetTownHallLevel($location, $left, $top, $rCentralTownHall[0], $rCentralTownHall[1], $rCentralTownHall[2], $rCentralTownHall[3])
-   If $townHall <> -1 Then
-	  DebugWrite("Town Hall level " & $townHall & " found in center, not snipable")
-	  Return False
-   EndIf
+   ; Check 3 times, allowing for obscured TH's
+   For $i = 1 To 3
+	  Local $loc, $x, $y
+	  Local $townHall = GetTownHallLevel($loc, $x, $y, $rCentralTownHall[0], $rCentralTownHall[1], $rCentralTownHall[2], $rCentralTownHall[3])
+	  If $townHall <> -1 Then
+		 DebugWrite("Town Hall level " & $townHall & " found in center, not snipable")
+		 Return False
+	  EndIf
+	  Sleep(1000)
+   Next
 
-   ; Now find the actual location of the Town Hall: top, middle or bottom
+   ; Now find the actual location of the Town Hall on the whole screen: top, middle or bottom
    $townHall = GetTownHallLevel($location, $left, $top)
    If $townHall <> -1 Then
 	  If $location = $eTownHallMiddle Then
+		 If $left+17 > $rCentralTownHall[0] And $left+17 < $rCentralTownHall[2] And _
+			$top+17 > $rCentralTownHall[1] And $top+17 < $rCentralTownHall[3] Then
+			DebugWrite("Town Hall found in center box - not snipable.")
+			Return False
+		 EndIf
 		 DebugWrite("Snipable TH found in: Middle at " & $left & ", " & $top)
 	  ElseIf $location = $eTownHallTop Then
 		 DebugWrite("Snipable TH found at: Top at " & $left & ", " & $top)
@@ -192,8 +202,9 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 
    ; send troops in waves, check star color region for success
    Local $kingDeployed = False, $queenDeployed = False
-   Local $waveDelay = 15000
-   Local $waveTroops = 10
+   Local $waveDelay = 10000
+   Local $waveTroopsBarb = 15
+   Local $waveTroopsArch = 10
 
    While IsColorPresent($rFirstStarColor) = False
 	  Local $waveTimer = TimerInit()
@@ -205,11 +216,14 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 
-	  ; Deploy 15 barbs to box
+	  ; Deploy barbs to box
 	  If $barbButton[0] <> -1 Then
 		 RandomWeightedClick($barbButton)
 		 Sleep(500)
-		 For $i = 1 To ($availableBarbs<$waveTroops ? $availableBarbs : $waveTroops)
+		 Local $c = $waveTroopsBarb + Random(1, 5, 1)
+		 Local $deploy = ($availableBarbs<=$c ? $availableBarbs : $c)
+		 DebugWrite("Deploying " & $deploy & " barbarians.")
+		 For $i = 1 To $deploy
 			Local $xClick, $yClick
 			RandomCoords($deployBox, $xClick, $yClick)
 			_MouseClickFast($xClick, $yClick)
@@ -221,11 +235,14 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 
-	  ; Deploy 15 archers to box
+	  ; Deploy archers to box
 	  If $archButton[0] <> -1 Then
 		 RandomWeightedClick($archButton)
 		 Sleep(500)
-		 For $i = 1 To ($availableArchs<$waveTroops ? $availableArchs : $waveTroops)
+		 Local $c = $waveTroopsArch + Random(1, 5, 1)
+		 Local $deploy = ($availableArchs<=$c ? $availableArchs : $c)
+		 DebugWrite("Deploying " & $deploy & " archers.")
+		 For $i = 1 To $deploy
 			Local $xClick, $yClick
 			RandomCoords($deployBox, $xClick, $yClick)
 			_MouseClickFast($xClick, $yClick)
@@ -238,7 +255,8 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 
 	  ; Deploy King if we ran out of Barbs and power up after 2 seconds
-	  If $kingButton[0] <> -1 And $availableBarbs<=$waveTroops And $kingDeployed=False Then
+	  If $kingButton[0] <> -1 And $availableBarbs=0 And $kingDeployed=False Then
+		 DebugWrite("Deploying Barbarian King.")
 		 RandomWeightedClick($kingButton)
 		 Sleep(500)
 
@@ -247,6 +265,7 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 		 _MouseClickFast($xClick, $yClick)
 		 Sleep(2000)
 
+		 DebugWrite("Powering up Barbarian King.")
 		 RandomWeightedClick($kingButton)
 		 Sleep(500)
 
@@ -256,7 +275,8 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 
 	  ; Deploy Queen if we ran out of Archs and power up after 2 seconds
-	  If $queenButton[0] <> -1 And $availableArchs<=$waveTroops And $queenDeployed=False Then
+	  If $queenButton[0] <> -1 And $availableArchs=0 And $queenDeployed=False Then
+		 DebugWrite("Deploying Archer Queen.")
 		 RandomWeightedClick($queenButton)
 		 Sleep(500)
 
@@ -265,6 +285,7 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 		 _MouseClickFast($xClick, $yClick)
 		 Sleep(2000)
 
+		 DebugWrite("Powering up Archer Queen.")
 		 RandomWeightedClick($queenButton)
 		 Sleep(500)
 
@@ -274,7 +295,8 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 	  If $availableBarbs=0 And $availableArchs=0 Then ExitLoop
 
 	  ; Wait for timer
-	  While TimerDiff($waveTimer) < $waveDelay
+	  Local $rand = Random(1000, 3000, 1)
+	  While TimerDiff($waveTimer) < $waveDelay+$rand
 		 If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 		 If IsColorPresent($rFirstStarColor) = True Then ExitLoop 2
 		 Sleep(200)

@@ -9,11 +9,11 @@ Func AutoQueueTroops()
 
    ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
    Local $redStripe = IsColorPresent($rWindowBarracksFullColor)
-   If $redStripe Then DebugWrite("Barracks full, moving immediately to next auto stage.")
+   If $redStripe Then DebugWrite("Barracks full.")
 
    ; Get spells window
    If FindSpellsQueueingWindow() = False Then
-	 DebugWrite(" Auto: Queue Troops failed - can't find Spells or Dark window")
+	 DebugWrite(" Auto: Queue Troops failed - can't find Spells or Dark window.")
 	 ResetToCoCMainScreen()
 	 Return
    EndIf
