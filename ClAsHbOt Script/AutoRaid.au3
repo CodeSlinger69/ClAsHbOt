@@ -120,21 +120,23 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 	  GetMyLootNumbers()
 
 	  ; Check dead base settings
+	  Local $continue = True
 	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
 	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
 		 DebugWrite("Not dead base, skipping.")
 		 SetAutoRaidResults("-", "-", "-", "-", "-", False)
-		 ContinueLoop
+		 $continue = False
 	  EndIf
 
 	  ; First see if this is a zappable base
-	  $zappable = CheckZappableBase()
+	  If $continue Then $zappable = CheckZappableBase()
 
 	  ; Next, see if we have a raidable base
-	  Local $raidable = CheckForRaidableBase()
+	  Local $raidable = False
+	  If $continue Then $raidable = CheckForRaidableBase()
 
 	  ; If zappable and/or raidable, then go do it
-	  If $zappable Or $raidable<>False Then
+	  If $continue And ($zappable=True Or $raidable<>False) Then
 		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
 		 Return $raidable
 	  EndIf

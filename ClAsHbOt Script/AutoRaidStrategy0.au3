@@ -21,15 +21,10 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
    Local $availableBreakers = GetAvailableTroops($eTroopWallBreaker, $troopIndex)
 
-   DebugWrite("Available Barbarians: " & $availableBarbs & " @" & $gMyTroopCost[$eTroopBarbarian])
-   DebugWrite("Avaliable Archers: " & $availableArchs & " @" & $gMyTroopCost[$eTroopArcher])
+   DebugWrite("Available Barbarians: " & $availableBarbs)
+   DebugWrite("Avaliable Archers: " & $availableArchs)
    If $gDebug And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then _
-	  DebugWrite("Avaliable Breakers: " & $availableBreakers & " @" & $gMyTroopCost[$eTroopWallBreaker])
-
-   Local $elixirCost = $availableBarbs*$gMyTroopCost[$eTroopBarbarian] + _
-					   $availableArchs*$gMyTroopCost[$eTroopArcher] + _
-					   $availableBreakers*$gMyTroopCost[$eTroopWallBreaker]*(_GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED)
-   DebugWrite("Elix cost this match: " & $elixirCost)
+	  DebugWrite("Avaliable Breakers: " & $availableBreakers)
 
    ; Count the collectors, by top/bottom half
    DebugWrite("Counting Collectors...")

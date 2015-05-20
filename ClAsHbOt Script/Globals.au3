@@ -47,8 +47,6 @@ Global Enum $eTownHallMiddle, $eTownHallTop, $eTownHallBottom
 ; Auto Raid statistics
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 Global $gAutoRaidEndLoot[4] ; gold, elix, dark, cups
-Global $gMyTroopCost[$eTroopCount-2]
-$gMyTroopCost[$eTroopBarbarian] = 0
 Global $gAutoRaidWinnings[4]  ; gold, elix, dark, cups
 
 ; Deploy locations

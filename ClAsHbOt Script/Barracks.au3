@@ -168,11 +168,6 @@ Func FillBarracks(Const $initialFillFlag)
 		 ExitLoop
 	  EndIf
 
-	  ; If we have not yet figured out troop costs, then get them now
-	  If $gMyTroopCost[$eTroopBarbarian] = 0 Then
-		 GetBarracksTroopCosts($gMyTroopCost)
-	  EndIf
-
 	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
 	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 		 Local $dequeueTries = 6
@@ -288,36 +283,6 @@ Func GetBarracksTroopCounts(Const ByRef $bitmaps, ByRef $counts)
 		 $counts[$i] = Number(StringReplace($rawText, "x", ""))
 		 If $counts[$i]>0 Then DebugWrite("Barracks queued: " & $gTroopNames[$i] & " = " & $counts[$i])
 
-	  EndIf
-   Next
-EndFunc
-
-Func GetBarracksTroopCosts(ByRef $costs)
-   Local $barracksTroopBox[4] = [289, 224, 739, 400]
-   Local $textOffset[4] = [0, 46, 58, 60]
-
-   ; Grab frame
-   GrabFrameToFile("BarracksFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], _
-				   $barracksTroopBox[2], $barracksTroopBox[3])
-
-   ; Get cost of each troop
-   For $i = $eTroopBarbarian To $eTroopLavaHound
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksFrame.bmp", _
-						   "str", "Images\"&$gBarracksTroopSlotBMPs[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-	  ;DebugWrite("Troop " & $gBarracksTroopSlotBMPs[$i] & " conf: " & $split[2])
-
-	  If $split[2] > $gConfidenceBarracksTroopSlot Then
-		 Local $textBox[10] = [$barracksTroopBox[0] + $split[0] + $textOffset[0], _
-							   $barracksTroopBox[1] + $split[1] + $textOffset[1], _
-							   $barracksTroopBox[0] + $split[0] + $textOffset[2], _
-							   $barracksTroopBox[1] + $split[1] + $textOffset[3], _
-							   $rBarracksTroopCostTextBox[4], $rBarracksTroopCostTextBox[5], _
-							   0, 0, 0, 0]
-
-		 ; Parse cost text
-		 $costs[$i] = Number(ScrapeFuzzyText($gSmallCharacterMaps, $textBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-		 ;If $costs[$i]>0 Then DebugWrite("Barracks cost: " & $gTroopNames[$i] & " = " & $costs[$i])
 	  EndIf
    Next
 EndFunc
