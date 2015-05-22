@@ -144,44 +144,45 @@ Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappabl
 EndFunc
 
 Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
-   ; Next, see if we have a TH within a central circular area
-   ; Check 3 times, allowing for obscured TH's
-   For $i = 1 To 3
-	  Local $loc, $x, $y
-	  Local $townHall = GetTownHallLevel($loc, $x, $y, 0, 0, 1023, 551) ; specify coords so top and bot are not checked
-	  If $townHall <> -1 Then
-		 Local $dist = DistBetweenTwoPoints($x, $y, 511, 273) ; distance from center of screen
-		 If $dist <=200 Then
-			DebugWrite("Town Hall level " & $townHall & " found in center, not snipable")
-			Return False
-		 Else
-			DebugWrite("Town Hall found, not in center.")
-			ExitLoop
-		 EndIf
-	  Else
-		 DebugWrite("Town Hall not found in center box, pass " & $i & " of 3")
-	  EndIf
-	  Sleep(1000)
-   Next
 
-   ; Now find the actual location of the Town Hall on the whole screen: top, middle or bottom
-   $townHall = GetTownHallLevel($location, $left, $top)
-   If $townHall <> -1 Then
-	  If $location = $eTownHallMiddle Then
-		 DebugWrite("Snipable TH found in: Middle at " & $left & ", " & $top)
-	  ElseIf $location = $eTownHallTop Then
-		 DebugWrite("Snipable TH found at: Top at " & $left & ", " & $top)
-	  ElseIf $location = $eTownHallBottom Then
-		 DebugWrite("Snipable TH found at: Bottom at " & $left & ", " & $top)
-	  Else
-		 DebugWrite("Snipable TH problem: loc=" & $location & " townhall=" & $townHall)
-	  EndIf
+   ; See if we can find the Town Hall on the whole screen: top, middle or bottom
+   Local $townHall = GetTownHallLevel($location, $left, $top)
 
-	  Return True
-
-   Else
-	  DebugWrite("Could not find Town Hall for sniping.  Obscured?")
+   If $townHall = -1 Then
+	  DebugWrite("Could not find Town Hall.  Obscured?")
 	  Return False
+   EndIf
+
+   ; middle
+   If $location = $eTownHallMiddle Then
+	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 273) ; distance from center of screen
+	  If $dist <=200 Then
+		 DebugWrite("Town Hall found in Middle at " & $left & ", " & $top & ".  Not snipable.")
+		 Return False
+	  Else
+		 DebugWrite("Town Hall found in Middle at " & $left & ", " & $top & ".  Snipable!")
+		 Return True
+	  EndIf
+
+   ; top
+   ElseIf $location = $eTownHallTop Then
+	  If $top > 200 Then
+		 DebugWrite("Town Hall found at Top at " & $left & ", " & $top & ".  Not snipable.")
+		 Return False
+	  Else
+		 DebugWrite("Town Hall found at Top at " & $left & ", " & $top & ".  Snipable!")
+		 Return True
+	  EndIf
+
+   ; bottom
+   ElseIf $location = $eTownHallBottom Then
+	  If $top < 270 Then
+		 DebugWrite("Town Hall found at Bottom at " & $left & ", " & $top & ".  Not snipable.")
+		 Return False
+	  Else
+		 DebugWrite("Town Hall found at Bottom at " & $left & ", " & $top & ".  Snipable!")
+		 Return True
+	  EndIf
 
    EndIf
 
