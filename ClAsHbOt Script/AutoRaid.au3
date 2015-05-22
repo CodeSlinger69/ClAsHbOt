@@ -254,7 +254,7 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 
    Local $clickPoints1[$troopsToDeploy][2]
    ; Always deploy first set of troops left to right to avoid accidentally clicking the Next button
-   GetRandomSortedClickPoints(0, $dir, $troopsToDeploy, $clickPoints1)
+   GetAutoRaidClickPoints(0, $dir, $troopsToDeploy, $clickPoints1)
 
    For $i = 0 To $troopsToDeploy-1
 	  _MouseClickFast($clickPoints1[$i][0], $clickPoints1[$i][1])
@@ -271,7 +271,7 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 	  DebugWrite("Continuing: " & $troopsAvailable & " troops available.")
 
 	  Local $clickPoints2[$troopsAvailable][2]
-	  GetRandomSortedClickPoints(Random(0,1,1), $dir, $troopsAvailable, $clickPoints2)
+	  GetAutoRaidClickPoints(Random(0,1,1), $dir, $troopsAvailable, $clickPoints2)
 
 	  For $i = 0 To $troopsAvailable-1
 		 _MouseClickFast($clickPoints2[$i][0], $clickPoints2[$i][1])
@@ -362,7 +362,7 @@ Func LocateCollectors(ByRef $matchX, ByRef $matchY)
    MoveScreenDownToCenter(65)
 EndFunc
 
-Func GetRandomDeployBox(Const $direction, ByRef $box)
+Func GetRandomAutoRaidDeployBox(Const $direction, ByRef $box)
    Local $side = Random()>0.5 ? "Left" : "Right"
    Local $boxIndex = Random(0, 20, 1)
 
@@ -378,11 +378,11 @@ Func GetRandomDeployBox(Const $direction, ByRef $box)
 
 EndFunc
 
-Func GetRandomSortedClickPoints(Const $order, Const $topBotDirection, Const $numberPoints, ByRef $points)
+Func GetAutoRaidClickPoints(Const $order, Const $topBotDirection, Const $numberPoints, ByRef $points)
    ; First parameter is 0 = ascending, 1 = descending
    For $i = 0 To $numberPoints-1
 	  Local $deployBox[4]
-	  GetRandomDeployBox($topBotDirection, $deployBox)
+	  GetRandomAutoRaidDeployBox($topBotDirection, $deployBox)
 	  RandomCoords($deployBox, $points[$i][0], $points[$i][1])
    Next
 

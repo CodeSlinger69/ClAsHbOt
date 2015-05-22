@@ -50,7 +50,6 @@ Global $gAutoRaidEndLoot[4] ; gold, elix, dark, cups
 Global $gAutoRaidWinnings[4]  ; gold, elix, dark, cups
 
 ; Deploy locations
-Global Enum $eDeployBoxNWCorner, $eDeployBoxNECorner, $eDeployBoxSWCorner, $eDeployBoxSECorner
 Global $NWSafeDeployBox[4] = [280, 170, 300, 190]
 Global $NESafeDeployBox[4] = [735, 170, 755, 190]
 Global $SWSafeDeployBox[4] = [280, 295, 300, 315]

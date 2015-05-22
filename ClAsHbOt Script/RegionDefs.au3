@@ -78,6 +78,3 @@ Global $rWindowChatDimmedColor[4] = [235, 13, 0x3a3829, 6] ; Likely due to Donat
 Global $rNewChatMessagesColor[4] = [21, 262, 0xe00200, 0]
 Global $rDeadBaseIndicatorColor[4] = [23, 26, 0x5b5e60, 0]
 Global $rFirstStarColor[4] = [925, 402, 0xc7c8c0, 6]
-
-; "Central" town hall region - used for auto sniping
-Global $rCentralTownHall[4] = [300, 125, 724, 425]

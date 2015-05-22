@@ -104,20 +104,24 @@ Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappabl
 	  GetMyLootNumbers()
 
 	  ; Check dead base settings
+	  Local $continue = True
 	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
 	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
 		 DebugWrite("Not dead base, skipping.")
-		 ContinueLoop
+		 $continue = False
 	  EndIf
 
 	  ; First see if this is a zappable base
-	  $zappable = CheckZappableBase()
+	  If $continue Then $zappable = CheckZappableBase()
 
 	  ; Next, see if we have a snipable TH
-	  Local $snipable = CheckForSnipableTH($location, $left, $top)
+	  Local $snipable = False
+	  If $continue Then $snipable = CheckForSnipableTH($location, $left, $top)
 
 	  ; If zappable and/or snipable, then go do it
-	  If $zappable Or $snipable<>False Then Return $snipable
+	  If $continue And ($zappable=True Or $snipable<>False) Then
+		 Return $snipable
+	  EndIf
 
 	  ; Something didn't match - click Next
 	  Sleep($gPauseBetweenNexts)
@@ -140,14 +144,22 @@ Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappabl
 EndFunc
 
 Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
-   ; Next, see if we have a TH in the central box area
+   ; Next, see if we have a TH within a central circular area
    ; Check 3 times, allowing for obscured TH's
    For $i = 1 To 3
 	  Local $loc, $x, $y
-	  Local $townHall = GetTownHallLevel($loc, $x, $y, $rCentralTownHall[0], $rCentralTownHall[1], $rCentralTownHall[2], $rCentralTownHall[3])
+	  Local $townHall = GetTownHallLevel($loc, $x, $y, 0, 0, 1023, 551) ; specify coords so top and bot are not checked
 	  If $townHall <> -1 Then
-		 DebugWrite("Town Hall level " & $townHall & " found in center, not snipable")
-		 Return False
+		 Local $dist = DistBetweenTwoPoints($x, $y, 511, 273) ; distance from center of screen
+		 If $dist <=200 Then
+			DebugWrite("Town Hall level " & $townHall & " found in center, not snipable")
+			Return False
+		 Else
+			DebugWrite("Town Hall found, not in center.")
+			ExitLoop
+		 EndIf
+	  Else
+		 DebugWrite("Town Hall not found in center box, pass " & $i & " of 3")
 	  EndIf
 	  Sleep(1000)
    Next
@@ -156,11 +168,6 @@ Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
    $townHall = GetTownHallLevel($location, $left, $top)
    If $townHall <> -1 Then
 	  If $location = $eTownHallMiddle Then
-		 If $left+17 > $rCentralTownHall[0] And $left+17 < $rCentralTownHall[2] And _
-			$top+17 > $rCentralTownHall[1] And $top+17 < $rCentralTownHall[3] Then
-			DebugWrite("Town Hall found in center box - not snipable.")
-			Return False
-		 EndIf
 		 DebugWrite("Snipable TH found in: Middle at " & $left & ", " & $top)
 	  ElseIf $location = $eTownHallTop Then
 		 DebugWrite("Snipable TH found at: Top at " & $left & ", " & $top)
@@ -189,8 +196,9 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
    DebugWrite("Town Hall location: " & $THLeft & ", " & $actualTHTop)
 
    ; Find best deploy spot, based on deployment boxes
-   Local $deployBox[4]
-   AutoSnipeFindClosestDeployBox($deployTopOrBot, $THLeft, $actualTHTop, $deployBox)
+   Local $boxCount = 3
+   Local $deployBoxes[$boxCount][4]
+   AutoSnipeFindClosestDeployBoxes($deployTopOrBot, $THLeft, $actualTHTop, $deployBoxes)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][4]
@@ -202,9 +210,9 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 
    ; send troops in waves, check star color region for success
    Local $kingDeployed = False, $queenDeployed = False
-   Local $waveDelay = 10000
-   Local $waveTroopsBarb = 15
-   Local $waveTroopsArch = 10
+   Local $waveDelay = 12000
+   Local $waveTroopsBarb = 30
+   Local $waveTroopsArch = 20
 
    While IsColorPresent($rFirstStarColor) = False
 	  Local $waveTimer = TimerInit()
@@ -216,17 +224,24 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 
-	  ; Deploy barbs to box
+	  ; If this is TH10, then dump everything - these seem to be trapped more often than not
+	  ;If TH10 Then ...
+	;	 TODO
+
+	  ; Deploy barbs to boxes
 	  If $barbButton[0] <> -1 Then
-		 RandomWeightedClick($barbButton)
-		 Sleep(500)
 		 Local $c = $waveTroopsBarb + Random(1, 5, 1)
 		 Local $deploy = ($availableBarbs<=$c ? $availableBarbs : $c)
 		 DebugWrite("Deploying " & $deploy & " barbarians.")
-		 For $i = 1 To $deploy
-			Local $xClick, $yClick
-			RandomCoords($deployBox, $xClick, $yClick)
-			_MouseClickFast($xClick, $yClick)
+
+		 Local $clickPoints[$deploy][2]
+		 GetAutoSnipeClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
+
+		 RandomWeightedClick($barbButton)
+		 Sleep(500)
+
+		 For $i = 0 To $deploy-1
+			_MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
 			Sleep($gDeployTroopClickDelay)
 		 Next
 	  EndIf
@@ -235,17 +250,20 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 
-	  ; Deploy archers to box
+	  ; Deploy archers to boxes
 	  If $archButton[0] <> -1 Then
-		 RandomWeightedClick($archButton)
-		 Sleep(500)
 		 Local $c = $waveTroopsArch + Random(1, 5, 1)
 		 Local $deploy = ($availableArchs<=$c ? $availableArchs : $c)
 		 DebugWrite("Deploying " & $deploy & " archers.")
-		 For $i = 1 To $deploy
-			Local $xClick, $yClick
-			RandomCoords($deployBox, $xClick, $yClick)
-			_MouseClickFast($xClick, $yClick)
+
+		 Local $clickPoints[$deploy][2]
+		 GetAutoSnipeClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
+
+		 RandomWeightedClick($archButton)
+		 Sleep(500)
+
+		 For $i = 0 To $deploy-1
+			_MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
 			Sleep($gDeployTroopClickDelay)
 		 Next
 	  EndIf
@@ -261,7 +279,8 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 		 Sleep(500)
 
 		 Local $xClick, $yClick
-		 RandomCoords($deployBox, $xClick, $yClick)
+		 Local $box[4] = [$deployBoxes[0][0], $deployBoxes[0][1], $deployBoxes[0][2], $deployBoxes[0][3]]
+		 RandomCoords($box, $xClick, $yClick)
 		 _MouseClickFast($xClick, $yClick)
 		 Sleep(2000)
 
@@ -281,7 +300,8 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 		 Sleep(500)
 
 		 Local $xClick, $yClick
-		 RandomCoords($deployBox, $xClick, $yClick)
+		 Local $box[4] = [$deployBoxes[0][0], $deployBoxes[0][1], $deployBoxes[0][2], $deployBoxes[0][3]]
+		 RandomCoords($box, $xClick, $yClick)
 		 _MouseClickFast($xClick, $yClick)
 		 Sleep(2000)
 
@@ -304,11 +324,17 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
 
    WEnd
 
-   If IsColorPresent($rFirstStarColor) Then
-	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
+   For $i = 1 to 5
+
+	  If IsColorPresent($rFirstStarColor) Then
+		 RandomWeightedClick($rLiveRaidScreenEndBattleButton)
+		 Sleep(1000)
+		 RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
+		 ExitLoop
+	  EndIf
+
 	  Sleep(1000)
-	  RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
-   EndIf
+   Next
 
    ; Wait for end battle
    WaitForBattleEnd(True, True)  ; always wait full 3 minutes, or until all troops are dead
@@ -316,22 +342,47 @@ Func AutoSnipeExecuteSnipe(Const $THLocation, Const $THLeft, Const $THTop)
    Return True
 EndFunc
 
+Func GetAutoSnipeClickPoints(Const $order, Const ByRef $boxes, ByRef $points)
+   ; First parameter is 0 = ascending, 1 = descending
+   For $i = 0 To UBound($points)-1
+	  Local $deployBox[4]
+	  Local $boxIndex = Random(0, UBound($boxes)-1, 1)
+	  For $j = 0 To 3
+		 $deployBox[$j] = $boxes[$boxIndex][$j]
+	  Next
+
+	  RandomCoords($deployBox, $points[$i][0], $points[$i][1])
+   Next
+
+   _ArraySort($points, $order)
+EndFunc
+
 Func AutoSnipeMoveScreen(Const $THLocation, Const $THTop, ByRef $actualTop)
    Local $topBot
 
    ; move to top of screen
    If $THLocation = $eTownHallTop Then
-	  DebugWrite("TownHall found at top, moving screen down")
-	  MoveScreenDownToTop(False)
-	  $topBot = "Top"
-	  $actualTop = $THTop
+	  If $THTop >= 368 Then
+		 DebugWrite("TownHall found at top, moving screen up")
+		 MoveScreenUpToBottom(False)
+		 $topBot = "Bot"
+	  Else
+		 DebugWrite("TownHall found at top, moving screen down")
+		 MoveScreenDownToTop(False)
+		 $topBot = "Top"
+	  EndIf
 
    ; move to bottom of screen
    ElseIf $THLocation = $eTownHallBottom Then
-	  DebugWrite("TownHall found at bottom, moving screen up")
-	  MoveScreenUpToBottom(False)
-	  $topBot = "Bot"
-	  $actualTop = $THTop
+	  If $THTop >= 130 Then
+		 DebugWrite("TownHall found at bottom, moving screen up")
+		 MoveScreenUpToBottom(False)
+		 $topBot = "Bot"
+	  Else
+		 DebugWrite("TownHall found at bottom, moving screen down")
+		 MoveScreenDownToTop(False)
+		 $topBot = "Top"
+	  EndIf
 
    ; if found in center, still shift up or down based on location
    ElseIf $THLocation = $eTownHallMiddle Then
@@ -339,12 +390,10 @@ Func AutoSnipeMoveScreen(Const $THLocation, Const $THTop, ByRef $actualTop)
 		 DebugWrite("TownHall found in middle, moving screen down")
 		 MoveScreenDownToTop(False)
 		 $topBot = "Top"
-		 $actualTop = $THTop + 94 ; 94 pixel move; adjust location where TH was found
 	  Else
 		 DebugWrite("TownHall found in middle, moving screen up")
 		 MoveScreenUpToBottom(False)
 		 $topBot = "Bot"
-		 $actualTop = $THTop - 143 ; 143 pixel move; adjust location where TH was found
 	  EndIf
 
    Else
@@ -353,78 +402,73 @@ Func AutoSnipeMoveScreen(Const $THLocation, Const $THTop, ByRef $actualTop)
 
    EndIf
 
+   ; Get the new TH location, now that screen has been moved
+   Local $loc, $L, $T
+   Local $th = GetTownHallLevel($loc, $L, $actualTop)
+
    Return $topBot
 EndFunc
 
-Func AutoSnipeFindClosestDeployBox(Const $topOrBot, Const $left, Const $top, ByRef $box)
-   Local $bestDistWest, $bestDistEast
-   Local $bestWestBox, $bestEastBox
-
+Func AutoSnipeFindClosestDeployBoxes(Const $topOrBot, Const $left, Const $top, ByRef $selectedBoxes)
    If $topOrBot = "Top" Then
-	  $bestWestBox = FindClosestDeployBox($left+17, $top+17, $NWDeployBoxes, $bestDistWest, $eDeployBoxNWCorner)
-	  $bestEastBox = FindClosestDeployBox($left+17, $top+17, $NEDeployBoxes, $bestDistEast, $eDeployBoxNECorner)
-	  DebugWrite("Top deploy, best west=" & $bestWestBox & "/" & Round($bestDistWest,2) & " best east=" & $bestEastBox & "/" & Round($bestDistEast,2))
+	  Local $allBoxes[42][5] ; 5th column will hold the calculated distance
+	  For $i=0 To 20
+		 $allBoxes[$i][0] = $NWDeployBoxes[$i][0]
+		 $allBoxes[$i][1] = $NWDeployBoxes[$i][1]
+		 $allBoxes[$i][2] = $NWDeployBoxes[$i][0]+10
+		 $allBoxes[$i][3] = $NWDeployBoxes[$i][1]+10
+	  Next
+	  For $i=0 To 20
+		 $allBoxes[21+$i][0] = $NEDeployBoxes[$i][2]-10
+		 $allBoxes[21+$i][1] = $NEDeployBoxes[$i][1]
+		 $allBoxes[21+$i][2] = $NEDeployBoxes[$i][2]
+		 $allBoxes[21+$i][3] = $NEDeployBoxes[$i][1]+10
+	  Next
 
-	  If $bestDistWest < $bestDistEast Then
-		 $box[0] = $NWDeployBoxes[$bestWestBox][0]
-		 $box[1] = $NWDeployBoxes[$bestWestBox][1]
-		 $box[2] = $NWDeployBoxes[$bestWestBox][0] + 20
-		 $box[3] = $NWDeployBoxes[$bestWestBox][1] + 20
-	  Else
-		 $box[0] = $NEDeployBoxes[$bestEastBox][2] - 20
-		 $box[1] = $NEDeployBoxes[$bestEastBox][1]
-		 $box[2] = $NEDeployBoxes[$bestEastBox][2]
-		 $box[3] = $NEDeployBoxes[$bestEastBox][1] + 20
-	  EndIf
+	  SortBoxesByDistance($left+17, $top+17, $allBoxes)
+
+	  For $i = 0 To UBound($selectedBoxes)-1
+		 For $j = 0 To 3
+			$selectedBoxes[$i][$j] = $allBoxes[$i][$j]
+		 Next
+		 DebugWrite("Closest top box " & $i & ": " & $selectedBoxes[$i][0] & ", " & $selectedBoxes[$i][1] & ", " & $selectedBoxes[$i][2] & ", " & $selectedBoxes[$i][3])
+	  Next
 
    Else
-	  $bestWestBox = FindClosestDeployBox($left+17, $top+17, $SWDeployBoxes, $bestDistWest, $eDeployBoxSWCorner)
-	  $bestEastBox = FindClosestDeployBox($left+17, $top+17, $SEDeployBoxes, $bestDistEast, $eDeployBoxSECorner)
-	  DebugWrite("Bottom deploy, best west=" & $bestWestBox & "/" & Round($bestDistWest,2) & " best east=" & $bestEastBox & "/" & Round($bestDistEast,2))
+	  Local $allBoxes[42][5] ; 5th column will hold the calculated distance
+	  For $i=0 To 20
+		 $allBoxes[$i][0] = $SWDeployBoxes[$i][0]
+		 $allBoxes[$i][1] = $SWDeployBoxes[$i][3]-10
+		 $allBoxes[$i][2] = $SWDeployBoxes[$i][0]+10
+		 $allBoxes[$i][3] = $SWDeployBoxes[$i][3]
+	  Next
+	  For $i=0 To 20
+		 $allBoxes[21+$i][0] = $SEDeployBoxes[$i][2]-10
+		 $allBoxes[21+$i][1] = $SEDeployBoxes[$i][3]-10
+		 $allBoxes[21+$i][2] = $SEDeployBoxes[$i][2]
+		 $allBoxes[21+$i][3] = $SEDeployBoxes[$i][3]
+	  Next
 
-	  If $bestDistWest < $bestDistEast Then
-		 $box[0] = $SWDeployBoxes[$bestWestBox][0]
-		 $box[1] = $SWDeployBoxes[$bestWestBox][3] - 20
-		 $box[2] = $SWDeployBoxes[$bestWestBox][0] + 20
-		 $box[3] = $SWDeployBoxes[$bestWestBox][3]
-	  Else
-		 $box[0] = $SEDeployBoxes[$bestEastBox][2] - 20
-		 $box[1] = $SEDeployBoxes[$bestEastBox][3] - 20
-		 $box[2] = $SEDeployBoxes[$bestEastBox][2]
-		 $box[3] = $SEDeployBoxes[$bestEastBox][3]
-	  EndIf
+	  SortBoxesByDistance($left+17, $top+17, $allBoxes)
+
+	  For $i = 0 To UBound($selectedBoxes)-1
+		 For $j = 0 To 3
+			$selectedBoxes[$i][$j] = $allBoxes[$i][$j]
+		 Next
+		 DebugWrite("Closest bottom box " & $i & ": " & $selectedBoxes[$i][0] & ", " & $selectedBoxes[$i][1] & ", " & $selectedBoxes[$i][2] & ", " & $selectedBoxes[$i][3])
+	  Next
 
    EndIf
 EndFunc
 
-Func FindClosestDeployBox(Const $x, Const $y, Const ByRef $boxes, ByRef $bestDist, Const $corner)
-   $bestDist = 9999
-   Local $bestBox = -1
-   For $i = 0 To 20
-	  Local $boxX, $boxY
-	  If $corner = $eDeployBoxNWCorner Then
-		 $boxX = $boxes[$i][0]
-		 $boxY = $boxes[$i][1]
-	  ElseIf $corner = $eDeployBoxNECorner Then
-		 $boxX = $boxes[$i][2]
-		 $boxY = $boxes[$i][1]
-	  ElseIf $corner = $eDeployBoxSWCorner Then
-		 $boxX = $boxes[$i][0]
-		 $boxY = $boxes[$i][3]
-	  Else ; $eDeployBoxSECorner
-		 $boxX = $boxes[$i][2]
-		 $boxY = $boxes[$i][3]
-	  EndIf
-
-	  Local $dist = DistBetweenTwoPoints($x, $y, $boxX, $boxY)
-
-	  If $dist<=$bestDist Then
-		 $bestDist = $dist
-		 $bestBox = $i
-	  EndIf
+Func SortBoxesByDistance(Const $x, Const $y, ByRef $boxes)
+   For $i = 0 To UBound($boxes)-1
+	  Local $boxX = $boxes[$i][0] + Int( ($boxes[$i][2]-$boxes[$i][0])/2 )
+	  Local $boxY = $boxes[$i][1] + Int( ($boxes[$i][3]-$boxes[$i][1])/2 )
+	  $boxes[$i][4] = DistBetweenTwoPoints($x, $y, $boxX, $boxY)
    Next
 
-   Return $bestBox
+   _ArraySort($boxes, 0, 0, UBound($boxes)-1, 4)
 EndFunc
 
 
