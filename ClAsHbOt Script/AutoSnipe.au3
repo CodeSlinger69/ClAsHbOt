@@ -28,9 +28,9 @@ Func AutoSnipe(ByRef $timer, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
 	  Local $zappable
 	  Local $findMatchResults = AutoSnipeFindMatch($THLocation, $THLeft, $THTop, $zappable)
 
-	  If $zappable Then
+	  If $zappable And $findMatchResults = $eAutoExecute Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
-		 AutoDEZap($findMatchResults = False)
+		 AutoDEZap(False)
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
@@ -155,7 +155,7 @@ Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
 
    ; middle
    If $location = $eTownHallMiddle Then
-	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 273) ; distance from center of screen
+	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 273)
 	  If $dist <=200 Then
 		 DebugWrite("Town Hall found in Middle at " & $left & ", " & $top & ".  Not snipable.")
 		 Return False
@@ -166,7 +166,8 @@ Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
 
    ; top
    ElseIf $location = $eTownHallTop Then
-	  If $top > 200 Then
+	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 320)
+	  If $dist < 150 Then
 		 DebugWrite("Town Hall found at Top at " & $left & ", " & $top & ".  Not snipable.")
 		 Return False
 	  Else
@@ -176,7 +177,8 @@ Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
 
    ; bottom
    ElseIf $location = $eTownHallBottom Then
-	  If $top < 270 Then
+	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 140)
+	  If $dist < 150 Then
 		 DebugWrite("Town Hall found at Bottom at " & $left & ", " & $top & ".  Not snipable.")
 		 Return False
 	  Else
