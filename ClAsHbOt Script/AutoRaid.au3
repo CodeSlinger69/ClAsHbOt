@@ -30,7 +30,7 @@ Func AutoRaid(ByRef $timer)
 
 	  If $zappable Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
-		 AutoDEZap($findMatchResults = False)
+		 AutoDEZap(False)
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
@@ -119,29 +119,27 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 	  ; Update my loot status on GUI
 	  GetMyLootNumbers()
 
+	  Local $raidable = False
+
 	  ; Check dead base settings
-	  Local $continue = True
 	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
 	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
 		 DebugWrite("Not dead base, skipping.")
 		 SetAutoRaidResults("-", "-", "-", "-", "-", False)
-		 $continue = False
+
+	  Else
+		 $zappable = CheckZappableBase()
+		 $raidable = CheckForRaidableBase()
+
 	  EndIf
 
-	  ; First see if this is a zappable base
-	  If $continue Then $zappable = CheckZappableBase()
-
-	  ; Next, see if we have a raidable base
-	  Local $raidable = False
-	  If $continue Then $raidable = CheckForRaidableBase()
-
 	  ; If zappable and/or raidable, then go do it
-	  If $continue And ($zappable=True Or $raidable<>False) Then
+	  If $zappable=True Or $raidable<>False Then
 		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
 		 Return $raidable
 	  EndIf
 
-	  ; Something didn't match - click Next
+	  ; Not raidable or zappable - click Next
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
 

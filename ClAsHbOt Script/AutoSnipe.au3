@@ -103,27 +103,25 @@ Func AutoSnipeFindMatch(ByRef $location, ByRef $left, ByRef $top, ByRef $zappabl
 	  ; Update my loot status on GUI
 	  GetMyLootNumbers()
 
+	  Local $snipable = False
+
 	  ; Check dead base settings
-	  Local $continue = True
 	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
 	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
 		 DebugWrite("Not dead base, skipping.")
-		 $continue = False
+
+	  Else
+		 $zappable = CheckZappableBase()
+		 $snipable = CheckForSnipableTH($location, $left, $top)
+
 	  EndIf
 
-	  ; First see if this is a zappable base
-	  If $continue Then $zappable = CheckZappableBase()
-
-	  ; Next, see if we have a snipable TH
-	  Local $snipable = False
-	  If $continue Then $snipable = CheckForSnipableTH($location, $left, $top)
-
-	  ; If zappable and/or snipable, then go do it
-	  If $continue And ($zappable=True Or $snipable<>False) Then
+	  ; If snipable, then go do it
+	  If $snipable=True Then
 		 Return $snipable
 	  EndIf
 
-	  ; Something didn't match - click Next
+	  ; Not snipable - click Next
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
 
@@ -157,10 +155,10 @@ Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
    If $location = $eTownHallMiddle Then
 	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 273)
 	  If $dist <=200 Then
-		 DebugWrite("Town Hall found in Middle at " & $left & ", " & $top & ".  Not snipable.")
+		 DebugWrite("Town Hall level " & $townHall & " found in Middle at " & $left & ", " & $top & ".  Not snipable.")
 		 Return False
 	  Else
-		 DebugWrite("Town Hall found in Middle at " & $left & ", " & $top & ".  Snipable!")
+		 DebugWrite("Town Hall level " & $townHall & " found in Middle at " & $left & ", " & $top & ".  Snipable!")
 		 Return True
 	  EndIf
 
@@ -168,10 +166,10 @@ Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
    ElseIf $location = $eTownHallTop Then
 	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 320)
 	  If $dist < 150 Then
-		 DebugWrite("Town Hall found at Top at " & $left & ", " & $top & ".  Not snipable.")
+		 DebugWrite("Town Hall level " & $townHall & " found at Top at " & $left & ", " & $top & ".  Not snipable.")
 		 Return False
 	  Else
-		 DebugWrite("Town Hall found at Top at " & $left & ", " & $top & ".  Snipable!")
+		 DebugWrite("Town Hall level " & $townHall & " found at Top at " & $left & ", " & $top & ".  Snipable!")
 		 Return True
 	  EndIf
 
@@ -179,10 +177,10 @@ Func CheckForSnipableTH(ByRef $location, ByRef $left, ByRef $top)
    ElseIf $location = $eTownHallBottom Then
 	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 140)
 	  If $dist < 150 Then
-		 DebugWrite("Town Hall found at Bottom at " & $left & ", " & $top & ".  Not snipable.")
+		 DebugWrite("Town Hall level " & $townHall & " found at Bottom at " & $left & ", " & $top & ".  Not snipable.")
 		 Return False
 	  Else
-		 DebugWrite("Town Hall found at Bottom at " & $left & ", " & $top & ".  Snipable!")
+		 DebugWrite("Town Hall level " & $townHall & " found at Bottom at " & $left & ", " & $top & ".  Snipable!")
 		 Return True
 	  EndIf
 
