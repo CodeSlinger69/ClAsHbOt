@@ -63,7 +63,7 @@ For $x = 70 To 470 Step 20
    $NWDeployBoxes[$i][1] = $y
    $NWDeployBoxes[$i][2] = $x+60
    $NWDeployBoxes[$i][3] = $y+40
-   ;DebugWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
+   ;ConsoleWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
    $i+=1
    $y-=14
 Next
@@ -76,7 +76,7 @@ For $x = 950 To 550 Step -20
    $NEDeployBoxes[$i][1] = $y
    $NEDeployBoxes[$i][2] = $x
    $NEDeployBoxes[$i][3] = $y+40
-   ;DebugWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
+   ;ConsoleWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
    $i+=1
    $y-=14
 Next
@@ -89,7 +89,7 @@ For $x = 70 To 470 Step 20
    $SWDeployBoxes[$i][1] = $y
    $SWDeployBoxes[$i][2] = $x+60
    $SWDeployBoxes[$i][3] = $y+40
-   ;DebugWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
+   ;ConsoleWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
    $i+=1
    $y+=14
 Next
@@ -102,7 +102,7 @@ For $x = 950 To 550 Step -20
    $SEDeployBoxes[$i][1] = $y
    $SEDeployBoxes[$i][2] = $x
    $SEDeployBoxes[$i][3] = $y+40
-   ;DebugWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
+   ;ConsoleWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
    $i+=1
    $y+=14
 Next

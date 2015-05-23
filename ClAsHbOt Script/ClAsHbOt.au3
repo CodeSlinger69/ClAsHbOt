@@ -36,6 +36,7 @@ Opt("GUIOnEventMode", 1)
 #include <Screen.au3>
 #include <Donate.au3>
 
+
 Main()
 
 Func Main()
@@ -57,7 +58,7 @@ Func MainApplicationLoop()
    Local $lastDonateTroopsTimer = TimerInit()
    Local $lastQueueDonatableTroopsTimer = TimerInit()
    Local $lastTrainingCheckTimer = TimerInit()
-   Local $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop
+   Local $autoSnipeTHLevel, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop
 
    While 1
 	  ;DebugWrite("Main loop: AutoRaid Stage " & $gAutoRaidStage)
@@ -144,7 +145,7 @@ Func MainApplicationLoop()
 
 		 $gAutoSnipeClicked = False
 		 CheckForAndroidMessageBox()
-		 AutoSnipe($lastTrainingCheckTimer, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop)
+		 AutoSnipe($lastTrainingCheckTimer, $autoSnipeTHLevel, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop)
 	  EndIf
 
 	  ; Auto Raid, Dump Cups
