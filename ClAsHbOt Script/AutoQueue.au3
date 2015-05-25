@@ -1,11 +1,12 @@
 Func AutoQueueTroops()
    DebugWrite("AutoQueueTroops()")
 
-   OpenBarracksWindow()
-   If WhereAmI() <> $eScreenTrainTroops Then
+   If WhereAmI() <> $eScreenMain Then
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
+
+   OpenBarracksWindow()
 
    ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
    Local $redStripe = IsColorPresent($rWindowBarracksFullColor)

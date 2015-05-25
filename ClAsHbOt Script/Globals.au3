@@ -55,6 +55,7 @@ Global $NESafeDeployBox[4] = [735, 170, 755, 190]
 Global $SWSafeDeployBox[4] = [280, 295, 300, 315]
 Global $SESafeDeployBox[4] = [735, 295, 755, 315]
 
+; Formula: y = -.7/x + 374
 Global $NWDeployBoxes[21][4]
 Local $y = 325
 Local $i = 0
@@ -68,6 +69,7 @@ For $x = 70 To 470 Step 20
    $y-=14
 Next
 
+; Formula: y = .7/x - 340
 Global $NEDeployBoxes[21][4]
 $y = 325
 $i=0
@@ -81,6 +83,7 @@ For $x = 950 To 550 Step -20
    $y-=14
 Next
 
+; Formula: y = .7/x + 276
 Global $SWDeployBoxes[21][4]
 $y = 125
 $i=0
@@ -94,6 +97,7 @@ For $x = 70 To 470 Step 20
    $y+=14
 Next
 
+; Formula: y = -.7/x + 790
 Global $SEDeployBoxes[21][4]
 $y = 125
 $i=0

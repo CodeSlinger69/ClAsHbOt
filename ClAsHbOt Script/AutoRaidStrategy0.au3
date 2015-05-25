@@ -84,6 +84,16 @@ Func AutoRaidExecuteRaidStrategy0()
 	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction)
    EndIf
 
+   ; Deploy breakers
+   If $breakerButton[0] <> -1 And _
+	  _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
+
+	  DebugWrite("Deploying Breakers")
+	  RandomWeightedClick($breakerButton)
+	  Sleep(500)
+	  DeployTroopsToSafeBoxes($eTroopWallBreaker, $troopIndex, $direction)
+   EndIf
+
    ; Deploy King
    Local $kingDeployTime = TimerInit()
    Local $kingDeployed = False
@@ -117,16 +127,6 @@ Func AutoRaidExecuteRaidStrategy0()
 	  RandomWeightedClick($archButton)
 	  Sleep(500)
 	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction)
-   EndIf
-
-   ; Deploy breakers
-   If $breakerButton[0] <> -1 And _
-	  _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
-
-	  DebugWrite("Deploying Breakers")
-	  RandomWeightedClick($breakerButton)
-	  Sleep(500)
-	  DeployTroopsToSafeBoxes($eTroopWallBreaker, $troopIndex, $direction)
    EndIf
 
    ; Loop, while monitoring King / Queen health bars, power up king/queen when health falls below green (50%)

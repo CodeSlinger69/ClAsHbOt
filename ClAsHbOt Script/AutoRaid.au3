@@ -28,18 +28,20 @@ Func AutoRaid(ByRef $timer)
 	  Local $zappable
 	  Local $findMatchResults = AutoRaidFindMatch($zappable)
 
+	  ; Something went wrong, reset to start
+	  If $findMatchResults = False Then
+		 DebugWrite("Auto: Error finding match, resetting.")
+		 ResetToCoCMainScreen()
+		 $gAutoStage = $eAutoQueueTraining
+	  EndIf
+
 	  If $zappable Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
 		 AutoDEZap(False)
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
-	  If $findMatchResults = $eAutoExecute Then
-		 $gAutoStage = $eAutoExecute
-	  Else
-		 ResetToCoCMainScreen()
-		 $gAutoStage = $eAutoFindMatch
-	  EndIf
+	  If $findMatchResults = $eAutoExecute Then $gAutoStage = $eAutoExecute
 
    ; Stage Execute Raid
    Case $eAutoExecute

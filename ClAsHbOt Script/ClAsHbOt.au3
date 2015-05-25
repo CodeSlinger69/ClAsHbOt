@@ -36,7 +36,6 @@ Opt("GUIOnEventMode", 1)
 #include <Screen.au3>
 #include <Donate.au3>
 
-
 Main()
 
 Func Main()

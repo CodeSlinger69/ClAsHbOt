@@ -28,27 +28,26 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 	  Local $zappable
 	  Local $findMatchResults = AutoSnipeFindMatch($THLevel, $THLocation, $THLeft, $THTop, $zappable)
 
+	  ; Something went wrong, reset to start
+	  If $findMatchResults = False Then
+		 DebugWrite("Auto: Error finding match, resetting.")
+		 ResetToCoCMainScreen()
+		 $gAutoStage = $eAutoQueueTraining
+	  EndIf
+
 	  If $zappable And $findMatchResults = $eAutoExecute Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
 		 AutoDEZap(False)
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
-	  If $findMatchResults = $eAutoExecute Then
-		 $gAutoStage = $eAutoExecute
-	  Else
-		 ResetToCoCMainScreen()
-		 $gAutoStage = $eAutoFindMatch
-	 EndIf
+	  If $findMatchResults = $eAutoExecute Then $gAutoStage = $eAutoExecute
 
    ; Stage Execute Snipe
    Case $eAutoExecute
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Snipe")
-
-	  If AutoSnipeExecuteSnipe($THLevel, $THLocation, $THLeft, $THTop) Then
-		 $gAutoStage = $eAutoQueueTraining
-	  EndIf
-
+	  AutoSnipeExecuteSnipe($THLevel, $THLocation, $THLeft, $THTop)
+	  $gAutoStage = $eAutoQueueTraining
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Snipe Complete")
 
    EndSwitch
@@ -193,16 +192,26 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 
    ; Move screen
    Local $deployTopOrBot, $actualTHTop
-   $deployTopOrBot = AutoSnipeMoveScreen($THLocation, $THLeft, $THTop, $actualTHTop)
+   $deployTopOrBot = AutoSnipeMoveScreen($THLocation, $THLeft, $THTop)
+
+   ; Get the new TH location, now that screen has been moved
+   Local $actualTHTop
+   Local $loc, $L
+   Local $th = GetTownHallLevel($loc, $L, $actualTHTop, 0, 0, 1023, 551)
+   If $th = -1 Then
+	  DebugWrite("Unable to re-locate Town Hall after screen move.")
+	  Return
+   EndIf
+
    DebugWrite("Town Hall location after screen move: " & $THLeft & ", " & $actualTHTop)
 
    ; Find best deploy spot, based on deployment boxes
    Local $boxCount
    If $deployTopOrBot = "Center" Then
 	  $boxCount = 6
-   ElseIf $deployTopOrBot = "Top" And $THTop+17 < 200 Then
+   ElseIf $deployTopOrBot = "Top" And $actualTHTop+17 < 200 Then
 	  $boxCount = 6
-   ElseIf $deployTopOrBot = "Bottom" And $THTop+17 > 315 Then
+   ElseIf $deployTopOrBot = "Bottom" And $actualTHTop+17 > 315 Then
 	  $boxCount = 6
    Else
 	  $boxCount = 3
@@ -214,23 +223,28 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
    ; What troops are available?
    Local $troopIndex[$eTroopCount][4]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   Local $breakerButton[4] = [$troopIndex[$eTroopWallBreaker][0], $troopIndex[$eTroopWallBreaker][1], $troopIndex[$eTroopWallBreaker][2], $troopIndex[$eTroopWallBreaker][3]]
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    Local $archButton[4] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], $troopIndex[$eTroopArcher][3]]
    Local $kingButton[4] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], $troopIndex[$eTroopKing][3]]
    Local $queenButton[4] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], $troopIndex[$eTroopQueen][3]]
 
    ; send troops in waves, check star color region for success
-   Local $kingDeployed = False, $queenDeployed = False
+   Local $breakersDeployed = False, $kingDeployed = False, $queenDeployed = False
    Local $waveDelay = 13000
    Local $waveTroopsBarb = 30
    Local $waveTroopsArch = 20
+   Local $waveCount = 0
 
    While IsColorPresent($rFirstStarColor) = False
 	  Local $waveTimer = TimerInit()
+	  $waveCount+=1
+	  DebugWrite("Auto snipe, wave " & $waveCount)
 
 	  ; Get counts of available troops
 	  Local $availableBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
 	  Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
+	  Local $availableBreakers = GetAvailableTroops($eTroopWallBreaker, $troopIndex)
 	  DebugWrite("Troops available: Barbarians=" & $availableBarbs & " Archers=" & $availableArchs)
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
@@ -242,6 +256,9 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 		 Local $deploy = ($availableBarbs<=$c ? $availableBarbs : $c)
 		 DebugWrite("Deploying " & $deploy & " barbarians.")
 
+		 RandomWeightedClick($barbButton)
+		 Sleep(500)
+
 		 Local $startingBarbs = $availableBarbs
 		 Local $currentBarbs = $availableBarbs
 		 Local $failCount = 10
@@ -249,9 +266,6 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 			Local $remaining = $deploy - ($startingBarbs-$currentBarbs)
 			Local $clickPoints[$remaining][2]
 			GetAutoSnipeClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
-
-			RandomWeightedClick($barbButton)
-			Sleep(500)
 
 			For $i = 0 To $remaining-1
 			   _MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
@@ -267,12 +281,33 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 
+	  ; Deploy breakers
+	  If $breakerButton[0]<>-1 And $availableBreakers>0 And $breakersDeployed = False And _
+		 _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
+
+		 RandomWeightedClick($breakerButton)
+		 Sleep(500)
+
+		 Local $clickPoints[$availableBreakers][2]
+		 GetAutoSnipeClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
+
+		 For $i = 0 To $availableBreakers-1
+			_MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
+			Sleep($gDeployTroopClickDelay)
+		 Next
+
+		 $breakersDeployed = True
+	  EndIf
+
 	  ; Deploy archers to boxes
 	  If $archButton[0]<>-1 And $availableArchs>0 Then
 		 Local $c = $waveTroopsArch + Random(1, 5, 1)
 		 ;If $THLevel = 10 Then $c*=2 ; If this is TH10, then double up - these seem to be trapped more often than not
 		 Local $deploy = ($availableArchs<=$c ? $availableArchs : $c)
 		 DebugWrite("Deploying " & $deploy & " archers.")
+
+		 RandomWeightedClick($archButton)
+		 Sleep(500)
 
 		 Local $startingArchs = $availableArchs
 		 Local $currentArchs = $availableArchs
@@ -281,9 +316,6 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 			Local $remaining = $deploy - ($startingArchs-$currentArchs)
 			Local $clickPoints[$remaining][2]
 			GetAutoSnipeClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
-
-			RandomWeightedClick($archButton)
-			Sleep(500)
 
 			For $i = 0 To $remaining-1
 			   _MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
@@ -365,8 +397,6 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 
    ; Wait for end battle
    WaitForBattleEnd(True, True)  ; always wait full 3 minutes, or until all troops are dead
-
-   Return True
 EndFunc
 
 Func GetAutoSnipeClickPoints(Const $order, Const ByRef $boxes, ByRef $points)
@@ -384,7 +414,7 @@ Func GetAutoSnipeClickPoints(Const $order, Const ByRef $boxes, ByRef $points)
    _ArraySort($points, $order)
 EndFunc
 
-Func AutoSnipeMoveScreen(Const $THLocation, Const $THLeft, Const $THTop, ByRef $actualTop)
+Func AutoSnipeMoveScreen(Const $THLocation, Const $THLeft, Const $THTop)
    Local $topBot
 
    ; TH on left or right edge
@@ -434,10 +464,6 @@ Func AutoSnipeMoveScreen(Const $THLocation, Const $THLeft, Const $THTop, ByRef $
 
    EndIf
 
-   ; Get the new TH location, now that screen has been moved
-   Local $loc, $L
-   Local $th = GetTownHallLevel($loc, $L, $actualTop)
-
    Return $topBot
 EndFunc
 
@@ -477,21 +503,21 @@ Func AutoSnipeFindClosestDeployBoxes(Const $topOrBot, Const $left, Const $top, B
 		 Next
 
 	  Else
-		 Local $allBoxes[42][5] ; 5th column will hold the calculated distance
+		 Local $allBoxes[21][5] ; 5th column will hold the calculated distance
 		 For $i=0 To 20
-			$allBoxes[$i][0] = $NWDeployBoxes[$i][0]
-			$allBoxes[$i][1] = $NWDeployBoxes[$i][1]
-			$allBoxes[$i][2] = $NWDeployBoxes[$i][0]+10
-			$allBoxes[$i][3] = $NWDeployBoxes[$i][1]+10
-		 Next
-		 For $i=0 To 20
-			$allBoxes[21+$i][0] = $NEDeployBoxes[$i][2]-10
-			$allBoxes[21+$i][1] = $NEDeployBoxes[$i][1]
-			$allBoxes[21+$i][2] = $NEDeployBoxes[$i][2]
-			$allBoxes[21+$i][3] = $NEDeployBoxes[$i][1]+10
+			$allBoxes[$i][0] = ($left+17<=511 ? $NWDeployBoxes[$i][0]    : $NEDeployBoxes[$i][2]-10)
+			$allBoxes[$i][1] = ($left+17<=511 ? $NWDeployBoxes[$i][1]    : $NEDeployBoxes[$i][1])
+			$allBoxes[$i][2] = ($left+17<=511 ? $NWDeployBoxes[$i][0]+10 : $NEDeployBoxes[$i][2])
+			$allBoxes[$i][3] = ($left+17<=511 ? $NWDeployBoxes[$i][1]+10 : $NEDeployBoxes[$i][1]+10)
 		 Next
 
-		 SortBoxesByDistance($left+17, $top+17, $allBoxes)
+		 ; Get closest point on the edge
+		 Local $edgeX, $edgeY
+		 AutoSnipeGetClosestEdgePoint("Top", $left, $top, $edgeX, $edgeY)
+		 DebugWrite("Closest edge point to " & $left+17 & "," & $top+17 & " is " & $edgeX & "," & $edgeY)
+
+		 ; Get closest boxes
+		 SortBoxesByDistance($edgeX, $edgeY, $allBoxes)
 
 		 For $i = 0 To UBound($selectedBoxes)-1
 			For $j = 0 To 3
@@ -520,21 +546,21 @@ Func AutoSnipeFindClosestDeployBoxes(Const $topOrBot, Const $left, Const $top, B
 		 Next
 
 	  Else
-		 Local $allBoxes[42][5] ; 5th column will hold the calculated distance
+		 Local $allBoxes[21][5] ; 5th column will hold the calculated distance
 		 For $i=0 To 20
-			$allBoxes[$i][0] = $SWDeployBoxes[$i][0]
-			$allBoxes[$i][1] = $SWDeployBoxes[$i][3]-10
-			$allBoxes[$i][2] = $SWDeployBoxes[$i][0]+10
-			$allBoxes[$i][3] = $SWDeployBoxes[$i][3]
-		 Next
-		 For $i=0 To 20
-			$allBoxes[21+$i][0] = $SEDeployBoxes[$i][2]-10
-			$allBoxes[21+$i][1] = $SEDeployBoxes[$i][3]-10
-			$allBoxes[21+$i][2] = $SEDeployBoxes[$i][2]
-			$allBoxes[21+$i][3] = $SEDeployBoxes[$i][3]
+			$allBoxes[$i][0] = ($left+17<=511 ? $SWDeployBoxes[$i][0]    : $SEDeployBoxes[$i][2]-10)
+			$allBoxes[$i][1] = ($left+17<=511 ? $SWDeployBoxes[$i][3]-10 : $SEDeployBoxes[$i][3]-10)
+			$allBoxes[$i][2] = ($left+17<=511 ? $SWDeployBoxes[$i][0]+10 : $SEDeployBoxes[$i][2])
+			$allBoxes[$i][3] = ($left+17<=511 ? $SWDeployBoxes[$i][3]    : $SEDeployBoxes[$i][3])
 		 Next
 
-		 SortBoxesByDistance($left+17, $top+17, $allBoxes)
+		 ; Get closest point on the edge
+		 Local $edgeX, $edgeY
+		 AutoSnipeGetClosestEdgePoint("Bottom", $left, $top, $edgeX, $edgeY)
+		 DebugWrite("Closest edge point to " & $left+17 & "," & $top+17 & " is " & $edgeX & "," & $edgeY)
+
+		 ; Get closest boxes
+		 SortBoxesByDistance($edgeX, $edgeY, $allBoxes)
 
 		 For $i = 0 To UBound($selectedBoxes)-1
 			For $j = 0 To 3
@@ -547,6 +573,30 @@ Func AutoSnipeFindClosestDeployBoxes(Const $topOrBot, Const $left, Const $top, B
    Else
 	  DebugWrite("ERROR in AutoSnipeFindClosestDeployBoxes, $topOrBot = " & $topOrBot)
 
+   EndIf
+EndFunc
+
+Func AutoSnipeGetClosestEdgePoint(Const $topOrBot, Const $left, Const $top, ByRef $edgeX, ByRef $edgeY)
+   If $topOrBot = "Top" Then
+	  If $left+17<=511 Then
+		 ; NW
+		 $edgeX = Int(267.14 + .5*($left+17) - ($top+17)/1.4)
+		 $edgeY = Int(-.7*$edgeX + 374)
+	  Else
+		 ; NE
+		 $edgeX = Int(242.86 + .5*($left+17) + ($top+17)/1.4)
+		 $edgeY = Int(.7*$edgeX - 340)
+	  EndIf
+   Else
+	  If $left+17<=511 Then
+		 ; SW
+		 $edgeX = Int(-54.29 + .5*($left+17) + ($top+17)/1.4)
+		 $edgeY = Int(.7*$edgeX + 76)
+	  Else
+		 ; SE
+		 $edgeX = Int(564.29 + .5*($left+17) - ($top+17)/1.4)
+		 $edgeY = Int(-.7*$edgeX + 790)
+	  EndIf
    EndIf
 EndFunc
 

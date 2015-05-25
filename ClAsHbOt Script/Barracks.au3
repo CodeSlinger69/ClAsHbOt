@@ -192,8 +192,10 @@ Func FillBarracks(Const $initialFillFlag)
 
 	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag Then
+		 Local $breakerButton[4] = [$troopSlots[$eTroopWallBreaker][0], $troopSlots[$eTroopWallBreaker][1], $troopSlots[$eTroopWallBreaker][2], $troopSlots[$eTroopWallBreaker][3]]
+
 		 For $i = 1 To Int(Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit))/4)
-			RandomWeightedClick($troopSlots[$eTroopWallBreaker])
+			RandomWeightedClick($breakerButton)
 			Sleep(500)
 		 Next
 	  EndIf
