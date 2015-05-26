@@ -285,6 +285,7 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 	  If $breakerButton[0]<>-1 And $availableBreakers>0 And $breakersDeployed = False And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 
+		 DebugWrite("Deploying " & $availableBreakers & " wall breakers.")
 		 RandomWeightedClick($breakerButton)
 		 Sleep(500)
 

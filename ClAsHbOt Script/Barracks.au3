@@ -129,13 +129,14 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+	  ;DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
 
 	  If $split[2] > $gConfidenceBarracksTroopSlot Then
 		 $index[$i][0] = $split[0]+$barracksTroopBox[0]+$buttonOffset[0]
 		 $index[$i][1] = $split[1]+$barracksTroopBox[1]+$buttonOffset[1]
 		 $index[$i][2] = $split[0]+$barracksTroopBox[0]+$buttonOffset[2]
 		 $index[$i][3] = $split[1]+$barracksTroopBox[1]+$buttonOffset[3]
-		 ;DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
+		 DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1
@@ -146,8 +147,12 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
 EndFunc
 
 
-Func FillBarracks(Const $initialFillFlag)
+Func FillBarracks(Const $initialFillFlag, Const ByRef $availableTroopCounts)
    DebugWrite("FillBarracks()")
+
+   ; See how many breakers we need
+   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $availableTroopCounts[$eTroopWallBreaker]
+   DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
 
    ; Loop through barracks and queue troops, until we get to a dark or spells screen, or we've done 4
    ; This function assumes that we are already on a spells window, or the last dark troops window (i.e. the starting point)
@@ -164,23 +169,8 @@ Func FillBarracks(Const $initialFillFlag)
 	  ; Make sure we are on a standard troops window
 	  If IsColorPresent($rWindowBarracksStandardColor1) = False And IsColorPresent($rWindowBarracksStandardColor2) = False Then
 		 Local $cPos = GetClientPos()
-		 DebugWrite(" Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWindowBarracksStandardColor1[0], $cPos[1]+$rWindowBarracksStandardColor1[1])))
+		 DebugWrite("Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWindowBarracksStandardColor1[0], $cPos[1]+$rWindowBarracksStandardColor1[1])))
 		 ExitLoop
-	  EndIf
-
-	  ; If this is an initial fill and we need to queue breakers, then clear all the queued troops in this barracks
-	  If $initialFillFlag=True And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
-		 Local $dequeueTries = 6
-		 While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
-			   (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
-			    _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_CHECKED)
-
-			Local $xClick, $yClick
-			RandomWeightedCoords($rTrainTroopsWindowDequeueButton, $xClick, $yClick)
-			_ClickHold($xClick, $yClick, 4000)
-			$dequeueTries-=1
-			Sleep(500)
-		 WEnd
 	  EndIf
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _
@@ -191,14 +181,44 @@ Func FillBarracks(Const $initialFillFlag)
 	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag Then
-		 Local $breakerButton[4] = [$troopSlots[$eTroopWallBreaker][0], $troopSlots[$eTroopWallBreaker][1], $troopSlots[$eTroopWallBreaker][2], $troopSlots[$eTroopWallBreaker][3]]
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag And $breakersToQueue>0 Then
+		 ; Dequeue troops if needed, so breaker get built first
+		 Local $dequeueTries = 6
+		 While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
+			   (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
+			    _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_CHECKED)
 
-		 For $i = 1 To Int(Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit))/4)
-			RandomWeightedClick($breakerButton)
+			DebugWrite("Dequeueing troops.")
+			Local $xClick, $yClick
+			RandomWeightedCoords($rTrainTroopsWindowDequeueButton, $xClick, $yClick)
+			_ClickHold($xClick, $yClick, 4000)
+			$dequeueTries-=1
 			Sleep(500)
-		 Next
+		 WEnd
+
+		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+
+		 ; Now queue the breakers
+		 If $troopSlots[$eTroopWallBreaker][0] <> -1 Then
+			Local $breakerButton[4] = [$troopSlots[$eTroopWallBreaker][0], $troopSlots[$eTroopWallBreaker][1], $troopSlots[$eTroopWallBreaker][2], $troopSlots[$eTroopWallBreaker][3]]
+
+			If $breakersToQueue/4 < 1 Then
+			   DebugWrite("Queueing 1 Wall Breaker.")
+			   RandomWeightedClick($breakerButton)
+			   Sleep(500)
+			   $breakersToQueue-=1
+			Else
+			   For $i = 1 To Int($breakersToQueue/4)
+			   DebugWrite("Queueing " & Int($breakersToQueue/4) & " Wall Breakers.")
+				  RandomWeightedClick($breakerButton)
+				  Sleep(500)
+				  $breakersToQueue-=1
+			   Next
+			EndIf
+		 EndIf
 	  EndIf
+
+	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Fill up this barracks
 	  Local $fillTries=1
@@ -231,20 +251,31 @@ Func FillBarracks(Const $initialFillFlag)
 			   If $troopsToFill>0 Then
 				  DebugWrite("Barracks " & $barracksCount & ": Adding " & $troopsToFill & " troops.")
 
+				  ; Alternate between archers and barbs
 				  Local $xClick, $yClick
-				  If $barracksCount/2 = Int($barracksCount/2) Then ; Alternate between archers and barbs
-					 Local $button[4] = [$troopSlots[$eTroopBarbarian][0], $troopSlots[$eTroopBarbarian][1], _
-										 $troopSlots[$eTroopBarbarian][2], $troopSlots[$eTroopBarbarian][3]]
-					 RandomWeightedCoords($button, $xClick, $yClick)
+				  If $barracksCount/2 = Int($barracksCount/2) Then
+					 If $troopSlots[$eTroopBarbarian][0] <> -1 Then
+						Local $button[4] = [$troopSlots[$eTroopBarbarian][0], $troopSlots[$eTroopBarbarian][1], _
+											$troopSlots[$eTroopBarbarian][2], $troopSlots[$eTroopBarbarian][3]]
+						RandomWeightedCoords($button, $xClick, $yClick)
+
+						_ClickHold($xClick, $yClick, $fillTime)
+						Sleep(500)
+					 EndIf
+
 				  Else
-					 Local $button[4] = [$troopSlots[$eTroopArcher][0], $troopSlots[$eTroopArcher][1], _
-										 $troopSlots[$eTroopArcher][2], $troopSlots[$eTroopArcher][3]]
-					 RandomWeightedCoords($button, $xClick, $yClick)
+					 If $troopSlots[$eTroopArcher][0] <> -1 Then
+						Local $button[4] = [$troopSlots[$eTroopArcher][0], $troopSlots[$eTroopArcher][1], _
+											$troopSlots[$eTroopArcher][2], $troopSlots[$eTroopArcher][3]]
+						RandomWeightedCoords($button, $xClick, $yClick)
+						RandomWeightedCoords($button, $xClick, $yClick)
+
+						_ClickHold($xClick, $yClick, $fillTime)
+						Sleep(500)
+					 EndIf
+
 				  EndIf
 
-				  ;DebugWrite("Filling barracks " & $barracksCount & " try " & $fillTries)
-				  _ClickHold($xClick, $yClick, $fillTime)
-				  Sleep(500)
 			   EndIf
 			EndIf
 		 EndIf

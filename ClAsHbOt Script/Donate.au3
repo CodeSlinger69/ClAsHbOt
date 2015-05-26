@@ -135,6 +135,7 @@ Func FindDonateTroopSlots(Const ByRef $button, ByRef $index)
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableDonateFrame.bmp", "str", "Images\"&$gDonateSlotBMPs[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+	  ;DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
 
 	  If $split[2] > $gConfidenceDonateTroopSlot Then
 		 $index[$i][0] = $button[0]+67  + $split[0]

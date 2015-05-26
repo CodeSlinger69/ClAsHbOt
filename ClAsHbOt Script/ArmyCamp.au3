@@ -50,6 +50,7 @@ Func CloseArmyCampWindow()
 EndFunc
 
 Func FindArmyCampTroopSlots(Const ByRef $bitmaps, ByRef $index)
+   DebugWrite("FindArmyCampTroopSlots()")
    ; Populates index with the absolute screen coords of all available troop buttons
    Local $buttonOffset[4] = [0, -0, 51, 69]
    Local $armyCampTroopBox[4] = [291, 287, 753, 331]
@@ -59,6 +60,7 @@ Func FindArmyCampTroopSlots(Const ByRef $bitmaps, ByRef $index)
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+	  ;DebugWrite("Troop " & $bitmaps[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
 
 	  If $split[2] > $gConfidenceArmyCampTroopSlot Then
 		 $index[$i][0] = $split[0]+$armyCampTroopBox[0]+$buttonOffset[0]
@@ -91,7 +93,7 @@ Func GetArmyCampTroopCounts(ByRef $counts)
 		 Local $t = Number(ScrapeFuzzyText($gArmyCampCharacterMaps, $textBox, $gArmyCampCharMapsMaxWidth, $eScrapeDropSpaces))
 
 		 $counts[$i] = Number($t)
-		 DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " available: " & $counts[$i])
+		 DebugWrite("Troop " & $gTroopNames[$i] & " available: " & $counts[$i])
 	  EndIf
    Next
 EndFunc

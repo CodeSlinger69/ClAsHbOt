@@ -6,6 +6,21 @@ Func AutoQueueTroops()
 	  Return
    EndIf
 
+   ; Count how many troops are in the Army Camps
+   ; Only needed for now if we are queueing breakers
+   Local $availableTroopCounts[$eTroopCount-2]
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
+	  If OpenArmyCampWindow() = False Then
+		 DebugWrite("AutoQueueTroops(): Unable to locate Army Camp.")
+		 Return
+	  EndIf
+   EndIf
+
+   GetArmyCampTroopCounts($availableTroopCounts)
+
+   CloseArmyCampWindow()
+
+   ; Open barracks window
    OpenBarracksWindow()
 
    ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
@@ -25,7 +40,7 @@ Func AutoQueueTroops()
    ; Fill
    Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
    Case 0
-	  FillBarracks(True)
+	  FillBarracks(True, $availableTroopCounts)
    Case 1
 	  ContinueCase
    Case 2
@@ -79,7 +94,8 @@ Func AutoCheckIfTroopsReady()
 	  ; Fill type
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
-		 FillBarracks(False)
+		 Local $availableTroopCounts[$eTroopCount-2]
+		 FillBarracks(False, $availableTroopCounts)
 	  Case 1
 		 ContinueCase
 	  Case 2
