@@ -20,6 +20,7 @@ Func ReadSettings()
    Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.99)
    Global $gConfidenceArmyCampTroopSlot = IniRead($gIniFile, "Confidence", "Army Camp Troop Slot", 0.99)
    Global $gConfidenceBarracksTroopSlot = IniRead($gIniFile, "Confidence", "Barracks Troop Slot", 0.99)
+   Global $gConfidenceTrainTroopsButton = IniRead($gIniFile, "Confidence", "Train Troops Button", 0.99)
 
    ; Intervals
    Global $gOnlineCheckInterval = IniRead($gIniFile, "Interval", "Online Check", 15000)

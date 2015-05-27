@@ -24,10 +24,6 @@ Func ResetToCoCMainScreen()
    Case $eScreenUnknown
 	  Return
 
-   ; Barracks button panel - click on safe area
-   Case $eScreenBarracksButtons
-	  RandomWeightedClick($rSafeAreaButton)
-
    ; Train troops window - close it
    Case $eScreenTrainTroops
 	  RandomWeightedClick($rBarracksWindowCloseButton)
@@ -110,11 +106,6 @@ Func WhereAmI()
    If $bestMatch <> 99 Then
 	  Return $eScreenAndroidHome
    EndIf
-
-   ; Barracks button panel is up
-   If IsButtonPresent($rBarracksPanelTrainTroops1Button) Then Return $eScreenBarracksButtons
-   If IsButtonPresent($rBarracksPanelTrainTroops2Button) Then Return $eScreenBarracksButtons
-   If IsButtonPresent($rBarracksPanelTrainTroops3Button) Then Return $eScreenBarracksButtons
 
    ; Train troops window is open
    If IsButtonPresent($rBarracksWindowNextButton) Then Return $eScreenTrainTroops

@@ -13,6 +13,7 @@ Global $DarkStorageBMPs[10] = ["DarkStorageL6.25.bmp", "DarkStorageL6.00.bmp", "
 							   "DarkStorageL4.00.bmp", "DarkStorageL3.00.bmp", "DarkStorageL2.25.bmp", "DarkStorageL2.00.bmp", _
 							   "DarkStorageL1.25.bmp", "DarkStorageL1.00.bmp"]
 Global $gArmyCampBMPs[3] = ["ArmyCampL6.bmp", "ArmyCampL7.bmp", "ArmyCampL8.bmp"]
+Global $gTrainTroopsButtonBMPs[1] = ["TrainTroopsButton.bmp"]
 
 ; TODO: get bmps for freeze spell
 Global $gTroopSlotBMPs[$eTroopCount] = _

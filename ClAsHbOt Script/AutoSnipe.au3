@@ -1,6 +1,11 @@
 Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
    ;DebugWrite("AutoSnipe()")
 
+   If $snipeNotifyOnly Then
+	  $gAutoStage = $eAutoFindMatch
+	  DebugWrite("Auto Snipe, notify mode")
+   EndIf
+
    Switch $gAutoStage
 
    ; Stage Queue Training
@@ -33,6 +38,15 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 		 DebugWrite("Auto: Error finding match, resetting.")
 		 ResetToCoCMainScreen()
 		 $gAutoStage = $eAutoQueueTraining
+	  EndIf
+
+	  If $snipeNotifyOnly And $findMatchResults = $eAutoExecute Then
+		 For $i = 1 To 5
+			Beep(500, 200)
+			Sleep(100)
+		 Next
+
+		 MsgBox($MB_OK, "Snipable TH!", "")
 	  EndIf
 
 	  If $zappable And $findMatchResults = $eAutoExecute Then
@@ -245,7 +259,8 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 	  Local $availableBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
 	  Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
 	  Local $availableBreakers = GetAvailableTroops($eTroopWallBreaker, $troopIndex)
-	  DebugWrite("Troops available: Barbarians=" & $availableBarbs & " Archers=" & $availableArchs)
+	  DebugWrite("Troops available: Barbarians=" & $availableBarbs & " Archers=" & $availableArchs & _
+		 (_GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED ? " Breakers=" & $availableBreakers : "") )
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_UNCHECKED Then Return False
 

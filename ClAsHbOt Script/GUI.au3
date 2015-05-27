@@ -264,10 +264,6 @@ EndFunc
 Func GUICollectLootCheckBox()
    DebugWrite("Collect Loot clicked")
    $gCollectLootClicked = (_GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED) ? True : False
-
-   If $gCollectLootClicked Then
-	  ZoomOut(True)
-   EndIf
 EndFunc
 
 Func GUIDonateTroopsCheckBox()
@@ -287,7 +283,6 @@ Func GUIFindMatchCheckBox()
 	  HotKeySet("{F10}") ; Auto Raid
 	  _GUICtrlButton_SetCheck($GUI_AutoSnipeCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoRaidCheckBox, $BST_UNCHECKED)
-	  ZoomOut(True)
    Else
 	  HotKeySet("{F9}", HotKeyPressed) ; Find Snipable TH
 	  HotKeySet("{F10}", HotKeyPressed) ; Auto Raid
@@ -306,7 +301,6 @@ Func GUIAutoSnipeCheckBox()
 	  HotKeySet("{F10}") ; Auto Raid
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoRaidCheckBox, $BST_UNCHECKED)
-	  ZoomOut(True)
    Else
 	  HotKeySet("{F8}", HotKeyPressed) ; Find Match
 	  HotKeySet("{F10}", HotKeyPressed) ; Auto Raid

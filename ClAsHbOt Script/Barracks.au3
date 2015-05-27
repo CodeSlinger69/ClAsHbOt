@@ -25,52 +25,51 @@ Func OpenBarracksWindow()
    Next
    _ArraySort($barracksPoints, 1)
 
-   ; Look through list of barracks for an available training screen
+   ; Look through list of barracks for an available training screen, and get Train Troops button location
+   Local $trainTroopsButtonX = -1, $trainTroopsButtonY = -1
+   Local $barracksButtonBox[4] = [250, 454, 773, 521]
+
    For $i = 0 To $barracksIndex - 1
-	  ;DebugWrite("Barracks " & $i & ": " & $barracksPoints[$i][0] & " " & $barracksPoints[$i][1] & " " & $barracksPoints[$i][2])
+	  DebugWrite("Barracks " & $i & " found at " & $barracksPoints[$i][1] & "," & $barracksPoints[$i][2] & " confidence: " & $barracksPoints[$i][0])
 
 	  ; Click on barracks
 	  Local $button[4] = [$barracksPoints[$i][1]+$rBarracksButton[0], $barracksPoints[$i][2]+$rBarracksButton[1], _
 						  $barracksPoints[$i][1]+$rBarracksButton[2], $barracksPoints[$i][2]+$rBarracksButton[3] ]
 	  RandomWeightedClick($button, .5, 3, 0, $rBarracksButton[3]/2)
+	  Sleep(200)
 
 	  ; Wait for barracks button panel to show up (Train Troops button)
 	  Local $failCount = 10 ; 2 seconds, should be instant
-	  While IsButtonPresent($rBarracksPanelTrainTroops1Button) = False And _
-			IsButtonPresent($rBarracksPanelTrainTroops2Button) = False And _
-			IsButtonPresent($rBarracksPanelTrainTroops3Button) = False And _
-			IsButtonPresent($rBarracksPanelUpgradingButton) = False And _
-			$failCount>0
+
+	  While $failCount > 0
+		 ; Grab a frame
+		 GrabFrameToFile("BarracksButtonBarFrame.bmp", $barracksButtonBox[0], $barracksButtonBox[1], $barracksButtonBox[2], $barracksButtonBox[3])
+		 Local $bestMatch = 99, $bestConfidence = 0
+		 ScanFrameForBestBMP("BarracksButtonBarFrame.bmp", $gTrainTroopsButtonBMPs, $gConfidenceTrainTroopsButton, _
+						     $bestMatch, $bestConfidence, $trainTroopsButtonX, $trainTroopsButtonY)
+		 DebugWrite("Train Troops button found at " & $trainTroopsButtonX & "," & $trainTroopsButtonY & " confidence: " & $bestConfidence)
+
+		 If $bestConfidence >= $gConfidenceTrainTroopsButton Then ExitLoop 2
 
 		 Sleep(200)
 		 $failCount -= 1
 	  WEnd
-
-	  If IsButtonPresent($rBarracksPanelTrainTroops1Button) = True Or _
-		 IsButtonPresent($rBarracksPanelTrainTroops2Button) = True Or _
-		 IsButtonPresent($rBarracksPanelTrainTroops3Button) = True Then ExitLoop
    Next
 
-   If IsButtonPresent($rBarracksPanelTrainTroops1Button) = False And _
-	  IsButtonPresent($rBarracksPanelTrainTroops2Button) = False And _
-	  IsButtonPresent($rBarracksPanelTrainTroops3Button) = False Then
-
+   If $failCount <= 0 Then
 	  DebugWrite("Auto Raid, Queue Troops failed - error finding available Barracks Button panel.")
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
 
    ; Click on Train Troops button
-   If IsButtonPresent($rBarracksPanelTrainTroops1Button) = True Then
-	  RandomWeightedClick($rBarracksPanelTrainTroops1Button)
-
-   ElseIf IsButtonPresent($rBarracksPanelTrainTroops2Button) = True Then
-	  RandomWeightedClick($rBarracksPanelTrainTroops2Button)
-
-   Else ; Button type 3
-	  RandomWeightedClick($rBarracksPanelTrainTroops3Button)
-
-   EndIf
+   Local $trainTroopsButton[4] = [ _
+	  $barracksButtonBox[0]+$trainTroopsButtonX-7, _
+	  $barracksButtonBox[1]+$trainTroopsButtonY-13 , _
+	  $barracksButtonBox[0]+$trainTroopsButtonX+60, _
+	  $barracksButtonBox[1]+$trainTroopsButtonY+55 ]
+   RandomWeightedClick($trainTroopsButton)
+   Sleep(200)
 
    ; Wait for Train Troops window to show up
    $failCount = 10 ; 2 seconds, should be instant
@@ -136,7 +135,7 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][1] = $split[1]+$barracksTroopBox[1]+$buttonOffset[1]
 		 $index[$i][2] = $split[0]+$barracksTroopBox[0]+$buttonOffset[2]
 		 $index[$i][3] = $split[1]+$barracksTroopBox[1]+$buttonOffset[3]
-		 DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
+		 ;DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1

@@ -2,6 +2,8 @@
 ClAsHbOt!
 #ce
 
+Local $snipeNotifyOnly = True
+
 Opt("MustDeclareVars", 1)
 Opt("GUIOnEventMode", 1)
 
@@ -65,20 +67,20 @@ Func MainApplicationLoop()
 	  ; Update status on GUI
 	  GetMyLootNumbers()
 
-		 ; Check for offline issues
-		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And _
-			(TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Or $gKeepOnlineClicked) Then
+	  ; Check for offline issues
+	  If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And _
+		 (TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Or $gKeepOnlineClicked) Then
 
-			$gKeepOnlineClicked = False
+		 $gKeepOnlineClicked = False
 
-			If WhereAmI()=$eScreenAndroidHome Then
-			   ResetToCoCMainScreen()
-			EndIf
-
-			CheckForAndroidMessageBox()
-			$lastOnlineCheckTimer = TimerInit()
-			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
+		 If WhereAmI()=$eScreenAndroidHome Then
+			ResetToCoCMainScreen()
 		 EndIf
+
+		 CheckForAndroidMessageBox()
+		 $lastOnlineCheckTimer = TimerInit()
+		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
+	  EndIf
 
 	  Local $autoInProgress = $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute
 	  If $autoInProgress=False Then
@@ -90,7 +92,10 @@ Func MainApplicationLoop()
 			$gDonateTroopsClicked = False
 
 			ResetToCoCMainScreen()
-			If WhereAmI()=$eScreenMain Then DonateTroops()
+			If WhereAmI()=$eScreenMain Then
+			   ZoomOut(True)
+			   DonateTroops()
+			EndIf
 			$lastDonateTroopsTimer = TimerInit()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
 		 EndIf
@@ -115,7 +120,10 @@ Func MainApplicationLoop()
 			$gCollectLootClicked = False
 
 			ResetToCoCMainScreen()
-			If WhereAmI()=$eScreenMain Then CollectLoot()
+			If WhereAmI()=$eScreenMain Then
+			   ZoomOut(True)
+			   CollectLoot()
+			EndIf
 			$lastCollectLootTimer = TimerInit()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
 		 EndIf
@@ -128,6 +136,8 @@ Func MainApplicationLoop()
 		 $gFindMatchClicked = False
 
 		 ResetToCoCMainScreen()
+		 ZoomOut(True)
+
 		 If WhereAmI()=$eScreenMain Then
 			Local $zappable
 			If AutoRaidFindMatch($zappable) = True Then
@@ -144,6 +154,7 @@ Func MainApplicationLoop()
 
 		 $gAutoSnipeClicked = False
 		 CheckForAndroidMessageBox()
+		 ZoomOut(True)
 		 AutoSnipe($lastTrainingCheckTimer, $autoSnipeTHLevel, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop)
 	  EndIf
 
@@ -153,7 +164,10 @@ Func MainApplicationLoop()
 		 IsButtonPresent($rAndroidMessageButton) = False Then
 
 		 ResetToCoCMainScreen()
-		 If WhereAmI()=$eScreenMain Then DumpCups()
+		 If WhereAmI()=$eScreenMain Then
+			ZoomOut(True)
+			DumpCups()
+		 EndIf
 	  EndIf
 
 	  ; Auto Raid, Attack
@@ -168,6 +182,7 @@ Func MainApplicationLoop()
 
 		 $gAutoRaidClicked = False
 		 CheckForAndroidMessageBox()
+		 ZoomOut(True)
 		 AutoRaid($lastTrainingCheckTimer)
 	  EndIf
 
