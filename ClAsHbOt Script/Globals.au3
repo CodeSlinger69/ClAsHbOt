@@ -1,5 +1,9 @@
 Global $gVersion = "20150515"
 
+; For detecting rest period
+Global $gPossibleKick = 0
+Global $gLastPossibleKickTime = TimerInit()
+
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
 Global $gBlueStacksWidth = 1024

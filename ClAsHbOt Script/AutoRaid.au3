@@ -103,8 +103,18 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
    WEnd
 
    If $failCount = 0 Then
-	  DebugWrite("Find Match failed - timeout waiting for Wait Raid screen")
+	  DebugWrite("Find Match failed (AR1) - timeout waiting for Wait Raid screen")
 	  ResetToCoCMainScreen()
+
+	  If $gPossibleKick < 2 Then
+		 $gPossibleKick+=1
+		 DebugWrite("Possible kick detected, count = " & $gPossibleKick)
+	  EndIf
+
+	  If $gPossibleKick = 2 Then
+		 $gLastPossibleKickTime = TimerInit()
+	  EndIf
+
 	  Return False
    EndIf
 
@@ -154,7 +164,17 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 	  WEnd
 
 	  If $failCount = 0 Then
-		 DebugWrite("Find Match failed - timeout waiting for Wait Raid screen")
+		 DebugWrite("Find Match failed (AR2) - timeout waiting for Wait Raid screen")
+
+		 If $gPossibleKick < 2 Then
+			$gPossibleKick+=1
+			DebugWrite("Possible kick detected, count = " & $gPossibleKick)
+		 EndIf
+
+		 If $gPossibleKick = 2 Then
+			$gLastPossibleKickTime = TimerInit()
+		 EndIf
+
 		 ResetToCoCMainScreen()
 		 Return False
 	  EndIf

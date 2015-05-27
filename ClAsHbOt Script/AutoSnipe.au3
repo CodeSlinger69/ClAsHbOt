@@ -104,8 +104,18 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
    WEnd
 
    If $failCount = 0 Then
-	  DebugWrite("AutoSnipe failed - timeout waiting for Wait Raid screen")
+	  DebugWrite("AutoSnipe failed (AS1) - timeout waiting for Wait Raid screen")
 	  ResetToCoCMainScreen()
+
+	  If $gPossibleKick < 2 Then
+		 $gPossibleKick+=1
+		 DebugWrite("Possible kick detected, count = " & $gPossibleKick)
+	  EndIf
+
+	  If $gPossibleKick = 2 Then
+		 $gLastPossibleKickTime = TimerInit()
+	  EndIf
+
 	  Return False
    EndIf
 
@@ -147,8 +157,18 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 	  WEnd
 
 	  If $failCount = 0 Then
-		 DebugWrite("AutoSnipe failed - timeout waiting for Wait Raid screen")
+		 DebugWrite("AutoSnipe failed (AS2) - timeout waiting for Wait Raid screen")
 		 ResetToCoCMainScreen()
+
+		 If $gPossibleKick < 2 Then
+			$gPossibleKick+=1
+			DebugWrite("Possible kick detected, count = " & $gPossibleKick)
+		 EndIf
+
+		 If $gPossibleKick = 2 Then
+			$gLastPossibleKickTime = TimerInit()
+		 EndIf
+
 		 Return False
 	  EndIf
    WEnd

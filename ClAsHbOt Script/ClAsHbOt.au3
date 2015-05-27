@@ -2,7 +2,7 @@
 ClAsHbOt!
 #ce
 
-Local $snipeNotifyOnly = True
+Local $snipeNotifyOnly = False
 
 Opt("MustDeclareVars", 1)
 Opt("GUIOnEventMode", 1)
@@ -87,6 +87,7 @@ Func MainApplicationLoop()
 
 		 ; Donate Troops
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
+			$gPossibleKick < 2 And _
 			(TimerDiff($lastDonateTroopsTimer) >= $gCheckChatWindowForDonateInterval Or $gDonateTroopsClicked Or IsColorPresent($rNewChatMessagesColor)) Then
 
 			$gDonateTroopsClicked = False
@@ -103,6 +104,7 @@ Func MainApplicationLoop()
 		 ; Queue Troops for Donation
 		 #cs
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And _
+			$gPossibleKick < 2 And _
 			(TimerDiff($lastQueueDonatableTroopsTimer) >= $gQueueDonatableTroopsInterval Or $gDonateTroopsStartup = True) Then
 
 			$gDonateTroopsStartup = False
@@ -115,6 +117,7 @@ Func MainApplicationLoop()
 
 		 ; Collect loot
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED  And _
+			$gPossibleKick < 2 And _
 			(TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Or $gCollectLootClicked) Then
 
 			$gCollectLootClicked = False
@@ -131,7 +134,8 @@ Func MainApplicationLoop()
 	  Endif ; If $autoRaidInProgress=False And $autoSnipeInProgress=False
 
 	  ; Find a match
-	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then
+	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED And _
+		 $gPossibleKick < 2 Then
 
 		 $gFindMatchClicked = False
 
@@ -150,6 +154,7 @@ Func MainApplicationLoop()
 
 	  ; Auto Snipe
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED And _
+		 $gPossibleKick < 2 And _
 		 IsButtonPresent($rAndroidMessageButton) = False Then
 
 		 $gAutoSnipeClicked = False
@@ -161,6 +166,7 @@ Func MainApplicationLoop()
 	  ; Auto Raid, Dump Cups
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
+		 $gPossibleKick < 2 And _
 		 IsButtonPresent($rAndroidMessageButton) = False Then
 
 		 ResetToCoCMainScreen()
@@ -172,6 +178,7 @@ Func MainApplicationLoop()
 
 	  ; Auto Raid, Attack
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
+		 $gPossibleKick < 2 And _
 		 IsButtonPresent($rAndroidMessageButton) = False Then
 
 		 If $gAutoRaidBeginLoot[0]=-1 Or $gAutoRaidBeginLoot[1]=-1 Or _
@@ -198,6 +205,13 @@ Func MainApplicationLoop()
 
 		 Sleep(500)
 	  Next
+
+	  ; Reset kick detection if timer > 5 minutes
+	  If $gPossibleKick > 0 And TimerDiff($gLastPossibleKickTime) > 60000*5 Then
+		 DebugWrite("Possible Kick timer expiration, resetting.")
+		 $gPossibleKick = 0
+	  EndIf
+
    WEnd
 EndFunc
 
