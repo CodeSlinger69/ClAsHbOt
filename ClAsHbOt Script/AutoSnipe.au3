@@ -1,7 +1,7 @@
 Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
    ;DebugWrite("AutoSnipe()")
 
-   If $snipeNotifyOnly Then
+   If $gAutoSnipeNotifyOnly Then
 	  $gAutoStage = $eAutoFindMatch
 	  DebugWrite("Auto Snipe, notify mode")
    EndIf
@@ -40,7 +40,7 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 		 $gAutoStage = $eAutoQueueTraining
 	  EndIf
 
-	  If $snipeNotifyOnly And $findMatchResults = $eAutoExecute Then
+	  If $gAutoSnipeNotifyOnly And $findMatchResults = $eAutoExecute Then
 		 For $i = 1 To 5
 			Beep(500, 200)
 			Sleep(100)

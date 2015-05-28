@@ -9,6 +9,10 @@ Func ReadSettings()
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding
    Global $gDonateTroopClickDelay = IniRead($gIniFile, "Mouse", "Donate Troop Click Delay", 250) ; Delay between mouse clicks for donating
 
+   ; Auto Snipe
+   ; If set to true, the bot will stop when it detects a snipable base, and wait for you to manually raid
+   Global $gAutoSnipeNotifyOnly = IniRead($gIniFile, "AutoSnipe", "Auto Snipe Notify Only", False)
+
    ; Confidence Levels
    Global $gConfidenceTownHall = IniRead($gIniFile, "Confidence", "Town Hall", 0.95)
    Global $gConfidenceCollectLoot = IniRead($gIniFile, "Confidence", "Collect Loot", 0.90)

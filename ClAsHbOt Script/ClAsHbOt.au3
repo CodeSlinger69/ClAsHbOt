@@ -2,8 +2,6 @@
 ClAsHbOt!
 #ce
 
-Local $snipeNotifyOnly = False
-
 Opt("MustDeclareVars", 1)
 Opt("GUIOnEventMode", 1)
 
