@@ -1,8 +1,8 @@
 Func DumpCups()
-   ;DebugWrite("DumpCups()")
+   DebugWrite("DumpCups()")
    Local $myCups = GUICtrlRead($GUI_MyCups)
    Local $cupsThreshold = GUICtrlRead($GUI_AutoRaidDumpCupsThreshold)
-   While _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
+   While (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED) And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
 		 $myCups > $cupsThreshold
 

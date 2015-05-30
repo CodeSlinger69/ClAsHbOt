@@ -36,7 +36,7 @@ Func OpenBarracksWindow()
 	  Local $button[4] = [$barracksPoints[$i][1]+$rBarracksButton[0], $barracksPoints[$i][2]+$rBarracksButton[1], _
 						  $barracksPoints[$i][1]+$rBarracksButton[2], $barracksPoints[$i][2]+$rBarracksButton[3] ]
 	  RandomWeightedClick($button, .5, 3, 0, $rBarracksButton[3]/2)
-	  Sleep(200)
+	  Sleep(500)
 
 	  ; Wait for barracks button panel to show up (Train Troops button)
 	  Local $failCount = 10 ; 2 seconds, should be instant
