@@ -151,7 +151,9 @@ Func FillBarracks(Const $initialFillFlag, Const ByRef $availableTroopCounts)
 
    ; See how many breakers we need
    Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $availableTroopCounts[$eTroopWallBreaker]
-   DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
+	  DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
+   EndIf
 
    ; Loop through barracks and queue troops, until we get to a dark or spells screen, or we've done 4
    ; This function assumes that we are already on a spells window, or the last dark troops window (i.e. the starting point)

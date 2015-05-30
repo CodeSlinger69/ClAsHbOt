@@ -161,8 +161,9 @@ Func MainApplicationLoop()
 		 AutoSnipe($lastTrainingCheckTimer, $autoSnipeTHLevel, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop)
 	  EndIf
 
-	  ; Auto Raid, Dump Cups
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
+	  ; Auto Raid / AutoSnipe, Dump Cups
+	  If (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _
+		  _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED) And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
 		 IsButtonPresent($rAndroidMessageButton) = False Then
