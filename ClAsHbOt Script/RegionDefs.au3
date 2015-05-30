@@ -23,6 +23,9 @@ Global $rEndBattleElixTextBox[10] = [410, 269, 523, 285, 0xffffff, 9, 0, 0, 0, 0
 Global $rEndBattleDarkTextBox[10] = [410, 302, 523, 318, 0xffffff, 9, 542, 311, 0xf4f4f8, 6] ; TEST 5/7
 Global $rEndBattleCups1TextBox[10] = [410, 302, 523, 318, 0xffffff, 9, 541, 304, 0xf0e77a, 6] ; TEST 5/7
 Global $rEndBattleCups2TextBox[10] = [410, 333, 523, 348, 0xffffff, 9, 541, 335, 0xf0e97b, 6] ; TEST 5/7
+Global $rEndBattleBonusGoldTextBox[10] = [645, 279, 715, 290, 0xffffff, 9, 730, 284, 0xf5ea5e, 0]
+Global $rEndBattleBonusElixTextBox[10] = [645, 306, 715, 318, 0xffffff, 9, 730, 315, 0xdd58d1, 0]
+Global $rEndBattleBonusDarkTextBox[10] = [645, 333, 715, 345, 0xffffff, 9, 730, 341, 0x4a3c58, 0]
 
 Global $rChatTextBox[10] = [0, 0, 233, 9, 0xffffff, 120, 0, 0, 0, 0]
 

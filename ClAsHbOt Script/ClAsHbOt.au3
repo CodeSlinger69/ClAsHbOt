@@ -157,7 +157,7 @@ Func MainApplicationLoop()
 
 		 $gAutoSnipeClicked = False
 		 CheckForAndroidMessageBox()
-		 ZoomOut(True)
+
 		 AutoSnipe($lastTrainingCheckTimer, $autoSnipeTHLevel, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop)
 	  EndIf
 
@@ -167,11 +167,7 @@ Func MainApplicationLoop()
 		 $gPossibleKick < 2 And _
 		 IsButtonPresent($rAndroidMessageButton) = False Then
 
-		 ResetToCoCMainScreen()
-		 If WhereAmI()=$eScreenMain Then
-			ZoomOut(True)
-			DumpCups()
-		 EndIf
+		 DumpCups()
 	  EndIf
 
 	  ; Auto Raid, Attack

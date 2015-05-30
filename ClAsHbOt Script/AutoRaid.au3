@@ -468,11 +468,27 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 					   ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleCups1TextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces) : _
 					   ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleCups2TextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
 
-	  DebugWrite("Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
+	  Local $goldBonus = 0
+	  Local $elixBonus = 0
+	  Local $darkBonus = 0
+	  If IsTextBoxPresent($rEndBattleBonusGoldTextBox) Or _
+		 IsTextBoxPresent($rEndBattleBonusElixTextBox) Or _
+		 IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
 
-	  $gAutoRaidWinnings[0] += $goldWin
-	  $gAutoRaidWinnings[1] += $elixWin
-	  $gAutoRaidWinnings[2] += $darkWin
+		 $goldBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusGoldTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 If StringLeft($goldBonus, 1) = "+" Then $goldBonus = StringMid($goldBonus, 2)
+		 $elixBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusElixTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 If StringLeft($elixBonus, 1) = "+" Then $elixBonus = StringMid($elixBonus, 2)
+		 $darkBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusDarkTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 If StringLeft($darkBonus, 1) = "+" Then $darkBonus = StringMid($darkBonus, 2)
+	  EndIf
+
+	  DebugWrite("Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
+	  DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
+
+	  $gAutoRaidWinnings[0] += $goldWin+$goldBonus
+	  $gAutoRaidWinnings[1] += $elixWin+$elixBonus
+	  $gAutoRaidWinnings[2] += $darkWin+$darkBonus
 	  $gAutoRaidWinnings[3] += $cupsWin
 	  GUICtrlSetData($GUI_Winnings, "Winnings: " & $gAutoRaidWinnings[0] & " / " & $gAutoRaidWinnings[1] & " / " _
 					 & $gAutoRaidWinnings[2] & " / " & $gAutoRaidWinnings[3])
