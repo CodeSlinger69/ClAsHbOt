@@ -11,7 +11,7 @@ Func ReadSettings()
 
    ; Auto Snipe
    ; If set to true, the bot will stop when it detects a snipable base, and wait for you to manually raid
-   Global $gAutoSnipeNotifyOnly = IniRead($gIniFile, "AutoSnipe", "Auto Snipe Notify Only", False)
+   Global $gAutoSnipeNotifyOnly = _Boolean(IniRead($gIniFile, "AutoSnipe", "Auto Snipe Notify Only", False))
 
    ; Confidence Levels
    Global $gConfidenceTownHall = IniRead($gIniFile, "Confidence", "Town Hall", 0.95)
