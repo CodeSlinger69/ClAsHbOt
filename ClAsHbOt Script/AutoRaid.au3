@@ -111,7 +111,7 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 		 DebugWrite("Possible kick detected, count = " & $gPossibleKick)
 	  EndIf
 
-	  If $gPossibleKick = 2 Then
+	  If $gPossibleKick = 1 Then
 		 $gLastPossibleKickTime = TimerInit()
 	  EndIf
 
@@ -171,7 +171,7 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 			DebugWrite("Possible kick detected, count = " & $gPossibleKick)
 		 EndIf
 
-		 If $gPossibleKick = 2 Then
+		 If $gPossibleKick = 1 Then
 			$gLastPossibleKickTime = TimerInit()
 		 EndIf
 
