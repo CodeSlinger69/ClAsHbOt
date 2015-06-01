@@ -112,7 +112,7 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 		 DebugWrite("Possible kick detected, count = " & $gPossibleKick)
 	  EndIf
 
-	  If $gPossibleKick = 1 Then
+	  If $gPossibleKick = 2 Then
 		 $gLastPossibleKickTime = TimerInit()
 	  EndIf
 
@@ -165,7 +165,7 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 			DebugWrite("Possible kick detected, count = " & $gPossibleKick)
 		 EndIf
 
-		 If $gPossibleKick = 1 Then
+		 If $gPossibleKick = 2 Then
 			$gLastPossibleKickTime = TimerInit()
 		 EndIf
 

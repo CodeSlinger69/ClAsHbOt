@@ -54,13 +54,13 @@ Func OpenBarracksWindow()
 		 Sleep(200)
 		 $failCount -= 1
 	  WEnd
-   Next
 
-   If $failCount <= 0 Then
-	  DebugWrite("Auto Raid, Queue Troops failed - error finding available Barracks Button panel.")
-	  ResetToCoCMainScreen()
-	  Return
-   EndIf
+	  If $failCount <= 0 Then
+		 DebugWrite("Auto Raid, Queue Troops failed - error finding available Barracks Button panel.")
+		 ResetToCoCMainScreen()
+		 Return
+	  EndIf
+   Next
 
    ; Click on Train Troops button
    Local $trainTroopsButton[4] = [ _
