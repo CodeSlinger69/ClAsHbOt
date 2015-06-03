@@ -1,10 +1,10 @@
 Func AutoQueueTroops()
-   DebugWrite("AutoQueueTroops()")
-
    If WhereAmI() <> $eScreenMain Then
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
+
+   DebugWrite("AutoQueueTroops()")
 
    ; Count how many troops are in the Army Camps
    ; Only needed for now if we are queueing breakers

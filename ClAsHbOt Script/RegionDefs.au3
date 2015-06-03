@@ -77,3 +77,6 @@ Global $rWindowChatDimmedColor[4] = [235, 13, 0x3a3829, 6] ; Likely due to Donat
 Global $rNewChatMessagesColor[4] = [21, 262, 0xe00200, 0]
 Global $rDeadBaseIndicatorColor[4] = [23, 26, 0x5b5e60, 0]
 Global $rFirstStarColor[4] = [925, 402, 0xc7c8c0, 6]
+Global $rAttackingDisabledPoint1Color[4] = [331, 154, 0xff1919, 0]
+Global $rAttackingDisabledPoint2Color[4] = [451, 159, 0xff1919, 0]
+Global $rAttackingDisabledPoint3Color[4] = [613, 161, 0xff1919, 0]

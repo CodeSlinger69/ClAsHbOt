@@ -154,17 +154,40 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 	  ; Not raidable or zappable - click Next
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
+	  Sleep(500)
 
 	  ; Sleep and wait for Next button to reappear
-	  Sleep(500) ; So the click on the Wait button has time to register
 	  $failCount = 30
-	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
+	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
+		    IsButtonPresent($rAndroidMessageButton) = False And _
+			AttackingIsDisabled() = False And _
+			$failCount>0
+
 		 Sleep(1000)
 		 $failCount -= 1
 	  WEnd
 
-	  If $failCount = 0 Then
-		 DebugWrite("Find Match failed (AR2) - timeout waiting for Wait Raid screen")
+	  If AttackingIsDisabled() Then
+		 DebugWrite("Find Match failed (AR2) - Attacking is Disabled")
+		 If WhereAmI() = $eScreenWaitRaid Then
+			RandomWeightedClick($rLiveRaidScreenEndBattleButton)
+			Sleep(500)
+		 Else
+			ResetToCoCMainScreen()
+		 EndIf
+
+		 $gPossibleKick = 2
+		 $gLastPossibleKickTime = TimerInit()
+
+		 Return False
+	  EndIf
+
+	  If $failCount = 0 Or IsButtonPresent($rAndroidMessageButton) Then
+		 If $failCount = 0 Then
+			DebugWrite("Find Match failed (AR2) - timeout waiting for Wait Raid screen")
+		 Else
+			DebugWrite("Find Match failed (AR2) - Android message box popup")
+		 EndIf
 
 		 If $gPossibleKick < 2 Then
 			$gPossibleKick+=1
@@ -176,9 +199,11 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 		 EndIf
 
 		 ResetToCoCMainScreen()
+
 		 Return False
 	  EndIf
    WEnd
+
 EndFunc
 
 Func ShowFindMatchPopup()

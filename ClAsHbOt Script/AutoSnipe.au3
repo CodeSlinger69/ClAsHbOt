@@ -104,7 +104,7 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
    WEnd
 
    If $failCount = 0 Then
-	  DebugWrite("AutoSnipe failed (AS1) - timeout waiting for Wait Raid screen")
+	  DebugWrite("Find Match failed (AS1) - timeout waiting for Wait Raid screen")
 	  ResetToCoCMainScreen()
 
 	  If $gPossibleKick < 2 Then
@@ -147,18 +147,40 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 	  ; Not snipable - click Next
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
+	  Sleep(500)
 
 	  ; Sleep and wait for Next button to reappear
-	  Sleep(500) ; So the click on the Wait button has time to register
 	  $failCount = 30
-	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
+	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
+		    IsButtonPresent($rAndroidMessageButton) = False And _
+			AttackingIsDisabled() = False And _
+			$failCount>0
+
 		 Sleep(1000)
 		 $failCount -= 1
 	  WEnd
 
-	  If $failCount = 0 Then
-		 DebugWrite("AutoSnipe failed (AS2) - timeout waiting for Wait Raid screen")
-		 ResetToCoCMainScreen()
+	  If AttackingIsDisabled() Then
+		 DebugWrite("Find Match failed (AS2) - Attacking is Disabled")
+		 If WhereAmI() = $eScreenWaitRaid Then
+			RandomWeightedClick($rLiveRaidScreenEndBattleButton)
+			Sleep(500)
+		 Else
+			ResetToCoCMainScreen()
+		 EndIf
+
+		 $gPossibleKick = 2
+		 $gLastPossibleKickTime = TimerInit()
+
+		 Return False
+	  EndIf
+
+	  If $failCount = 0 Or IsButtonPresent($rAndroidMessageButton) Then
+		 If $failCount = 0 Then
+			DebugWrite("Find Match failed (AS2) - timeout waiting for Wait Raid screen")
+		 Else
+			DebugWrite("Find Match failed (AS2) - Android message box popup")
+		 EndIf
 
 		 If $gPossibleKick < 2 Then
 			$gPossibleKick+=1
@@ -169,9 +191,12 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 			$gLastPossibleKickTime = TimerInit()
 		 EndIf
 
+		 ResetToCoCMainScreen()
+
 		 Return False
 	  EndIf
    WEnd
+
 EndFunc
 
 Func CheckForSnipableTH(ByRef $level, ByRef $location, ByRef $left, ByRef $top)

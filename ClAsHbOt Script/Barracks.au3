@@ -28,6 +28,7 @@ Func OpenBarracksWindow()
    ; Look through list of barracks for an available training screen, and get Train Troops button location
    Local $trainTroopsButtonX = -1, $trainTroopsButtonY = -1
    Local $barracksButtonBox[4] = [250, 454, 773, 521]
+   Local $failCount
 
    For $i = 0 To $barracksIndex - 1
 	  DebugWrite("Barracks " & $i & " found at " & $barracksPoints[$i][1] & "," & $barracksPoints[$i][2] & " confidence: " & $barracksPoints[$i][0])
@@ -39,7 +40,7 @@ Func OpenBarracksWindow()
 	  Sleep(500)
 
 	  ; Wait for barracks button panel to show up (Train Troops button)
-	  Local $failCount = 10 ; 2 seconds, should be instant
+	  $failCount = 10 ; 2 seconds, should be instant
 
 	  While $failCount > 0
 		 ; Grab a frame

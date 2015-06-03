@@ -1,11 +1,11 @@
 Func DumpCups()
-   DebugWrite("DumpCups()")
+   ;DebugWrite("DumpCups()")
+
    Local $myCups = GUICtrlRead($GUI_MyCups)
    Local $cupsThreshold = GUICtrlRead($GUI_AutoRaidDumpCupsThreshold)
 
    If $myCups > $cupsThreshold Then
 	  ResetToCoCMainScreen()
-	  ZoomOut(True)
    EndIf
 
    While (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED) And _
