@@ -42,12 +42,12 @@ Func AutoDEZap(Const $immediatelyEnd)
 
    ; Find DE storage
    GrabFrameToFile("DEStorageFrame.bmp", 235, 100, 789, 450)
-   Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-   ScanFrameForBestBMP("DEStorageFrame.bmp", $DarkStorageBMPs, $gConfidenceDEStorage, $bestMatch, $bestConfidence, $bestX, $bestY)
+   Local $bestMatch, $bestConfidence, $bestX, $bestY
+   ScanFrameForBestBMP("DEStorageFrame.bmp", $DarkStorageUsageBMPs, $gConfidenceDEStorage, $bestMatch, $bestConfidence, $bestX, $bestY)
    DebugWrite("DE search: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
 
    ; If < $gConfidenceDEStorageZap confidence, then not good enough to spend spells
-   If $bestConfidence < $gConfidenceDEStorage Then
+   If $bestMatch = -1 Or $bestConfidence < $gConfidenceDEStorage Then
 	  Local $datetimestamp = _
 		 StringMid(_NowCalc(), 1,4) & _
 		 StringMid(_NowCalc(), 6,2) & _

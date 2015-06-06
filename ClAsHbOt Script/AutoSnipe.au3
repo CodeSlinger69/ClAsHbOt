@@ -70,6 +70,12 @@ EndFunc
 Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, ByRef $zappable)
    DebugWrite("AutoSnipeFindMatch()")
 
+   ; Make sure we are on the main screen
+   If WhereAmI() <> $eScreenMain Then
+	  DebugWrite("Find Snipable TH failed - not on main screen")
+	  Return False
+   EndIf
+
    ; Click Attack
    RandomWeightedClick($rMainScreenAttackButton)
 
@@ -91,7 +97,10 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 
    ; Wait for Next button
    $failCount = 30
-   While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
+   While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
+	  IsButtonPresent($rAndroidMessageButton) = False And _
+	  AttackingIsDisabled() = False And _
+	  $failCount>0
 
 	  ; See if Shield Is Active screen pops up
 	  If WhereAmI() = $eScreenShieldIsActive Then
@@ -102,6 +111,16 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
+
+    If AttackingIsDisabled() Then
+	  DebugWrite("Find Match failed (AS1) - Attacking is Disabled")
+	  ResetToCoCMainScreen()
+
+	  $gPossibleKick = 2
+	  $gLastPossibleKickTime = TimerInit()
+
+	  Return False
+   EndIf
 
    If $failCount = 0 Then
 	  DebugWrite("Find Match failed (AS1) - timeout waiting for Wait Raid screen")
@@ -187,7 +206,7 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 			DebugWrite("Possible kick detected, count = " & $gPossibleKick)
 		 EndIf
 
-		 If $gPossibleKick = 2 Then
+		 If $gPossibleKick > 0 Then
 			$gLastPossibleKickTime = TimerInit()
 		 EndIf
 

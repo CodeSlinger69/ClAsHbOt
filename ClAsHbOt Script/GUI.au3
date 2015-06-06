@@ -9,7 +9,7 @@
 
 ; GUI Globals
 Global $GUI, $GUIImage, $GUIGraphic
-Global $GUI_Width=285, $GUI_Height=425
+Global $GUI_Width=285, $GUI_Height=444
 Global $GUIImages[12] = [ "troop-archer.png", "troop-balloon.png", "troop-barbarian.png", _
    "troop-dragon.png", "troop-giant.png", "troop-goblin.png", "troop-healer.png", _
    "troop-pekka.png", "troop-wallbreaker.png", "troop-wizard.png" , "troop-bk.png", "troop-aq.png"]
@@ -17,8 +17,8 @@ Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheck
 	  $GUI_FindMatchCheckBox, $GUI_AutoSnipeCheckBox, $GUI_AutoRaidCheckBox
 Global $GUI_CloseButton
 Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_AutoRaidUseBreakers, $GUI_AutoRaidBreakerCountEdit, _
-	  $GUI_AutoRaidZapDE, $GUI_AutoRaidZapDEMin, $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidDumpCupsThreshold, _
-	  $GUI_AutoRaidStrategyCombo
+	  $GUI_AutoRaidZapDE, $GUI_AutoRaidZapDEMin, $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidIgnoreStorages, _
+	  $GUI_AutoRaidDumpCupsThreshold, $GUI_AutoRaidStrategyCombo
 Global $GUI_MyGold, $GUI_MyElix, $GUI_MyDark, $GUI_MyGems, $GUI_MyCups
 Global $GUI_Winnings, $GUI_Results, $GUI_AutoStatus
 
@@ -105,7 +105,7 @@ Func InitGUI()
 
    ; Right side, auto raid options group
    $y += 29
-   $h=138
+   $h=157
    GUICtrlCreateGroup("Auto Raid/Snipe", $x, $y, $w, $h)
 
    $y += 14
@@ -127,6 +127,10 @@ Func InitGUI()
    $GUI_AutoRaidDeadBases = GUICtrlCreateCheckbox("Dead Bases Only", $x+5, $y, 110, 25)
    _GUICtrlButton_SetCheck($GUI_AutoRaidDeadBases, IniRead($gIniFile, "General", "Dead Bases Only", $BST_UNCHECKED))
 
+   $y += 19
+   $GUI_AutoRaidIgnoreStorages = GUICtrlCreateCheckbox("Ignore Storages", $x+5, $y, 110, 25)
+   _GUICtrlButton_SetCheck($GUI_AutoRaidIgnoreStorages, IniRead($gIniFile, "General", "Ignore Storages", $BST_UNCHECKED))
+
    $y += 24
    GUICtrlCreateLabel("Strategy:", $x+5, $y, 116, 17)
 
@@ -140,7 +144,7 @@ Func InitGUI()
 
    ; Bottom
    $x = 10
-   $y = 257
+   $y = 276
    $w = 265
    $GUI_Winnings = GUICtrlCreateLabel("Winnings: - / - / - / -", $x, $y, $w, 17)
 
@@ -296,6 +300,7 @@ Func GUIAutoSnipeCheckBox()
    _GUICtrlButton_Enable($GUI_FindMatchCheckBox, Not($gAutoSnipeClicked))
    _GUICtrlButton_Enable($GUI_AutoRaidCheckBox, Not($gAutoSnipeClicked))
 
+   ; Disable check boxes
    If $gAutoSnipeClicked Then
 	  HotKeySet("{F8}") ; Find Match
 	  HotKeySet("{F10}") ; Auto Raid
@@ -306,8 +311,15 @@ Func GUIAutoSnipeCheckBox()
 	  HotKeySet("{F10}", HotKeyPressed) ; Auto Raid
    EndIf
 
-   $gAutoStage = ($gAutoSnipeClicked ? $eAutoQueueTraining : $eAutoNotStarted)
+   ; Collect starting loot or report ending loot
+   If $gAutoSnipeClicked Then
+	  CaptureAutoBeginLoot()
+   Else
+	  CaptureAutoEndLoot()
+   EndIf
 
+   ; Set stage
+   $gAutoStage = ($gAutoSnipeClicked ? $eAutoQueueTraining : $eAutoNotStarted)
    If $gAutoStage = $eAutoNotStarted Then GUICtrlSetData($GUI_AutoStatus, "Auto: Idle")
 EndFunc
 
@@ -318,20 +330,27 @@ Func GUIAutoRaidCheckBox()
    _GUICtrlButton_Enable($GUI_FindMatchCheckBox, Not($gAutoRaidClicked))
    _GUICtrlButton_Enable($GUI_AutoSnipeCheckBox, Not($gAutoRaidClicked))
 
+   ; Disable check boxes
    If $gAutoRaidClicked Then
 	  HotKeySet("{F8}") ; Find Match
 	  HotKeySet("{F9}") ; Find Snipable TH
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoSnipeCheckBox, $BST_UNCHECKED)
 	  ZoomOut(True)
-	  ResetAutoRaidCounts()
    Else
 	  HotKeySet("{F8}", HotKeyPressed) ; Find Match
 	  HotKeySet("{F9}", HotKeyPressed) ; Find Snipable TH
    EndIf
 
-   $gAutoStage = ($gAutoRaidClicked ? $eAutoQueueTraining : $eAutoNotStarted)
+   ; Collect starting loot or report ending loot
+   If $gAutoRaidClicked Then
+	  CaptureAutoBeginLoot()
+   Else
+	  CaptureAutoEndLoot()
+   EndIf
 
+   ; Set stage
+   $gAutoStage = ($gAutoRaidClicked ? $eAutoQueueTraining : $eAutoNotStarted)
    If $gAutoStage = $eAutoNotStarted Then GUICtrlSetData($GUI_AutoStatus, "Auto: Idle")
 EndFunc
 
@@ -343,10 +362,9 @@ Func GUICloseButton()
    Exit
 EndFunc
 
-Func CaptureAutoRaidBegin()
+Func CaptureAutoBeginLoot()
    GetMyLootNumbers()
 
-   ; Capture starting stuff
    Local $n = GUICtrlRead($GUI_MyGold)
    If $n <> "-" Then $gAutoRaidBeginLoot[0] = $n
    $n = GUICtrlRead($GUI_MyElix)
@@ -356,23 +374,29 @@ Func CaptureAutoRaidBegin()
    $n = GUICtrlRead($GUI_MyCups)
    If $n <> "-" Then $gAutoRaidBeginLoot[3] = $n
 
-   If $gAutoRaidBeginLoot[0]<>-1 And $gAutoRaidBeginLoot[1]<>-1 And $gAutoRaidBeginLoot[2]<>-1 And $gAutoRaidBeginLoot[3]<>-1 Then
-	  DebugWrite("AutoRaid Begin: " & _
-		 " Gold:" & $gAutoRaidBeginLoot[0] & _
-		 " Elix:" & $gAutoRaidBeginLoot[1] & _
-		 " Dark:" & $gAutoRaidBeginLoot[2] & _
-		 " Cups:" & $gAutoRaidBeginLoot[3])
+   DebugWrite("Auto Begin: " & _
+	  " Gold:" & $gAutoRaidBeginLoot[0] & _
+	  " Elix:" & $gAutoRaidBeginLoot[1] & _
+	  " Dark:" & $gAutoRaidBeginLoot[2] & _
+	  " Cups:" & $gAutoRaidBeginLoot[3])
 
-	  ResetAutoRaidCounts()
-   EndIf
-EndFunc
-
-Func ResetAutoRaidCounts()
    For $i = 0 To 3
 	  $gAutoRaidWinnings[$i] = 0
    Next
 
    GUICtrlSetData($GUI_Winnings, "Winnings: 0 / 0 / 0 / 0")
+EndFunc
+
+Func CaptureAutoEndLoot()
+   Local $netGold = GUICtrlRead($GUI_MyGold) - $gAutoRaidBeginLoot[0]
+   Local $netElix = GUICtrlRead($GUI_MyElix) - $gAutoRaidBeginLoot[1]
+   Local $netDark = GUICtrlRead($GUI_MyDark) - $gAutoRaidBeginLoot[2]
+   Local $netCups = GUICtrlRead($GUI_MyCups) - $gAutoRaidBeginLoot[3]
+   DebugWrite("Auto Profit: " & _
+	  " Gold:" & $netGold & _
+	  " Elix:" & $netElix & _
+	  " Dark:" & $netDark & _
+	  " Cups:" & $netCups)
 EndFunc
 
 Func SetAutoRaidResults(Const $gold, Const $elix, Const $dark, Const $cups, Const $townHall, Const $deadBase)

@@ -45,7 +45,7 @@ Func OpenBarracksWindow()
 	  While $failCount > 0
 		 ; Grab a frame
 		 GrabFrameToFile("BarracksButtonBarFrame.bmp", $barracksButtonBox[0], $barracksButtonBox[1], $barracksButtonBox[2], $barracksButtonBox[3])
-		 Local $bestMatch = 99, $bestConfidence = 0
+		 Local $bestMatch, $bestConfidence
 		 ScanFrameForBestBMP("BarracksButtonBarFrame.bmp", $gTrainTroopsButtonBMPs, $gConfidenceTrainTroopsButton, _
 						     $bestMatch, $bestConfidence, $trainTroopsButtonX, $trainTroopsButtonY)
 		 DebugWrite("Train Troops button found at " & $trainTroopsButtonX & "," & $trainTroopsButtonY & " confidence: " & $bestConfidence)
@@ -65,10 +65,10 @@ Func OpenBarracksWindow()
 
    ; Click on Train Troops button
    Local $trainTroopsButton[4] = [ _
-	  $barracksButtonBox[0]+$trainTroopsButtonX-7, _
-	  $barracksButtonBox[1]+$trainTroopsButtonY-13 , _
-	  $barracksButtonBox[0]+$trainTroopsButtonX+60, _
-	  $barracksButtonBox[1]+$trainTroopsButtonY+55 ]
+	  $barracksButtonBox[0]+$trainTroopsButtonX, _
+	  $barracksButtonBox[1]+$trainTroopsButtonY-6 , _
+	  $barracksButtonBox[0]+$trainTroopsButtonX+53, _
+	  $barracksButtonBox[1]+$trainTroopsButtonY+48 ]
    RandomWeightedClick($trainTroopsButton)
    Sleep(200)
 

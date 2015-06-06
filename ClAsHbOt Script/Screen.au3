@@ -98,12 +98,12 @@ EndFunc
 
 Func WhereAmI()
    ; $ScreenAndroidHome
-   Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
+   Local $bestMatch, $bestConfidence, $bestX, $bestY
    GrabFrameToFile("HomeScanFrame.bmp")
    ScanFrameForBestBMP("HomeScanFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
    ;DebugWrite("Android Home Scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
 
-   If $bestMatch <> 99 Then
+   If $bestMatch <> -1 Then
 	  Return $eScreenAndroidHome
    EndIf
 

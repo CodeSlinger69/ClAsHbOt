@@ -25,6 +25,7 @@ Func AutoRaid(ByRef $timer)
    Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
 
+	  ResetToCoCMainScreen()
 	  Local $zappable
 	  Local $findMatchResults = AutoRaidFindMatch($zappable)
 
@@ -69,6 +70,12 @@ EndFunc
 Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
    DebugWrite("FindAValidMatch()")
 
+   ; Make sure we are on the main screen
+   If WhereAmI() <> $eScreenMain Then
+	  DebugWrite("Find Match failed - not on main screen")
+	  Return False
+   EndIf
+
    ; Click Attack
    RandomWeightedClick($rMainScreenAttackButton)
 
@@ -90,7 +97,10 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 
    ; Wait for Next button
    $failCount = 30
-   While IsButtonPresent($rWaitRaidScreenNextButton) = False And $failCount>0
+   While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
+	  IsButtonPresent($rAndroidMessageButton) = False And _
+	  AttackingIsDisabled() = False And _
+	  $failCount>0
 
 	  ; See if Shield Is Active screen pops up
 	  If WhereAmI() = $eScreenShieldIsActive Then
@@ -101,6 +111,16 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
+
+   If AttackingIsDisabled() Then
+	  DebugWrite("Find Match failed (AR1) - Attacking is Disabled")
+	  ResetToCoCMainScreen()
+
+	  $gPossibleKick = 2
+	  $gLastPossibleKickTime = TimerInit()
+
+	  Return False
+   EndIf
 
    If $failCount = 0 Then
 	  DebugWrite("Find Match failed (AR1) - timeout waiting for Wait Raid screen")
@@ -194,7 +214,7 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 			DebugWrite("Possible kick detected, count = " & $gPossibleKick)
 		 EndIf
 
-		 If $gPossibleKick = 2 Then
+		 If $gPossibleKick > 0 Then
 			$gLastPossibleKickTime = TimerInit()
 		 EndIf
 
@@ -231,16 +251,71 @@ Func CheckForRaidableBase()
 
    Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
 
-   ; Default townhall
-   Local $townHall = -1
-
-   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-
    ; Grab settings from the GUI
    Local $GUIGold = GUICtrlRead($GUI_GoldEdit)
    Local $GUIElix = GUICtrlRead($GUI_ElixEdit)
    Local $GUIDark = GUICtrlRead($GUI_DarkEdit)
    Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
+   Local $GUIIgnoreStorages = (_GUICtrlButton_GetCheck($GUI_AutoRaidIgnoreStorages) = $BST_CHECKED)
+
+   ; Adjust available loot to estimate collectors only?
+   Local $adjGold, $adjElix, $adjDark
+   If $GUIIgnoreStorages Then
+	  GrabFrameToFile("StorageUsageFrame.bmp", 261, 100, 761, 450)
+	  Local $x, $y, $conf, $matchIndex, $saveFrame = False
+
+	  ; Gold
+	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+	  DebugWrite("Gold match: " & $matchIndex & " / " & $x & " / " & $y & " / " & $conf)
+
+	  If $matchIndex = -1 Then
+		 $saveFrame = True
+	  Else
+		 Local $s = $GoldStorageUsageBMPs[$matchIndex]
+		 Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
+		 $adjGold = Int($gold * (1-($usage/100)))
+	  EndIf
+
+	  ; Elixir
+	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixirStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+	  DebugWrite("Elix match: " & $matchIndex & " / " & $x & " / " & $y & " / " & $conf)
+
+	  If $matchIndex = -1 Then
+		 $saveFrame = True
+	  Else
+		 Local $s = $ElixirStorageUsageBMPs[$matchIndex]
+		 Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
+		 $adjElix = Int($elix * (1-($usage/100)))
+	  EndIf
+
+	  ; Dark Elixir
+	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+	  DebugWrite("Dark match: " & $matchIndex & " / " & $x & " / " & $y & " / " & $conf)
+
+	  If $matchIndex = -1 Then
+		 $saveFrame = True
+	  Else
+		 Local $s = $DarkStorageUsageBMPs[$matchIndex]
+		 Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
+		 $adjDark = Int($dark * (1-($usage/100)))
+	  EndIf
+
+	  If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark And $saveFrame = True Then
+		 Local $datetimestamp = _
+		 StringMid(_NowCalc(), 1,4) & _
+		 StringMid(_NowCalc(), 6,2) & _
+		 StringMid(_NowCalc(), 9,2) & _
+		 StringMid(_NowCalc(), 12,2) & _
+		 StringMid(_NowCalc(), 15,2) & _
+		 StringMid(_NowCalc(), 18,2)
+		 FileMove("StorageUsageFrame.bmp", "Storage-" & $datetimestamp & ".bmp")
+	  EndIf
+   EndIf
+
+   ; Default townhall
+   Local $townHall = -1
+
+   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Only get Town Hall Level if the other criteria are a match
    If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
@@ -250,15 +325,29 @@ Func CheckForRaidableBase()
    EndIf
 
    ; Do we have a gold/elix/dark/townhall/dead match?
-   If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
+   If ($GUIIgnoreStorages = False And $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark) Or _
+	  ($GUIIgnoreStorages = True And $adjGold >= $GUIGold And $adjElix >= $GUIElix And $adjDark >= $GUIDark) Then
+
 	  If $townHall <= $GUITownHall And $townHall > 0 Then
-		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark  & " / " & $townHall & " / " & $deadBase)
+		 If $GUIIgnoreStorages = True Then
+			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
+					   " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")")
+		 Else
+			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase)
+		 EndIf
+
 		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 		 Return $eAutoExecute
 	  EndIf
    EndIf
 
-   DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+   If $GUIIgnoreStorages = True Then
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
+				 " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")")
+   Else
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+   EndIf
+
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
    Return False
 EndFunc
@@ -380,7 +469,7 @@ Func LocateCollectors(ByRef $matchX, ByRef $matchY)
 	  For $j = 0 To $split[0]-1
 		 ; Loop through all captured points so far, if this one is within 8 pix of an existing one,
 		 ; then skip it.
-		 Local $k, $alreadyFound = False
+		 Local $alreadyFound = False
 		 For $k = 0 To $matchCount-1
 			If DistBetweenTwoPoints($split[$j*3+1], $split[$j*3+2], $matchX[$k], $matchY[$k]) < 8 Then
 			   $alreadyFound = True

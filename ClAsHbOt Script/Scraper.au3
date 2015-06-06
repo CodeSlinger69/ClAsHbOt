@@ -2,48 +2,6 @@
 #include <RegionDefs.au3>
 
 ; Scraper Globals
-Global $CoCIconBMPs[1] = ["CoCIcon.bmp"]
-Global $TownHallBMPs[4] = ["TH7.bmp", "TH8.bmp", "TH9.bmp", "TH10.bmp"]
-Global $CollectLootBMPs[3] = ["FullGoldCollector.bmp", "FullElixCollector.bmp", "FullDarkCollector.bmp"]
-Global $BarracksBMPs[2] = ["BarracksL10.bmp", "BarracksL9.bmp"]
-Global $DonateButtonBMPs[1] = ["DonateButton.bmp"]
-Global $CollectorBMPs[8] = ["GoldCollectorL12.bmp", "GoldCollectorL11.bmp", "GoldCollectorL10.bmp", "GoldCollectorL9.bmp", _
-						    "ElixCollectorL12.bmp", "ElixCollectorL11.bmp", "ElixCollectorL10.bmp", "ElixCollectorL9.bmp"]
-Global $DarkStorageBMPs[10] = ["DarkStorageL6.25.bmp", "DarkStorageL6.00.bmp", "DarkStorageL5.25.bmp", "DarkStorageL4.50.bmp", _
-							   "DarkStorageL4.00.bmp", "DarkStorageL3.00.bmp", "DarkStorageL2.25.bmp", "DarkStorageL2.00.bmp", _
-							   "DarkStorageL1.25.bmp", "DarkStorageL1.00.bmp"]
-Global $gArmyCampBMPs[3] = ["ArmyCampL6.bmp", "ArmyCampL7.bmp", "ArmyCampL8.bmp"]
-Global $gTrainTroopsButtonBMPs[1] = ["TrainTroopsButton.bmp"]
-
-; TODO: get bmps for freeze spell
-Global $gTroopSlotBMPs[$eTroopCount] = _
-		 ["SlotBarbarian.bmp", "SlotArcher.bmp", "SlotGiant.bmp", "SlotGoblin.bmp", _
-		  "SlotWallBreaker.bmp", "SlotBalloon.bmp", "SlotWizard.bmp", "SlotHealer.bmp", _
-		  "SlotDragon.bmp", "SlotPekka.bmp", _
-		  "SlotMinion.bmp", "SlotHogRider.bmp", "SlotValkyrie.bmp", "SlotGolem.bmp", _
-		  "SlotWitch.bmp", "SlotLavaHound.bmp", _
-		  "SlotKing.bmp", "SlotQueen.bmp"]
-Global $gSpellSlotBMPs[$eSpellCount] = _
-		 ["SlotLightningSpell.bmp", "SlotHealSpell.bmp", "SlotRageSpell.bmp", "SlotJumpSpell.bmp", "SlotDummy.bmp"]
-Global $gDonateSlotBMPs[16] = _
-		 ["DonateBarbarian.bmp", "DonateArcher.bmp", "DonateGiant.bmp", "DonateGoblin.bmp", _
-		  "DonateWallBreaker.bmp", "DonateBalloon.bmp", "DonateWizard.bmp", "DonateHealer.bmp", _
-		  "DonateDragon.bmp", "DonatePekka.bmp", "DonateMinion.bmp", "DonateHogRider.bmp", _
-		  "DonateValkyrie.bmp", "DonateGolem.bmp", "DonateWitch.bmp", "DonateLavaHound.bmp"]
-Global $gCampTroopSlotBMPs [$eTroopCount-2] = _
-		 ["CampBarbarian.bmp", "CampArcher.bmp", "CampGiant.bmp", "CampGoblin.bmp", _
-		  "CampWallBreaker.bmp", "CampBalloon.bmp", "CampWizard.bmp", "CampHealer.bmp", _
-		  "CampDragon.bmp", "CampPekka.bmp", _
-		  "CampMinion.bmp", "CampHogRider.bmp", "CampValkyrie.bmp", "CampGolem.bmp", _
-		  "CampWitch.bmp", "CampLavaHound.bmp"]
-Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = _
-		 ["BarracksBarbarian.bmp", "BarracksArcher.bmp", "BarracksGiant.bmp", "BarracksGoblin.bmp", _
-		  "BarracksWallBreaker.bmp", "BarracksBalloon.bmp", "BarracksWizard.bmp", "BarracksHealer.bmp", _
-		  "BarracksDragon.bmp", "BarracksPekka.bmp", _
-		  "BarracksMinion.bmp", "BarracksHogRider.bmp", "BarracksValkyrie.bmp", "BarracksGolem.bmp", _
-		  "BarracksWitch.bmp", "BarracksLavaHound.bmp"]
-Global $gBarracksSpellSlotBMPs [$eSpellCount] = _
-		 ["BarracksLightningSpell.bmp", "BarracksHealSpell.bmp", "BarracksRageSpell.bmp", "BarracksJumpSpell.bmp", "SlotDummy.bmp"]
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
 
 Func InitScraper()
@@ -483,10 +441,15 @@ Func IsColorPresent(Const ByRef $colorLocation)
 EndFunc
 
 Func ScanFrameForBestBMP(Const $filename, Const ByRef $bmpArray, Const $threshold, ByRef $bestMatch, ByRef $bestConfidence, ByRef $bestX, ByRef $bestY)
+   $bestMatch = -1
+   $bestConfidence = 0
+   $bestX = -1
+   $bestY = -1
+
    For $i = 0 to UBound($bmpArray)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", $filename, "str", "Images\"&$bmpArray[$i], "int", 3)
 
-	  ;DebugWrite($bmpArray[$i] & ": " & $res[0] & @CRLF)
+	  ;DebugWrite($bmpArray[$i] & ": " & $res[0])
 
 	  Local $split = StringSplit($res[0], "|", 2)
 	  If $split[2] > $threshold And $split[2] > $bestConfidence Then

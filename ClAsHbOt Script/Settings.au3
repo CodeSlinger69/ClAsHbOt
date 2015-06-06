@@ -25,6 +25,7 @@ Func ReadSettings()
    Global $gConfidenceArmyCampTroopSlot = IniRead($gIniFile, "Confidence", "Army Camp Troop Slot", 0.99)
    Global $gConfidenceBarracksTroopSlot = IniRead($gIniFile, "Confidence", "Barracks Troop Slot", 0.99)
    Global $gConfidenceTrainTroopsButton = IniRead($gIniFile, "Confidence", "Train Troops Button", 0.99)
+   Global $gConfidenceStorages = IniRead($gIniFile, "Confidence", "Storages", 0.96)
 
    ; Intervals
    Global $gOnlineCheckInterval = IniRead($gIniFile, "Interval", "Online Check", 15000)
@@ -135,6 +136,7 @@ Func SaveSettings()
    IniWrite($gIniFile, "General", "Dump Cups", _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups))
    IniWrite($gIniFile, "General", "Dump Cups Threshold", GUICtrlRead($GUI_AutoRaidDumpCupsThreshold))
    IniWrite($gIniFile, "General", "Dead Bases Only", _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases))
+   IniWrite($gIniFile, "General", "Ignore Storages", _GUICtrlButton_GetCheck($GUI_AutoRaidIgnoreStorages))
    IniWrite($gIniFile, "General", "Raid Strategy", _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo))
 EndFunc
 

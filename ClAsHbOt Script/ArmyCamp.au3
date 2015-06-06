@@ -2,11 +2,11 @@ Func OpenArmyCampWindow()
    DebugWrite("OpenArmyCampWindow()")
 
    ; Locate Army Camp
-   Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
+   Local $bestMatch, $bestConfidence, $bestX, $bestY
    GrabFrameToFile("ArmyCampSearchFrame.bmp")
    ScanFrameForBestBMP("ArmyCampSearchFrame.bmp", $gArmyCampBMPs, $gConfidenceArmyCamp, $bestMatch, $bestConfidence, $bestX, $bestY)
 
-   If $bestMatch = 99 Then Return False
+   If $bestMatch = -1 Then Return False
 
    DebugWrite("Located Level " & $bestMatch+6 & " Army Camp at " & $bestX & ", " & $bestY & " conf: " & $bestConfidence)
 

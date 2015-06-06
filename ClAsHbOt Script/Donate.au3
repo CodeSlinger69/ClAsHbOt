@@ -65,10 +65,10 @@ Func FindDonateButton(ByRef $button)
    ; Fills $button with absolute screen coords for Donate button
    GrabFrameToFile("ChatFrame.bmp", 9, 103, 266, 551)
 
-   Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
+   Local $bestMatch, $bestConfidence, $bestX, $bestY
    ScanFrameForBestBMP("ChatFrame.bmp", $DonateButtonBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
 
-   If $bestMatch = 99 Then
+   If $bestMatch = -1 Then
 	  DebugWrite("Donate button not found.")
 	  ResetToCoCMainScreen()
 	  Return False

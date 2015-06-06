@@ -1,5 +1,9 @@
 #cs
 ClAsHbOt!
+
+Ignore storages option
+
+
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -20,6 +24,7 @@ Opt("GUIOnEventMode", 1)
 #include <GUI.au3>
 #include <Settings.au3>
 #include <Scraper.au3>
+#include <FileNames.au3>
 #include <TownHall.au3>
 #include <Barracks.au3>
 #include <ArmyCamp.au3>
@@ -36,6 +41,7 @@ Opt("GUIOnEventMode", 1)
 #include <Screen.au3>
 #include <Donate.au3>
 
+
 Main()
 
 Func Main()
@@ -47,6 +53,11 @@ Func Main()
    ReadSettings()
 
    InitGUI()
+
+;$gTitle = "Storage-"
+;WinActivate($gTitle)
+;CheckForRaidableBase()
+;Exit
 
    MainApplicationLoop()
 EndFunc
@@ -175,15 +186,9 @@ Func MainApplicationLoop()
 		 $gPossibleKick < 2 And _
 		 IsButtonPresent($rAndroidMessageButton) = False Then
 
-		 If $gAutoRaidBeginLoot[0]=-1 Or $gAutoRaidBeginLoot[1]=-1 Or _
-			$gAutoRaidBeginLoot[2]=-1 Or $gAutoRaidBeginLoot[3]=-1 Then
-
-			CaptureAutoRaidBegin()
-		 EndIf
-
 		 $gAutoRaidClicked = False
 		 CheckForAndroidMessageBox()
-		 ZoomOut(True)
+
 		 AutoRaid($lastTrainingCheckTimer)
 	  EndIf
 
