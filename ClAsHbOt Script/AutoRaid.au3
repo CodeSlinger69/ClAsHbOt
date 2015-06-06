@@ -263,41 +263,51 @@ Func CheckForRaidableBase()
    If $GUIIgnoreStorages Then
 	  GrabFrameToFile("StorageUsageFrame.bmp", 261, 100, 761, 450)
 	  Local $x, $y, $conf, $matchIndex, $saveFrame = False
+	  Local $usageAdj = 13
 
 	  ; Gold
 	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-	  DebugWrite("Gold match: " & $matchIndex & " / " & $x & " / " & $y & " / " & $conf)
 
 	  If $matchIndex = -1 Then
 		 $saveFrame = True
+		 DebugWrite("Could not find gold storage match.")
 	  Else
 		 Local $s = $GoldStorageUsageBMPs[$matchIndex]
+		 Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
 		 Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
+		 $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
 		 $adjGold = Int($gold * (1-($usage/100)))
+		 DebugWrite("Found gold storage level " & $level & ", " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
 	  EndIf
 
 	  ; Elixir
 	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixirStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-	  DebugWrite("Elix match: " & $matchIndex & " / " & $x & " / " & $y & " / " & $conf)
 
 	  If $matchIndex = -1 Then
 		 $saveFrame = True
+		 DebugWrite("Could not find elixir storage match.")
 	  Else
 		 Local $s = $ElixirStorageUsageBMPs[$matchIndex]
+		 Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
 		 Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
+		 $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
 		 $adjElix = Int($elix * (1-($usage/100)))
+		 DebugWrite("Found elix storage level " & $level & ", " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
 	  EndIf
 
 	  ; Dark Elixir
 	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-	  DebugWrite("Dark match: " & $matchIndex & " / " & $x & " / " & $y & " / " & $conf)
 
 	  If $matchIndex = -1 Then
 		 $saveFrame = True
+		 DebugWrite("Could not find dark elixir storage match.")
 	  Else
 		 Local $s = $DarkStorageUsageBMPs[$matchIndex]
+		 Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 2))
 		 Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
+		 $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
 		 $adjDark = Int($dark * (1-($usage/100)))
+		 DebugWrite("Found dark storage level " & $level & ", " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
 	  EndIf
 
 	  If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark And $saveFrame = True Then
@@ -318,7 +328,8 @@ Func CheckForRaidableBase()
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Only get Town Hall Level if the other criteria are a match
-   If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
+   If ($GUIIgnoreStorages = False And $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark) Or _
+	  ($GUIIgnoreStorages = True And $adjGold >= $GUIGold And $adjElix >= $GUIElix And $adjDark >= $GUIDark) Then
 	  Local $location, $top, $left
 	  $townHall = GetTownHallLevel($location, $left, $top)
 	  SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
@@ -590,11 +601,11 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 		 IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
 
 		 $goldBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusGoldTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 If StringLeft($goldBonus, 1) = "+" Then $goldBonus = StringMid($goldBonus, 2)
+		 $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
 		 $elixBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusElixTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 If StringLeft($elixBonus, 1) = "+" Then $elixBonus = StringMid($elixBonus, 2)
+		 $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
 		 $darkBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusDarkTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 If StringLeft($darkBonus, 1) = "+" Then $darkBonus = StringMid($darkBonus, 2)
+		 $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
 	  EndIf
 
 	  DebugWrite("Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
@@ -639,7 +650,7 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][1] = $split[1]+$raidTroopBox[1]+$buttonOffset[1]
 		 $index[$i][2] = $split[0]+$raidTroopBox[0]+$buttonOffset[2]
 		 $index[$i][3] = $split[1]+$raidTroopBox[1]+$buttonOffset[3]
-		 DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
+		 DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " confidence " & Round($split[2]*100, 2) & "%")
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1

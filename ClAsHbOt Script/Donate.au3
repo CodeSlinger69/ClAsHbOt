@@ -142,7 +142,7 @@ Func FindDonateTroopSlots(Const ByRef $button, ByRef $index)
 		 $index[$i][1] = $button[1]-109 + $split[1]
 		 $index[$i][2] = $button[0]+67  + $split[0]+25
 		 $index[$i][3] = $button[1]-109 + $split[1]+45
-		 DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & $split[2])
+		 DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & Round($split[2]*100, 2) & "%")
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1

@@ -31,7 +31,7 @@ Func OpenBarracksWindow()
    Local $failCount
 
    For $i = 0 To $barracksIndex - 1
-	  DebugWrite("Barracks " & $i & " found at " & $barracksPoints[$i][1] & "," & $barracksPoints[$i][2] & " confidence: " & $barracksPoints[$i][0])
+	  DebugWrite("Barracks " & $i & " found at " & $barracksPoints[$i][1] & "," & $barracksPoints[$i][2] & " confidence " & Round($barracksPoints[$i][0]*100, 2) & "%")
 
 	  ; Click on barracks
 	  Local $button[4] = [$barracksPoints[$i][1]+$rBarracksButton[0], $barracksPoints[$i][2]+$rBarracksButton[1], _
@@ -48,7 +48,7 @@ Func OpenBarracksWindow()
 		 Local $bestMatch, $bestConfidence
 		 ScanFrameForBestBMP("BarracksButtonBarFrame.bmp", $gTrainTroopsButtonBMPs, $gConfidenceTrainTroopsButton, _
 						     $bestMatch, $bestConfidence, $trainTroopsButtonX, $trainTroopsButtonY)
-		 DebugWrite("Train Troops button found at " & $trainTroopsButtonX & "," & $trainTroopsButtonY & " confidence: " & $bestConfidence)
+		 DebugWrite("Train Troops button found at " & $trainTroopsButtonX & "," & $trainTroopsButtonY & " confidence " & Round($bestConfidence*100, 2) & "%")
 
 		 If $bestConfidence >= $gConfidenceTrainTroopsButton Then ExitLoop 2
 

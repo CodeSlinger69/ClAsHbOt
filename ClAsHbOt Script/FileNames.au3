@@ -1,7 +1,7 @@
 Global $CoCIconBMPs[1] = ["CoCIcon.bmp"]
 Global $TownHallBMPs[4] = ["TH7.bmp", "TH8.bmp", "TH9.bmp", "TH10.bmp"]
 Global $CollectLootBMPs[3] = ["FullGoldCollector.bmp", "FullElixCollector.bmp", "FullDarkCollector.bmp"]
-Global $BarracksBMPs[2] = ["BarracksL10.bmp", "BarracksL9.bmp"]
+Global $BarracksBMPs[3] = ["BarracksL10.bmp", "BarracksL9.bmp", "BarracksL7.bmp"]
 Global $DonateButtonBMPs[1] = ["DonateButton.bmp"]
 Global $CollectorBMPs[8] = [ _
   "GoldCollectorL12.bmp", "GoldCollectorL11.bmp", "GoldCollectorL10.bmp", "GoldCollectorL9.bmp", _
