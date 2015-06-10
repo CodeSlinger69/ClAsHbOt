@@ -258,109 +258,95 @@ Func CheckForRaidableBase()
    Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
    Local $GUIIgnoreStorages = (_GUICtrlButton_GetCheck($GUI_AutoRaidIgnoreStorages) = $BST_CHECKED)
 
-   ; Adjust available loot to estimate collectors only?
-   Local $adjGold, $adjElix, $adjDark
-   If $GUIIgnoreStorages Then
-	  GrabFrameToFile("StorageUsageFrame.bmp", 261, 100, 761, 450)
-	  Local $x, $y, $conf, $matchIndex, $saveFrame = False
-	  Local $usageAdj = 13
-
-	  ; Gold
-	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-
-	  If $matchIndex = -1 Then
-		 $saveFrame = True
-		 DebugWrite("Could not find gold storage match.")
-	  Else
-		 Local $s = $GoldStorageUsageBMPs[$matchIndex]
-		 Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
-		 Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
-		 $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
-		 $adjGold = Int($gold * (1-($usage/100)))
-		 DebugWrite("Found gold storage level " & $level & ", " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-	  EndIf
-
-	  ; Elixir
-	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixirStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-
-	  If $matchIndex = -1 Then
-		 $saveFrame = True
-		 DebugWrite("Could not find elixir storage match.")
-	  Else
-		 Local $s = $ElixirStorageUsageBMPs[$matchIndex]
-		 Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
-		 Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
-		 $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
-		 $adjElix = Int($elix * (1-($usage/100)))
-		 DebugWrite("Found elix storage level " & $level & ", " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-	  EndIf
-
-	  ; Dark Elixir
-	  ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-
-	  If $matchIndex = -1 Then
-		 $saveFrame = True
-		 DebugWrite("Could not find dark elixir storage match.")
-	  Else
-		 Local $s = $DarkStorageUsageBMPs[$matchIndex]
-		 Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 2))
-		 Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
-		 $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
-		 $adjDark = Int($dark * (1-($usage/100)))
-		 DebugWrite("Found dark storage level " & $level & ", " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-	  EndIf
-
-	  If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark And $saveFrame = True Then
-		 Local $datetimestamp = _
-		 StringMid(_NowCalc(), 1,4) & _
-		 StringMid(_NowCalc(), 6,2) & _
-		 StringMid(_NowCalc(), 9,2) & _
-		 StringMid(_NowCalc(), 12,2) & _
-		 StringMid(_NowCalc(), 15,2) & _
-		 StringMid(_NowCalc(), 18,2)
-		 FileMove("StorageUsageFrame.bmp", "Storage-" & $datetimestamp & ".bmp")
-	  EndIf
-   EndIf
-
-   ; Default townhall
+   ; Get Town Hall level
    Local $townHall = -1
-
+   Local $location, $top, $left
+   $townHall = GetTownHallLevel($location, $left, $top)
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
-   ; Only get Town Hall Level if the other criteria are a match
-   If ($GUIIgnoreStorages = False And $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark) Or _
-	  ($GUIIgnoreStorages = True And $adjGold >= $GUIGold And $adjElix >= $GUIElix And $adjDark >= $GUIDark) Then
-	  Local $location, $top, $left
-	  $townHall = GetTownHallLevel($location, $left, $top)
-	  SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+   If $townHall = -1 Or $townHall>$GUITownHall Then
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  Return False
    EndIf
+
+   ; Adjust available loot to exclude storages
+   Local $adjGold=$gold, $adjElix=$elix, $adjDark=$dark
+   If $GUIIgnoreStorages Then
+	  If $GUITownHall-$townHall>=2 Then
+		 DebugWrite("Raidable TownHall is 2 levels less than maximum TownHall, skipping storage detection.")
+	  Else
+		 AutoRaidAdjustLootForStorages($gold, $elix, $dark, $adjGold, $adjElix, $adjDark)
+	  EndIf
+   EndIf
+
+   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Do we have a gold/elix/dark/townhall/dead match?
    If ($GUIIgnoreStorages = False And $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark) Or _
 	  ($GUIIgnoreStorages = True And $adjGold >= $GUIGold And $adjElix >= $GUIElix And $adjDark >= $GUIDark) Then
 
-	  If $townHall <= $GUITownHall And $townHall > 0 Then
-		 If $GUIIgnoreStorages = True Then
-			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
-					   " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")")
-		 Else
-			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase)
-		 EndIf
+	  DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
+				 ($GUIIgnoreStorages ? " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" : "") )
+	  Return $eAutoExecute
 
-		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-		 Return $eAutoExecute
-	  EndIf
-   EndIf
-
-   If $GUIIgnoreStorages = True Then
-	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
-				 " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")")
    Else
-	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
+				 ($GUIIgnoreStorages ? " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" : "") )
+	  Return False
+
+   EndIf
+EndFunc
+
+Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef $adjGold, ByRef $adjElix, ByRef $adjDark)
+   GrabFrameToFile("StorageUsageFrame.bmp", 261, 100, 761, 450)
+   Local $x, $y, $conf, $matchIndex, $saveFrame = False
+   Local $usageAdj = 12.5
+
+   ; Gold
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+
+   If $matchIndex = -1 Then
+	  $saveFrame = True
+	  DebugWrite("Could not find gold storage match.")
+   Else
+	  Local $s = $GoldStorageUsageBMPs[$matchIndex]
+	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
+	  Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
+	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
+	  $adjGold = Int($gold * (1-($usage/100)))
+	  DebugWrite("Found gold storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
-   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-   Return False
+   ; Elixir
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixirStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+
+   If $matchIndex = -1 Then
+	  $saveFrame = True
+	  DebugWrite("Could not find elixir storage match.")
+   Else
+	  Local $s = $ElixirStorageUsageBMPs[$matchIndex]
+	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
+	  Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
+	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
+	  $adjElix = Int($elix * (1-($usage/100)))
+	  DebugWrite("Found elix storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
+   EndIf
+
+   ; Dark Elixir
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+
+   If $matchIndex = -1 Then
+	  $saveFrame = True
+	  DebugWrite("Could not find dark elixir storage match.")
+   Else
+	  Local $s = $DarkStorageUsageBMPs[$matchIndex]
+	  Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 2))
+	  Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
+	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
+	  $adjDark = Int($dark * (1-($usage/100)))
+	  DebugWrite("Found dark storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
+   EndIf
+
 EndFunc
 
 Func AutoRaidUpdateProgress()
