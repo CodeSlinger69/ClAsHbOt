@@ -25,6 +25,12 @@ Func OpenBarracksWindow()
    Next
    _ArraySort($barracksPoints, 1)
 
+   If $barracksIndex = 0 Then
+	  DebugWrite("OpenBarracksWindow failed - could not find Barracks building.")
+	  ResetToCoCMainScreen()
+	  Return
+   EndIf
+
    ; Look through list of barracks for an available training screen, and get Train Troops button location
    Local $trainTroopsButtonX = -1, $trainTroopsButtonY = -1
    Local $barracksButtonBox[4] = [250, 454, 773, 521]
@@ -57,7 +63,7 @@ Func OpenBarracksWindow()
 	  WEnd
 
 	  If $failCount <= 0 Then
-		 DebugWrite("Auto Raid, Queue Troops failed - error finding available Barracks Button panel.")
+		 DebugWrite("OpenBarracksWindow failed - error finding available Barracks Button panel.")
 		 ResetToCoCMainScreen()
 		 Return
 	  EndIf
@@ -80,7 +86,7 @@ Func OpenBarracksWindow()
    WEnd
 
    If $failCount = 0 Then
-	  DebugWrite("Auto Raid, Queue Troops failed - timeout waiting for Train Troops window")
+	  DebugWrite("OpenBarracksWindow failed - timeout waiting for Train Troops window")
 	  ResetToCoCMainScreen()
 	  Return
    EndIf

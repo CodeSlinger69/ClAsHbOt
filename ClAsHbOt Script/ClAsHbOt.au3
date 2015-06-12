@@ -3,7 +3,6 @@ ClAsHbOt!
 
 Ignore storages option
 
-
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -53,11 +52,6 @@ Func Main()
    ReadSettings()
 
    InitGUI()
-
-;$gTitle = "Storage-"
-;WinActivate($gTitle)
-;CheckForRaidableBase()
-;Exit
 
    MainApplicationLoop()
 EndFunc
