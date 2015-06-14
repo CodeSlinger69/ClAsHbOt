@@ -55,7 +55,8 @@ Global $rBarracksWindowPrevButton[8] = [198, 263, 241, 296, 225, 290, 0xf08038, 
 Global $rBarracksWindowNextButton[8] = [782, 263, 808, 296, 796, 290, 0xf08038, 6]
 Global $rBarracksWindowCloseButton[8] = [752, 100, 783, 129, 0, 0, 0, 0]
 Global $rTrainTroopsWindowDequeueButton[8] = [526, 143, 576, 193, 574, 157, 0xd20301, 0]
-Global $rArmyCampInfoButton[8] = [438, 454, 506, 522, 464, 481, 0x387cb0, 0]
+Global $rArmyCampInfoButton1[8] = [438, 454, 506, 522, 464, 481, 0x387cb0, 0]
+Global $rArmyCampInfoButton2[8] = [398, 454, 465, 522, 425, 481, 0x387cb0, 0]
 Global $rArmyCampInfoScreenCloseWindowButton[8] = [726, 98, 756, 127, 752, 123, 0xd80406, 0]
 
 ; Pixel color regions

@@ -152,150 +152,6 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
    Next
 EndFunc
 
-
-Func FillBarracks(Const $initialFillFlag, Const ByRef $availableTroopCounts)
-   DebugWrite("FillBarracks()")
-
-   ; See how many breakers we need
-   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $availableTroopCounts[$eTroopWallBreaker]
-   If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
-	  DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
-   EndIf
-
-   ; Loop through barracks and queue troops, until we get to a dark or spells screen, or we've done 4
-   ; This function assumes that we are already on a spells window, or the last dark troops window (i.e. the starting point)
-   Local $barracksCount = 1
-   Local $failCount = 5
-
-   While $barracksCount <= 4 And $failCount>0
-
-	  ; Click right arrow to get the next standard troops window
-	  RandomWeightedClick($rBarracksWindowNextButton)
-	  Sleep(400)
-	  $failCount-=1
-
-	  ; Make sure we are on a standard troops window
-	  If IsColorPresent($rWindowBarracksStandardColor1) = False And IsColorPresent($rWindowBarracksStandardColor2) = False Then
-		 Local $cPos = GetClientPos()
-		 DebugWrite("Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWindowBarracksStandardColor1[0], $cPos[1]+$rWindowBarracksStandardColor1[1])))
-		 ExitLoop
-	  EndIf
-
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _
-		 _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_UNCHECKED Then Return
-
-	  ; Find the slots for the troops
-	  Local $troopSlots[$eTroopCount][4]
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
-
-	  ; If breakers are included and this is an initial fill then queue up breakercount/4 in each barracks
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED And $initialFillFlag And $breakersToQueue>0 Then
-		 ; Dequeue troops if needed, so breaker get built first
-		 Local $dequeueTries = 6
-		 While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
-			   (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
-			    _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_CHECKED)
-
-			DebugWrite("Dequeueing troops.")
-			Local $xClick, $yClick
-			RandomWeightedCoords($rTrainTroopsWindowDequeueButton, $xClick, $yClick)
-			_ClickHold($xClick, $yClick, 4000)
-			$dequeueTries-=1
-			Sleep(500)
-		 WEnd
-
-		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
-
-		 ; Now queue the breakers
-		 If $troopSlots[$eTroopWallBreaker][0] <> -1 Then
-			Local $breakerButton[4] = [$troopSlots[$eTroopWallBreaker][0], $troopSlots[$eTroopWallBreaker][1], $troopSlots[$eTroopWallBreaker][2], $troopSlots[$eTroopWallBreaker][3]]
-
-			If $breakersToQueue/4 < 1 Then
-			   DebugWrite("Queueing 1 Wall Breaker.")
-			   RandomWeightedClick($breakerButton)
-			   Sleep(500)
-			   $breakersToQueue-=1
-			Else
-			   For $i = 1 To Int($breakersToQueue/4)
-			   DebugWrite("Queueing " & Int($breakersToQueue/4) & " Wall Breakers.")
-				  RandomWeightedClick($breakerButton)
-				  Sleep(500)
-				  $breakersToQueue-=1
-			   Next
-			EndIf
-		 EndIf
-	  EndIf
-
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
-
-	  ; Fill up this barracks
-	  Local $fillTries=1
-	  Local $troopsToFill
-	  Do
-		 ; Get number of troops already queued in this barracks
-		 Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rBarracksWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 ;DebugWrite("Barracks debug " & $barracksCount & " queue status: " & $queueStatus)
-
-		 If (StringInStr($queueStatus, "Train")=1) Then
-			$queueStatus = StringMid($queueStatus, 6)
-
-			Local $queueStatSplit = StringSplit($queueStatus, "/")
-			If $queueStatSplit[0] = 2 Then
-			   $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
-
-			   ; How long to click and hold?
-			   Local $fillTime
-			   If $troopsToFill>60 Then
-				  $fillTime = 3500 + Random(-250, 250, 1)
-			   ElseIf $troopsToFill>25 Then
-				  $fillTime = 2700 + Random(-250, 250, 1)
-			   ElseIf $troopsToFill>10 Then
-				  $fillTime = 2300 + Random(-250, 250, 1)
-			   Else
-				  $fillTime = 1800 + Random(-250, 250, 1)
-			   EndIf
-
-			   ; Click and hold to fill up queue
-			   If $troopsToFill>0 Then
-				  DebugWrite("Barracks " & $barracksCount & ": Adding " & $troopsToFill & " troops.")
-
-				  ; Alternate between archers and barbs
-				  Local $xClick, $yClick
-				  If $barracksCount/2 = Int($barracksCount/2) Then
-					 If $troopSlots[$eTroopBarbarian][0] <> -1 Then
-						Local $button[4] = [$troopSlots[$eTroopBarbarian][0], $troopSlots[$eTroopBarbarian][1], _
-											$troopSlots[$eTroopBarbarian][2], $troopSlots[$eTroopBarbarian][3]]
-						RandomWeightedCoords($button, $xClick, $yClick)
-
-						_ClickHold($xClick, $yClick, $fillTime)
-						Sleep(500)
-					 EndIf
-
-				  Else
-					 If $troopSlots[$eTroopArcher][0] <> -1 Then
-						Local $button[4] = [$troopSlots[$eTroopArcher][0], $troopSlots[$eTroopArcher][1], _
-											$troopSlots[$eTroopArcher][2], $troopSlots[$eTroopArcher][3]]
-						RandomWeightedCoords($button, $xClick, $yClick)
-						RandomWeightedCoords($button, $xClick, $yClick)
-
-						_ClickHold($xClick, $yClick, $fillTime)
-						Sleep(500)
-					 EndIf
-
-				  EndIf
-
-			   EndIf
-			EndIf
-		 EndIf
-
-		 $fillTries+=1
-	  Until $troopsToFill=0 Or $fillTries>=6 Or _
-		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_UNCHECKED)
-
-	  $barracksCount+=1
-   WEnd
-EndFunc
-
 Func GetBarracksTroopCounts(Const ByRef $bitmaps, ByRef $counts)
    Local $barracksTroopBox[4] = [289, 224, 739, 400]
    Local $textOffset[4] = [0, -15, 35, 0]
@@ -328,3 +184,78 @@ Func GetBarracksTroopCounts(Const ByRef $bitmaps, ByRef $counts)
    Next
 EndFunc
 
+Func DequeueTroops()
+   Local $dequeueTries = 6
+   While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
+		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
+		  _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_CHECKED)
+
+	  DebugWrite("Dequeueing troops.")
+	  Local $xClick, $yClick
+	  RandomWeightedCoords($rTrainTroopsWindowDequeueButton, $xClick, $yClick)
+	  _ClickHold($xClick, $yClick, 4000)
+	  $dequeueTries-=1
+	  Sleep(500)
+   WEnd
+EndFunc
+
+Func QueueTroopsEvenly(Const $troop, Const ByRef $troopSlots, Const $troopsToQueue)
+
+   If $troopSlots[$eTroopWallBreaker][0] <> -1 Then
+	  Local $button[4] = [$troopSlots[$troop][0], $troopSlots[$troop][1], $troopSlots[$troop][2], $troopSlots[$troop][3]]
+
+	  If $troopsToQueue/4 < 1 Then
+		 DebugWrite("Queueing 1 " & $gTroopNames[$troop])
+		 RandomWeightedClick($button)
+		 Sleep(500)
+	  Else
+		 DebugWrite("Queueing " & Int($troopsToQueue/4) & " " & $gTroopNames[$troop])
+		 For $i = 1 To Int($troopsToQueue/4)
+			RandomWeightedClick($button)
+			Sleep(500)
+		 Next
+	  EndIf
+   EndIf
+EndFunc
+
+
+Func FillBarracksWithTroops(Const $troop, Const ByRef $troopSlots)
+   Local $troopsToFill = 999
+
+   ; Get number of troops already queued in this barracks
+   Local $queueStatus = ScrapeFuzzyText($gLargeCharacterMaps, $rBarracksWindowTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+   ;DebugWrite("Barracks debug " & $barracksCount & " queue status: " & $queueStatus)
+
+   If (StringInStr($queueStatus, "Train")=1) Then
+	  $queueStatus = StringMid($queueStatus, 6)
+
+	  Local $queueStatSplit = StringSplit($queueStatus, "/")
+	  If $queueStatSplit[0] = 2 Then
+		 $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
+
+		 ; How long to click and hold?
+		 Local $fillTime
+		 If $troopsToFill>60 Then
+			$fillTime = 3500 + Random(-250, 250, 1)
+		 ElseIf $troopsToFill>25 Then
+			$fillTime = 2700 + Random(-250, 250, 1)
+		 ElseIf $troopsToFill>10 Then
+			$fillTime = 2300 + Random(-250, 250, 1)
+		 Else
+			$fillTime = 1800 + Random(-250, 250, 1)
+		 EndIf
+
+		 ; Click and hold to fill up queue
+		 If $troopsToFill>0 Then
+			DebugWrite("FillBarracksWithTroops(), Adding " & $troopsToFill & " " & $gTroopNames[$troop])
+			Local $button[4] = [$troopSlots[$troop][0], $troopSlots[$troop][1], $troopSlots[$troop][2], $troopSlots[$troop][3]]
+			Local $xClick, $yClick
+			RandomWeightedCoords($button, $xClick, $yClick)
+			_ClickHold($xClick, $yClick, $fillTime)
+			Sleep(500)
+		 EndIf
+	  EndIf
+   EndIf
+
+   Return $troopsToFill
+EndFunc

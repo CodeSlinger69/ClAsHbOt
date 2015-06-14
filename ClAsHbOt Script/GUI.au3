@@ -137,7 +137,7 @@ Func InitGUI()
    $y += 17
    $GUI_AutoRaidStrategyCombo = GUICtrlCreateCombo("", $x+5, $y, 116, 17, $CBS_DROPDOWNLIST)
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "Barcher")
-   _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "TBD1")
+   _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "GiBarch")
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "TBD2")
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "TBD3")
    _GUICtrlComboBox_SetCurSel($GUI_AutoRaidStrategyCombo, IniRead($gIniFile, "General", "Raid Strategy", 0))

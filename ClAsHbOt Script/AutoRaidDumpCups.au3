@@ -56,7 +56,7 @@ Func DoCupsDump()
 						   $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    RandomWeightedClick($barbButton)
    Sleep(500)
-   DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployOneTroop, $direction)
+   DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployOneTroop, $direction, 20)
    Sleep(500)
 
    ; Click End Battle button

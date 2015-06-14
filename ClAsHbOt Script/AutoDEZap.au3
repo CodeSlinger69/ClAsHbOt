@@ -43,8 +43,8 @@ Func AutoDEZap(Const $immediatelyEnd)
    ; Find DE storage
    GrabFrameToFile("DEStorageFrame.bmp", 235, 100, 789, 450)
    Local $bestMatch, $bestConfidence, $bestX, $bestY
-   ScanFrameForBestBMP("DEStorageFrame.bmp", $DarkStorageUsageBMPs, $gConfidenceDEStorage, $bestMatch, $bestConfidence, $bestX, $bestY)
-   DebugWrite("DE search: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
+   ScanFrameForBestBMP("DEStorageFrame.bmp", $DarkStorageBMPs, $gConfidenceDEStorage, $bestMatch, $bestConfidence, $bestX, $bestY)
+   ;DebugWrite("DE search: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
 
    ; If < $gConfidenceDEStorageZap confidence, then not good enough to spend spells
    If $bestMatch = -1 Or $bestConfidence < $gConfidenceDEStorage Then
@@ -61,7 +61,7 @@ Func AutoDEZap(Const $immediatelyEnd)
 	  Return False
    EndIf
 
-   DebugWrite("Zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available, conf: " & $bestConfidence)
+   DebugWrite("Zapping DE, " & $availableLightnings & " of " & $gMyMaxSpells & " lightning spells available, conf: " &  Round($bestConfidence*100, 2) & "%")
 
    ; Select lightning spell
    Local $lightningButton[8] = [$spellIndex[$eSpellLightning][0], $spellIndex[$eSpellLightning][1], $spellIndex[$eSpellLightning][2], _

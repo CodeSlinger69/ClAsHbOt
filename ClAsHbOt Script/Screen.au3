@@ -144,7 +144,7 @@ Func WhereAmI()
    If IsButtonPresent($rWindowVilliageWasAttackedOkayButton) Then Return $eScreenVilliageWasAttacked
 
    ; $eScreenArmyCampButtons
-   If IsButtonPresent($rArmyCampInfoButton) Then Return $eScreenArmyCampButtons
+   If IsButtonPresent($rArmyCampInfoButton1) Or IsButtonPresent($rArmyCampInfoButton2) Then Return $eScreenArmyCampButtons
 
    ; $eScreenArmyCampInfo
    If IsButtonPresent($rArmyCampInfoScreenCloseWindowButton) Then Return $eScreenArmyCampInfo

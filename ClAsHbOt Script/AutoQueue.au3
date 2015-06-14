@@ -1,19 +1,17 @@
 Func AutoQueueTroops()
+   DebugWrite("AutoQueueTroops()")
+
    If WhereAmI() <> $eScreenMain Then
+	  DebugWrite("AutoQueueTroops(): Not on main screen, resetting.")
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
 
-   DebugWrite("AutoQueueTroops()")
-
    ; Count how many troops are in the Army Camps
-   ; Only needed for now if we are queueing breakers
    Local $availableTroopCounts[$eTroopCount-2]
-   If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
-	  If OpenArmyCampWindow() = False Then
-		 DebugWrite("AutoQueueTroops(): Unable to locate Army Camp.")
-		 Return
-	  EndIf
+   If OpenArmyCampWindow() = False Then
+	  DebugWrite("AutoQueueTroops(): Unable to locate Army Camp.")
+	  Return
    EndIf
 
    GetArmyCampTroopCounts($availableTroopCounts)
@@ -23,13 +21,15 @@ Func AutoQueueTroops()
    ; Open barracks window
    OpenBarracksWindow()
 
-   ; See if we have a red stripe on the bottom of the train troops window, and move to next stage
-   Local $redStripe = IsColorPresent($rWindowBarracksFullColor)
-   If $redStripe Then DebugWrite("Barracks full.")
+   If WhereAmI() <> $eScreenTrainTroops Then
+	  DebugWrite("AutoQueueTroops(): Not on train troops screen, resetting.")
+	  ResetToCoCMainScreen()
+	  Return
+   EndIf
 
    ; Get spells window
    If FindSpellsQueueingWindow() = False Then
-	 DebugWrite(" Auto: Queue Troops failed - can't find Spells or Dark window.")
+	 DebugWrite("AutoQueueTroops(): Queue Troops failed - can't find Spells or Dark window.")
 	 ResetToCoCMainScreen()
 	 Return
    EndIf
@@ -38,16 +38,24 @@ Func AutoQueueTroops()
    QueueSpells()
 
    ; Fill
-   Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
-   Case 0
-	  FillBarracks(True, $availableTroopCounts)
-   Case 1
-	  ContinueCase
-   Case 2
-	  ContinueCase
-   Case 3
-	  ContinueCase
-   EndSwitch
+   Local $redStripe = False
+
+   If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED Then
+	  FillBarracksStrategy0(True, $availableTroopCounts, $redStripe)
+   Else
+	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
+	  Case 0
+		 FillBarracksStrategy0(True, $availableTroopCounts, $redStripe)
+	  Case 1
+		 FillBarracksStrategy1(True, $availableTroopCounts, $redStripe)
+	  Case 2
+		 ContinueCase
+	  Case 3
+		 ContinueCase
+	  EndSwitch
+   EndIf
+
+   If $redStripe Then DebugWrite("Barracks full.")
 
    ; Close barracks
    CloseBarracksWindow()
@@ -67,42 +75,65 @@ EndFunc
 Func AutoCheckIfTroopsReady()
    DebugWrite("AutoCheckIfTroopsReady()")
 
-   OpenBarracksWindow()
-
-   If WhereAmI() <> $eScreenTrainTroops Then
+   If WhereAmI() <> $eScreenMain Then
+	  DebugWrite("AutoCheckIfTroopsReady(): Not on main screen, resetting.")
 	  ResetToCoCMainScreen()
 	  Return
    EndIf
 
-   ; See if we have a red stripe on the bottom of the train troops window, which means we are full up
-   If IsColorPresent($rWindowBarracksFullColor) Then
-	  ;DebugWrite("Troop training is complete!")
-	  $gAutoStage = $eAutoFindMatch
-  	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
+   ; Count how many troops are in the Army Camps
+   Local $availableTroopCounts[$eTroopCount-2]
+   If OpenArmyCampWindow() = False Then
+	  DebugWrite("AutoCheckIfTroopsReady(): Unable to locate Army Camp.")
+	  Return
+   EndIf
 
+   GetArmyCampTroopCounts($availableTroopCounts)
+
+   CloseArmyCampWindow()
+
+   ; Open barracks window
+   OpenBarracksWindow()
+
+   If WhereAmI() <> $eScreenTrainTroops Then
+	  DebugWrite("AutoCheckIfTroopsReady(): Not on train troops screen, resetting.")
+	  ResetToCoCMainScreen()
+	  Return
+   EndIf
+
+   ; Top off the barracks queues
+   If FindSpellsQueueingWindow() = False Then
+	 DebugWrite("AutoCheckIfTroopsReady(): Queue Troops failed - can't find Spells or Dark window")
+	 ResetToCoCMainScreen()
+	 Return
+   EndIf
+
+   ; Queue spells?
+   QueueSpells()
+
+   ; Fill type
+   Local $redStripe = False
+
+   If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED Then
+	  FillBarracksStrategy0(False, $availableTroopCounts, $redStripe)
    Else
-	  ; Top off the barracks queues
-	  If FindSpellsQueueingWindow() = False Then
-		DebugWrite(" Auto: Queue Troops failed - can't find Spells or Dark window")
-		ResetToCoCMainScreen()
-		Return
-	  EndIf
-
-	  ; Queue spells?
-	  QueueSpells()
-
-	  ; Fill type
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
-		 Local $availableTroopCounts[$eTroopCount-2]
-		 FillBarracks(False, $availableTroopCounts)
+		 FillBarracksStrategy0(False, $availableTroopCounts, $redStripe)
 	  Case 1
-		 ContinueCase
+		 FillBarracksStrategy1(False, $availableTroopCounts, $redStripe)
 	  Case 2
 		 ContinueCase
 	  Case 3
 		 ContinueCase
 	  EndSwitch
+   EndIf
+
+   ; If there is a red stripe on the bottom of any of the train troops windows, then time to attack
+   If $redStripe Then
+	  ;DebugWrite("Troop training is complete!")
+	  $gAutoStage = $eAutoFindMatch
+  	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
    EndIf
 
    ; Close barracks

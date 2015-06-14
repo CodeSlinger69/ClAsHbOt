@@ -170,11 +170,13 @@ Func ParseRequestText(Const ByRef $text, Const ByRef $avail, ByRef $index)
 	  For $j = 1 To $searchTerms[0]
 		 If StringInStr($text, $searchTerms[$j]) Then
 			If $avail[$i][0]<>-1 Then
-			   DebugWrite("String match for: " & $gTroopNames[$i] & ", troop available")
+			   DebugWrite("String match for: " & $gTroopNames[$i] & ", troop available.")
 			   $index = $i
 			   ExitLoop 2
 			Else
-			   DebugWrite("String match for: " & $gTroopNames[$i] & ", troop NOT available")
+			   DebugWrite("String match for: " & $gTroopNames[$i] & ", troop NOT available, exiting.")
+			   ResetToCoCMainScreen()
+			   Return False
 			EndIf
 		 EndIf
 	  Next
@@ -193,7 +195,7 @@ Func ParseRequestText(Const ByRef $text, Const ByRef $avail, ByRef $index)
 	  Return False
    EndIf
 
-   DebugWrite("Filling request with " & $gTroopNames[$index])
+   DebugWrite("Filling request with " & $gTroopNames[$index] & ".")
 
    Return True
 EndFunc

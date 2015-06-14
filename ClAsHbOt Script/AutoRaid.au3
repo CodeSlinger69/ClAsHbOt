@@ -29,16 +29,18 @@ Func AutoRaid(ByRef $timer)
 	  Local $zappable
 	  Local $findMatchResults = AutoRaidFindMatch($zappable)
 
-	  ; Something went wrong, reset to start
-	  If $findMatchResults = False Then
+	  ; Reset if there was an error
+	  If $findMatchResults=False And $zappable=False Then
 		 DebugWrite("Auto: Error finding match, resetting.")
 		 ResetToCoCMainScreen()
 		 $gAutoStage = $eAutoQueueTraining
+		 Return
 	  EndIf
 
+	  ; Zap DE?
 	  If $zappable Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
-		 AutoDEZap(False)
+		 AutoDEZap($findMatchResults=False)
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
@@ -55,7 +57,10 @@ Func AutoRaid(ByRef $timer)
 			AutoRaidUpdateProgress()
 		 EndIf
 	  Case 1
-		 ContinueCase
+		 If AutoRaidExecuteRaidStrategy1() Then
+			$gAutoStage = $eAutoQueueTraining
+			AutoRaidUpdateProgress()
+		 EndIf
 	  Case 2
 		 ContinueCase
 	  Case 3
@@ -242,6 +247,7 @@ Func CheckForRaidableBase()
    Local $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    Local $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    Local $cups = 0
+   Local $townHall = -1
 
    If IsTextBoxPresent($rCupsTextBox1) Then
 	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox1, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
@@ -258,43 +264,55 @@ Func CheckForRaidableBase()
    Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
    Local $GUIIgnoreStorages = (_GUICtrlButton_GetCheck($GUI_AutoRaidIgnoreStorages) = $BST_CHECKED)
 
-   ; Get Town Hall level
-   Local $townHall = -1
-   Local $location, $top, $left
-   $townHall = GetTownHallLevel($location, $left, $top)
-   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-
-   If $townHall = -1 Or $townHall>$GUITownHall Then
-	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
-	  Return False
-   EndIf
-
    ; Adjust available loot to exclude storages
    Local $adjGold=$gold, $adjElix=$elix, $adjDark=$dark
-   If $GUIIgnoreStorages Then
-	  If $GUITownHall-$townHall>=2 Then
-		 DebugWrite("Raidable TownHall is 2 levels less than maximum TownHall, skipping storage detection.")
-	  Else
-		 AutoRaidAdjustLootForStorages($gold, $elix, $dark, $adjGold, $adjElix, $adjDark)
-	  EndIf
-   EndIf
+   If $GUIIgnoreStorages Then AutoRaidAdjustLootForStorages($gold, $elix, $dark, $adjGold, $adjElix, $adjDark)
 
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Do we have a gold/elix/dark/townhall/dead match?
-   If ($GUIIgnoreStorages = False And $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark) Or _
-	  ($GUIIgnoreStorages = True And $adjGold >= $GUIGold And $adjElix >= $GUIElix And $adjDark >= $GUIDark) Then
+   If $GUIIgnoreStorages Then
+	  ; Get Town Hall level
+	  Local $location, $top, $left
+	  $townHall = GetTownHallLevel($location, $left, $top)
+	  SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
-	  DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
-				 ($GUIIgnoreStorages ? " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" : "") )
-	  Return $eAutoExecute
+	  If $townHall = -1 Or $townHall>$GUITownHall Then
+		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
+					" (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" )
+		 Return False
+	  EndIf
+
+	  If $GUITownHall-$townHall>=1 Or ($adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark) Then
+		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
+					" (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" )
+		 Return $eAutoExecute
+	  Else
+		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
+					" (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" )
+		 Return False
+	  EndIf
 
    Else
-	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
-				 ($GUIIgnoreStorages ? " (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" : "") )
-	  Return False
+	  If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
+		 ; Get Town Hall level
+		 Local $location, $top, $left
+		 $townHall = GetTownHallLevel($location, $left, $top)
+		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
+		 If $townHall = -1 Or $townHall>$GUITownHall Then
+			DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+			Return False
+		 Else
+			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase)
+			Return $eAutoExecute
+		 EndIf
+	  Else
+		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+		 Return False
+	  EndIf
    EndIf
+
 EndFunc
 
 Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef $adjGold, ByRef $adjElix, ByRef $adjDark)
@@ -303,13 +321,13 @@ Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef 
    Local $usageAdj = 12.5
 
    ; Gold
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
 
    If $matchIndex = -1 Then
 	  $saveFrame = True
 	  DebugWrite("Could not find gold storage match.")
    Else
-	  Local $s = $GoldStorageUsageBMPs[$matchIndex]
+	  Local $s = $GoldStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
@@ -318,13 +336,13 @@ Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef 
    EndIf
 
    ; Elixir
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixirStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
 
    If $matchIndex = -1 Then
 	  $saveFrame = True
 	  DebugWrite("Could not find elixir storage match.")
    Else
-	  Local $s = $ElixirStorageUsageBMPs[$matchIndex]
+	  Local $s = $ElixStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
@@ -333,13 +351,13 @@ Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef 
    EndIf
 
    ; Dark Elixir
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageUsageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
 
    If $matchIndex = -1 Then
 	  $saveFrame = True
 	  DebugWrite("Could not find dark elixir storage match.")
    Else
-	  Local $s = $DarkStorageUsageBMPs[$matchIndex]
+	  Local $s = $DarkStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
@@ -364,8 +382,8 @@ Func AutoRaidUpdateProgress()
 	  " Cups:" & $gAutoRaidEndLoot[3] - $gAutoRaidBeginLoot[3] & @CRLF)
 EndFunc
 
-; howMany: $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
-Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const $dir)
+; howMany: $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
+Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
    DebugWrite("DeployTroopsToSides()")
    Local $xClick, $yClick
 
@@ -376,24 +394,31 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 	  Return
    EndIf
 
-   ; Do initial deployment
+   ; Firgure out how many of the available to deploy
    Local $troopsAvailable = GetAvailableTroops($troop, $index)
-   Local $troopsToDeploy = ($howMany=$eAutoRaidDeploySixtyPercent ? Int($troopsAvailable * 0.6) : $troopsAvailable)
+   Local $troopsToDeploy
+   If $howMany = $eAutoRaidDeploySixtyPercent Then
+	    $troopsToDeploy = Int($troopsAvailable * 0.6)
+   ElseIf $howMany = $eAutoRaidDeployFiftyPercent Then
+	    $troopsToDeploy = Int($troopsAvailable * 0.5)
+   Else
+	    $troopsToDeploy = $troopsAvailable
+	 EndIf
 
-   DebugWrite("Available: " & $troopsAvailable & ", deploying " & ($howMany=$eAutoRaidDeploySixtyPercent ? "60% " : "Remaining ") & _
-	  " =" & $troopsToDeploy)
+   DebugWrite("Available: " & $troopsAvailable & ", deploying " & $troopsToDeploy)
 
+   ; Deploy the troops
    Local $clickPoints1[$troopsToDeploy][2]
    ; Always deploy first set of troops left to right to avoid accidentally clicking the Next button
-   GetAutoRaidClickPoints(0, $dir, $troopsToDeploy, $clickPoints1)
+   GetAutoRaidClickPoints(0, $dir, $troopsToDeploy, $boxesPerSide, $clickPoints1)
 
    For $i = 0 To $troopsToDeploy-1
 	  _MouseClickFast($clickPoints1[$i][0], $clickPoints1[$i][1])
 	  Sleep($gDeployTroopClickDelay)
    Next
 
-   ; If we are only deploying 60% then we are done
-   If $howMany=$eAutoRaidDeploySixtyPercent Then Return
+   ; If we are only deploying 50% or 60% then we are done
+   If $howMany=$eAutoRaidDeploySixtyPercent Or $howMany=$eAutoRaidDeployFiftyPercent Then Return
 
    ; If we are deploying all, then check remaining and continue to deploy to make sure they all get out there
    $troopsAvailable = GetAvailableTroops($troop, $index)
@@ -402,7 +427,7 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 	  DebugWrite("Continuing: " & $troopsAvailable & " troops available.")
 
 	  Local $clickPoints2[$troopsAvailable][2]
-	  GetAutoRaidClickPoints(Random(0,1,1), $dir, $troopsAvailable, $clickPoints2)
+	  GetAutoRaidClickPoints(Random(0,1,1), $dir, $troopsAvailable, $boxesPerSide, $clickPoints2)
 
 	  For $i = 0 To $troopsAvailable-1
 		 _MouseClickFast($clickPoints2[$i][0], $clickPoints2[$i][1])
@@ -444,58 +469,9 @@ Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
    Next
 EndFunc
 
-Func LocateCollectors(ByRef $matchX, ByRef $matchY)
-   DebugWrite("LocateCollectors()")
-
-   ; Move screen up 65 pixels
-   MoveScreenUpToCenter(65)
-
-   ; Grab frame
-   GrabFrameToFile("AutoRaidCollectorFrame.bmp")
-
-   ; Find all the collectors that need clicking in the frame
-   Local $matchCount = 0
-
-   For $i = 0 To UBound($CollectorBMPs)-1
-	  ; Get matches for this resource
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", "AutoRaidCollectorFrame.bmp", _
-			   "str", "Images\"&$CollectorBMPs[$i], "int", 3, "int", 6, "double", $gConfidenceCollector)
-	  Local $split = StringSplit($res[0], "|", 2)
-	  ;DebugWrite("Num matches " & $CollectorBMPs[$i] & ": " & $split[0])
-
-	  For $j = 0 To $split[0]-1
-		 ; Loop through all captured points so far, if this one is within 8 pix of an existing one,
-		 ; then skip it.
-		 Local $alreadyFound = False
-		 For $k = 0 To $matchCount-1
-			If DistBetweenTwoPoints($split[$j*3+1], $split[$j*3+2], $matchX[$k], $matchY[$k]) < 8 Then
-			   $alreadyFound = True
-			   ;DebugWrite("    Already found " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
-			   ExitLoop
-			EndIf
-		 Next
-
-		 ; Otherwise add it to the growing list of matches, if it is $gConfidenceCollectorsSearch % or greater confidence
-		 If $alreadyFound = False Then
-			If $split[$j*3+3] > $gConfidenceCollector Then
-			   ;DebugWrite("    Adding " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
-			   $matchCount += 1
-			   ReDim $matchX[$matchCount]
-			   ReDim $matchY[$matchCount]
-			   $matchX[$matchCount-1] = $split[$j*3+1]
-			   $matchY[$matchCount-1] = $split[$j*3+2]
-			EndIf
-		 EndIf
-	  Next
-   Next
-
-   ; Move screen back down 65 pixels
-   MoveScreenDownToCenter(65)
-EndFunc
-
-Func GetRandomAutoRaidDeployBox(Const $direction, ByRef $box)
+Func GetRandomAutoRaidDeployBox(Const $direction, Const $boxesPerSide, ByRef $box)
    Local $side = Random()>0.5 ? "Left" : "Right"
-   Local $boxIndex = Random(0, 20, 1)
+   Local $boxIndex = Random(20-$boxesPerSide+1, 20, 1)
 
    If $direction = "Top" Then
 	  For $j = 0 To 3
@@ -509,11 +485,11 @@ Func GetRandomAutoRaidDeployBox(Const $direction, ByRef $box)
 
 EndFunc
 
-Func GetAutoRaidClickPoints(Const $order, Const $topBotDirection, Const $numberPoints, ByRef $points)
+Func GetAutoRaidClickPoints(Const $order, Const $topBotDirection, Const $numberPoints, Const $boxesPerSide, ByRef $points)
    ; First parameter is 0 = ascending, 1 = descending
    For $i = 0 To $numberPoints-1
 	  Local $deployBox[4]
-	  GetRandomAutoRaidDeployBox($topBotDirection, $deployBox)
+	  GetRandomAutoRaidDeployBox($topBotDirection, $boxesPerSide, $deployBox)
 	  RandomCoords($deployBox, $points[$i][0], $points[$i][1])
    Next
 
@@ -658,3 +634,99 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
    Return StringMid($t, 2)
 EndFunc
 
+Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const ByRef $kingButton, Const ByRef $queenButton, Const $direction, Const $boxIndex, _
+						   ByRef $kingDeployed, ByRef $queenDeployed)
+
+   ; Get box to deploy into
+   Local $deployBox[4]
+   If $direction = "Top" Then
+	  If Random() > 0.5 Then
+		 $deployBox[0] = $NWDeployBoxes[$boxIndex][0]
+		 $deployBox[1] = $NWDeployBoxes[$boxIndex][1]
+		 $deployBox[2] = $NWDeployBoxes[$boxIndex][0]+10
+		 $deployBox[3] = $NWDeployBoxes[$boxIndex][1]+10
+	  Else
+		 $deployBox[0] = $NEDeployBoxes[$boxIndex][2]-10
+		 $deployBox[1] = $NEDeployBoxes[$boxIndex][1]
+		 $deployBox[2] = $NEDeployBoxes[$boxIndex][2]
+		 $deployBox[3] = $NEDeployBoxes[$boxIndex][1]+10
+	  EndIf
+
+   ElseIf $direction = "Bot" Then
+	  If Random() > 0.5 Then
+		 $deployBox[0] = $SWDeployBoxes[$boxIndex][0]
+		 $deployBox[1] = $SWDeployBoxes[$boxIndex][3]-10
+		 $deployBox[2] = $SWDeployBoxes[$boxIndex][0]+10
+		 $deployBox[3] = $SWDeployBoxes[$boxIndex][3]
+	  Else
+		 $deployBox[0] = $SEDeployBoxes[$boxIndex][2]-10
+		 $deployBox[1] = $SEDeployBoxes[$boxIndex][3]-10
+		 $deployBox[2] = $SEDeployBoxes[$boxIndex][2]
+		 $deployBox[3] = $SEDeployBoxes[$boxIndex][3]
+	  EndIf
+   EndIf
+
+   ; Loop, while monitoring King / Queen health bars, power up king/queen when health falls below green (50%)
+   ; Also, deploy queen after specified amount of time after king deploys
+   Local $kingDeployTime, $queenDeployTime
+   Local $kingPoweredUp=False, $queenPoweredUp=False
+   Local $queenDeployDelay = 5000 ; 5 seconds after king
+   Local $royaltyDeploySide = Random()
+
+   While (($kingPoweredUp=False And $troopIndex[$eTroopKing][0]<>-1) Or _
+	      ($queenPoweredUp=False And $troopIndex[$eTroopQueen][0]<>-1)) And _
+		 TimerDiff($deployStart) < 180000 ; 3 minutes
+
+	  ; Get King's health color, and power up if needed
+	  If $kingDeployed And $kingPoweredUp = False Then
+		 Local $kingColor[4] = [$troopIndex[$eTroopKing][0]+6, $troopIndex[$eTroopKing][1]-8, $rRoyaltyHealthGreenColor[2], $rRoyaltyHealthGreenColor[3]]
+
+		 If IsColorPresent($kingColor) = False Then
+			;GrabFrameToFile("PreKingPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
+			DebugWrite("Powering up King")
+			RandomWeightedClick($kingButton)
+			$kingPoweredUp = True
+		 EndIf
+	  EndIf
+
+	  ; Get Queen's health color, and power up if needed
+	  If $queenDeployed And $queenPoweredUp = False Then
+		 Local $queenColor[4] = [$troopIndex[$eTroopQueen][0]+6, $troopIndex[$eTroopQueen][1]-8, $rRoyaltyHealthGreenColor[2], $rRoyaltyHealthGreenColor[3]]
+
+		 If IsColorPresent($queenColor) = False Then
+			;GrabFrameToFile("PreQueenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
+			DebugWrite("Powering up Queen")
+			RandomWeightedClick($queenButton)
+			$queenPoweredUp = True
+		 EndIf
+	  EndIf
+
+	  ; Deploy King if not already deployed
+	  If $kingButton[0]<>-1 And $kingDeployed=False Then
+		 DebugWrite("Deploying Barbarian King")
+		 RandomWeightedClick($kingButton)
+		 Sleep(500)
+
+		 RandomWeightedClick($deployBox)
+		 Sleep(500)
+
+		 $kingDeployTime = TimerInit()
+		 $kingDeployed = True
+	  EndIf
+
+	  ; Deploy Queen after specified amount of time after king deploy, if not already deployed
+	  If $queenButton[0]<>-1 And TimerDiff($kingDeployTime)>$queenDeployDelay And $queenDeployed=False Then
+		 DebugWrite("Deploying Archer Queen")
+		 RandomWeightedClick($queenButton)
+		 Sleep(500)
+
+		 RandomWeightedClick($deployBox)
+		 Sleep(500)
+
+		 $queenDeployTime = TimerInit()
+		 $queenDeployed = True
+	  EndIf
+
+	  Sleep(1000)
+   WEnd
+EndFunc

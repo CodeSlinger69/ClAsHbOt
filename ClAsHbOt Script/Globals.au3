@@ -42,7 +42,7 @@ Global Enum $eAutoNotStarted, $eAutoQueueTraining, $eAutoWaitForTrainingToComple
 Global $gAutoStage = $eAutoNotStarted
 
 ; Auto Raid troop deployment
-Global Enum $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
+Global Enum $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
 Global $gMyMaxSpells = 999
 
 ; TownHall location on screen

@@ -33,22 +33,26 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 	  Local $zappable
 	  Local $findMatchResults = AutoSnipeFindMatch($THLevel, $THLocation, $THLeft, $THTop, $zappable)
 
-	  ; Something went wrong, reset to start
-	  If $findMatchResults = False Then
+	  ; Reset if there was an error
+	  If $findMatchResults=False And $zappable=False Then
 		 DebugWrite("Auto: Error finding match, resetting.")
 		 ResetToCoCMainScreen()
 		 $gAutoStage = $eAutoQueueTraining
+		 Return
 	  EndIf
 
-	  If $gAutoSnipeNotifyOnly And $findMatchResults = $eAutoExecute Then
+	  ; Did we find a snipable base?
+	  If $findMatchResults = $eAutoExecute And $gAutoSnipeNotifyOnly Then
 		 For $i = 1 To 5
 			Beep(500, 200)
 			Sleep(100)
 		 Next
 
 		 MsgBox($MB_OK, "Snipable TH!", "")
+		 Return
 	  EndIf
 
+	  ; Zap DE?
 	  If $zappable And $findMatchResults = $eAutoExecute Then
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
 		 AutoDEZap(False)
