@@ -6,11 +6,10 @@ Global $DonateButtonBMPs[1] = ["DonateButton.bmp"]
 Global $CollectorBMPs[8] = [ _
   "GoldCollectorL12.bmp", "GoldCollectorL11.bmp", "GoldCollectorL10.bmp", "GoldCollectorL9.bmp", _
   "ElixCollectorL12.bmp", "ElixCollectorL11.bmp", "ElixCollectorL10.bmp", "ElixCollectorL9.bmp"]
-Global $GoldStorageBMPs[6] = [ _
-  "Storages\GoldStorageL11.00.bmp", "Storages\GoldStorageL11.25.bmp", _
-  "Storages\GoldStorageL11.50.bmp", "Storages\GoldStorageL11.75.bmp", _
-  "Storages\GoldStorageL11.90.bmp", _
-  "Storages\GoldStorageL10.50.bmp" ]
+Global $GoldStorageBMPs[8] = [ _
+  "Storages\GoldStorageL11.00.bmp", "Storages\GoldStorageL11.25.bmp", "Storages\GoldStorageL11.50.bmp", _
+  "Storages\GoldStorageL11.75.bmp", "Storages\GoldStorageL11.90.bmp", _
+  "Storages\GoldStorageL10.00.bmp", "Storages\GoldStorageL10.25.bmp", "Storages\GoldStorageL10.50.bmp" ]
 Global $ElixStorageBMPs[6] = [ _
   "Storages\ElixStorageL11.00.bmp", "Storages\ElixStorageL11.25.bmp", _
   "Storages\ElixStorageL11.50.bmp", "Storages\ElixStorageL11.75.bmp", _

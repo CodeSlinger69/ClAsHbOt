@@ -50,8 +50,6 @@ Global Enum $eTownHallMiddle, $eTownHallTop, $eTownHallBottom
 
 ; Auto Raid statistics
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
-Global $gAutoRaidEndLoot[4] ; gold, elix, dark, cups
-Global $gAutoRaidWinnings[4]  ; gold, elix, dark, cups
 
 ; Deploy locations
 Global $NWSafeDeployBox[4] = [280, 170, 300, 190]

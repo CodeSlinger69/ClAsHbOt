@@ -49,7 +49,7 @@ Func AutoQueueTroops()
 	  Case 1
 		 FillBarracksStrategy1(True, $availableTroopCounts, $redStripe)
 	  Case 2
-		 ContinueCase
+		 FillBarracksStrategy2(True, $availableTroopCounts, $redStripe)
 	  Case 3
 		 ContinueCase
 	  EndSwitch
@@ -123,7 +123,7 @@ Func AutoCheckIfTroopsReady()
 	  Case 1
 		 FillBarracksStrategy1(False, $availableTroopCounts, $redStripe)
 	  Case 2
-		 ContinueCase
+		 FillBarracksStrategy2(False, $availableTroopCounts, $redStripe)
 	  Case 3
 		 ContinueCase
 	  EndSwitch

@@ -138,7 +138,7 @@ Func InitGUI()
    $GUI_AutoRaidStrategyCombo = GUICtrlCreateCombo("", $x+5, $y, 116, 17, $CBS_DROPDOWNLIST)
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "Barcher")
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "GiBarch")
-   _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "TBD2")
+   _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "BAM")
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "TBD3")
    _GUICtrlComboBox_SetCurSel($GUI_AutoRaidStrategyCombo, IniRead($gIniFile, "General", "Raid Strategy", 0))
 
@@ -146,7 +146,7 @@ Func InitGUI()
    $x = 10
    $y = 276
    $w = 265
-   $GUI_Winnings = GUICtrlCreateLabel("Winnings: - / - / - / -", $x, $y, $w, 17)
+   $GUI_Winnings = GUICtrlCreateLabel("Net winnings: - / - / - / -", $x, $y, $w, 17)
 
    $y += 19
    $GUI_Results = GUICtrlCreateLabel("Last scan: - / - / - / - / - / -", $x, $y, $w, 17)
@@ -380,11 +380,7 @@ Func CaptureAutoBeginLoot()
 	  " Dark:" & $gAutoRaidBeginLoot[2] & _
 	  " Cups:" & $gAutoRaidBeginLoot[3])
 
-   For $i = 0 To 3
-	  $gAutoRaidWinnings[$i] = 0
-   Next
-
-   GUICtrlSetData($GUI_Winnings, "Winnings: 0 / 0 / 0 / 0")
+   GUICtrlSetData($GUI_Winnings, "Net winnings: 0 / 0 / 0 / 0")
 EndFunc
 
 Func CaptureAutoEndLoot()
@@ -407,3 +403,18 @@ Func SetAutoRaidResults(Const $gold, Const $elix, Const $dark, Const $cups, Cons
 				  $cups & " / " & $townHallIndiator & " / " & $deadBaseIndicator )
 EndFunc
 
+
+Func UpdateWinnings()
+   GetMyLootNumbers()
+
+   Local $changeGold = GUICtrlRead($GUI_MyGold) - $gAutoRaidBeginLoot[0]
+   Local $changeElix = GUICtrlRead($GUI_MyElix) - $gAutoRaidBeginLoot[1]
+   Local $changeDark = GUICtrlRead($GUI_MyDark) - $gAutoRaidBeginLoot[2]
+   Local $changeCups = GUICtrlRead($GUI_MyCups) - $gAutoRaidBeginLoot[3]
+
+   DebugWrite("Winnings total net change: " & _
+	  " Gold:" & $changeGold & " Elix:" & $changeElix & _
+	  " Dark:" & $changeDark & " Cups:" & $changeCups & @CRLF)
+
+   GUICtrlSetData($GUI_Winnings, "Net winnings: " & $changeGold & " / " & $changeElix & " / " & $changeDark & " / " & $changeCups)
+EndFunc

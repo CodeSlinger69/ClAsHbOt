@@ -64,11 +64,15 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
    ; Stage Execute Snipe
    Case $eAutoExecute
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Snipe")
-	  AutoSnipeExecuteSnipe($THLevel, $THLocation, $THLeft, $THTop)
-	  $gAutoStage = $eAutoQueueTraining
+	  If AutoSnipeExecuteSnipe($THLevel, $THLocation, $THLeft, $THTop) Then
+		 $gAutoStage = $eAutoQueueTraining
+		 UpdateWinnings()
+	  EndIf
+
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Snipe Complete")
 
    EndSwitch
+
 EndFunc
 
 Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, ByRef $zappable)
@@ -282,7 +286,7 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
    Local $th = GetTownHallLevel($loc, $L, $actualTHTop, 0, 0, 1023, 551)
    If $th = -1 Then
 	  DebugWrite("Unable to re-locate Town Hall after screen move.")
-	  Return
+	  Return False
    EndIf
 
    DebugWrite("Town Hall location after screen move: " & $THLeft & ", " & $actualTHTop)
@@ -481,6 +485,8 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 
    ; Wait for end battle
    WaitForBattleEnd(True, True)  ; always wait full 3 minutes, or until all troops are dead
+
+   Return True
 EndFunc
 
 Func GetAutoSnipeClickPoints(Const $order, Const ByRef $boxes, ByRef $points)

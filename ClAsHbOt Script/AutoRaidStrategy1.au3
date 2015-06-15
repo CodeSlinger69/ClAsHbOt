@@ -10,7 +10,7 @@
 
 Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $availableTroopCounts, ByRef $redStripe)
    DebugWrite("FillBarracksStrategy1(), " & ($initialFillFlag ? "initial fill." : "top up.") )
-   Local $giantsNeededInStrategy = 12
+   Local $giantsNeededInStrategy = 8
 
    ; How many breakers are needed?
    Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $availableTroopCounts[$eTroopWallBreaker]
@@ -197,12 +197,14 @@ Func AutoRaidExecuteRaidStrategy1()
 	  Next
    EndIf
 
+   Local $slotsToUseForArchBarb = 20
+
    ; Deploy 50% of barbs
    If $barbButton[0] <> -1 Then
 	  DebugWrite("Deploying 50% of Barbarians (" & Int($availableBarbs*0.5) & ")")
 	  RandomWeightedClick($barbButton)
 	  Sleep(500)
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, 10)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $slotsToUseForArchBarb)
    EndIf
 
    ; Deploy 50% of archers
@@ -210,7 +212,7 @@ Func AutoRaidExecuteRaidStrategy1()
 	  DebugWrite("Deploying 50% of Archers (" & Int($availableArchs*0.5) & ")")
 	  RandomWeightedClick($archButton)
 	  Sleep(500)
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, 10)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $slotsToUseForArchBarb)
    EndIf
 
    Sleep(3000)
@@ -220,7 +222,7 @@ Func AutoRaidExecuteRaidStrategy1()
 	  DebugWrite("Deploying remaining Barbarians")
 	  RandomWeightedClick($barbButton)
 	  Sleep(500)
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, 10)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $slotsToUseForArchBarb)
    EndIf
 
    ; Deploy rest of archers
@@ -228,7 +230,7 @@ Func AutoRaidExecuteRaidStrategy1()
 	  DebugWrite("Deploying remaining Archers")
 	  RandomWeightedClick($archButton)
 	  Sleep(500)
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, 10)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $slotsToUseForArchBarb)
    EndIf
 
    ; Deploy and monitor heroes
@@ -284,10 +286,11 @@ Func AutoRaidStrategy1GetDirection()
    ; Count em
    Local $storagesTopBot = 0
    For $i = 0 To UBound($allMatchY)-1
-	  $storagesTopBot += ($allMatchY[$i] < 250 ? -1 : 1)
+	  $storagesTopBot += ($allMatchY[$i]+16 < 235 ? -1 : 1)
    Next
 
    ; Attack from top or bottom?
+   ;DebugWrite("$storagesTopBot: " & $storagesTopBot)
    Return ($storagesTopBot<0 ? "Top" : "Bot")
 EndFunc
 

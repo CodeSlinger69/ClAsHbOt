@@ -52,17 +52,20 @@ Func AutoRaid(ByRef $timer)
 
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
-		 If AutoRaidExecuteRaidStrategy0() Then
+		 If AutoRaidExecuteRaidStrategy0() Then  ; BARCH
 			$gAutoStage = $eAutoQueueTraining
-			AutoRaidUpdateProgress()
+			UpdateWinnings()
 		 EndIf
 	  Case 1
-		 If AutoRaidExecuteRaidStrategy1() Then
+		 If AutoRaidExecuteRaidStrategy1() Then  ; GiBarch
 			$gAutoStage = $eAutoQueueTraining
-			AutoRaidUpdateProgress()
+			UpdateWinnings()
 		 EndIf
 	  Case 2
-		 ContinueCase
+		 If AutoRaidExecuteRaidStrategy2() Then  ; BAM
+			$gAutoStage = $eAutoQueueTraining
+			UpdateWinnings()
+		 EndIf
 	  Case 3
 		 GUICtrlSetData($GUI_AutoStatus, "Auto: Unimplemented strategy")
 		 MsgBox($MB_OK, "Unimplemented strategy", "This strategy has not yet been implemented")
@@ -266,30 +269,39 @@ Func CheckForRaidableBase()
 
    ; Adjust available loot to exclude storages
    Local $adjGold=$gold, $adjElix=$elix, $adjDark=$dark
-   If $GUIIgnoreStorages Then AutoRaidAdjustLootForStorages($gold, $elix, $dark, $adjGold, $adjElix, $adjDark)
+   If $GUIIgnoreStorages Then
+	  If $gold>=$GUIGold And $elix>=$GUIElix And $dark>=$GUIDark Then
+		 ; Get Town Hall level
+		 Local $location, $top, $left
+		 $townHall = GetTownHallLevel($location, $left, $top)
+		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+
+		 If $townHall = -1 Or $townHall>$GUITownHall Then
+			DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+			Return False
+		 EndIf
+
+		 ; Figure the adjustment
+		 AutoRaidAdjustLootForStorages($townHall, $gold, $elix, $adjGold, $adjElix)
+	  Else
+		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+		 Return False
+	  EndIf
+   EndIf
 
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Do we have a gold/elix/dark/townhall/dead match?
    If $GUIIgnoreStorages Then
-	  ; Get Town Hall level
-	  Local $location, $top, $left
-	  $townHall = GetTownHallLevel($location, $left, $top)
-	  SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
+	  If ($GUITownHall-$townHall>=1 And $gold>=$GUIGold And $elix>=$GUIElix And $dark>=$GUIDark) Or _
+		 ($adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark) Then
 
-	  If $townHall = -1 Or $townHall>$GUITownHall Then
-		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
-					" (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" )
-		 Return False
-	  EndIf
-
-	  If $GUITownHall-$townHall>=1 Or ($adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark) Then
 		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
-					" (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" )
+					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
 		 Return $eAutoExecute
 	  Else
 		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
-					" (Adj: " & $adjGold & " / " & $adjElix & " / " & $adjDark & ")" )
+					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
 		 Return False
 	  EndIf
 
@@ -315,10 +327,12 @@ Func CheckForRaidableBase()
 
 EndFunc
 
-Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef $adjGold, ByRef $adjElix, ByRef $adjDark)
+; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
+Func AutoRaidAdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
    GrabFrameToFile("StorageUsageFrame.bmp", 261, 100, 761, 450)
    Local $x, $y, $conf, $matchIndex, $saveFrame = False
-   Local $usageAdj = 12.5
+   Local $usageAdj = 10; 12.5
+   Local $myTHLevel = GUICtrlRead($GUI_TownHallEdit) + 1 ; assume that my TH is one higher than the max set in the GUI
 
    ; Gold
    ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
@@ -331,8 +345,9 @@ Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef 
 	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
-	  $adjGold = Int($gold * (1-($usage/100)))
 	  DebugWrite("Found gold storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
+	  $adjGold = $gold - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
+	  $adjGold = ($adjGold<0 ? 0 : $adjGold)
    EndIf
 
    ; Elixir
@@ -346,40 +361,52 @@ Func AutoRaidAdjustLootForStorages(Const $gold, Const $elix, Const $dark, ByRef 
 	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
-	  $adjElix = Int($elix * (1-($usage/100)))
 	  DebugWrite("Found elix storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
+	  $adjElix = $elix - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
+	  $adjElix = ($adjElix<0 ? 0 : $adjElix)
    EndIf
-
-   ; Dark Elixir
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-
-   If $matchIndex = -1 Then
-	  $saveFrame = True
-	  DebugWrite("Could not find dark elixir storage match.")
-   Else
-	  Local $s = $DarkStorageBMPs[$matchIndex]
-	  Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 2))
-	  Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
-	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
-	  $adjDark = Int($dark * (1-($usage/100)))
-	  DebugWrite("Found dark storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-   EndIf
-
 EndFunc
 
-Func AutoRaidUpdateProgress()
-   GetMyLootNumbers()
+Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level, Const $usage)
+   ; How much is in the storage, based on storage level and usage amount?
+   Local $inStorage
+   If $level=11 Then
+	  $inStorage = 8000000 * $usage
+   ElseIf $level=10 Then
+	  $inStorage = 4000000 * $usage
+   Else
+	  ; TODO: add logic here for other level storages once those images are captured
+	  $inStorage = 2000000
+   EndIf
+   DebugWrite("Estimated amount in storage = " & $inStorage)
 
-   $gAutoRaidEndLoot[0] = GUICtrlRead($GUI_MyGold)
-   $gAutoRaidEndLoot[1] = GUICtrlRead($GUI_MyElix)
-   $gAutoRaidEndLoot[2] = GUICtrlRead($GUI_MyDark)
-   $gAutoRaidEndLoot[3] = GUICtrlRead($GUI_MyCups)
+   ; How much of what is in the storage is available to loot, given my TH level?
+   Local $availabletoLoot
+   If $myTHLevel = 10 Then
+	  $availabletoLoot = $inStorage*0.1
+	  If $availabletoLoot > 400000 Then $availabletoLoot = 400000
+   ElseIf $myTHLevel = 9 Then
+	  $availabletoLoot = $inStorage*0.12
+	  If $availabletoLoot > 350000 Then $availabletoLoot = 350000
+   Else
+	  $availabletoLoot = $inStorage*0.14
+	  If $availabletoLoot > 300000 Then $availabletoLoot = 300000
+   EndIf
+   DebugWrite("Available to loot from storage = " & $availabletoLoot)
 
-   DebugWrite("AutoRaid Change: " & _
-	  " Gold:" & $gAutoRaidEndLoot[0] - $gAutoRaidBeginLoot[0] & _
-	  " Elix:" & $gAutoRaidEndLoot[1] - $gAutoRaidBeginLoot[1] & _
-	  " Dark:" & $gAutoRaidEndLoot[2] - $gAutoRaidBeginLoot[2] & _
-	  " Cups:" & $gAutoRaidEndLoot[3] - $gAutoRaidBeginLoot[3] & @CRLF)
+   ; Adjust available to loot amount by loot penalty
+   If $myTHLevel-$targetTHLevel = 1 Then
+	  $availabletoLoot*=0.90
+   ElseIf $myTHLevel-$targetTHLevel = 2 Then
+	  $availabletoLoot*=0.50
+   ElseIf $myTHLevel-$targetTHLevel = 3 Then
+	  $availabletoLoot*=0.25
+   Else
+	  $availabletoLoot*=0.05
+   EndIf
+   DebugWrite("Available to loot from storage after penalty = " & $availabletoLoot)
+
+   Return $availabletoLoot
 EndFunc
 
 ; howMany: $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
@@ -572,13 +599,6 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 
 	  DebugWrite("Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
 	  DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
-
-	  $gAutoRaidWinnings[0] += $goldWin+$goldBonus
-	  $gAutoRaidWinnings[1] += $elixWin+$elixBonus
-	  $gAutoRaidWinnings[2] += $darkWin+$darkBonus
-	  $gAutoRaidWinnings[3] += $cupsWin
-	  GUICtrlSetData($GUI_Winnings, "Winnings: " & $gAutoRaidWinnings[0] & " / " & $gAutoRaidWinnings[1] & " / " _
-					 & $gAutoRaidWinnings[2] & " / " & $gAutoRaidWinnings[3])
 
 	  ; Close battle end screen
 	  RandomWeightedClick($rBattleHasEndedScreenReturnHomeButton)
