@@ -382,9 +382,7 @@ Func CountQueuedTroops(ByRef $troopCounts)
 		 $troopCounts[$i] += $counts[$i]
 	  Next
 
-   Until IsColorPresent($rWindowBarracksSpellsColor1) = True Or _
-		 IsColorPresent($rWindowBarracksSpellsColor2) = True Or _
-		 $screenCount >= 6
+   Until OnTrainTroopsSpellWindow() Or $screenCount >= 6
 EndFunc
 
 

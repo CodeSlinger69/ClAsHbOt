@@ -37,9 +37,8 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $availableTroopCo
 	  $failCount-=1
 
 	  ; Make sure we are on a standard troops window
-	  If IsColorPresent($rWindowBarracksStandardColor1) = False And IsColorPresent($rWindowBarracksStandardColor2) = False Then
-		 Local $cPos = GetClientPos()
-		 DebugWrite("Not on Standard Troops Window: " & Hex(PixelGetColor($cPos[0]+$rWindowBarracksStandardColor1[0], $cPos[1]+$rWindowBarracksStandardColor1[1])))
+	  If OnTrainTroopsStandardWindow() = False Then
+		 DebugWrite("Not on Standard Troops window, exiting.")
 		 ExitLoop
 	  EndIf
 

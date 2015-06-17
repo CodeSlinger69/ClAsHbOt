@@ -33,17 +33,14 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $availableTroopCo
 
 	  ; Increment standard or dark counter
 	  Local $isStandardTroopsWindow
-	  If IsColorPresent($rWindowBarracksStandardColor1) Or IsColorPresent($rWindowBarracksStandardColor2) Then
+	  If OnTrainTroopsStandardWindow() Then
 		 $barracksCountStandard+=1
 		 $isStandardTroopsWindow = True
-	  ElseIf IsColorPresent($rWindowBarracksDarkColor1) Or IsColorPresent($rWindowBarracksDarkColor2) Then
+	  ElseIf OnTrainTroopsDarkWindow() Then
 		 $barracksCountDark+=1
 		 $isStandardTroopsWindow = False
 	  Else
-		 Local $cPos = GetClientPos()
-		 DebugWrite("Not on Standard Or Dark Troops Window: " & _
-			Hex(PixelGetColor($cPos[0]+$rWindowBarracksStandardColor1[0], $cPos[1]+$rWindowBarracksStandardColor1[1])) & " " & _
-			Hex(PixelGetColor($cPos[0]+$rWindowBarracksDarkColor1[0], $cPos[1]+$rWindowBarracksDarkColor1[1])) )
+		 DebugWrite("Not on Standard Or Dark Troops window, exiting.")
 		 ExitLoop
 	  EndIf
 

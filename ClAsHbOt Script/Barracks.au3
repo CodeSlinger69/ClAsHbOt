@@ -109,20 +109,79 @@ Func FindSpellsQueueingWindow()
    ; Click left arrow until the spells screen or a dark troops screen comes up
    Local $failCount = 6
 
-   While IsColorPresent($rWindowBarracksSpellsColor1) = False And _
-		 IsColorPresent($rWindowBarracksSpellsColor2) = False And _
-		 IsColorPresent($rWindowBarracksDarkColor1) = False And _
-		 IsColorPresent($rWindowBarracksDarkColor2) = False And _
-		 $failCount > 0
+   While $failCount>0
+	  If OnTrainTroopsDarkWindow() Then Return True
 
+	  If OnTrainTroopsSpellWindow() Then Return True
+
+	  ; Next window
 	  RandomWeightedClick($rBarracksWindowPrevButton)
 	  Sleep(500)
 	  $failCount -= 1
    WEnd
 
-   If $failCount <= 0 Then Return False
+   Return False
+EndFunc
 
-   Return True
+Func OnTrainTroopsStandardWindow()
+   ; Check colored slots
+   Local $troopSlots[$eTroopCount][4]
+   FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+
+   For $i=$eTroopBarbarian To $eTroopPekka
+	  If $troopSlots[$i][0] <> -1 Then Return True
+   Next
+
+   ; Check grayed slots
+   Local $troopSlots[$eTroopCount][4]
+   FindBarracksTroopSlots($gBarracksTroopSlotGrayedBMPs, $troopSlots)
+
+   For $i=$eTroopBarbarian To $eTroopPekka
+	  If $troopSlots[$i][0] <> -1 Then Return True
+   Next
+
+   Return False
+EndFunc
+
+Func OnTrainTroopsDarkWindow()
+   ; Check colored slots
+   Local $troopSlots[$eTroopCount][4]
+   FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+
+   For $i=$eTroopMinion To $eTroopLavaHound
+	  If $troopSlots[$i][0] <> -1 Then Return True
+   Next
+
+   ; Check grayed slots
+   Local $troopSlots[$eTroopCount][4]
+   FindBarracksTroopSlots($gBarracksTroopSlotGrayedBMPs, $troopSlots)
+
+   For $i=$eTroopMinion To $eTroopLavaHound
+	  If $troopSlots[$i][0] <> -1 Then Return True
+   Next
+
+   Return False
+EndFunc
+
+Func OnTrainTroopsSpellWindow()
+   ; Check colored slots
+   Local $spellSlots[$eSpellCount][4]
+   FindBarracksTroopSlots($gBarracksSpellSlotBMPs, $spellSlots)
+
+   For $i=$eSpellLightning To $eSpellFreeze
+	  If $spellSlots[$i][0] <> -1 Then Return True
+   Next
+
+   ; Check grayed slots
+   ; TODO: uncomment once bmps are captured
+   ;Local $spellSlots[$eSpellCount][4]
+   ;FindBarracksTroopSlots($gBarracksSpellSlotGrayedBMPs, $spellSlots)
+
+   ;For $i=$eSpellLightning To $eSpellFreeze
+	;  If $spellSlots[$i][0] <> -1 Then Return True
+   ;Next
+
+   Return False
 EndFunc
 
 Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)

@@ -142,9 +142,7 @@ EndFunc
 
 Func QueueSpells()
    ; If not spells queueing window, then return
-   If IsColorPresent($rWindowBarracksSpellsColor1) <> True And IsColorPresent($rWindowBarracksSpellsColor2) <> True Then
-	  Return
-   EndIf
+   If OnTrainTroopsSpellWindow() = False Then Return
 
    ; maybe queue spells?
    If _GUICtrlButton_GetCheck($GUI_AutoRaidZapDE) = $BST_CHECKED Then

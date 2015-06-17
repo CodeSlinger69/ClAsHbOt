@@ -284,6 +284,7 @@ Func CheckForRaidableBase()
 		 ; Figure the adjustment
 		 AutoRaidAdjustLootForStorages($townHall, $gold, $elix, $adjGold, $adjElix)
 	  Else
+		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
 		 Return False
 	  EndIf

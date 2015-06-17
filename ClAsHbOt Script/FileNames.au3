@@ -43,8 +43,20 @@ Global $gCampTroopSlotBMPs [$eTroopCount-2] = [ _
   "CampBalloon.bmp", "CampWizard.bmp", "CampHealer.bmp", "CampDragon.bmp", "CampPekka.bmp", _
   "CampMinion.bmp", "CampHogRider.bmp", "CampValkyrie.bmp", "CampGolem.bmp", "CampWitch.bmp", "CampLavaHound.bmp"]
 Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = [ _
-  "BarracksBarbarian.bmp", "BarracksArcher.bmp", "BarracksGiant.bmp", "BarracksGoblin.bmp", "BarracksWallBreaker.bmp", _
-  "BarracksBalloon.bmp", "BarracksWizard.bmp", "BarracksHealer.bmp", "BarracksDragon.bmp", "BarracksPekka.bmp", _
-  "BarracksMinion.bmp", "BarracksHogRider.bmp", "BarracksValkyrie.bmp", "BarracksGolem.bmp", "BarracksWitch.bmp", "BarracksLavaHound.bmp"]
+  "Barracks\BarracksBarbarian.bmp", "Barracks\BarracksArcher.bmp", "Barracks\BarracksGiant.bmp", "Barracks\BarracksGoblin.bmp", _
+  "Barracks\BarracksWallBreaker.bmp", "Barracks\BarracksBalloon.bmp", "Barracks\BarracksWizard.bmp", "Barracks\BarracksHealer.bmp", _
+  "Barracks\BarracksDragon.bmp", "Barracks\BarracksPekka.bmp", _
+  "Barracks\BarracksMinion.bmp", "Barracks\BarracksHogRider.bmp", "Barracks\BarracksValkyrie.bmp", "Barracks\BarracksGolem.bmp", _
+  "Barracks\BarracksWitch.bmp", "Barracks\BarracksLavaHound.bmp"]
+Global $gBarracksTroopSlotGrayedBMPs [$eTroopCount-2] = [ _
+  "Barracks\BarracksBarbarianGrayed.bmp", "Barracks\BarracksArcherGrayed.bmp", "Barracks\BarracksGiantGrayed.bmp", "Barracks\BarracksGoblinGrayed.bmp", _
+  "Barracks\BarracksWallBreakerGrayed.bmp", "Barracks\BarracksBalloonGrayed.bmp", "Barracks\BarracksWizardGrayed.bmp", "Barracks\BarracksHealerGrayed.bmp", _
+  "Barracks\BarracksDragonGrayed.bmp", "Barracks\BarracksPekkaGrayed.bmp", _
+  "Barracks\BarracksMinionGrayed.bmp", "Barracks\BarracksHogRiderGrayed.bmp", "Barracks\BarracksValkyrieGrayed.bmp", "Barracks\BarracksGolemGrayed.bmp", _
+  "Barracks\BarracksWitchGrayed.bmp", "Barracks\BarracksLavaHoundGrayed.bmp"]
 Global $gBarracksSpellSlotBMPs [$eSpellCount] = [ _
-  "BarracksLightningSpell.bmp", "BarracksHealSpell.bmp", "BarracksRageSpell.bmp", "BarracksJumpSpell.bmp", "SlotDummy.bmp"]
+  "Barracks\BarracksLightningSpell.bmp", "Barracks\BarracksHealSpell.bmp", "Barracks\BarracksRageSpell.bmp", "Barracks\BarracksJumpSpell.bmp", _
+  "Barracks\SlotDummy.bmp"]
+Global $gBarracksSpellSlotGrayedBMPs [$eSpellCount] = [ _
+  "Barracks\BarracksLightningSpellGrayed.bmp", "Barracks\BarracksHealSpellGrayed.bmp", "Barracks\BarracksRageSpellGrayed.bmp", "Barracks\BarracksJumpSpellGrayed.bmp", _
+  "Barracks\SlotDummy.bmp"]
