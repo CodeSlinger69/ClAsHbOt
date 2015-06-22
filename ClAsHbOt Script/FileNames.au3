@@ -26,14 +26,15 @@ Global $DarkStorageBMPs[16] = [ _
 Global $gArmyCampBMPs[3] = ["ArmyCampL6.bmp", "ArmyCampL7.bmp", "ArmyCampL8.bmp"]
 Global $gTrainTroopsButtonBMPs[1] = ["TrainTroopsButton.bmp"]
 
-; TODO: get bmps for freeze spell
 Global $gTroopSlotBMPs[$eTroopCount] = [ _
-  "SlotBarbarian.bmp", "SlotArcher.bmp", "SlotGiant.bmp", "SlotGoblin.bmp", "SlotWallBreaker.bmp", _
-  "SlotBalloon.bmp", "SlotWizard.bmp", "SlotHealer.bmp", "SlotDragon.bmp", "SlotPekka.bmp", _
-  "SlotMinion.bmp", "SlotHogRider.bmp", "SlotValkyrie.bmp", "SlotGolem.bmp", "SlotWitch.bmp", "SlotLavaHound.bmp", _
-  "SlotKing.bmp", "SlotQueen.bmp"]
+  "RaidSlots\SlotBarbarian.bmp", "RaidSlots\SlotArcher.bmp", "RaidSlots\SlotGiant.bmp", "RaidSlots\SlotGoblin.bmp", _
+  "RaidSlots\SlotWallBreaker.bmp", "RaidSlots\SlotBalloon.bmp", "RaidSlots\SlotWizard.bmp", "RaidSlots\SlotHealer.bmp", _
+  "RaidSlots\SlotDragon.bmp", "RaidSlots\SlotPekka.bmp", _
+  "RaidSlots\SlotMinion.bmp", "RaidSlots\SlotHogRider.bmp", "RaidSlots\SlotValkyrie.bmp", "RaidSlots\SlotGolem.bmp", _
+  "RaidSlots\SlotWitch.bmp", "RaidSlots\SlotLavaHound.bmp", "RaidSlots\SlotKing.bmp", "RaidSlots\SlotQueen.bmp"]
 Global $gSpellSlotBMPs[$eSpellCount] = [ _
-  "SlotLightningSpell.bmp", "SlotHealSpell.bmp", "SlotRageSpell.bmp", "SlotJumpSpell.bmp", "SlotDummy.bmp"]
+  "RaidSlots\SlotLightningSpell.bmp", "RaidSlots\SlotHealSpell.bmp", "RaidSlots\SlotRageSpell.bmp", _
+  "RaidSlots\SlotJumpSpell.bmp", "RaidSlots\SlotFreezeSpell.bmp"]
 Global $gDonateSlotBMPs[16] = [ _
   "DonateBarbarian.bmp", "DonateArcher.bmp", "DonateGiant.bmp", "DonateGoblin.bmp", "DonateWallBreaker.bmp", _
   "DonateBalloon.bmp", "DonateWizard.bmp", "DonateHealer.bmp", "DonateDragon.bmp", "DonatePekka.bmp", _
@@ -55,8 +56,8 @@ Global $gBarracksTroopSlotGrayedBMPs [$eTroopCount-2] = [ _
   "Barracks\BarracksMinionGrayed.bmp", "Barracks\BarracksHogRiderGrayed.bmp", "Barracks\BarracksValkyrieGrayed.bmp", "Barracks\BarracksGolemGrayed.bmp", _
   "Barracks\BarracksWitchGrayed.bmp", "Barracks\BarracksLavaHoundGrayed.bmp"]
 Global $gBarracksSpellSlotBMPs [$eSpellCount] = [ _
-  "Barracks\BarracksLightningSpell.bmp", "Barracks\BarracksHealSpell.bmp", "Barracks\BarracksRageSpell.bmp", "Barracks\BarracksJumpSpell.bmp", _
-  "Barracks\SlotDummy.bmp"]
+  "Barracks\BarracksLightningSpell.bmp", "Barracks\BarracksHealSpell.bmp", "Barracks\BarracksRageSpell.bmp", _
+  "Barracks\BarracksJumpSpell.bmp", "Barracks\BarracksFreezeSpell.bmp"]
 Global $gBarracksSpellSlotGrayedBMPs [$eSpellCount] = [ _
-  "Barracks\BarracksLightningSpellGrayed.bmp", "Barracks\BarracksHealSpellGrayed.bmp", "Barracks\BarracksRageSpellGrayed.bmp", "Barracks\BarracksJumpSpellGrayed.bmp", _
-  "Barracks\SlotDummy.bmp"]
+  "Barracks\BarracksLightningSpellGrayed.bmp", "Barracks\BarracksHealSpellGrayed.bmp", "Barracks\BarracksRageSpellGrayed.bmp", _
+  "Barracks\BarracksJumpSpellGrayed.bmp", "Barracks\BarracksFreezeSpellGrayed.bmp"]

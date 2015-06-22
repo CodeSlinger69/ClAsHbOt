@@ -173,13 +173,12 @@ Func OnTrainTroopsSpellWindow()
    Next
 
    ; Check grayed slots
-   ; TODO: uncomment once bmps are captured
-   ;Local $spellSlots[$eSpellCount][4]
-   ;FindBarracksTroopSlots($gBarracksSpellSlotGrayedBMPs, $spellSlots)
+   Local $spellSlots[$eSpellCount][4]
+   FindBarracksTroopSlots($gBarracksSpellSlotGrayedBMPs, $spellSlots)
 
-   ;For $i=$eSpellLightning To $eSpellFreeze
-	;  If $spellSlots[$i][0] <> -1 Then Return True
-   ;Next
+   For $i=$eSpellLightning To $eSpellFreeze
+	  If $spellSlots[$i][0] <> -1 Then Return True
+   Next
 
    Return False
 EndFunc

@@ -287,6 +287,7 @@ Func GUIFindMatchCheckBox()
 	  HotKeySet("{F10}") ; Auto Raid
 	  _GUICtrlButton_SetCheck($GUI_AutoSnipeCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoRaidCheckBox, $BST_UNCHECKED)
+	  $gPossibleKick = 0
    Else
 	  HotKeySet("{F9}", HotKeyPressed) ; Find Snipable TH
 	  HotKeySet("{F10}", HotKeyPressed) ; Auto Raid
@@ -306,6 +307,7 @@ Func GUIAutoSnipeCheckBox()
 	  HotKeySet("{F10}") ; Auto Raid
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoRaidCheckBox, $BST_UNCHECKED)
+	  $gPossibleKick = 0
    Else
 	  HotKeySet("{F8}", HotKeyPressed) ; Find Match
 	  HotKeySet("{F10}", HotKeyPressed) ; Auto Raid
@@ -337,6 +339,7 @@ Func GUIAutoRaidCheckBox()
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoSnipeCheckBox, $BST_UNCHECKED)
 	  ZoomOut(True)
+	  $gPossibleKick = 0
    Else
 	  HotKeySet("{F8}", HotKeyPressed) ; Find Match
 	  HotKeySet("{F9}", HotKeyPressed) ; Find Snipable TH

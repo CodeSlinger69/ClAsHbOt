@@ -207,6 +207,11 @@ Func MainApplicationLoop()
 		 $gPossibleKick = 0
 	  EndIf
 
+	  If $gPossibleKick >= 2 Then
+		 Local $ms = 60000*5 - TimerDiff($gLastPossibleKickTime)
+		 GUICtrlSetData($GUI_AutoStatus, "Auto: Possible kick, waiting " & millisecondToMMSS($ms))
+	  EndIf
+
    WEnd
 EndFunc
 
