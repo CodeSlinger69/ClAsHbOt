@@ -1,12 +1,13 @@
 Welcome to my automatic farming bot for Clash of Clans.
 
-Download: https://github.com/CodeSlinger69/ClAsHbOt/releases/download/20150528/ClAsHbOt.2015-05-28.7z
+Download: https://github.com/CodeSlinger69/ClAsHbOt/releases/download/20150623/ClAsHbOt.2015-06-23.7z
 
 Key features:
 - Auto farming, including auto Dark Elixir zapping
 - Option to only farm dead bases
+- Option to only raid collectors (Ignore Storages)
 - Auto donate to clanmates
-- Auto trophy push 
+- Auto trophy push
 - Anti-detection
 - Maintain trophy range
 

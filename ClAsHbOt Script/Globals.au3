@@ -1,4 +1,4 @@
-Global $gVersion = "20150528"
+Global $gVersion = "20150623"
 
 ; For detecting rest period
 Global $gPossibleKick = 0
