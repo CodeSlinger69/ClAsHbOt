@@ -1,7 +1,7 @@
 Func ReadSettings()
    ; Debug
-   Global $gScraperDebug = _Boolean(IniRead($gIniFile, "Debug", "Scraper Debug", False))
-   Global $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
+   $gScraperDebug = _Boolean(IniRead($gIniFile, "Debug", "Scraper Debug", False))
+   $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
 
    ; Mouse
    ; Clicking method; use "MouseClick" for old way, or "ControlClick" for new way
