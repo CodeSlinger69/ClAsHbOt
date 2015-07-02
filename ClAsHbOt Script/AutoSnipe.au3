@@ -14,7 +14,7 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 
 	  ResetToCoCMainScreen()
 
-	  AutoQueueTroops()
+	  AutoQueueTroops(True)
 	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
@@ -22,7 +22,7 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 ResetToCoCMainScreen()
-		 AutoCheckIfTroopsReady()
+		 AutoQueueTroops(False)
 		 $timer = TimerInit()
 	  EndIf
 
@@ -30,11 +30,10 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
    Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Snipable TH")
 
-	  Local $zappable
-	  Local $findMatchResults = AutoSnipeFindMatch($THLevel, $THLocation, $THLeft, $THTop, $zappable)
+	  Local $findMatchResults = AutoSnipeFindMatch($THLevel, $THLocation, $THLeft, $THTop)
 
 	  ; Reset if there was an error
-	  If $findMatchResults=False And $zappable=False Then
+	  If $findMatchResults=False Then
 		 DebugWrite("Auto: Error finding match, resetting.")
 		 ResetToCoCMainScreen()
 		 $gAutoStage = $eAutoQueueTraining
@@ -50,13 +49,6 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 
 		 MsgBox($MB_OK, "Snipable TH!", "")
 		 Return
-	  EndIf
-
-	  ; Zap DE?
-	  If $zappable And $findMatchResults = $eAutoExecute Then
-		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
-		 AutoDEZap(False)
-		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
 	  EndIf
 
 	  If $findMatchResults = $eAutoExecute Then $gAutoStage = $eAutoExecute
@@ -75,7 +67,7 @@ Func AutoSnipe(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, B
 
 EndFunc
 
-Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, ByRef $zappable)
+Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
    DebugWrite("AutoSnipeFindMatch()")
 
    ; Make sure we are on the main screen
@@ -161,7 +153,6 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top, 
 		 DebugWrite("Not dead base, skipping.")
 
 	  Else
-		 $zappable = CheckZappableBase()
 		 $snipable = CheckForSnipableTH($level, $location, $left, $top)
 
 	  EndIf

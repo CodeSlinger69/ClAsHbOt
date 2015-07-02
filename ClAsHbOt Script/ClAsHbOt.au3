@@ -25,15 +25,13 @@ Opt("GUIOnEventMode", 1)
 #include <Scraper.au3>
 #include <FileNames.au3>
 #include <TownHall.au3>
-#include <Barracks.au3>
-#include <ArmyCamp.au3>
+#include <ArmyManager.au3>
 #include <KeepOnline.au3>
 #include <CollectLoot.au3>
 #include <AutoSnipe.au3>
 #include <AutoRaid.au3>
 #include <AutoQueue.au3>
 #include <AutoRaidDumpCups.au3>
-#include <AutoDEZap.au3>
 #include <AutoRaidStrategy0.au3>
 #include <AutoRaidStrategy1.au3>
 #include <AutoRaidStrategy2.au3>
@@ -148,8 +146,7 @@ Func MainApplicationLoop()
 		 ZoomOut(True)
 
 		 If WhereAmI()=$eScreenMain Then
-			Local $zappable
-			If AutoRaidFindMatch($zappable) = True Then
+			If AutoRaidFindMatch() = True Then
 			   _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 			   _GUICtrlButton_Enable($GUI_AutoSnipeCheckBox, True)
 			   _GUICtrlButton_Enable($GUI_AutoRaidCheckBox, True)
@@ -279,7 +276,7 @@ Func GetMyLootNumbers()
 
    ; My cups can only be scraped from the main screen
    If WhereAmI() = $eScreenMain Then
-	  Local $MyCups = Number(ScrapeFuzzyText($gLargeCharacterMaps, $rMyCupsTextBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $MyCups = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyCupsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
 	  GUICtrlSetData($GUI_MyCups, $MyCups)
    EndIf
 EndFunc

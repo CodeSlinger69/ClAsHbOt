@@ -24,14 +24,6 @@ Func ResetToCoCMainScreen()
    Case $eScreenUnknown
 	  Return
 
-   ; Train troops window - close it
-   Case $eScreenTrainTroops
-	  RandomWeightedClick($rBarracksWindowCloseButton)
-
-   ; Train troops info window - close it
-   Case $eScreenTrainTroopsInfo
-	  RandomWeightedClick($rBarracksWindowCloseButton)
-
    ; Android Home Screen - start CoC
    Case $eScreenAndroidHome
 	  DebugWrite("On Android Home Screen - Starting Clash of Clans.")
@@ -73,17 +65,13 @@ Func ResetToCoCMainScreen()
    Case $eScreenVilliageWasAttacked
 	  RandomWeightedClick($rWindowVilliageWasAttackedOkayButton)
 
+   ; Army Manager window
+   Case $eWindowArmyManager
+	  RandomWeightedClick($rArmyManagerWindowCloseButton)
+
    ; Shield Is Active screen
    Case $eScreenShieldIsActive
 	  RandomWeightedClick($rShieldIsActivePopupButton)
-
-   ; Army camp buttons - click on safe spot
-   Case $eScreenArmyCampButtons
-	  RandomWeightedClick($rSafeAreaButton)
-
-   ; Army Camp info screen - close it
-   Case $eScreenArmyCampInfo
-	  RandomWeightedClick($rArmyCampInfoScreenCloseWindowButton)
 
    EndSwitch
 
@@ -106,12 +94,6 @@ Func WhereAmI()
    If $bestMatch <> -1 Then
 	  Return $eScreenAndroidHome
    EndIf
-
-   ; Train troops window is open
-   If IsButtonPresent($rBarracksWindowNextButton) Then Return $eScreenTrainTroops
-
-   ; Train troops info window is open
-   If IsColorPresent($rWindowBarracksInfoColor) Then Return $eScreenTrainTroopsInfo
 
    ; $ScreenMain
    If IsColorPresent($rScreenMainColor) Then Return $eScreenMain
@@ -143,11 +125,8 @@ Func WhereAmI()
    ; $WindowVilliageWasAttacked
    If IsButtonPresent($rWindowVilliageWasAttackedOkayButton) Then Return $eScreenVilliageWasAttacked
 
-   ; $eScreenArmyCampButtons
-   If IsButtonPresent($rArmyCampInfoButton1) Or IsButtonPresent($rArmyCampInfoButton2) Then Return $eScreenArmyCampButtons
-
-   ; $eScreenArmyCampInfo
-   If IsButtonPresent($rArmyCampInfoScreenCloseWindowButton) Then Return $eScreenArmyCampInfo
+   ; $eWindowArmyManager
+   If IsButtonPresent($rArmyManagerWindowCloseButton) Then Return $eWindowArmyManager
 
    ; $Unknown
    #cs

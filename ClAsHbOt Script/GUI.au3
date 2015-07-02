@@ -9,7 +9,7 @@
 
 ; GUI Globals
 Global $GUI, $GUIImage, $GUIGraphic
-Global $GUI_Width=285, $GUI_Height=444
+Global $GUI_Width=285, $GUI_Height=425
 Global $GUIImages[12] = [ "troop-archer.png", "troop-balloon.png", "troop-barbarian.png", _
    "troop-dragon.png", "troop-giant.png", "troop-goblin.png", "troop-healer.png", _
    "troop-pekka.png", "troop-wallbreaker.png", "troop-wizard.png" , "troop-bk.png", "troop-aq.png"]
@@ -17,8 +17,7 @@ Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheck
 	  $GUI_FindMatchCheckBox, $GUI_AutoSnipeCheckBox, $GUI_AutoRaidCheckBox
 Global $GUI_CloseButton
 Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_AutoRaidUseBreakers, $GUI_AutoRaidBreakerCountEdit, _
-	  $GUI_AutoRaidZapDE, $GUI_AutoRaidZapDEMin, $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidIgnoreStorages, _
-	  $GUI_AutoRaidDumpCupsThreshold, $GUI_AutoRaidStrategyCombo
+	  $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidIgnoreStorages, $GUI_AutoRaidDumpCupsThreshold, $GUI_AutoRaidStrategyCombo
 Global $GUI_MyGold, $GUI_MyElix, $GUI_MyDark, $GUI_MyGems, $GUI_MyCups
 Global $GUI_Winnings, $GUI_Results, $GUI_AutoStatus
 
@@ -105,18 +104,13 @@ Func InitGUI()
 
    ; Right side, auto raid options group
    $y += 29
-   $h=157
+   $h=138
    GUICtrlCreateGroup("Auto Raid/Snipe", $x, $y, $w, $h)
 
    $y += 14
    $GUI_AutoRaidUseBreakers = GUICtrlCreateCheckbox("Use Breakers", $x+5, $y, 80, 25)
    _GUICtrlButton_SetCheck($GUI_AutoRaidUseBreakers, IniRead($gIniFile, "General", "Use Breakers", $BST_UNCHECKED))
    $GUI_AutoRaidBreakerCountEdit = GUICtrlCreateEdit(IniRead($gIniFile, "General", "Breaker Count", 4), $x+93, $y+4, 26, 17, $ES_NUMBER)
-
-   $y += 19
-   $GUI_AutoRaidZapDE = GUICtrlCreateCheckbox("Zap DE >=", $x+5, $y, 70, 25)
-   _GUICtrlButton_SetCheck($GUI_AutoRaidZapDE, IniRead($gIniFile, "General", "Zap DE", $BST_UNCHECKED))
-   $GUI_AutoRaidZapDEMin = GUICtrlCreateEdit(IniRead($gIniFile, "General", "Zap DE Min", 1200), $x+83, $y+4, 36, 17, $ES_NUMBER)
 
    $y += 19
    $GUI_AutoRaidDumpCups = GUICtrlCreateCheckbox("Dump Cups>", $x+5, $y, 80, 25)
@@ -144,7 +138,7 @@ Func InitGUI()
 
    ; Bottom
    $x = 10
-   $y = 276
+   $y = 257
    $w = 265
    $GUI_Winnings = GUICtrlCreateLabel("Net winnings: - / - / - / -", $x, $y, $w, 17)
 

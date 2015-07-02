@@ -23,8 +23,7 @@ EndFunc
 
 Func DoCupsDump()
    ; Get first available match
-   Local $zappable
-   AutoRaidFindMatch($zappable, True)
+   AutoRaidFindMatch(True)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][4]

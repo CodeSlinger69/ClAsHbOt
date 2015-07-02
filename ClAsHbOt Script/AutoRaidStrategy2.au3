@@ -8,7 +8,7 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $availableTroopCounts, ByRef $redStripe)
+Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $availableTroopCounts, ByRef $armyCampsFull)
    DebugWrite("FillBarracksStrategy2(), " & ($initialFillFlag ? "initial fill." : "top up.") )
 
    ; How many breakers are needed?
@@ -19,43 +19,37 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $availableTroopCo
 	  $breakersToQueue = 0
    EndIf
 
-   ; Loop through barracks and queue troops, until we get to a dark or spells screen, or we've done 4
-   ; This function assumes that we are already on a spells window, or the last dark troops window (i.e. the starting point)
-   Local $barracksCountStandard=0, $barracksCountDark=0
-   Local $failCount = 8
+   ; Loop through each standard and dark barracks window and queue troops
+   Local $barracksCount = 1
 
-   While $barracksCountStandard <= 6 And $barracksCountDark<=2 And $failCount>0
+   While $barracksCount <= 6
 
-	  ; Click right arrow to get the next troops window
-	  RandomWeightedClick($rBarracksWindowNextButton)
-	  Sleep(400)
-	  $failCount-=1
-
-	  ; Increment standard or dark counter
-	  Local $isStandardTroopsWindow
-	  If OnTrainTroopsStandardWindow() Then
-		 $barracksCountStandard+=1
-		 $isStandardTroopsWindow = True
-	  ElseIf OnTrainTroopsDarkWindow() Then
-		 $barracksCountDark+=1
-		 $isStandardTroopsWindow = False
-	  Else
-		 DebugWrite("Not on Standard Or Dark Troops window, exiting.")
-		 ExitLoop
+	  ; Click proper tab on Army Manager Window
+	  If $barracksCount=1 Then
+		 RandomWeightedClick($rArmyManagerWindowStandard1Button)
+	  ElseIf $barracksCount=2 Then
+		 RandomWeightedClick($rArmyManagerWindowStandard2Button)
+	  ElseIf $barracksCount=3 Then
+		 RandomWeightedClick($rArmyManagerWindowStandard3Button)
+	  ElseIf $barracksCount=4 Then
+		 RandomWeightedClick($rArmyManagerWindowStandard4Button)
+	  ElseIf $barracksCount=5 Then
+		 RandomWeightedClick($rArmyManagerWindowDark1Button)
+	  Else ; $barracksCount=6
+		 RandomWeightedClick($rArmyManagerWindowDark2Button)
 	  EndIf
 
-	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _
-		 _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_UNCHECKED Then Return
+	  Sleep(200)
 
 	  ; See if we are full up
-	  If IsColorPresent($rWindowBarracksFullColor) Then $redStripe = True
+	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$eTroopCount][4]
 	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
-	  ; Specified breakers in each barracks on initial fill
-	  If $initialFillFlag And $breakersToQueue>0 Then
+	  ; Specified breakers in standard barracks on initial fill
+	  If $initialFillFlag And $breakersToQueue>0 And $barracksCount<=4 Then
 		 ; Dequeue troops
 		 DequeueTroops()
 		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
@@ -68,12 +62,10 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $availableTroopCo
 	  Local $fillTries=1
 	  Local $troopsToFill
 	  Do
-		 If $isStandardTroopsWindow Then
-			If $barracksCountStandard=1 Or $barracksCountStandard=3 Then
-			   $troopsToFill = FillBarracksWithTroops($eTroopArcher, $troopSlots)
-			Else
-			   $troopsToFill = FillBarracksWithTroops($eTroopBarbarian, $troopSlots)
-			EndIf
+		 If $barracksCount=1 Or $barracksCount=3 Then
+			$troopsToFill = FillBarracksWithTroops($eTroopArcher, $troopSlots)
+		 ElseIf $barracksCount=2 Or $barracksCount=4 Then
+			$troopsToFill = FillBarracksWithTroops($eTroopBarbarian, $troopSlots)
 		 Else
 			$troopsToFill = FillBarracksWithTroops($eTroopMinion, $troopSlots)
 		 EndIf
@@ -82,6 +74,7 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $availableTroopCo
 	  Until $troopsToFill=0 Or $fillTries>=6 Or _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_UNCHECKED)
 
+	  $barracksCount+=1
    WEnd
 EndFunc
 
@@ -128,60 +121,46 @@ Func AutoRaidExecuteRaidStrategy2()
    Local $deployStart = TimerInit()
 
    ; Deploy 60% of barbs
-   If $barbButton[0] <> -1 Then
+   If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying 60% of Barbarians (" & Int($availableBarbs*0.6) & ")")
-	  RandomWeightedClick($barbButton)
-	  Sleep(500)
 	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, 20)
    EndIf
 
    ; Deploy 60% of archers
-   If $archButton[0] <> -1 Then
+   If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying 60% of Archers (" & Int($availableArchs*0.6) & ")")
-	  RandomWeightedClick($archButton)
-	  Sleep(500)
 	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, 20)
    EndIf
 
    ; Deploy breakers
-   If $breakerButton[0] <> -1 And _
-	  _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
-
+   If $troopIndex[$eTroopWallBreaker][0] <> -1 And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Deploying Breakers")
-	  RandomWeightedClick($breakerButton)
-	  Sleep(500)
 	  DeployTroopsToSafeBoxes($eTroopWallBreaker, $troopIndex, $direction)
    EndIf
 
    ; Deploy rest of barbs
-   If $barbButton[0] <> -1 Then
+   If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying remaining Barbarians")
-	  RandomWeightedClick($barbButton)
-	  Sleep(500)
 	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
    EndIf
 
    ; Deploy rest of archers
-   If $archButton[0] <> -1 Then
+   If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying remaining Archers")
-	  RandomWeightedClick($archButton)
-	  Sleep(500)
 	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
    EndIf
 
    Sleep(5000)
 
    ; Deploy minions
-   If $minionButton[0] <> -1 Then
+   If $troopIndex[$eTroopMinion][0] <> -1 Then
 	  DebugWrite("Deploying Minions")
-	  RandomWeightedClick($minionButton)
-	  Sleep(500)
 	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
    EndIf
 
    ; Deploy and monitor heroes
    Local $kingDeployed = False, $queenDeployed = False
-   DeployAndMonitorHeroes($troopIndex, $deployStart, $kingButton, $queenButton, $direction, 10, $kingDeployed, $queenDeployed)
+   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed)
 
    ; Wait for the end
    WaitForBattleEnd($kingDeployed, $queenDeployed)

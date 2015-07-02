@@ -99,10 +99,13 @@ EndFunc
 
 Func OpenDonateTroopsWindow(Const ByRef $button)
    Local $topLeftDonateWindow[2] = [$button[0]+67, $button[1]-109]
+   ;DebugWrite("$topLeftDonateWindow: " & $topLeftDonateWindow[0] & ", " & $topLeftDonateWindow[1])
+
    Local $colorRegion[4] = [$topLeftDonateWindow[0]+$rWindowDonateTroopsColor[0], _
 							$topLeftDonateWindow[1]+$rWindowDonateTroopsColor[1], _
 							$rWindowDonateTroopsColor[2], _
 							$rWindowDonateTroopsColor[3]]
+   ;DebugWrite("$colorRegion: " & $colorRegion[0] & ", " & $colorRegion[1] & ", " & Hex($colorRegion[2]) & ", " & $colorRegion[3])
 
    RandomWeightedClick($button)
 
@@ -361,6 +364,7 @@ Func QueueDonatableTroops()
 
 EndFunc
 
+#cs
 Func CountQueuedTroops(ByRef $troopCounts)
    DebugWrite("CountQueuedTroops()")
 
@@ -385,4 +389,4 @@ Func CountQueuedTroops(ByRef $troopCounts)
    Until OnTrainTroopsSpellWindow() Or $screenCount >= 6
 EndFunc
 
-
+#ce

@@ -9,7 +9,7 @@ Func AutoRaid(ByRef $timer)
 
 	  ResetToCoCMainScreen()
 
-	  AutoQueueTroops()
+	  AutoQueueTroops(True)
 	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
@@ -17,7 +17,7 @@ Func AutoRaid(ByRef $timer)
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 ResetToCoCMainScreen()
-		 AutoCheckIfTroopsReady()
+		 AutoQueueTroops(False)
 		 $timer = TimerInit()
 	  EndIf
 
@@ -26,25 +26,15 @@ Func AutoRaid(ByRef $timer)
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
 
 	  ResetToCoCMainScreen()
-	  Local $zappable
-	  Local $findMatchResults = AutoRaidFindMatch($zappable)
 
-	  ; Reset if there was an error
-	  If $findMatchResults=False And $zappable=False Then
+	  If AutoRaidFindMatch()=False Then
+		 ; Reset if there was an error
 		 DebugWrite("Auto: Error finding match, resetting.")
 		 ResetToCoCMainScreen()
 		 $gAutoStage = $eAutoQueueTraining
-		 Return
+	  Else
+		 $gAutoStage = $eAutoExecute
 	  EndIf
-
-	  ; Zap DE?
-	  If $zappable Then
-		 GUICtrlSetData($GUI_AutoStatus, "Auto: Execute DE Zap")
-		 AutoDEZap($findMatchResults=False)
-		 GUICtrlSetData($GUI_AutoStatus, "Auto: DE Zap Complete")
-	  EndIf
-
-	  If $findMatchResults = $eAutoExecute Then $gAutoStage = $eAutoExecute
 
    ; Stage Execute Raid
    Case $eAutoExecute
@@ -75,7 +65,7 @@ Func AutoRaid(ByRef $timer)
    EndSwitch
 EndFunc
 
-Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
+Func AutoRaidFindMatch(Const $returnFirstMatch = False)
    DebugWrite("FindAValidMatch()")
 
    ; Make sure we are on the main screen
@@ -95,7 +85,9 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
    WEnd
 
    If $failCount = 0 Then
-	  DebugWrite("Find Match failed - timeout waiting for Find a Match button")
+	  Local $cPos = GetClientPos()
+	  Local $color = PixelGetColor($cPos[0]+$rFindMatchScreenFindAMatchButton[4], $cPos[1]+$rFindMatchScreenFindAMatchButton[5])
+	  DebugWrite("Find Match failed - timeout waiting for Find a Match button, color = " & Hex($color))
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
@@ -168,18 +160,17 @@ Func AutoRaidFindMatch(ByRef $zappable, Const $returnFirstMatch = False)
 		 SetAutoRaidResults("-", "-", "-", "-", "-", False)
 
 	  Else
-		 $zappable = CheckZappableBase()
 		 $raidable = CheckForRaidableBase()
 
 	  EndIf
 
-	  ; If zappable and/or raidable, then go do it
-	  If $zappable=True Or $raidable<>False Then
+	  ; If raidable, then go do it
+	  If $raidable<>False Then
 		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
 		 Return $raidable
 	  EndIf
 
-	  ; Not raidable or zappable - click Next
+	  ; Not raidable - click Next
 	  Sleep($gPauseBetweenNexts)
 	  RandomWeightedClick($rWaitRaidScreenNextButton)
 	  Sleep(500)
@@ -414,9 +405,11 @@ EndFunc
 Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
    DebugWrite("DeployTroopsToSides()")
    Local $xClick, $yClick
+   Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
 
    ; Handle the deploy one troop situation first
    If $howMany=$eAutoRaidDeployOneTroop Then
+	  RandomWeightedClick($troopButton)
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
 	  _MouseClickFast($xClick, $yClick)
 	  Return
@@ -440,6 +433,9 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
    ; Always deploy first set of troops left to right to avoid accidentally clicking the Next button
    GetAutoRaidClickPoints(0, $dir, $troopsToDeploy, $boxesPerSide, $clickPoints1)
 
+   RandomWeightedClick($troopButton)
+   Sleep(200)
+
    For $i = 0 To $troopsToDeploy-1
 	  _MouseClickFast($clickPoints1[$i][0], $clickPoints1[$i][1])
 	  Sleep($gDeployTroopClickDelay)
@@ -457,6 +453,9 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 	  Local $clickPoints2[$troopsAvailable][2]
 	  GetAutoRaidClickPoints(Random(0,1,1), $dir, $troopsAvailable, $boxesPerSide, $clickPoints2)
 
+	  RandomWeightedClick($troopButton)
+	  Sleep(200)
+
 	  For $i = 0 To $troopsAvailable-1
 		 _MouseClickFast($clickPoints2[$i][0], $clickPoints2[$i][1])
 		 Sleep($gDeployTroopClickDelay)
@@ -473,11 +472,15 @@ EndFunc
 Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
    DebugWrite("DeployTroopsToSafeBoxes()")
    Local $xClick, $yClick, $count
+   Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
 
    ; Deploy half to left
    Local $troopsAvailable = Int(GetAvailableTroops($troop, $index) / 2)
    DebugWrite("Deploying to left safe box: " & $troopsAvailable & " troops.")
    $count=0
+   RandomWeightedClick($troopButton)
+   Sleep(200)
+
    For $i = 1 To $troopsAvailable
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
 	  _MouseClickFast($xClick, $yClick)
@@ -489,6 +492,9 @@ Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
    $troopsAvailable = GetAvailableTroops($troop, $index)
    DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
    $count=0
+   RandomWeightedClick($troopButton)
+   Sleep(200)
+
    For $i = 1 To $troopsAvailable
    	  RandomWeightedCoords( ($dir = "Top" ? $NESafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
 	  _MouseClickFast($xClick, $yClick)
@@ -620,31 +626,72 @@ EndFunc
 Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
    Local $buttonOffset[4] = [0, -15, 52, 54]
-   Local $raidTroopBox[4] = [0, 456, 1023, 531]
+   Local $raidTroopBox1[4] = [173, 456, 228, 531] ; first button only
+   Local $raidTroopBox2[4] = [235, 456, 850, 531] ; buttons 2-11
 
-   GrabFrameToFile("AvailableRaidTroopsFrame.bmp", $raidTroopBox[0], $raidTroopBox[1], $raidTroopBox[2], $raidTroopBox[3])
+   For $i = 0 To UBound($index)-1
+	  $index[$i][0] = -1
+	  $index[$i][1] = -1
+	  $index[$i][2] = -1
+	  $index[$i][3] = -1
+   Next
+
+   ; Check first button
+   RandomWeightedClick($rRaidSlotsButton2)
+   Sleep(200)
+
+   GrabFrameToFile("AvailableRaidTroopsFrame1.bmp", $raidTroopBox1[0], $raidTroopBox1[1], $raidTroopBox1[2], $raidTroopBox1[3])
 
    For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
 	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$raidTroopBox[0]+$buttonOffset[0]
-		 $index[$i][1] = $split[1]+$raidTroopBox[1]+$buttonOffset[1]
-		 $index[$i][2] = $split[0]+$raidTroopBox[0]+$buttonOffset[2]
-		 $index[$i][3] = $split[1]+$raidTroopBox[1]+$buttonOffset[3]
-		 DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " confidence " & Round($split[2]*100, 2) & "%")
-	  Else
-		 $index[$i][0] = -1
-		 $index[$i][1] = -1
-		 $index[$i][2] = -1
-		 $index[$i][3] = -1
+		 $index[$i][0] = $split[0]+$raidTroopBox1[0]+$buttonOffset[0]
+		 $index[$i][1] = $split[1]+$raidTroopBox1[1]+$buttonOffset[1]
+		 $index[$i][2] = $split[0]+$raidTroopBox1[0]+$buttonOffset[2]
+		 $index[$i][3] = $split[1]+$raidTroopBox1[1]+$buttonOffset[3]
+		 ;DebugWrite("Pass 1 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
+			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
+		 ExitLoop ; only one possible button in this pass
+	  EndIf
+   Next
+
+   ; Check buttons 2-11
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+
+   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $raidTroopBox2[0], $raidTroopBox2[1], $raidTroopBox2[2], $raidTroopBox2[3])
+
+   For $i = 0 To UBound($bitmaps)-1
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
+	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+
+	  If $split[2] > $gConfidenceRaidTroopSlot Then
+		 $index[$i][0] = $split[0]+$raidTroopBox2[0]+$buttonOffset[0]
+		 $index[$i][1] = $split[1]+$raidTroopBox2[1]+$buttonOffset[1]
+		 $index[$i][2] = $split[0]+$raidTroopBox2[0]+$buttonOffset[2]
+		 $index[$i][3] = $split[1]+$raidTroopBox2[1]+$buttonOffset[3]
+		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
+			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
 	  EndIf
    Next
 EndFunc
 
 Func GetAvailableTroops(Const $troop, Const ByRef $index)
    If $index[$troop][0] = -1 Then Return 0
+
+   Local $midX = $index[$troop][0] + ($index[$troop][2]- $index[$troop][0])/2
+
+   If $midX>$rRaidSlotsButton1[0] And $midX<$rRaidSlotsButton1[2] Then
+	  ; This is button 1
+	  RandomWeightedClick($rRaidSlotsButton2)
+	  Sleep(200)
+   Else
+	  ; This is not button 1
+	  RandomWeightedClick($rRaidSlotsButton1)
+	  Sleep(200)
+   EndIf
 
    Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+10, _
 						 $rBarracksTroopCountTextBox[4], $rBarracksTroopCountTextBox[5], _
@@ -655,8 +702,10 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
    Return StringMid($t, 2)
 EndFunc
 
-Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const ByRef $kingButton, Const ByRef $queenButton, Const $direction, Const $boxIndex, _
-						   ByRef $kingDeployed, ByRef $queenDeployed)
+Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $direction, Const $boxIndex, ByRef $kingDeployed, ByRef $queenDeployed)
+
+   Local $kingButton[4] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], $troopIndex[$eTroopKing][3]]
+   Local $queenButton[4] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], $troopIndex[$eTroopQueen][3]]
 
    ; Get box to deploy into
    Local $deployBox[4]
