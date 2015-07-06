@@ -34,10 +34,13 @@ Func FillBarracksStrategy0(Const $initialFillFlag, Const ByRef $availableTroopCo
 		 RandomWeightedClick($rArmyManagerWindowStandard4Button)
 	  EndIf
 
-	  Sleep(200)
+	  Sleep(500)
 
 	  ; See if we are full up
-	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True
+	  If IsColorPresent($rArmyCampsFullColor) Then
+		 $armyCampsFull = True
+		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
+	  EndIf
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$eTroopCount][4]

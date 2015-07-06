@@ -40,7 +40,7 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $availableTroopCo
 		 RandomWeightedClick($rArmyManagerWindowStandard4Button)
 	  EndIf
 
-	  Sleep(200)
+	  Sleep(500)
 
 	  ; See if we are full up
 	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True
