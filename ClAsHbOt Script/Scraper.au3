@@ -526,10 +526,21 @@ EndFunc
 ; Returns the absolute position of the client window
 Func GetClientPos()
    Local $cPos[4]
-
-   ; Get absolute coordinates of client area
    Local $hWnd = WinGetHandle($gTitle)
+   If @error Then
+	  Local $err = @error
+	  DebugWrite("Error getting BlueStacks window handle: " & $err & "   Closing ClAsHBoT.")
+	  MsgBox($IDOK, "BlueStacks Window", "Error getting BlueStacks window handle: " & $err & @CRLF & "Closing ClAsHBoT.", 0, $GUI)
+	  Exit
+   EndIf
+
    Local $cSize = WinGetClientSize($gTitle)
+   If @error Then
+	  Local $err = @error
+	  DebugWrite("Error getting BlueStacks window size: " & $err & "   Closing ClAsHBoT.")
+	  MsgBox($IDOK, "BlueStacks Window", "Error getting BlueStacks window size: " & $err & @CRLF & "Closing ClAsHBoT.", 0, $GUI)
+	  Exit
+   EndIf
 
    Local $tPoint = DllStructCreate("int X;int Y")
    DllStructSetData($tPoint, "X", 0)
