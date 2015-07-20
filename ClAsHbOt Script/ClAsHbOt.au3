@@ -35,7 +35,6 @@ Opt("GUIOnEventMode", 1)
 #include <AutoRaidStrategy0.au3>
 #include <AutoRaidStrategy1.au3>
 #include <AutoRaidStrategy2.au3>
-#include <AutoRaidStrategy3.au3>
 #include <Mouse.au3>
 #include <BlueStacks.au3>
 #include <Screen.au3>

@@ -35,7 +35,7 @@ Func AutoQueueTroops(Const ByRef $initialFill)
 	  Case 2
 		 FillBarracksStrategy2($initialFill, $availableTroopCounts, $armyCampsFull)
 	  Case 3
-		 FillBarracksStrategy3($initialFill, $availableTroopCounts, $armyCampsFull)
+		 ContinueCase
 	  EndSwitch
    EndIf
 
