@@ -133,7 +133,7 @@ Func InitGUI()
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "Barcher")
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "GiBarch")
    _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "BAM")
-   _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "TBD3")
+   _GUICtrlComboBox_AddString($GUI_AutoRaidStrategyCombo, "Loonian")
    _GUICtrlComboBox_SetCurSel($GUI_AutoRaidStrategyCombo, IniRead($gIniFile, "General", "Raid Strategy", 0))
 
    ; Bottom

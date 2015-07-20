@@ -57,8 +57,10 @@ Func AutoRaid(ByRef $timer)
 			UpdateWinnings()
 		 EndIf
 	  Case 3
-		 GUICtrlSetData($GUI_AutoStatus, "Auto: Unimplemented strategy")
-		 MsgBox($MB_OK, "Unimplemented strategy", "This strategy has not yet been implemented")
+		 If AutoRaidExecuteRaidStrategy3() Then  ; Loonian
+			$gAutoStage = $eAutoQueueTraining
+			UpdateWinnings()
+		 EndIf
 	  EndSwitch
 
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Raid Complete")
