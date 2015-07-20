@@ -57,8 +57,10 @@ Func AutoRaid(ByRef $timer)
 			UpdateWinnings()
 		 EndIf
 	  Case 3
-		 GUICtrlSetData($GUI_AutoStatus, "Auto: Unimplemented strategy")
-		 MsgBox($MB_OK, "Unimplemented strategy", "This strategy has not yet been implemented")
+		 If AutoRaidExecuteRaidStrategy3() Then  ; Loonian
+			$gAutoStage = $eAutoQueueTraining
+			UpdateWinnings()
+		 EndIf
 	  EndSwitch
 
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Raid Complete")
@@ -172,8 +174,28 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
 
 	  ; Not raidable - click Next
 	  Sleep($gPauseBetweenNexts)
-	  RandomWeightedClick($rWaitRaidScreenNextButton)
-	  Sleep(500)
+	  If IsButtonPresent($rWaitRaidScreenNextButton) Then
+		 RandomWeightedClick($rWaitRaidScreenNextButton)
+		 Sleep(500)
+	  Else
+		 DebugWrite("Next Button disappeared, resetting.")
+
+		 If IsButtonPresent($rLiveRaidScreenEndBattleButton) Then
+			RandomWeightedClick($rLiveRaidScreenEndBattleButton)
+			Sleep(1000)
+
+			If IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton) Then
+			   RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
+			   Sleep(1000)
+			EndIf
+
+		 Else
+			ResetToCoCMainScreen()
+
+		 EndIf
+
+		 Return False
+	  EndIf
 
 	  ; Sleep and wait for Next button to reappear
 	  $failCount = 30
