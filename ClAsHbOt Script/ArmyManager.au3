@@ -114,12 +114,12 @@ Func QueueTroopsEvenly(Const $troop, Const ByRef $troopSlots, Const $troopsToQue
 	  If $troopsToQueue/4 < 1 Then
 		 DebugWrite("Queueing 1 " & $gTroopNames[$troop])
 		 RandomWeightedClick($button)
-		 Sleep(500)
+		 Sleep(150)
 	  Else
 		 DebugWrite("Queueing " & Int($troopsToQueue/4) & " " & $gTroopNames[$troop])
 		 For $i = 1 To Int($troopsToQueue/4)
 			RandomWeightedClick($button)
-			Sleep(500)
+			Sleep(150)
 		 Next
 	  EndIf
    EndIf

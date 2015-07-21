@@ -30,9 +30,10 @@ Global $gTroopSlotBMPs[$eTroopCount] = [ _
   "RaidSlots\SlotDragon.bmp", "RaidSlots\SlotPekka.bmp", _
   "RaidSlots\SlotMinion.bmp", "RaidSlots\SlotHogRider.bmp", "RaidSlots\SlotValkyrie.bmp", "RaidSlots\SlotGolem.bmp", _
   "RaidSlots\SlotWitch.bmp", "RaidSlots\SlotLavaHound.bmp", "RaidSlots\SlotKing.bmp", "RaidSlots\SlotQueen.bmp"]
+; Todo, add earthquake and haste, when I get them
 Global $gSpellSlotBMPs[$eSpellCount] = [ _
   "RaidSlots\SlotLightningSpell.bmp", "RaidSlots\SlotHealSpell.bmp", "RaidSlots\SlotRageSpell.bmp", _
-  "RaidSlots\SlotJumpSpell.bmp", "RaidSlots\SlotFreezeSpell.bmp"]
+  "RaidSlots\SlotJumpSpell.bmp", "RaidSlots\SlotFreezeSpell.bmp", "RaidSlots\SlotPoisonSpell.bmp"]
 Global $gDonateSlotBMPs[16] = [ _
   "DonateBarbarian.bmp", "DonateArcher.bmp", "DonateGiant.bmp", "DonateGoblin.bmp", "DonateWallBreaker.bmp", _
   "DonateBalloon.bmp", "DonateWizard.bmp", "DonateHealer.bmp", "DonateDragon.bmp", "DonatePekka.bmp", _
@@ -43,6 +44,7 @@ Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = [ _
   "Barracks\BarracksDragon.bmp", "Barracks\BarracksPekka.bmp", _
   "Barracks\BarracksMinion.bmp", "Barracks\BarracksHogRider.bmp", "Barracks\BarracksValkyrie.bmp", "Barracks\BarracksGolem.bmp", _
   "Barracks\BarracksWitch.bmp", "Barracks\BarracksLavaHound.bmp"]
+; Todo, add earthquake and haste, when I get them
 Global $gBarracksSpellSlotBMPs [$eSpellCount] = [ _
   "Barracks\BarracksLightningSpell.bmp", "Barracks\BarracksHealSpell.bmp", "Barracks\BarracksRageSpell.bmp", _
-  "Barracks\BarracksJumpSpell.bmp", "Barracks\BarracksFreezeSpell.bmp"]
+  "Barracks\BarracksJumpSpell.bmp", "Barracks\BarracksFreezeSpell.bmp", "Barracks\BarracksPoisonSpell.bmp"]

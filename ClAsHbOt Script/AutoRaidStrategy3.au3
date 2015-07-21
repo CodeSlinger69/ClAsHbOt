@@ -1,7 +1,7 @@
 ;
 ; Strategy 3 - Loonian, top or bottom
 ; Deploy from either NW/NE or SW/SE sides
-; 100% ballons, wait some time, then 100% minions
+; 100% ballons, then 100% minions
 ; Deploy and power up Heroes
 ;
 ; Note: Train 20 balloons, rest minions
@@ -27,8 +27,6 @@ Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $availableTroopCo
 		 RandomWeightedClick($rArmyManagerWindowStandard4Button)
 	  ElseIf $barracksCount=5 Then
 		 RandomWeightedClick($rArmyManagerWindowDark1Button)
-	  ;Else ; $barracksCount=6
-		 ;RandomWeightedClick($rArmyManagerWindowDark2Button)
 	  EndIf
 
 	  Sleep(500)
@@ -72,8 +70,6 @@ EndFunc
 Func AutoRaidExecuteRaidStrategy3()
    DebugWrite("AutoRaidExecuteRaidStrategy3()")
 
-   Local $loonMinonWait = 30000
-
    ; What troops are available?
    Local $troopIndex[$eTroopCount][4]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
@@ -101,16 +97,13 @@ Func AutoRaidExecuteRaidStrategy3()
    Local $deployStart = TimerInit()
 
    ; Deploy all balloons
-   If $troopIndex[$eTroopBarbarian][0] <> -1 Then
+   If $troopIndex[$eTroopBalloon][0] <> -1 Then
 	  DebugWrite("Deploying all balloons.")
 	  DeployTroopsToSides($eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
    EndIf
 
-   ; Wait between balloons & minions
-   Sleep($loonMinonWait)
-
    ; Deploy all minions
-   If $troopIndex[$eTroopArcher][0] <> -1 Then
+   If $troopIndex[$eTroopMinion][0] <> -1 Then
 	  DebugWrite("Deploying all minions.")
 	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
    EndIf
