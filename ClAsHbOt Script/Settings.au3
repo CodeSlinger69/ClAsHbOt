@@ -31,7 +31,6 @@ Func ReadSettings()
    Global $gCollectLootInterval = IniRead($gIniFile, "Interval", "Collect Loot", 180000)
    Global $gTroopTrainingCheckInterval = IniRead($gIniFile, "Interval", "Troop Training Check", 180000)
    Global $gQueueDonatableTroopsInterval = IniRead($gIniFile, "Interval", "Queue Donatable Troops", 600000)
-   Global $gCheckChatWindowForDonateInterval = IniRead($gIniFile, "Interval", "Check Chat Window For Donate", 60000)
    Global $gPauseBetweenNexts = IniRead($gIniFile, "Interval", "Pause Between Nexts", 2000)  ; 2 seconds to avoid client out of sync errors
 
    ; Donate

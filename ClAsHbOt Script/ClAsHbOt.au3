@@ -60,7 +60,6 @@ EndFunc
 Func MainApplicationLoop()
    Local $lastOnlineCheckTimer = TimerInit()
    Local $lastCollectLootTimer = TimerInit()
-   Local $lastDonateTroopsTimer = TimerInit()
    Local $lastQueueDonatableTroopsTimer = TimerInit()
    Local $lastTrainingCheckTimer = TimerInit()
    Local $autoSnipeTHLevel, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop
@@ -83,7 +82,7 @@ Func MainApplicationLoop()
 
 		 CheckForAndroidMessageBox()
 		 $lastOnlineCheckTimer = TimerInit()
-		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
+		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer)
 	  EndIf
 
 	  Local $autoInProgress = $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute
@@ -92,7 +91,7 @@ Func MainApplicationLoop()
 		 ; Donate Troops
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
 			$gPossibleKick < 2 And _
-			(TimerDiff($lastDonateTroopsTimer) >= $gCheckChatWindowForDonateInterval Or $gDonateTroopsClicked Or IsColorPresent($rNewChatMessagesColor)) Then
+			($gDonateTroopsClicked Or IsColorPresent($rNewChatMessagesColor)) Then
 
 			$gDonateTroopsClicked = False
 
@@ -101,8 +100,6 @@ Func MainApplicationLoop()
 			   ZoomOut(True)
 			   DonateTroops()
 			EndIf
-			$lastDonateTroopsTimer = TimerInit()
-			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
 		 EndIf
 
 		 ; Queue Troops for Donation
@@ -132,7 +129,7 @@ Func MainApplicationLoop()
 			   CollectLoot()
 			EndIf
 			$lastCollectLootTimer = TimerInit()
-			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
+			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer)
 		 EndIf
 
 	  Endif ; If $autoRaidInProgress=False And $autoSnipeInProgress=False
@@ -188,13 +185,13 @@ Func MainApplicationLoop()
 
 	  ; Pause for 5 seconds
 	  For $i = 1 To 10
-		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastDonateTroopsTimer, $lastTrainingCheckTimer)
+		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer)
 
 		 If $gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gFindMatchClicked Or $gAutoSnipeClicked Or $gAutoRaidClicked Then ExitLoop
 		 If $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop
-		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And TimerDiff($lastDonateTroopsTimer) >= $gCheckChatWindowForDonateInterval Then ExitLoop
+		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And IsColorPresent($rNewChatMessagesColor) Then ExitLoop
 
 		 Sleep(500)
 	  Next
@@ -213,7 +210,7 @@ Func MainApplicationLoop()
    WEnd
 EndFunc
 
-Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $troopsTimer, Const $trainingTimer)
+Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $trainingTimer)
    If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_UNCHECKED Then
 	  GUICtrlSetData($GUI_KeepOnlineCheckBox, "F5 Keep Online 0:00")
    Else
@@ -228,14 +225,6 @@ Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $troopsTi
 	  Local $ms = $gCollectLootInterval - TimerDiff($lootTimer)
 	  If $ms < 0 Then $ms = 0
 	  GUICtrlSetData($GUI_CollectLootCheckBox, "F6 Collect Loot " & millisecondToMMSS($ms))
-   EndIf
-
-   If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_UNCHECKED Then
-	  GUICtrlSetData($GUI_DonateTroopsCheckBox, "F7 Donate Troops 0:00")
-   Else
-	  Local $ms = $gCheckChatWindowForDonateInterval - TimerDiff($troopsTimer)
-	  If $ms < 0 Then $ms = 0
-	  GUICtrlSetData($GUI_DonateTroopsCheckBox, "F7 Donate Troops " & millisecondToMMSS($ms))
    EndIf
 
    If (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED) And _

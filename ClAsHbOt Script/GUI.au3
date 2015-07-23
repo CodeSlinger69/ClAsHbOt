@@ -59,7 +59,7 @@ Func InitGUI()
    GUICtrlSetOnEvent($GUI_CollectLootCheckBox, "GUICollectLootCheckBox")
 
    $y += 19
-   $GUI_DonateTroopsCheckBox = GUICtrlCreateCheckbox("F7 Donate Troops 0:00", $x+5, $y, $w-6, 25)
+   $GUI_DonateTroopsCheckBox = GUICtrlCreateCheckbox("F7 Donate Troops", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_DonateTroopsCheckBox, "GUIDonateTroopsCheckBox")
 
    $y += 19
