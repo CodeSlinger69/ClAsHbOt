@@ -150,7 +150,12 @@ Func ZoomOut(Const $clearOnSafeSpot)
    Local $s = WhereAmI()
    If $s=$eScreenMain Or $s=$eScreenWaitRaid Or $s=$eScreenLiveRaid Then
 	  For $i = 1 To 3
-		 Send("^-")
+		 If $gMouseClickMethod = "MouseClick" Then
+			Send("^-")
+		 Else
+			ControlSend($gTitle, "", "", "^-", 0)
+		 EndIf
+
 		 Sleep(250)
 	  Next
 
