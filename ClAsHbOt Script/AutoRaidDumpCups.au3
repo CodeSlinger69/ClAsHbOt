@@ -1,8 +1,8 @@
 Func DumpCups()
    ;DebugWrite("DumpCups()")
 
-   Local $myCups = GUICtrlRead($GUI_MyCups)
-   Local $cupsThreshold = GUICtrlRead($GUI_AutoRaidDumpCupsThreshold)
+   Local $myCups = Number(GUICtrlRead($GUI_MyCups))
+   Local $cupsThreshold = Number(GUICtrlRead($GUI_AutoRaidDumpCupsThreshold))
 
    If $myCups > $cupsThreshold Then
 	  ResetToCoCMainScreen()
