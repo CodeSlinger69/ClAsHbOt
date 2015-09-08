@@ -4,6 +4,8 @@ Download: https://github.com/CodeSlinger69/ClAsHbOt/releases/download/20150723/C
 
 Discussion thread: https://github.com/CodeSlinger69/ClAsHbOt/issues/22
 
+MUST READ FIRST: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Install  Please pay particular attention to the version of BlueStacks that is required.
+
 Key features:
 - Auto farming
 - Option to only farm dead bases
@@ -12,7 +14,7 @@ Key features:
 - Auto trophy push
 - Anti-detection
 - Maintain trophy range
-- Tested on Windows 7, Windows 10 and in a VM running Win 7
+- Tested on Windows 7, Windows 10 and in a VMWare image running Win 7
 
 Screenshot: https://github.com/CodeSlinger69/ClAsHbOt/wiki
 
@@ -25,8 +27,6 @@ Auto donating: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Auto-Donate
 Anti-ban thoughts: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Anti-detection-and-anti-ban
 
 Botting caution: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Botting-and-open-source
-
-Installation: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Install
 
 Release notes: https://github.com/CodeSlinger69/ClAsHbOt/wiki/Release-Notes
 
