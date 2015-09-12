@@ -279,6 +279,7 @@ Func CheckForRaidableBase()
    Local $GUIDark = GUICtrlRead($GUI_DarkEdit)
    Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
    Local $GUIIgnoreStorages = (_GUICtrlButton_GetCheck($GUI_AutoRaidIgnoreStorages) = $BST_CHECKED)
+   Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Adjust available loot to exclude storages
    Local $adjGold=$gold, $adjElix=$elix, $adjDark=$dark
@@ -306,10 +307,8 @@ Func CheckForRaidableBase()
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Do we have a gold/elix/dark/townhall/dead match?
-   If $GUIIgnoreStorages Then
-	  If ($GUITownHall-$townHall>=1 And $gold>=$GUIGold And $elix>=$GUIElix And $dark>=$GUIDark) Or _
-		 ($adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark) Then
-
+   If $GUIIgnoreStorages And $myTHLevel-$townHall<2 Then ; "ignore storages" only valid if target TH < 2 levels from my TH level
+	  If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
 		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
 					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
 		 Return $eAutoExecute
