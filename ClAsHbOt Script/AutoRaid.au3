@@ -307,8 +307,7 @@ Func CheckForRaidableBase()
 
    ; Do we have a gold/elix/dark/townhall/dead match?
    If $GUIIgnoreStorages Then
-	  If ($GUITownHall-$townHall>=1 And $gold>=$GUIGold And $elix>=$GUIElix And $dark>=$GUIDark) Or _
-		 ($adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark) Then
+	  If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
 
 		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
 					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
