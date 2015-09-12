@@ -409,7 +409,9 @@ Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level
    DebugWrite("Available to loot from storage = " & $availabletoLoot)
 
    ; Adjust available to loot amount by loot penalty
-   If $myTHLevel-$targetTHLevel = 1 Then
+   If $myTHLevel-$targetTHLevel <= 0 Then
+	  $availabletoLoot*=1 ; no penalty if raiding my town hall level or higher
+   ElseIf $myTHLevel-$targetTHLevel = 1 Then
 	  $availabletoLoot*=0.90
    ElseIf $myTHLevel-$targetTHLevel = 2 Then
 	  $availabletoLoot*=0.50
