@@ -9,7 +9,7 @@
 
 ; GUI Globals
 Global $GUI, $GUIImage, $GUIGraphic
-Global $GUI_Width=285, $GUI_Height=425
+Global $GUI_Width=285, $GUI_Height=440
 Global $GUIImages[12] = [ "troop-archer.png", "troop-balloon.png", "troop-barbarian.png", _
    "troop-dragon.png", "troop-giant.png", "troop-goblin.png", "troop-healer.png", _
    "troop-pekka.png", "troop-wallbreaker.png", "troop-wizard.png" , "troop-bk.png", "troop-aq.png"]
@@ -18,7 +18,7 @@ Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheck
 Global $GUI_CloseButton
 Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_AutoRaidUseBreakers, $GUI_AutoRaidBreakerCountEdit, _
 	  $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidIgnoreStorages, $GUI_AutoRaidDumpCupsThreshold, $GUI_AutoRaidStrategyCombo
-Global $GUI_MyGold, $GUI_MyElix, $GUI_MyDark, $GUI_MyGems, $GUI_MyCups
+Global $GUI_MyGold, $GUI_MyElix, $GUI_MyDark, $GUI_MyGems, $GUI_MyCups, $GUI_MyTownHall
 Global $GUI_Winnings, $GUI_Results, $GUI_AutoStatus
 
 Func InitGUI()
@@ -78,7 +78,7 @@ Func InitGUI()
    $x=153
    $y=10
    $w=125
-   $h=97
+   $h=112
 
    GUICtrlCreateGroup("My Stuff", $x, $y, $w, $h)
 
@@ -101,6 +101,10 @@ Func InitGUI()
    $y += 15
    $GUI_MyCups = GUICtrlCreateLabel("-", $x+5, $y, 75, 17, $SS_RIGHT)
    GUICtrlCreateLabel("Cups", $x+93, $y, 30, 17)
+
+   $y += 15
+   $GUI_MyTownHall = GUICtrlCreateLabel("0", $x+5, $y, 75, 17, $SS_RIGHT)
+   GUICtrlCreateLabel("TH", $x+93, $y, 30, 17)
 
    ; Right side, auto raid options group
    $y += 29
@@ -138,7 +142,7 @@ Func InitGUI()
 
    ; Bottom
    $x = 10
-   $y = 257
+   $y = 272
    $w = 265
    $GUI_Winnings = GUICtrlCreateLabel("Net winnings: - / - / - / -", $x, $y, $w, 17)
 

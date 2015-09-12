@@ -346,7 +346,7 @@ Func AutoRaidAdjustLootForStorages(Const $townHall, Const $gold, Const $elix, By
    GrabFrameToFile("StorageUsageFrame.bmp", 261, 100, 761, 450)
    Local $x, $y, $conf, $matchIndex, $saveFrame = False
    Local $usageAdj = 10; 12.5
-   Local $myTHLevel = GUICtrlRead($GUI_TownHallEdit) + 1 ; assume that my TH is one higher than the max set in the GUI
+   Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
    ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)

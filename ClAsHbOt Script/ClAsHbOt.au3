@@ -264,10 +264,25 @@ Func GetMyLootNumbers()
    GUICtrlSetData($GUI_MyDark, $MyDark)
    GUICtrlSetData($GUI_MyGems, $MyGems)
 
-   ; My cups can only be scraped from the main screen
+   ; My cups and my town hall can only be scraped from the main screen
    If WhereAmI() = $eScreenMain Then
 	  Local $MyCups = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyCupsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
 	  GUICtrlSetData($GUI_MyCups, $MyCups)
+
+	  ; Only search for my town hall level if we don't already know it
+	  Local $GUIMyTownHall = GUICtrlRead($GUI_MyTownHall)
+	  If $GUIMyTownHall = 0 Then
+
+		 Local $location, $top, $left
+		 Local $MyTownHall = GetTownHallLevel($location, $left, $top)
+
+		 If $MyTownHall = -1 Then
+			   DebugWrite("Could not detect Town Hall level")
+			   $MyTownHall = InputBox("Town Hall level not found", "Please enter the Town Hall level of your village.")
+		 EndIf
+
+		 GUICtrlSetData($GUI_MyTownHall, $MyTownHall)
+	  EndIf
    EndIf
 EndFunc
 
