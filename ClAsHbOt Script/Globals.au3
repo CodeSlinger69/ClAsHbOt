@@ -1,4 +1,4 @@
-Global $gVersion = "20150723"
+Global $gVersion = "20150917"
 
 ; Debug - these are overwritten once ReadSettings() in Settings.au3 is called, however these need to be defined here, as there can
 ;   be a need to write debug statements prior to ReadSettings() being called.
