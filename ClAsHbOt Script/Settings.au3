@@ -6,12 +6,20 @@ Func ReadSettings()
    ; Mouse
    ; Clicking method; use "MouseClick" for old way, or "ControlClick" for new way
    Global $gMouseClickMethod = IniRead($gIniFile, "Mouse", "Click Method", "MouseClick")
+   DebugWrite("Setting Mouse Click Method = " & $gMouseClickMethod)
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding
+   DebugWrite("Setting Mouse Deploy Troop Click Delay = " & $gDeployTroopClickDelay)
    Global $gDonateTroopClickDelay = IniRead($gIniFile, "Mouse", "Donate Troop Click Delay", 250) ; Delay between mouse clicks for donating
+   DebugWrite("Setting Mouse Donate Troop Click Delay = " & $gDonateTroopClickDelay)
+
+   ; Auto Raid
+   Global $gAutoRaidEndDelay = IniRead($gIniFile, "AutoRaid", "End Delay", 0) ; After available resources stop changing the raid will end in this many seconds
+   DebugWrite("Setting AutoRaid End Delay = " & $gAutoRaidEndDelay)
 
    ; Auto Snipe
    ; If set to true, the bot will stop when it detects a snipable base, and wait for you to manually raid
    Global $gAutoSnipeNotifyOnly = _Boolean(IniRead($gIniFile, "AutoSnipe", "Auto Snipe Notify Only", False))
+   DebugWrite("Setting AutoSnipe Notify Only = " & $gAutoSnipeNotifyOnly)
 
    ; Confidence Levels
    Global $gConfidenceTownHall = IniRead($gIniFile, "Confidence", "Town Hall", 0.95)
@@ -28,10 +36,15 @@ Func ReadSettings()
 
    ; Intervals
    Global $gOnlineCheckInterval = IniRead($gIniFile, "Interval", "Online Check", 15000)
+   DebugWrite("Setting Interval Online Check = " & $gOnlineCheckInterval)
    Global $gCollectLootInterval = IniRead($gIniFile, "Interval", "Collect Loot", 180000)
+   DebugWrite("Setting Interval Collect Loot = " & $gCollectLootInterval)
    Global $gTroopTrainingCheckInterval = IniRead($gIniFile, "Interval", "Troop Training Check", 180000)
+   DebugWrite("Setting Interval Troop Training Check = " & $gTroopTrainingCheckInterval)
    ;Global $gQueueDonatableTroopsInterval = IniRead($gIniFile, "Interval", "Queue Donatable Troops", 600000)
+   ;DebugWrite("Setting Interval Queue Donatable Troops = " & $gQueueDonatableTroopsInterval)
    Global $gPauseBetweenNexts = IniRead($gIniFile, "Interval", "Pause Between Nexts", 2000)  ; 2 seconds to avoid client out of sync errors
+   DebugWrite("Setting Interval Pause Between Nexts = " & $gPauseBetweenNexts)
 
    ; Donate
    Global $gDonateMatchTroopStrings[$eTroopCount-2]

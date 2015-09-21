@@ -576,11 +576,18 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 		 $activeTimer = TimerInit()
 	  EndIf
 
-	  ; If 30 seconds have passed, with no change in available loot, then exit battle, but only if we have not
-	  ; deployed a king or queen
-	  If TimerDiff($activeTimer) > 30000 And $kingDeployed = False And $queenDeployed = False Then
-		 $activeTimer = TimerInit()
-		 DebugWrite("No change in available loot for 30 seconds, ending battle.")
+	  ; End early?
+	  ; If $gAutoRaidEndDelay=0, the use the legacy logic: If 30 seconds have passed with no change in available loot, then
+	  ;   exit battle, but only if we have not deployed a king or queen.  If BK or AQ deployed, then do not end early.
+	  ; Otherwise end after $gAutoRaidEndDelay number of seconds.
+	  If ($gAutoRaidEndDelay=0 And TimerDiff($activeTimer)>30000 And $kingDeployed=False And $queenDeployed=False) Or _
+		 ($gAutoRaidEndDelay<>0 And TimerDiff($activeTimer)>$gAutoRaidEndDelay*1000) Then
+
+		 If $gAutoRaidEndDelay=0 Then
+			DebugWrite("No change in available loot for 30 seconds, ending battle.")
+		 Else
+			DebugWrite("No change in available loot for " & $gAutoRaidEndDelay & " seconds, ending battle.")
+		 EndIf
 
 		 ; Click End Battle button
 		 RandomWeightedClick($rLiveRaidScreenEndBattleButton)

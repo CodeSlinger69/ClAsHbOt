@@ -246,6 +246,24 @@ EndFunc
 Func GetMyLootNumbers()
    ;DebugWrite("GetMyLootNumbers()")
 
+   ; My loot is only scrapable on some screens
+   If WhereAmI()<>$eScreenMain And WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
+	  Return
+   EndIf
+
+   ; My loot info can't be seen for some reason
+   If IsTextBoxPresent($rMyGoldTextBox) = True Then
+	  ; Scrape text fields
+	  Local $MyGold = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $MyElix = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $MyDark = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  GUICtrlSetData($GUI_MyGold, $MyGold)
+	  GUICtrlSetData($GUI_MyElix, $MyElix)
+	  GUICtrlSetData($GUI_MyDark, $MyDark)
+	  GUICtrlSetData($GUI_MyGems, $MyGems)
+   EndIf
+
    ; My cups and my town hall can only be scraped from the main screen
    If WhereAmI() = $eScreenMain Then
 	  Local $MyCups = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyCupsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
@@ -267,24 +285,6 @@ Func GetMyLootNumbers()
 		 GUICtrlSetData($GUI_MyTownHall, $MyTownHall)
 	  EndIf
    EndIf
-
-   ; My loot is only scrapable on some screens
-   If WhereAmI()<>$eScreenMain And WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
-	  Return
-   EndIf
-
-   ; My loot info can't be seen for some reason
-   If IsTextBoxPresent($rMyGoldTextBox) = False Then Return
-
-   ; Scrape text fields
-   Local $MyGold = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-   Local $MyElix = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-   Local $MyDark = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-   Local $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-   GUICtrlSetData($GUI_MyGold, $MyGold)
-   GUICtrlSetData($GUI_MyElix, $MyElix)
-   GUICtrlSetData($GUI_MyDark, $MyDark)
-   GUICtrlSetData($GUI_MyGems, $MyGems)
 
 EndFunc
 
