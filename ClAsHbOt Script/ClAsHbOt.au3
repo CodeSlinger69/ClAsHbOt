@@ -257,7 +257,12 @@ Func GetMyLootNumbers()
 	  Local $MyGold = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
 	  Local $MyElix = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
 	  Local $MyDark = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-	  Local $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $MyGems
+	  If IsTextBoxPresent($rMyGemsTextBoxNoDE) = True Then
+		 $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBoxNoDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Else
+		 $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBoxWithDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  EndIf
 	  GUICtrlSetData($GUI_MyGold, $MyGold)
 	  GUICtrlSetData($GUI_MyElix, $MyElix)
 	  GUICtrlSetData($GUI_MyDark, $MyDark)
