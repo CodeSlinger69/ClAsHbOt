@@ -10,9 +10,6 @@
 ; GUI Globals
 Global $GUI, $GUIImage, $GUIGraphic
 Global $GUI_Width=285, $GUI_Height=440
-Global $GUIImages[12] = [ "troop-archer.png", "troop-balloon.png", "troop-barbarian.png", _
-   "troop-dragon.png", "troop-giant.png", "troop-goblin.png", "troop-healer.png", _
-   "troop-pekka.png", "troop-wallbreaker.png", "troop-wizard.png" , "troop-bk.png", "troop-aq.png"]
 Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheckBox, _
 	  $GUI_FindMatchCheckBox, $GUI_AutoSnipeCheckBox, $GUI_AutoRaidCheckBox
 Global $GUI_CloseButton

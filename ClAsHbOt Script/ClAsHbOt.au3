@@ -20,10 +20,10 @@ Opt("GUIOnEventMode", 1)
 
 ; CoC Bot Includes
 #include <Globals.au3>
+#include <FileNames.au3>
 #include <GUI.au3>
 #include <Settings.au3>
 #include <Scraper.au3>
-#include <FileNames.au3>
 #include <TownHall.au3>
 #include <ArmyManager.au3>
 #include <KeepOnline.au3>
