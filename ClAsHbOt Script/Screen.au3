@@ -28,10 +28,22 @@ Func ResetToCoCMainScreen()
    Case $eScreenAndroidHome
 	  DebugWrite("On Android Home Screen - Starting Clash of Clans.")
       Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-	  GrabFrameToFile("HomeScanFrame.bmp")
-	  ScanFrameForBestBMP("HomeScanFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
+	  GrabFrameToFile("WhereAmIFrame.bmp")
+	  ScanFrameForBestBMP("WhereAmIFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
 	  If $bestMatch <> 99 Then
 		 Local $button[4] = [$bestX, $bestY, $bestX+$rScreenAndroidHomeCoCIconButton[2], $bestY+$rScreenAndroidHomeCoCIconButton[3]]
+		 RandomWeightedClick($button)
+		 $countdown = 30
+	  EndIf
+
+   ; Clash screen in Play Store
+   Case $eScreenPlayStore
+	  DebugWrite("On Clash Play Store Screen - Starting Clash of Clans.")
+      Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
+	  GrabFrameToFile("WhereAmIFrame.bmp")
+	  ScanFrameForBestBMP("WhereAmIFrame.bmp", $gPlayStoreOpenButton, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
+	  If $bestMatch <> 99 Then
+		 Local $button[4] = [$bestX, $bestY, $bestX+$rScreenPlayStoreOpenButton[2], $bestY+$rScreenPlayStoreOpenButton[3]]
 		 RandomWeightedClick($button)
 		 $countdown = 30
 	  EndIf
@@ -85,14 +97,24 @@ Func ResetToCoCMainScreen()
 EndFunc
 
 Func WhereAmI()
+   GrabFrameToFile("WhereAmIFrame.bmp")
+
    ; $ScreenAndroidHome
    Local $bestMatch, $bestConfidence, $bestX, $bestY
-   GrabFrameToFile("HomeScanFrame.bmp")
-   ScanFrameForBestBMP("HomeScanFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
+   ScanFrameForBestBMP("WhereAmIFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
    ;DebugWrite("Android Home Scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
 
    If $bestMatch <> -1 Then
 	  Return $eScreenAndroidHome
+   EndIf
+
+   ; $eScreenPlayStore
+   Local $bestMatch, $bestConfidence, $bestX, $bestY
+   ScanFrameForBestBMP("WhereAmIFrame.bmp", $gPlayStoreOpenButton, 0.99, $bestMatch, $bestConfidence, $bestX, $bestY)
+   ;DebugWrite("Play Store scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
+
+   If $bestMatch <> -1 Then
+	  Return $eScreenPlayStore
    EndIf
 
    ; $ScreenMain

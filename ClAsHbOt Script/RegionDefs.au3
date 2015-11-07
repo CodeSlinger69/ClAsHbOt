@@ -32,6 +32,7 @@ Global $rChatTextBox[10] = [0, 0, 233, 9, 0xffffff, 120, 0, 0, 0, 0]
 ; Button Present Pixel Loc - x, y,
 ; Button Present Color - center, radius
 Global $rScreenAndroidHomeCoCIconButton[8] = [0, 0, 60, 60, 0, 0, 0, 0]
+Global $rScreenPlayStoreOpenButton[8] = [0, 0, 150, 36, 0, 0, 0, 0]
 Global $rAndroidMessageButton[8] = [195, 317, 827, 363, 230, 250, 0x33b5e5, 0]
 Global $rMainScreenAttackButton[8] = [13, 458, 93, 538, 49, 497, 0xD9645f, 6]
 Global $rFindMatchScreenFindAMatchButton[8] = [99, 380, 265, 456, 108, 444, 0xD54400, 6]

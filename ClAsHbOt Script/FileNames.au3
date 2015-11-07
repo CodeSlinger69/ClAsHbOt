@@ -1,5 +1,7 @@
 Global $CoCIconBMPs[1] = ["CoCIcon.bmp"]
 
+Global $gPlayStoreOpenButton[1] = ["PlayStoreOpenButton.bmp"]
+
 Global $GUIImages[12] = [ _
   "GUISplash\troop-archer.png", "GUISplash\troop-balloon.png", "GUISplash\troop-barbarian.png", _
   "GUISplash\troop-dragon.png", "GUISplash\troop-giant.png", "GUISplash\troop-goblin.png", _
