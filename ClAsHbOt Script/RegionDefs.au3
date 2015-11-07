@@ -3,9 +3,9 @@
 ; Present indicator x, y, color, radius
 Global $rGoldTextBox[10] = [42, 57, 120, 74, 0xfffbcc, 9, 30, 66, 0xeace3f, 6]
 Global $rElixTextBox[10] = [42, 81, 120, 98, 0xffe8fd, 9, 30, 93, 0xd958d0, 6]
-Global $rDarkTextBox[10] = [42, 107, 120, 124, 0xf3f3f3, 9, 30, 117, 0x53435f, 6]
-Global $rCupsTextBox1[10] = [42, 107, 120, 124, 0xffffff, 9, 30, 117, 0xe7d99b, 6]
-Global $rCupsTextBox2[10] = [42, 140, 120, 157, 0xffffff, 9, 30, 141, 0xf0e883, 6]
+Global $rDarkTextBox[10] = [42, 107, 120, 124, 0xf3f3f3, 9, 30, 117, 0x53425f, 6]
+Global $rCupsTextBox1[10] = [42, 118, 120, 131, 0xffffff, 9, 30, 117, 0xe7d99b, 6]
+Global $rCupsTextBox2[10] = [42, 144, 120, 157, 0xffffff, 9, 30, 141, 0xf0e883, 6]
 
 Global $rMyGoldTextBox[10] = [895, 20, 976, 31, 0xffffff, 9, 990, 24, 0xF3EC54, 6]
 Global $rMyElixTextBox[10] = [895, 64, 976, 75, 0xffffff, 9, 0, 0, 0, 0]
