@@ -38,7 +38,7 @@ Func GetTownHallLevel(ByRef $location, ByRef $left, ByRef $top, Const $x1 = -1, 
 	  ;DebugWrite("Unknown TH Level" & @CRLF)
 	  Return -1
    Else
-	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & @CRLF)
-	  Return $bestMatch+3
+	  DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
+	  Return $bestMatch+7
    EndIf
 EndFunc

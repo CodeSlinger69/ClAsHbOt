@@ -8,9 +8,8 @@ Global $GUIImages[12] = [ _
   "GUISplash\troop-healer.png", "GUISplash\troop-pekka.png", "GUISplash\troop-wallbreaker.png", _
   "GUISplash\troop-wizard.png" , "GUISplash\troop-bk.png", "GUISplash\troop-aq.png"]
 
-Global $TownHallBMPs[8] = [ _
-  "TownHall\TH3.bmp", "TownHall\TH4.bmp", "TownHall\THDummy.bmp", "TownHall\THDummy.bmp", "TownHall\TH7.bmp", _
-  "TownHall\TH8.bmp", "TownHall\TH9.bmp", "TownHall\TH10.bmp"]
+Global $TownHallBMPs[4] = [ _
+  "TownHall\TH7.bmp", "TownHall\TH8.bmp", "TownHall\TH9.bmp", "TownHall\TH10.bmp"]
 
 Global $CollectLootBMPs[3] = [ _
   "Loot\FullGoldCollector.bmp", "Loot\FullElixCollector.bmp", "Loot\FullDarkCollector.bmp"]
