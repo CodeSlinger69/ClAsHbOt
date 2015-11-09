@@ -29,18 +29,10 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $availableTroopCo
 
    While $barracksCount <= 4
 
-	  ; Click proper tab on Army Manager Window
-	  If $barracksCount=1 Then
-		 RandomWeightedClick($rArmyManagerWindowStandard1Button)
-	  ElseIf $barracksCount=2 Then
-		 RandomWeightedClick($rArmyManagerWindowStandard2Button)
-	  ElseIf $barracksCount=3 Then
-		 RandomWeightedClick($rArmyManagerWindowStandard3Button)
-	  Else  ; $barracksCount=4
-		 RandomWeightedClick($rArmyManagerWindowStandard4Button)
+	  ; Click nextstandard barracks button on Army Manager Window, if unsuccessful, then we are done
+	  If OpenNextAvailableStandardBarracks() = False Then
+		 ExitLoop
 	  EndIf
-
-	  Sleep(500)
 
 	  ; See if we are full up
 	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True

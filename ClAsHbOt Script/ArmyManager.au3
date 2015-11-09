@@ -31,6 +31,100 @@ Func CloseArmyManagerWindow()
 
 EndFunc
 
+; Returns true if next standard barracks was selected, false otherwise
+Func OpenNextAvailableStandardBarracks()
+   ; First see which one is open
+   Local $c1[4] = [$rArmyManagerWindowStandard1Button[4], $rArmyManagerWindowStandard1Button[5], $rArmyManagerSelectedColor[2]]
+   Local $c2[4] = [$rArmyManagerWindowStandard2Button[4], $rArmyManagerWindowStandard2Button[5], $rArmyManagerSelectedColor[2]]
+   Local $c3[4] = [$rArmyManagerWindowStandard3Button[4], $rArmyManagerWindowStandard3Button[5], $rArmyManagerSelectedColor[2]]
+   Local $c4[4] = [$rArmyManagerWindowStandard4Button[4], $rArmyManagerWindowStandard4Button[5], $rArmyManagerSelectedColor[2]]
+
+   Local $selectedBarracks = 0
+   If IsColorPresent($c1) Then
+	  $selectedBarracks = 1
+   ElseIf IsColorPresent($c2) Then
+	  $selectedBarracks = 2
+   ElseIf IsColorPresent($c3) Then
+	  $selectedBarracks = 3
+   ElseIf IsColorPresent($c4) Then
+	  $selectedBarracks = 4
+   EndIf
+   ;DebugWrite("Current standard barracks selection: " & $selectedBarracks)
+
+   ; If the last standard barracks was selected, then return false, as there are no others remaining
+   If $selectedBarracks = 4 Then Return False
+
+   ; Scan for the next available standard barracks, and click it
+   For $i = $selectedBarracks+1 To 4
+	  If $i = 1 Then
+		 If IsButtonPresent($rArmyManagerWindowStandard1Button) Then
+			RandomWeightedClick($rArmyManagerWindowStandard1Button)
+			Sleep(500)
+			Return True
+		 EndIf
+	  ElseIf $i = 2 Then
+		 If IsButtonPresent($rArmyManagerWindowStandard2Button) Then
+			RandomWeightedClick($rArmyManagerWindowStandard2Button)
+			Sleep(500)
+			Return True
+		 EndIf
+	  ElseIf $i = 3 Then
+		 If IsButtonPresent($rArmyManagerWindowStandard3Button) Then
+			RandomWeightedClick($rArmyManagerWindowStandard3Button)
+			Sleep(500)
+			Return True
+		 EndIf
+	  ElseIf $i = 4 Then
+		 If IsButtonPresent($rArmyManagerWindowStandard4Button) Then
+			RandomWeightedClick($rArmyManagerWindowStandard4Button)
+			Sleep(500)
+			Return True
+		 EndIf
+	  EndIf
+   Next
+
+   ; If there are no more available standard barracks, then return false
+   Return False
+EndFunc
+
+; Returns true if next dark barracks was selected, false otherwise
+Func OpenNextAvailableDarkBarracks()
+   ; First see which one is open
+   Local $c1[4] = [$rArmyManagerWindowDark1Button[4], $rArmyManagerWindowDark1Button[5], $rArmyManagerSelectedColor[2]]
+   Local $c2[4] = [$rArmyManagerWindowDark2Button[4], $rArmyManagerWindowDark2Button[5], $rArmyManagerSelectedColor[2]]
+
+   Local $selectedBarracks = 0
+   If IsColorPresent($c1) Then
+	  $selectedBarracks = 1
+   ElseIf IsColorPresent($c2) Then
+	  $selectedBarracks = 2
+   EndIf
+   ;DebugWrite("Current dark barracks selection: " & $selectedBarracks)
+
+   ; If the last dark barracks was selected, then return false, as there are no others remaining
+   If $selectedBarracks = 2 Then Return False
+
+   ; Scan for the next available dark barracks, and click it
+   For $i = $selectedBarracks+1 To 2
+	  If $i = 1 Then
+		 If IsButtonPresent($rArmyManagerWindowDark1Button) Then
+			RandomWeightedClick($rArmyManagerWindowDark1Button)
+			Sleep(500)
+			Return True
+		 EndIf
+	  ElseIf $i = 2 Then
+		 If IsButtonPresent($rArmyManagerWindowDark2Button) Then
+			RandomWeightedClick($rArmyManagerWindowDark2Button)
+			Sleep(500)
+			Return True
+		 EndIf
+	  EndIf
+   Next
+
+   ; If there are no more available dark barracks, then return false
+   Return False
+EndFunc
+
 Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
    Local $barracksTroopBox[4] = [292, 238, 739, 412]
