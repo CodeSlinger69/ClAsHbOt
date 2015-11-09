@@ -11,7 +11,7 @@ Global $rMyGoldTextBox[10] = [895, 20, 976, 31, 0xffffff, 9, 990, 24, 0xF3EC54, 
 Global $rMyElixTextBox[10] = [895, 64, 976, 75, 0xffffff, 9, 0, 0, 0, 0]
 Global $rMyDarkTextBox[10] = [895, 106, 976, 117, 0xffffff, 9, 0, 0, 0, 0]
 Global $rMyGemsTextBoxNoDE[10] = [917, 106, 976, 117, 0xffffff, 9, 903, 112, 0xFFFFFF, 0]
-Global $rMyGemsTextBoxWithDE[10] = [917, 147, 976, 158, 0xffffff, 9, 0, 0, 0, 0]
+Global $rMyGemsTextBoxWithDE[10] = [917, 147, 976, 158, 0xffffff, 9, 903, 153, 0xFFFFFF, 0]
 Global $rMyCupsTextBox[10] = [50, 64, 104, 74, 0xffffff, 9, 0, 0, 0, 0]
 
 Global $rBarracksWindowTextBox[10] = [262, 113, 395, 127, 0xffffff, 9, 0, 0, 0, 0]

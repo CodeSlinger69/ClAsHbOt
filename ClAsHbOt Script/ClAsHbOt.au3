@@ -258,8 +258,8 @@ Func GetMyLootNumbers()
 	  Local $MyElix = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
 
 	  Local $MyDark = 0
-	  If IsTextBoxPresent($rMyDarkTextBox) Then
-		 Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  If IsTextBoxPresent($rMyGemsTextBoxWithDE) = True Then
+		 $MyDark = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
 	  EndIf
 
 	  Local $MyGems = 0
