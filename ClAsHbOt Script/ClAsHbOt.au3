@@ -1,8 +1,5 @@
 #cs
 ClAsHbOt!
-
-Ignore storages option
-
 #ce
 
 Opt("MustDeclareVars", 1)

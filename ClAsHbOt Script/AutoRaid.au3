@@ -383,34 +383,52 @@ EndFunc
 
 Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level, Const $usage)
    ; How much is in the storage, based on storage level and usage amount?
+   ; Assume maximum number of storages for a given TH level
    Local $inStorage
-   If $level=11 Then
+   If $level=11 And $targetTHLevel>=9 Then ; TH9 and higher can have 4 storages
 	  $inStorage = 8000000 * $usage
-   ElseIf $level=10 Then
+   ElseIf $level=11 And $targetTHLevel=8 Then ; TH8 can have 3 storages
+	  $inStorage = 6000000 * $usage
+   ElseIf $level=11 And $targetTHLevel<=7 Then ; TH7 and lower can have 2 storages
 	  $inStorage = 4000000 * $usage
+   ElseIf $level=10 And $targetTHLevel>=9 Then ; TH9 and higher can have 4 storages
+	  $inStorage = 4000000 * $usage
+   ElseIf $level=10 And $targetTHLevel=8 Then ; TH8 can have 3 storages
+	  $inStorage = 3000000 * $usage
+   ElseIf $level=10 And $targetTHLevel<=7 Then ; TH7 and lower can have 2 storages
+	  $inStorage = 2000000 * $usage
    Else
-	  ; TODO: add logic here for other level storages once those images are captured
+	  ; TODO: add logic here for other level storages once/if those images are captured
 	  $inStorage = 2000000
    EndIf
    DebugWrite("Estimated amount in storage = " & $inStorage)
 
-   ; How much of what is in the storage is available to loot, given my TH level?
+   ; How much of what is in the storage is available to loot, given the target TH level?
    Local $availabletoLoot
-   If $myTHLevel = 10 Then
+   If $targetTHLevel=10 Then
 	  $availabletoLoot = $inStorage*0.1
 	  If $availabletoLoot > 400000 Then $availabletoLoot = 400000
-   ElseIf $myTHLevel = 9 Then
+   ElseIf $targetTHLevel=9 Then
 	  $availabletoLoot = $inStorage*0.12
 	  If $availabletoLoot > 350000 Then $availabletoLoot = 350000
-   Else
+   ElseIf $targetTHLevel=8 Then
 	  $availabletoLoot = $inStorage*0.14
 	  If $availabletoLoot > 300000 Then $availabletoLoot = 300000
+   ElseIf $targetTHLevel=7 Then
+	  $availabletoLoot = $inStorage*0.16
+	  If $availabletoLoot > 250000 Then $availabletoLoot = 250000
+   ElseIf $targetTHLevel=6 Then
+	  $availabletoLoot = $inStorage*0.18
+	  If $availabletoLoot > 200000 Then $availabletoLoot = 200000
+   Else
+	  $availabletoLoot = $inStorage*0.20
+	  If $availabletoLoot > 200000 Then $availabletoLoot = 200000
    EndIf
    DebugWrite("Available to loot from storage = " & $availabletoLoot)
 
    ; Adjust available to loot amount by loot penalty
    If $myTHLevel-$targetTHLevel <= 0 Then
-	  $availabletoLoot*=1 ; no penalty if raiding my town hall level or higher
+	  $availabletoLoot*=1 ; no penalty if raiding a base that is my town hall level or higher
    ElseIf $myTHLevel-$targetTHLevel = 1 Then
 	  $availabletoLoot*=0.90
    ElseIf $myTHLevel-$targetTHLevel = 2 Then
