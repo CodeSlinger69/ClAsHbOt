@@ -100,7 +100,8 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
    ; Wait for Next button
    $failCount = 30
    While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
-	  IsButtonPresent($rAndroidMessageButton) = False And _
+	  IsButtonPresent($rAndroidMessageButton1) = False And _
+	  IsButtonPresent($rAndroidMessageButton2) = False And _
 	  AttackingIsDisabled() = False And _
 	  $failCount>0
 
@@ -200,7 +201,8 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
 	  ; Sleep and wait for Next button to reappear
 	  $failCount = 30
 	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
-		    IsButtonPresent($rAndroidMessageButton) = False And _
+			IsButtonPresent($rAndroidMessageButton1) = False And _
+			IsButtonPresent($rAndroidMessageButton2) = False And _
 			AttackingIsDisabled() = False And _
 			$failCount>0
 
@@ -223,7 +225,7 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
 		 Return False
 	  EndIf
 
-	  If $failCount = 0 Or IsButtonPresent($rAndroidMessageButton) Then
+	  If $failCount = 0 Or IsButtonPresent($rAndroidMessageButton1) Or IsButtonPresent($rAndroidMessageButton2) Then
 		 If $failCount = 0 Then
 			DebugWrite("Find Match failed (AR2) - timeout waiting for Wait Raid screen")
 		 Else
@@ -631,12 +633,12 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 
    If WhereAmI() = $eScreenEndBattle Then
 	  GrabFrameToFile("EndBattleFrame.bmp")
-	  Local $goldWin = ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleGoldTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $elixWin = ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleElixTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleDarkTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces) : 0
+	  Local $goldWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $elixWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleElixTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : 0
 	  Local $cupsWin = IsTextBoxPresent($rEndBattleCups1TextBox) ? _
-					   ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleCups1TextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces) : _
-					   ScrapeFuzzyText($gExtraLargeCharacterMaps, $rEndBattleCups2TextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+					   ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups1TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : _
+					   ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups2TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
 
 	  Local $goldBonus = 0
 	  Local $elixBonus = 0
@@ -645,11 +647,11 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 		 IsTextBoxPresent($rEndBattleBonusElixTextBox) Or _
 		 IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
 
-		 $goldBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusGoldTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $goldBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
-		 $elixBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusElixTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $elixBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
-		 $darkBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusDarkTextBox, $gExtraLargeCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $darkBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
 	  EndIf
 
@@ -674,9 +676,9 @@ EndFunc
 
 Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
-   Local $buttonOffset[4] = [0, -15, 52, 54]
-   Local $raidTroopBox1[4] = [173, 456, 228, 531] ; first button only
-   Local $raidTroopBox2[4] = [235, 456, 850, 531] ; buttons 2-11
+   Local $buttonOffset[4] = [0, -21, 72, 75]
+   Local $raidTroopBox1[4] = [51, 620, 128, 725] ; first button only
+   Local $raidTroopBox2[4] = [135, 620, 972, 725] ; buttons 2-11
 
    For $i = 0 To UBound($index)-1
 	  $index[$i][0] = -1
@@ -742,7 +744,7 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
 	  Sleep(200)
    EndIf
 
-   Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+10, _
+   Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+18, _
 						 $rBarracksTroopCountTextBox[4], $rBarracksTroopCountTextBox[5], _
 						 0, 0, 0, 0]
    Local $t = ScrapeFuzzyText($gSmallCharacterMaps, $textBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)

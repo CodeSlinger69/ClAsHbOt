@@ -1,13 +1,32 @@
 Func CheckForAndroidMessageBox()
 
+   Local $boxPresent = False
+
    ; Check for Android message boxes
-   If IsButtonPresent($rAndroidMessageButton) Then
-	  DebugWrite("Online check: Clicking Android Msg Box")
+   If IsButtonPresent($rAndroidMessageButton1) Then
+	  DebugWrite("Online check: Clicking short Android Msg Box")
 
 	  WinActivate($gTitle)
 	  WinWaitActive($gTitle)
 
-	  RandomWeightedClick($rAndroidMessageButton)
+	  RandomWeightedClick($rAndroidMessageButton1)
+
+	  $boxPresent = True
+   EndIf
+
+   If IsButtonPresent($rAndroidMessageButton2) Then
+	  DebugWrite("Online check: Clicking long Android Msg Box")
+
+	  WinActivate($gTitle)
+	  WinWaitActive($gTitle)
+
+	  RandomWeightedClick($rAndroidMessageButton2)
+
+	  $boxPresent = True
+   EndIf
+
+
+   If $boxPresent = True Then
 	  Sleep(2000)
 
 	  ; Wait for main screen
@@ -22,6 +41,7 @@ Func CheckForAndroidMessageBox()
 
 	  If $failCount>0 Then ZoomOut(False)
    EndIf
+
 EndFunc
 
 Func AttackingIsDisabled()

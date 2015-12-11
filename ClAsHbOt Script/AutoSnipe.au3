@@ -98,7 +98,8 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
    ; Wait for Next button
    $failCount = 30
    While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
-	  IsButtonPresent($rAndroidMessageButton) = False And _
+	  IsButtonPresent($rAndroidMessageButton1) = False And _
+	  IsButtonPresent($rAndroidMessageButton2) = False And _
 	  AttackingIsDisabled() = False And _
 	  $failCount>0
 
@@ -170,7 +171,8 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 	  ; Sleep and wait for Next button to reappear
 	  $failCount = 30
 	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
-		    IsButtonPresent($rAndroidMessageButton) = False And _
+		    IsButtonPresent($rAndroidMessageButton1) = False And _
+		    IsButtonPresent($rAndroidMessageButton2) = False And _
 			AttackingIsDisabled() = False And _
 			$failCount>0
 
@@ -193,7 +195,7 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 		 Return False
 	  EndIf
 
-	  If $failCount = 0 Or IsButtonPresent($rAndroidMessageButton) Then
+	  If $failCount = 0 Or IsButtonPresent($rAndroidMessageButton1) Or IsButtonPresent($rAndroidMessageButton2) Then
 		 If $failCount = 0 Then
 			DebugWrite("Find Match failed (AS2) - timeout waiting for Wait Raid screen")
 		 Else

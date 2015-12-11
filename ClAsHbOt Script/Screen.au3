@@ -171,7 +171,8 @@ Func ZoomOut(Const $clearOnSafeSpot)
 
    Local $s = WhereAmI()
    If $s=$eScreenMain Or $s=$eScreenWaitRaid Or $s=$eScreenLiveRaid Then
-	  For $i = 1 To 3
+
+	  For $i = 1 To 4
 		 If $gMouseClickMethod = "MouseClick" Then
 			Send("^-")
 		 Else
@@ -180,8 +181,6 @@ Func ZoomOut(Const $clearOnSafeSpot)
 
 		 Sleep(250)
 	  Next
-
-	  Sleep(150)
 
 	  If $clearOnSafeSpot Then
 		 RandomWeightedClick($rSafeAreaButton)

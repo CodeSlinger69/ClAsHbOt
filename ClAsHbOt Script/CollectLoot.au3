@@ -37,7 +37,8 @@ Func CollectLoot()
 	  ; Collect the gold and elixir loot
 	  For $i = 0 To $totalMatches-1
 
-		 Local $button[4] = [$sortedX[$i], $sortedY[$i], $sortedX[$i]+$rCollectorButton[2], $sortedY[$i]+$rCollectorButton[3]]
+		 Local $button[4] = [$sortedX[$i]+$rCollectorButton[0], $sortedY[$i]+$rCollectorButton[1], _
+						     $sortedX[$i]+$rCollectorButton[2], $sortedY[$i]+$rCollectorButton[3]]
 		 RandomWeightedClick($button)
 
 		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])

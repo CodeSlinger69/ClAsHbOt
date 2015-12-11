@@ -12,7 +12,7 @@ Global $gLastPossibleKickTime = TimerInit()
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
 Global $gBlueStacksWidth = 1024
-Global $gBlueStacksHeight = 600
+Global $gBlueStacksHeight = 800
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"
@@ -32,9 +32,10 @@ Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "
 									 "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", _
 									 "Lava Hound", _
 									 "Barbarian King", "Archer Queen"]
-; Todo, add earthquake and haste, when I get them
-Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, $eSpellCount
-Global $gSpellNames[$eSpellCount] = ["Lightning", "Rage", "Heal", "Jump", "Freeze", "Poison"]
+Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _
+   $eSpellEarthquake, $eSpellHaste, $eSpellCount
+Global $gSpellNames[$eSpellCount] = ["Lightning", "Rage", "Heal", "Jump", "Freeze", "Poison", _
+   "Earthquake", "Haste"]
 
 ; Known screen/window types
 Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMatch, _

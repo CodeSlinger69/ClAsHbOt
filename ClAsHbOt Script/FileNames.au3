@@ -8,8 +8,8 @@ Global $GUIImages[12] = [ _
   "GUISplash\troop-healer.png", "GUISplash\troop-pekka.png", "GUISplash\troop-wallbreaker.png", _
   "GUISplash\troop-wizard.png" , "GUISplash\troop-bk.png", "GUISplash\troop-aq.png"]
 
-Global $TownHallBMPs[4] = [ _
-  "TownHall\TH7.bmp", "TownHall\TH8.bmp", "TownHall\TH9.bmp", "TownHall\TH10.bmp"]
+Global $TownHallBMPs[5] = [ _
+  "TownHall\TH7.bmp", "TownHall\TH8.bmp", "TownHall\TH9.bmp", "TownHall\TH10.bmp", "TownHall\TH11.bmp"]
 
 Global $CollectLootBMPs[3] = [ _
   "Loot\FullGoldCollector.bmp", "Loot\FullElixCollector.bmp", "Loot\FullDarkCollector.bmp"]
@@ -40,8 +40,6 @@ Global $DarkStorageBMPs[16] = [ _
   "Storages\DarkStorageL2.00.bmp", "Storages\DarkStorageL2.25.bmp", _
   "Storages\DarkStorageL1.00.bmp", "Storages\DarkStorageL1.25.bmp"]
 
-Global $gTrainTroopsButtonBMPs[1] = ["TrainTroopsButton.bmp"]
-
 Global $gTroopSlotBMPs[$eTroopCount] = [ _
   "RaidSlots\SlotBarbarian.bmp", "RaidSlots\SlotArcher.bmp", "RaidSlots\SlotGiant.bmp", "RaidSlots\SlotGoblin.bmp", _
   "RaidSlots\SlotWallBreaker.bmp", "RaidSlots\SlotBalloon.bmp", "RaidSlots\SlotWizard.bmp", "RaidSlots\SlotHealer.bmp", _
@@ -49,10 +47,10 @@ Global $gTroopSlotBMPs[$eTroopCount] = [ _
   "RaidSlots\SlotMinion.bmp", "RaidSlots\SlotHogRider.bmp", "RaidSlots\SlotValkyrie.bmp", "RaidSlots\SlotGolem.bmp", _
   "RaidSlots\SlotWitch.bmp", "RaidSlots\SlotLavaHound.bmp", "RaidSlots\SlotKing.bmp", "RaidSlots\SlotQueen.bmp"]
 
-; Todo, add earthquake and haste, when I get them
 Global $gSpellSlotBMPs[$eSpellCount] = [ _
   "RaidSlots\SlotLightningSpell.bmp", "RaidSlots\SlotHealSpell.bmp", "RaidSlots\SlotRageSpell.bmp", _
-  "RaidSlots\SlotJumpSpell.bmp", "RaidSlots\SlotFreezeSpell.bmp", "RaidSlots\SlotPoisonSpell.bmp"]
+  "RaidSlots\SlotJumpSpell.bmp", "RaidSlots\SlotFreezeSpell.bmp", "RaidSlots\SlotPoisonSpell.bmp", _
+  "RaidSlots\SlotEarthquakeSpell.bmp", "RaidSlots\SlotHasteSpell.bmp"]
 
 Global $DonateButtonBMPs[1] = ["Donate\DonateButton.bmp"]
 
@@ -70,7 +68,7 @@ Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = [ _
   "Barracks\BarracksMinion.bmp", "Barracks\BarracksHogRider.bmp", "Barracks\BarracksValkyrie.bmp", "Barracks\BarracksGolem.bmp", _
   "Barracks\BarracksWitch.bmp", "Barracks\BarracksLavaHound.bmp"]
 
-; Todo, add earthquake and haste, when I get them
 Global $gBarracksSpellSlotBMPs [$eSpellCount] = [ _
   "Barracks\BarracksLightningSpell.bmp", "Barracks\BarracksHealSpell.bmp", "Barracks\BarracksRageSpell.bmp", _
-  "Barracks\BarracksJumpSpell.bmp", "Barracks\BarracksFreezeSpell.bmp", "Barracks\BarracksPoisonSpell.bmp"]
+  "Barracks\BarracksJumpSpell.bmp", "Barracks\BarracksFreezeSpell.bmp", "Barracks\BarracksPoisonSpell.bmp", _
+  "Barracks\BarracksEarthquakeSpell.bmp", "Barracks\BarracksHasteSpell.bmp"]

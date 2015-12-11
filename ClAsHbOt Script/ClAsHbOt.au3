@@ -48,6 +48,59 @@ Func Main()
    InitScraper()
 
    ReadSettings()
+;DebugWrite("WhereAmI: " & WhereAmI())
+;ZoomOut(False)
+;$gScraperDebug = True
+;Local $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+;DebugWrite("Gold: " & $gold)
+;Local $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+;DebugWrite("Elix: " & $elix)
+;Local $dark = 0
+;Local $cups = 0
+;If IsTextBoxPresent($rDarkTextBox)=False Then
+;   $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox1, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+;Else
+;   $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+;   $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox2, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+;EndIf
+;DebugWrite("Dark: " & $dark)
+;DebugWrite("Cups: " & $cups)
+;Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
+;DebugWrite("Dead: " & $deadBase)
+;Local $location, $top, $left
+;Local $townHall = GetTownHallLevel($location, $left, $top)
+;DebugWrite("TH: " & $townHall)
+
+Local $goldWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
+Local $elixWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleElixTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
+Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : 0
+Local $cupsWin = IsTextBoxPresent($rEndBattleCups1TextBox) ? _
+				 ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups1TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : _
+				 ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups2TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
+DebugWrite("Gold: " & $goldWin)
+DebugWrite("Elix: " & $elixWin)
+DebugWrite("Dark: " & $darkWin)
+DebugWrite("Cups: " & $cupsWin)
+
+#cs
+Local $goldBonus = 0
+Local $elixBonus = 0
+Local $darkBonus = 0
+If IsTextBoxPresent($rEndBattleBonusGoldTextBox) Or _
+   IsTextBoxPresent($rEndBattleBonusElixTextBox) Or _
+   IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
+
+   $goldBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+   $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
+   $elixBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+   $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
+   $darkBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+   $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
+   DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
+EndIf
+#ce
+
+Exit
 
    InitGUI()
 
@@ -152,7 +205,8 @@ Func MainApplicationLoop()
 	  ; Auto Snipe
 	  If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
-		 IsButtonPresent($rAndroidMessageButton) = False Then
+		 IsButtonPresent($rAndroidMessageButton1) = False And _
+		 IsButtonPresent($rAndroidMessageButton2) = False Then
 
 		 $gAutoSnipeClicked = False
 		 CheckForAndroidMessageBox()
@@ -164,7 +218,8 @@ Func MainApplicationLoop()
 	  If (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED) And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
-		 IsButtonPresent($rAndroidMessageButton) = False Then
+		 IsButtonPresent($rAndroidMessageButton1) = False And _
+		 IsButtonPresent($rAndroidMessageButton2) = False Then
 
 		 DumpCups()
 	  EndIf
@@ -172,7 +227,8 @@ Func MainApplicationLoop()
 	  ; Auto Raid, Attack
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
-		 IsButtonPresent($rAndroidMessageButton) = False Then
+		 IsButtonPresent($rAndroidMessageButton1) = False And _
+		 IsButtonPresent($rAndroidMessageButton2) = False Then
 
 		 $gAutoRaidClicked = False
 		 CheckForAndroidMessageBox()

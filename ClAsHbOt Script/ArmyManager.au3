@@ -127,10 +127,7 @@ EndFunc
 
 Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
-   Local $barracksTroopBox[4] = [292, 238, 739, 412]
-   Local $buttonOffset[4] = [0, 17, 74, 63]
-
-   GrabFrameToFile("BarracksFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], $barracksTroopBox[2], $barracksTroopBox[3])
+   GrabFrameToFile("BarracksFrame.bmp", $rBarracksTroopBox[0], $rBarracksTroopBox[1], $rBarracksTroopBox[2], $rBarracksTroopBox[3])
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
@@ -138,10 +135,10 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
 	  ;DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
 
 	  If $split[2] > $gConfidenceBarracksTroopSlot Then
-		 $index[$i][0] = $split[0]+$barracksTroopBox[0]+$buttonOffset[0]
-		 $index[$i][1] = $split[1]+$barracksTroopBox[1]+$buttonOffset[1]
-		 $index[$i][2] = $split[0]+$barracksTroopBox[0]+$buttonOffset[2]
-		 $index[$i][3] = $split[1]+$barracksTroopBox[1]+$buttonOffset[3]
+		 $index[$i][0] = $split[0]+$rBarracksTroopBox[0]+$rBarracksButtonOffset[0]
+		 $index[$i][1] = $split[1]+$rBarracksTroopBox[1]+$rBarracksButtonOffset[1]
+		 $index[$i][2] = $split[0]+$rBarracksTroopBox[0]+$rBarracksButtonOffset[2]
+		 $index[$i][3] = $split[1]+$rBarracksTroopBox[1]+$rBarracksButtonOffset[3]
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1
@@ -150,40 +147,6 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
 	  EndIf
    Next
 EndFunc
-
-#cs
-Func GetBarracksTroopCounts(Const ByRef $bitmaps, ByRef $counts)
-   Local $barracksTroopBox[4] = [289, 224, 739, 400]
-   Local $textOffset[4] = [0, -15, 35, 0]
-
-   ; Grab frame
-   GrabFrameToFile("BarracksFrame.bmp", $barracksTroopBox[0], $barracksTroopBox[1], _
-				   $barracksTroopBox[2], $barracksTroopBox[3])
-
-   ; Count queued number of each troop
-   For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksFrame.bmp", _
-						   "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-	  ;DebugWrite("Troop " & $gBarracksTroopSlotBMPs[$i] & " conf: " & $split[2])
-
-	  If $split[2] > $gConfidenceBarracksTroopSlot Then
-		 Local $textBox[10] = [$barracksTroopBox[0] + $split[0] + $textOffset[0], _
-							   $barracksTroopBox[1] + $split[1] + $textOffset[1], _
-							   $barracksTroopBox[0] + $split[0] + $textOffset[2], _
-							   $barracksTroopBox[1] + $split[1] + $textOffset[3], _
-							   $rBarracksTroopCountTextBox[4], $rBarracksTroopCountTextBox[5], _
-							   0, 0, 0, 0]
-
-		 ; Parse queue text
-		 Local $rawText = ScrapeFuzzyText($gLargeCharacterMaps, $textBox, $gLargeCharMapsMaxWidth, $eScrapeDropSpaces)
-		 $counts[$i] = Number(StringReplace($rawText, "x", ""))
-		 If $counts[$i]>0 Then DebugWrite("Barracks queued: " & $gTroopNames[$i] & " = " & $counts[$i])
-
-	  EndIf
-   Next
-EndFunc
-#ce
 
 Func DequeueTroops()
    Local $dequeueTries = 6
@@ -252,8 +215,7 @@ Func FillBarracksWithTroops(Const $troop, Const ByRef $troopSlots)
 
 		 ; Click and hold to fill up queue
 		 If $troopsToFill>0 Then
-			DebugWrite("FillBarracksWithTroops(), Adding " & $troopsToFill & " " & $gTroopNames[$troop] & " box: " & _
-			   $troopSlots[$troop][0] & ", " & $troopSlots[$troop][1] & ", " & $troopSlots[$troop][2] & ", " & $troopSlots[$troop][3])
+			DebugWrite("FillBarracksWithTroops(), Adding " & $troopsToFill & " " & $gTroopNames[$troop])
 			Local $button[4] = [$troopSlots[$troop][0], $troopSlots[$troop][1], $troopSlots[$troop][2], $troopSlots[$troop][3]]
 			Local $xClick, $yClick
 			RandomWeightedCoords($button, $xClick, $yClick)
