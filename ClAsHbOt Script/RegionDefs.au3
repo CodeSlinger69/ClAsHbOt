@@ -15,7 +15,7 @@ Global $rCupsTextBox1[10] = [57, 162, 148, 177, 0xffffff, 9, 40, 169, 0xBD8C24, 
 Global $rCupsTextBox2[10] = [57, 197, 148, 212, 0xffffff, 9, 40, 204, 0xC59425, 6]
 
 Global $rBarracksTroopBox[10] = [211, 325, 822, 563]
-Global $rBarracksButtonOffset[4] = [0, 0, 104, 76]
+Global $rBarracksButtonOffset[4] = [0, 5, 104, 76]
 Global $rBarracksWindowTextBox[10] = [158, 157, 345, 172, 0xffffff, 9, 0, 0, 0, 0]
 Global $rBarracksTroopCountTextBox[10] = [0, 0, 0, 0, 0xffffff, 9, 0, 0, 0, 0]
 Global $rEndBattleGoldTextBox[10] = [388, 322, 524, 345, 0xffffff, 9, 0, 0, 0, 0]
@@ -25,7 +25,7 @@ Global $rEndBattleCups1TextBox[10] = [388, 410, 524, 433, 0xffffff, 9, 549, 424,
 Global $rEndBattleCups2TextBox[10] = [388, 453, 524, 476, 0xffffff, 9, 549, 467, 0xB38620, 6]
 Global $rEndBattleBonusGoldTextBox[10] = [703, 381, 790, 397, 0xffffff, 9, 808, 390, 0xE2C332, 0]
 Global $rEndBattleBonusElixTextBox[10] = [703, 417, 790, 434, 0xffffff, 9, 808, 429, 0xD654CE, 0]
-Global $rEndBattleBonusDarkTextBox[10] = [703, 1, 790, 1, 0xffffff, 9, 730, 341, 0x4a3c58, 0] ; Adjust for 12/10 update
+Global $rEndBattleBonusDarkTextBox[10] = [703, 453, 790, 469, 0xffffff, 9, 808, 467, 0x41324E, 0]
 
 Global $rChatTextBox[10] = [0, 0, 233, 9, 0xffffff, 120, 0, 0, 0, 0] ; Adjust for 12/10 update
 
@@ -38,7 +38,8 @@ Global $rScreenPlayStoreOpenButton[8] = [0, 0, 150, 40, 0, 0, 0, 0]
 Global $rAndroidMessageButton1[8] = [196, 414, 826, 466, 213, 348, 0x33b5e5, 0]
 Global $rAndroidMessageButton2[8] = [196, 424, 826, 476, 213, 339, 0x33b5e5, 0]
 Global $rMainScreenAttackButton[8] = [18, 625, 127, 731, 86, 670, 0xD86440, 6]
-Global $rFindMatchScreenFindAMatchButton[8] = [141, 546, 363, 645, 180, 620, 0xD84800, 6]
+Global $rFindMatchScreenFindAMatchNoShieldButton[8] = [141, 546, 363, 645, 180, 620, 0xD84800, 6]
+Global $rFindMatchScreenFindAMatchWithShieldButton[8] = [141, 518, 363, 617, 180, 592, 0xD84800, 6]
 Global $rFindMatchScreenCloseWindowButton[8] = [963, 17, 1004, 56, 984, 53, 0xC00F16, 6]
 Global $rWaitRaidScreenNextButton[8] = [817, 532, 990, 609, 840, 600, 0xD24300, 6]
 Global $rLiveRaidScreenEndBattleButton[8] = [17, 570, 145, 611, 29, 603, 0xc00000, 0]

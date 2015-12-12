@@ -95,13 +95,6 @@ Func AutoRaidExecuteRaidStrategy1()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy1GetDirection()
-   If $direction = "Top" Then
-	  DebugWrite("Attacking from top.")
-	  MoveScreenDownToTop(False)
-   Else
-	  DebugWrite("Attacking from bottom.")
-	  MoveScreenUpToBottom(False)
-   EndIf
 
    ; Get buttons
    Local $giantButton[4] = [$troopIndex[$eTroopGiant][0], $troopIndex[$eTroopGiant][1], $troopIndex[$eTroopGiant][2], $troopIndex[$eTroopGiant][3]]
@@ -226,9 +219,6 @@ Func AutoRaidStrategy1GetDirection()
    Local $allMatchY[1], $totalMatches=0
    Local $matchX[1], $matchY[1], $matchCount
 
-   ; Move screen up 65 pixels
-   MoveScreenUpToCenter(65)
-
    ; Grab frame
    GrabFrameToFile("LocateStoragesFrame.bmp")
 
@@ -255,9 +245,6 @@ Func AutoRaidStrategy1GetDirection()
    For $i = 0 To $matchCount-1
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
-
-   ; Move screen back down 65 pixels
-   MoveScreenDownToCenter(65)
 
    ; Count em
    Local $storagesTopBot = 0

@@ -42,12 +42,6 @@ Func DoCupsDump()
    ; Deploy from top or bottom?
    Local $direction = (Random()>0.5) ? "Top" : "Bot"
 
-   If $direction = "Top" Then
-	  MoveScreenDownToTop(False)
-   Else
-	  MoveScreenUpToBottom(False)
-   EndIf
-
    If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
    ; Deploy one barb

@@ -96,13 +96,6 @@ Func AutoRaidExecuteRaidStrategy2()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy0GetDirection()
-   If $direction = "Top" Then
-	  DebugWrite("Attacking from top.")
-	  MoveScreenDownToTop(False)
-   Else
-	  DebugWrite("Attacking from bottom.")
-	  MoveScreenUpToBottom(False)
-   EndIf
 
     ; Get buttons
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]

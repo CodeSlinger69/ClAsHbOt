@@ -82,13 +82,6 @@ Func AutoRaidExecuteRaidStrategy3()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy3GetDirection()
-   If $direction = "Top" Then
-	  DebugWrite("Attacking from top.")
-	  MoveScreenDownToTop(False)
-   Else
-	  DebugWrite("Attacking from bottom.")
-	  MoveScreenUpToBottom(False)
-   EndIf
 
    ;
    ; Deploy troops
@@ -123,21 +116,15 @@ Func AutoRaidStrategy3GetDirection()
    ; Count the collectors, by top/bottom half
    Local $matchX[1], $matchY[1], $matchCount
 
-   ; Move screen up 65 pixels
-   MoveScreenUpToCenter(65)
-
    ; Grab frame
    GrabFrameToFile("LocateCollectorsFrame.bmp")
 
    $matchCount = LocateBuildings("LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
-   ; Move screen back down 65 pixels
-   MoveScreenDownToCenter(65)
-
    For $i = 0 To $matchCount-1
 	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
-	  If $matchY[$i] < 250 Then
+	  If $matchY[$i]+21 < $gScreenCenter[1] Then
 		 $collectorsOnTop += 1
 	  Else
 		 $collectorsOnBot += 1

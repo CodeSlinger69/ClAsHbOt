@@ -10,29 +10,6 @@ Func GetTownHallLevel(ByRef $location, ByRef $left, ByRef $top, Const $x1 = -1, 
    ; Grab and scan frame
    GrabFrameToFile("TownHallCenterFrame.bmp", $x1, $y1, $x2, $y2)
    ScanFrameForBestBMP("TownHallCenterFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
-   If $bestMatch<>-1 Then $location = $eTownHallMiddle
-
-   If $x1 = -1 Then
-	  ; No good match, scan top of screen
-	  If $bestMatch = -1 Then
-		 ZoomOut(False)
-		 MoveScreenDownToTop(False)
-		 GrabFrameToFile("TownHallTopFrame.bmp")
-		 MoveScreenUpToCenter()
-		 ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
-		 If $bestMatch<>-1 Then $location = $eTownHallTop
-
-	  EndIf
-
-	  ; No good match, scan bottom of screen
-	  If $bestMatch = -1 Then
-		 MoveScreenUpToBottom(False)
-		 GrabFrameToFile("TownHallBotFrame.bmp")
-		 MoveScreenDownToCenter()
-		 ScanFrameForBestBMP("TownHallBotFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
-		 If $bestMatch<>-1 Then $location = $eTownHallBottom
-	  EndIf
-   EndIf
 
    If $bestMatch = -1 Then
 	  ;DebugWrite("Unknown TH Level" & @CRLF)

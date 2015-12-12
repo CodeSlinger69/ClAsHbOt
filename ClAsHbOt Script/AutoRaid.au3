@@ -81,21 +81,26 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
 
    ; Wait for Find a Match button
    Local $failCount = 10
-   While IsButtonPresent($rFindMatchScreenFindAMatchButton) = False And $failCount>0
+   While IsButtonPresent($rFindMatchScreenFindAMatchNoShieldButton)=False And _
+	  IsButtonPresent($rFindMatchScreenFindAMatchWithShieldButton)=False And _
+	  $failCount>0
+
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
 
    If $failCount = 0 Then
-	  Local $cPos = GetClientPos()
-	  Local $color = PixelGetColor($cPos[0]+$rFindMatchScreenFindAMatchButton[4], $cPos[1]+$rFindMatchScreenFindAMatchButton[5])
-	  DebugWrite("Find Match failed - timeout waiting for Find a Match button, color = " & Hex($color))
+	  DebugWrite("Find Match failed - timeout waiting for Find a Match button")
 	  ResetToCoCMainScreen()
 	  Return False
    EndIf
 
    ; Click Find a Match
-   RandomWeightedClick($rFindMatchScreenFindAMatchButton)
+   If IsButtonPresent($rFindMatchScreenFindAMatchNoShieldButton) Then
+	  RandomWeightedClick($rFindMatchScreenFindAMatchNoShieldButton)
+   Else
+	  RandomWeightedClick($rFindMatchScreenFindAMatchWithShieldButton)
+   EndIf
 
    ; Wait for Next button
    $failCount = 30
@@ -345,9 +350,9 @@ EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
 Func AutoRaidAdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   GrabFrameToFile("StorageUsageFrame.bmp", 261, 100, 761, 450)
+   GrabFrameToFile("StorageUsageFrame.bmp", 261, 200, 761, 550)
    Local $x, $y, $conf, $matchIndex, $saveFrame = False
-   Local $usageAdj = 10; 12.5
+   Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
@@ -407,7 +412,7 @@ Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level
 
    ; How much of what is in the storage is available to loot, given the target TH level?
    Local $availabletoLoot
-   If $targetTHLevel=10 Then
+   If $targetTHLevel>=10 Then
 	  $availabletoLoot = $inStorage*0.1
 	  If $availabletoLoot > 400000 Then $availabletoLoot = 400000
    ElseIf $targetTHLevel=9 Then

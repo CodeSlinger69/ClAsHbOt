@@ -1,5 +1,13 @@
 #cs
 ClAsHbOt!
+
+Dec 10 Update To Do
+- get 74 charmap for end bonus
+- test on laptop screen
+- donate function
+- finish collecting storage images
+- finish collecting collectors images
+
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -50,6 +58,23 @@ Func Main()
    ReadSettings()
 ;DebugWrite("WhereAmI: " & WhereAmI())
 ;ZoomOut(False)
+
+#cs
+; Center 512, 398
+Local $box[21][4]
+Local $y = 325
+Local $i = 0
+For $x = 70 To 470 Step 20 ; x 70 to 510   y 398 to 70
+   $box[$i][0] = $x
+   $box[$i][1] = $y
+   $box[$i][2] = $x+60
+   $box[$i][3] = $y+40
+   DebugWrite("NW Box: " & $i & " " & $box[$i][0] & "  " & $box[$i][1] & "  " & $box[$i][2] & "  " & $box[$i][3])
+   $i+=1
+   $y-=13
+Next
+#ce
+
 ;$gScraperDebug = True
 ;Local $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 ;DebugWrite("Gold: " & $gold)
@@ -71,6 +96,7 @@ Func Main()
 ;Local $townHall = GetTownHallLevel($location, $left, $top)
 ;DebugWrite("TH: " & $townHall)
 
+#cs
 Local $goldWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
 Local $elixWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleElixTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
 Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : 0
@@ -81,6 +107,7 @@ DebugWrite("Gold: " & $goldWin)
 DebugWrite("Elix: " & $elixWin)
 DebugWrite("Dark: " & $darkWin)
 DebugWrite("Cups: " & $cupsWin)
+#ce
 
 #cs
 Local $goldBonus = 0
@@ -100,7 +127,44 @@ If IsTextBoxPresent($rEndBattleBonusGoldTextBox) Or _
 EndIf
 #ce
 
-Exit
+#cs
+GrabFrameToFile("StorageUsageFrame.bmp", 261, 200, 761, 550)
+Local $x, $y, $conf, $matchIndex
+Local $usageAdj = 10
+
+ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+DebugWrite("Gold Match Index: " & $matchIndex)
+If $matchIndex <> -1 Then
+   Local $s = $GoldStorageBMPs[$matchIndex]
+   Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
+   Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
+   $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
+   DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
+EndIf
+
+ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+DebugWrite("Elix Match Index: " & $matchIndex)
+If $matchIndex <> -1 Then
+   Local $s = $ElixStorageBMPs[$matchIndex]
+   Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
+   Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
+   $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
+   DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
+EndIf
+
+ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+DebugWrite("Dark Match Index: " & $matchIndex)
+If $matchIndex <> -1 Then
+   Local $s = $DarkStorageBMPs[$matchIndex]
+   Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 1))
+   Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
+   $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
+   DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
+EndIf
+#ce
+
+
+;Exit
 
    InitGUI()
 

@@ -13,6 +13,7 @@ Global $gLastPossibleKickTime = TimerInit()
 Global $gTitle = "BlueStacks App Player"
 Global $gBlueStacksWidth = 1024
 Global $gBlueStacksHeight = 800
+Global $gScreenCenter[2] = [512, 398]
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"
@@ -51,17 +52,14 @@ Global $gAutoStage = $eAutoNotStarted
 Global Enum $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
 Global $gMyMaxSpells = 999
 
-; TownHall location on screen
-Global Enum $eTownHallMiddle, $eTownHallTop, $eTownHallBottom
-
 ; Auto Raid statistics
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 
 ; Deploy locations
-Global $NWSafeDeployBox[4] = [280, 170, 300, 190]
-Global $NESafeDeployBox[4] = [735, 170, 755, 190]
-Global $SWSafeDeployBox[4] = [280, 295, 300, 315]
-Global $SESafeDeployBox[4] = [735, 295, 755, 315]
+Global $NWSafeDeployBox[4] = [280, 208, 310, 236]
+Global $NESafeDeployBox[4] = [725, 208, 755, 236]
+Global $SWSafeDeployBox[4] = [280, 565, 310, 585]
+Global $SESafeDeployBox[4] = [720, 565, 750, 585]
 
 ; Formula: y = -.7/x + 374
 Global $NWDeployBoxes[21][4]
@@ -74,7 +72,7 @@ For $x = 70 To 470 Step 20
    $NWDeployBoxes[$i][3] = $y+40
    ;ConsoleWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y-=14
+   $y-=13
 Next
 
 ; Formula: y = .7/x - 340
@@ -88,7 +86,7 @@ For $x = 950 To 550 Step -20
    $NEDeployBoxes[$i][3] = $y+40
    ;ConsoleWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y-=14
+   $y-=13
 Next
 
 ; Formula: y = .7/x + 276
@@ -102,7 +100,7 @@ For $x = 70 To 470 Step 20
    $SWDeployBoxes[$i][3] = $y+40
    ;ConsoleWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y+=14
+   $y+=13
 Next
 
 ; Formula: y = -.7/x + 790
@@ -116,6 +114,6 @@ For $x = 950 To 550 Step -20
    $SEDeployBoxes[$i][3] = $y+40
    ;ConsoleWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y+=14
+   $y+=13
 Next
 
