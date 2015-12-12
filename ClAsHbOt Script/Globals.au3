@@ -11,9 +11,9 @@ Global $gLastPossibleKickTime = TimerInit()
 
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
-Global $gBlueStacksWidth = 1024
-Global $gBlueStacksHeight = 800
-Global $gScreenCenter[2] = [512, 398]
+Global $gBlueStacksWidth = 860
+Global $gBlueStacksHeight = 672
+Global $gScreenCenter[2] = [429, 334]
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"
@@ -56,64 +56,58 @@ Global $gMyMaxSpells = 999
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 
 ; Deploy locations
-Global $NWSafeDeployBox[4] = [280, 208, 310, 236]
-Global $NESafeDeployBox[4] = [725, 208, 755, 236]
-Global $SWSafeDeployBox[4] = [280, 565, 310, 585]
-Global $SESafeDeployBox[4] = [720, 565, 750, 585]
+Global $NWSafeDeployBox[4] = [245, 164, 265, 184] ; box 10
+Global $NESafeDeployBox[4] = [600, 164, 620, 184]
+Global $SWSafeDeployBox[4] = [245, 464, 265, 484]
+Global $SESafeDeployBox[4] = [600, 464, 620, 484]
 
-; Formula: y = -.7/x + 374
-Global $NWDeployBoxes[21][4]
-Local $y = 325
+Global $gMaxDeployBoxes = 19
+
+Global $NWDeployBoxes[$gMaxDeployBoxes][4]
+Local $y = 314
 Local $i = 0
-For $x = 70 To 470 Step 20
+For $x = 45 To 405 Step 20
    $NWDeployBoxes[$i][0] = $x
    $NWDeployBoxes[$i][1] = $y
    $NWDeployBoxes[$i][2] = $x+60
    $NWDeployBoxes[$i][3] = $y+40
-   ;ConsoleWrite("NW Box: " & $i & " " & $NWDeployBoxes[$i][0] & "  " & $NWDeployBoxes[$i][1] & "  " & $NWDeployBoxes[$i][2] & "  " & $NWDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y-=13
+   $y-=15
 Next
 
-; Formula: y = .7/x - 340
-Global $NEDeployBoxes[21][4]
-$y = 325
+Global $NEDeployBoxes[$gMaxDeployBoxes][4]
+$y = 314
 $i=0
-For $x = 950 To 550 Step -20
+For $x = 820 To 460 Step -20
    $NEDeployBoxes[$i][0] = $x-60
    $NEDeployBoxes[$i][1] = $y
    $NEDeployBoxes[$i][2] = $x
    $NEDeployBoxes[$i][3] = $y+40
-   ;ConsoleWrite("NE Box: " & $i & " " & $NEDeployBoxes[$i][0] & "  " & $NEDeployBoxes[$i][1] & "  " & $NEDeployBoxes[$i][2] & "  " & $NEDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y-=13
+   $y-=15
 Next
 
-; Formula: y = .7/x + 276
-Global $SWDeployBoxes[21][4]
-$y = 125
+Global $SWDeployBoxes[$gMaxDeployBoxes][4]
+$y = 314
 $i=0
-For $x = 70 To 470 Step 20
+For $x = 45 To 405 Step 20
    $SWDeployBoxes[$i][0] = $x
    $SWDeployBoxes[$i][1] = $y
    $SWDeployBoxes[$i][2] = $x+60
    $SWDeployBoxes[$i][3] = $y+40
-   ;ConsoleWrite("SW Box: " & $i & " " & $SWDeployBoxes[$i][0] & "  " & $SWDeployBoxes[$i][1] & "  " & $SWDeployBoxes[$i][2] & "  " & $SWDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y+=13
+   $y+=15
 Next
 
-; Formula: y = -.7/x + 790
-Global $SEDeployBoxes[21][4]
-$y = 125
+Global $SEDeployBoxes[$gMaxDeployBoxes][4]
+$y = 314
 $i=0
-For $x = 950 To 550 Step -20
+For $x = 820 To 460 Step -20
    $SEDeployBoxes[$i][0] = $x-60
    $SEDeployBoxes[$i][1] = $y
    $SEDeployBoxes[$i][2] = $x
    $SEDeployBoxes[$i][3] = $y+40
-   ;ConsoleWrite("SE Box: " & $i & " " & $SEDeployBoxes[$i][0] & "  " & $SEDeployBoxes[$i][1] & "  " & $SEDeployBoxes[$i][2] & "  " & $SEDeployBoxes[$i][3] & @CRLF)
    $i+=1
-   $y+=13
+   $y+=15
 Next
 

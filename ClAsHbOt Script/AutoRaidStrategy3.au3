@@ -91,13 +91,13 @@ Func AutoRaidExecuteRaidStrategy3()
    ; Deploy all balloons
    If $troopIndex[$eTroopBalloon][0] <> -1 Then
 	  DebugWrite("Deploying all balloons.")
-	  DeployTroopsToSides($eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
+	  DeployTroopsToSides($eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy all minions
    If $troopIndex[$eTroopMinion][0] <> -1 Then
 	  DebugWrite("Deploying all minions.")
-	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
+	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy and monitor heroes

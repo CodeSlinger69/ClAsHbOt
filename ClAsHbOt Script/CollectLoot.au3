@@ -3,29 +3,50 @@ Func CollectLoot()
    ; Method = 0: CV_TM_SQDIFF, 1: CV_TM_SQDIFF_NORMED 2: CV_TM_CCORR 3: CV_TM_CCORR_NORMED 4: CV_TM_CCOEFF 5: CV_TM_CCOEFF_NORMED
    Local $totalMatches = 0, $currIndex = 0
    Local $matchX[1], $matchY[1]
+   Local $mX[1], $mY[1], $mCount
 
    DebugWrite("CollectLoot()")
 
    ; Grab frame
-   GrabFrameToFile("CollectorsFrame.bmp")
+   GrabFrameToFile("CollectLootFrame.bmp")
 
-   ; Find all the collectors that need clicking in the frame
-   For $loop = 0 To UBound($CollectLootBMPs)-1
-	  ; Get matches for this resource
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", "CollectorsFrame.bmp", _
-			   "str", "Images\"&$CollectLootBMPs[$loop], "int", 3, "int", 6, "double", $gConfidenceCollectLoot)
-	  Local $split = StringSplit($res[0], "|", 2)
-	  $totalMatches += $split[0]
-	  ;DebugWrite("Num matches: " & %i & " " & $split[0])
+   ; Find all the dark elixir collectors that need clicking in the frame
+   $mCount = LocateBuildings("CollectLootFrame.bmp", $CollectDarkLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
+
+   For $i = 0 To $mCount-1
+	  ;DebugWrite("Dark Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
+
+	  $totalMatches += 1
 	  ReDim $matchX[$totalMatches]
 	  ReDim $matchY[$totalMatches]
+	  $matchX[$totalMatches-1] = $mX[$i]
+	  $matchY[$totalMatches-1] = $mY[$i]
+   Next
 
-	  For $i = 0 To $split[0]-1
-		 $matchX[$currIndex] = $split[$i*3+1]
-		 $matchY[$currIndex] = $split[$i*3+2]
-		 $currIndex += 1
-		 ;DebugWrite("Match " & $currIndex & ": " & $split[$i*3+1] & "," & $split[$i*3+2])
-	  Next
+   ; Find all the gold collectors that need clicking in the frame
+   $mCount = LocateBuildings("CollectLootFrame.bmp", $CollectGoldLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
+
+   For $i = 0 To $mCount-1
+	  ;DebugWrite("Gold Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
+
+	  $totalMatches += 1
+	  ReDim $matchX[$totalMatches]
+	  ReDim $matchY[$totalMatches]
+	  $matchX[$totalMatches-1] = $mX[$i]
+	  $matchY[$totalMatches-1] = $mY[$i]
+   Next
+
+   ; Find all the elixir collectors that need clicking in the frame
+   $mCount = LocateBuildings("CollectLootFrame.bmp", $CollectElixLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
+
+   For $i = 0 To $mCount-1
+	  ;DebugWrite("Elix Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
+
+	  $totalMatches += 1
+	  ReDim $matchX[$totalMatches]
+	  ReDim $matchY[$totalMatches]
+	  $matchX[$totalMatches-1] = $mX[$i]
+	  $matchY[$totalMatches-1] = $mY[$i]
    Next
 
    ; Do the collecting

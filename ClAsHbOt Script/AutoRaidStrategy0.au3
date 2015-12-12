@@ -94,13 +94,13 @@ Func AutoRaidExecuteRaidStrategy0()
    ; Deploy 60% of barbs
    If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying 60% of Barbarians (" & Int($availableBarbs*0.6) & ")")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, 20)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy 60% of archers
    If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying 60% of Archers (" & Int($availableArchs*0.6) & ")")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, 20)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy breakers
@@ -112,13 +112,13 @@ Func AutoRaidExecuteRaidStrategy0()
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying remaining Barbarians")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy rest of archers
    If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying remaining Archers")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, 20)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy and monitor heroes
@@ -152,6 +152,11 @@ Func AutoRaidStrategy0GetDirection()
 	  EndIf
    Next
 
-   ; Attack from top or bottom?
-   Return ($collectorsOnTop/($collectorsOnTop+$collectorsOnBot) > 0.65 ? "Top" : "Bot")
+   DebugWrite("Collectors found top: " & $collectorsOnTop & ", bottom: " & $collectorsOnBot)
+
+   Local $dir = $collectorsOnTop/($collectorsOnTop+$collectorsOnBot) > 0.65 ? "Top" : "Bot"
+
+   DebugWrite("Attacking from " & $dir)
+
+   Return $dir
 EndFunc

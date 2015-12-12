@@ -44,12 +44,14 @@ Func DoCupsDump()
 
    If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
+   DragScreenDown()
+
    ; Deploy one barb
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], _
 						   $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    RandomWeightedClick($barbButton)
    Sleep(500)
-   DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployOneTroop, $direction, 20)
+   DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployOneTroop, $direction, $gMaxDeployBoxes)
    Sleep(500)
 
    ; Click End Battle button

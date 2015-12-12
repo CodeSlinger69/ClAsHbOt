@@ -174,18 +174,16 @@ Func AutoRaidExecuteRaidStrategy1()
 	  Next
    EndIf
 
-   Local $slotsToUseForArchBarb = 20
-
    ; Deploy 50% of barbs
    If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying 50% of Barbarians (" & Int($availableBarbs*0.5) & ")")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $slotsToUseForArchBarb)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy 50% of archers
    If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying 50% of Archers (" & Int($availableArchs*0.5) & ")")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $slotsToUseForArchBarb)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    Sleep(3000)
@@ -193,13 +191,13 @@ Func AutoRaidExecuteRaidStrategy1()
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying remaining Barbarians")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $slotsToUseForArchBarb)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy rest of archers
    If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying remaining Archers")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $slotsToUseForArchBarb)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy and monitor heroes

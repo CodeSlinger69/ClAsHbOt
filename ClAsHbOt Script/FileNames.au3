@@ -11,8 +11,14 @@ Global $GUIImages[12] = [ _
 Global $TownHallBMPs[5] = [ _
   "TownHall\TH7.bmp", "TownHall\TH8.bmp", "TownHall\TH9.bmp", "TownHall\TH10.bmp", "TownHall\TH11.bmp"]
 
-Global $CollectLootBMPs[3] = [ _
-  "Loot\FullGoldCollector.bmp", "Loot\FullElixCollector.bmp", "Loot\FullDarkCollector.bmp"]
+Global $CollectGoldLootBMPs[3] = [ _
+  "Loot\FullGoldCollector1.bmp", "Loot\FullGoldCollector2.bmp", "Loot\FullGoldCollector3.bmp"]
+
+Global $CollectElixLootBMPs[3] = [ _
+  "Loot\FullElixCollector1.bmp", "Loot\FullElixCollector2.bmp", "Loot\FullElixCollector3.bmp"]
+
+Global $CollectDarkLootBMPs[3] = [ _
+  "Loot\FullDarkCollector1.bmp", "Loot\FullDarkCollector2.bmp", "Loot\FullDarkCollector3.bmp"]
 
 Global $CollectorBMPs[8] = [ _
   "Collectors\GoldCollectorL12.bmp", "Collectors\GoldCollectorL11.bmp", "Collectors\GoldCollectorL10.bmp", _
@@ -31,14 +37,13 @@ Global $ElixStorageBMPs[6] = [ _
   "Storages\ElixStorageL11.90.bmp", _
   "Storages\ElixStorageL10.00.bmp"]
 
-Global $DarkStorageBMPs[19] = [ _
-  "Storages\DarkStorageL6.00.bmp", "Storages\DarkStorageL6.10.bmp", "Storages\DarkStorageL6.25.bmp", _
-  "Storages\DarkStorageL6.50.bmp", "Storages\DarkStorageL6.75.bmp", "Storages\DarkStorageL6.90.bmp", _
-  "Storages\DarkStorageL5.00.bmp", "Storages\DarkStorageL5.25.bmp", "Storages\DarkStorageL5.30.bmp", _
-  "Storages\DarkStorageL5.40.bmp", "Storages\DarkStorageL4.00.bmp", "Storages\DarkStorageL4.25.bmp", _
-  "Storages\DarkStorageL4.50.bmp", _
+Global $DarkStorageBMPs[17] = [ _
+  "Storages\DarkStorageL6.00.bmp", "Storages\DarkStorageL6.25.bmp", "Storages\DarkStorageL6.50.bmp", _
+  "Storages\DarkStorageL6.75.bmp", "Storages\DarkStorageL6.90.bmp", _
+  "Storages\DarkStorageL5.00.bmp", "Storages\DarkStorageL5.25.bmp", "Storages\DarkStorageL5.50.bmp", _
+  "Storages\DarkStorageL4.00.bmp", "Storages\DarkStorageL4.25.bmp", "Storages\DarkStorageL4.50.bmp", _
   "Storages\DarkStorageL3.00.bmp", "Storages\DarkStorageL3.25.bmp", _
-  "Storages\DarkStorageL2.00.bmp", "Storages\DarkStorageL2.25.bmp", _
+  "Storages\DarkStorageL2.00.bmp", "Storages\DarkStorageL2.50.bmp", _
   "Storages\DarkStorageL1.00.bmp", "Storages\DarkStorageL1.25.bmp"]
 
 Global $gTroopSlotBMPs[$eTroopCount] = [ _

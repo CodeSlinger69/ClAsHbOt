@@ -2,11 +2,17 @@
 ClAsHbOt!
 
 Dec 10 Update To Do
-- get 74 charmap for end bonus
-- test on laptop screen
-- donate function
+- Charmaps for end winnings and bonus
+- Donate function
 - finish collecting storage images
+  - Gold 11.75, 11.90, all 10.xx
+  - Elix all 10.xx
+  - Dark 6.50, 5.50, 4.50, 2.xx 1.xx
 - finish collecting collectors images
+  - Gold L10
+  - Elix L10, L9
+- Change troop deployment to "two fingered"
+- Fix texts, remove "Tap or press and hold..."
 
 #ce
 
@@ -45,6 +51,7 @@ Opt("GUIOnEventMode", 1)
 #include <BlueStacks.au3>
 #include <Screen.au3>
 #include <Donate.au3>
+#include <Test.au3>
 
 
 Main()
@@ -56,114 +63,17 @@ Func Main()
    InitScraper()
 
    ReadSettings()
+
 ;DebugWrite("WhereAmI: " & WhereAmI())
 ;ZoomOut(False)
-
-#cs
-; Center 512, 398
-Local $box[21][4]
-Local $y = 325
-Local $i = 0
-For $x = 70 To 470 Step 20 ; x 70 to 510   y 398 to 70
-   $box[$i][0] = $x
-   $box[$i][1] = $y
-   $box[$i][2] = $x+60
-   $box[$i][3] = $y+40
-   DebugWrite("NW Box: " & $i & " " & $box[$i][0] & "  " & $box[$i][1] & "  " & $box[$i][2] & "  " & $box[$i][3])
-   $i+=1
-   $y-=13
-Next
-#ce
-
 ;$gScraperDebug = True
-;Local $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-;DebugWrite("Gold: " & $gold)
-;Local $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-;DebugWrite("Elix: " & $elix)
-;Local $dark = 0
-;Local $cups = 0
-;If IsTextBoxPresent($rDarkTextBox)=False Then
-;   $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox1, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-;Else
-;   $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-;   $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox2, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-;EndIf
-;DebugWrite("Dark: " & $dark)
-;DebugWrite("Cups: " & $cups)
-;Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
-;DebugWrite("Dead: " & $deadBase)
-;Local $location, $top, $left
-;Local $townHall = GetTownHallLevel($location, $left, $top)
-;DebugWrite("TH: " & $townHall)
-
-#cs
-Local $goldWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
-Local $elixWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleElixTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
-Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : 0
-Local $cupsWin = IsTextBoxPresent($rEndBattleCups1TextBox) ? _
-				 ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups1TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : _
-				 ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups2TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
-DebugWrite("Gold: " & $goldWin)
-DebugWrite("Elix: " & $elixWin)
-DebugWrite("Dark: " & $darkWin)
-DebugWrite("Cups: " & $cupsWin)
-#ce
-
-#cs
-Local $goldBonus = 0
-Local $elixBonus = 0
-Local $darkBonus = 0
-If IsTextBoxPresent($rEndBattleBonusGoldTextBox) Or _
-   IsTextBoxPresent($rEndBattleBonusElixTextBox) Or _
-   IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
-
-   $goldBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
-   $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
-   $elixBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
-   $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
-   $darkBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
-   $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
-   DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
-EndIf
-#ce
-
-#cs
-GrabFrameToFile("StorageUsageFrame.bmp", 261, 200, 761, 550)
-Local $x, $y, $conf, $matchIndex
-Local $usageAdj = 10
-
-ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-DebugWrite("Gold Match Index: " & $matchIndex)
-If $matchIndex <> -1 Then
-   Local $s = $GoldStorageBMPs[$matchIndex]
-   Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
-   Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
-   $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
-   DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-EndIf
-
-ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-DebugWrite("Elix Match Index: " & $matchIndex)
-If $matchIndex <> -1 Then
-   Local $s = $ElixStorageBMPs[$matchIndex]
-   Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
-   Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
-   $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
-   DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-EndIf
-
-ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-DebugWrite("Dark Match Index: " & $matchIndex)
-If $matchIndex <> -1 Then
-   Local $s = $DarkStorageBMPs[$matchIndex]
-   Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 1))
-   Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
-   $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
-   DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-EndIf
-#ce
-
-
+;TestMyStuff()
+;TestRaidLoot()
+;TestRaidTroopsCount()
+;TestBarracksStatus()
+;TestEndBattleLoot()
+;TestEndBattleBonus()
+;TestDeployBoxCalcs()
 ;Exit
 
    InitGUI()

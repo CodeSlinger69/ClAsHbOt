@@ -184,22 +184,26 @@ Func ZoomOut(Const $clearOnSafeSpot)
 		 Sleep(250)
 	  Next
 
-	  ; Drag down to set standard location
-	  Local $startX, $startY
-	  Local $startBox[4] = [300, 65, 725, 110]
-	  RandomWeightedCoords($startBox, $startX, $startY)
-
-	  Local $endX, $endY
-	  Local $endBox[4] = [300, 365, 725, 410]
-	  RandomWeightedCoords($endBox, $endX, $endY)
-
 	  If $clearOnSafeSpot Then
 		 RandomWeightedClick($rSafeAreaButton)
 		 Sleep(250)
 	  EndIf
 
-	  _ClickDrag($startX, $startY, $endX, $endY)
-	  Sleep(250)
+	  DragScreenDown()
 
    EndIf
+EndFunc
+
+Func DragScreenDown()
+   ; Drag down to set consistent location
+   Local $startX, $startY
+   Local $startBox[4] = [419, 65, 439, 110]
+   RandomWeightedCoords($startBox, $startX, $startY)
+
+   Local $endX, $endY
+   Local $endBox[4] = [419, 240, 439, 285]
+   RandomWeightedCoords($endBox, $endX, $endY)
+
+   _ClickDrag($startX, $startY, $endX, $endY)
+   Sleep(250)
 EndFunc

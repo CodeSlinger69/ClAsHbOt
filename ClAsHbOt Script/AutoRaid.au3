@@ -40,6 +40,8 @@ Func AutoRaid(ByRef $timer)
    Case $eAutoExecute
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Raid")
 
+	  DragScreenDown()
+
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
 		 If AutoRaidExecuteRaidStrategy0() Then  ; BARCH
@@ -273,10 +275,10 @@ Func CheckForRaidableBase()
    Local $townHall = -1
 
    If IsTextBoxPresent($rDarkTextBox)=False Then
-	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox1, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    Else
 	  $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBox2, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxWithDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    EndIf
 
    Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
@@ -554,7 +556,7 @@ EndFunc
 
 Func GetRandomAutoRaidDeployBox(Const $direction, Const $boxesPerSide, ByRef $box)
    Local $side = Random()>0.5 ? "Left" : "Right"
-   Local $boxIndex = Random(20-$boxesPerSide+1, 20, 1)
+   Local $boxIndex = Random($gMaxDeployBoxes-$boxesPerSide, $gMaxDeployBoxes-1, 1)
 
    If $direction = "Top" Then
 	  For $j = 0 To 3
@@ -638,12 +640,12 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 
    If WhereAmI() = $eScreenEndBattle Then
 	  GrabFrameToFile("EndBattleFrame.bmp")
-	  Local $goldWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $elixWin = ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleElixTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : 0
-	  Local $cupsWin = IsTextBoxPresent($rEndBattleCups1TextBox) ? _
-					   ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups1TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces) : _
-					   ScrapeFuzzyText($gBattleEndCharacterMaps, $rEndBattleCups2TextBox, $gBattleEndCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $goldWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $elixWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
+	  Local $cupsWin = IsTextBoxPresent($rEndBattleCupsWithDETextBox) ? _
+					   ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleCupsWithDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : _
+					   ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleCupsNoDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
 
 	  Local $goldBonus = 0
 	  Local $elixBonus = 0
@@ -652,11 +654,11 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 		 IsTextBoxPresent($rEndBattleBonusElixTextBox) Or _
 		 IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
 
-		 $goldBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $goldBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusGoldTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
-		 $elixBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $elixBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusElixTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
-		 $darkBonus = ScrapeFuzzyText($gSmallCharacterMaps, $rEndBattleBonusDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $darkBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusDarkTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
 	  EndIf
 
@@ -681,10 +683,6 @@ EndFunc
 
 Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
-   Local $buttonOffset[4] = [0, -21, 72, 75]
-   Local $raidTroopBox1[4] = [51, 620, 128, 725] ; first button only
-   Local $raidTroopBox2[4] = [135, 620, 972, 725] ; buttons 2-11
-
    For $i = 0 To UBound($index)-1
 	  $index[$i][0] = -1
 	  $index[$i][1] = -1
@@ -696,17 +694,17 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
 
-   GrabFrameToFile("AvailableRaidTroopsFrame1.bmp", $raidTroopBox1[0], $raidTroopBox1[1], $raidTroopBox1[2], $raidTroopBox1[3])
+   GrabFrameToFile("AvailableRaidTroopsFrame1.bmp", $gRaidTroopBox1[0], $gRaidTroopBox1[1], $gRaidTroopBox1[2], $gRaidTroopBox1[3])
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
 	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$raidTroopBox1[0]+$buttonOffset[0]
-		 $index[$i][1] = $split[1]+$raidTroopBox1[1]+$buttonOffset[1]
-		 $index[$i][2] = $split[0]+$raidTroopBox1[0]+$buttonOffset[2]
-		 $index[$i][3] = $split[1]+$raidTroopBox1[1]+$buttonOffset[3]
+		 $index[$i][0] = $split[0]+$gRaidTroopBox1[0]+$gRaidButtonOffset[0]
+		 $index[$i][1] = $split[1]+$gRaidTroopBox1[1]+$gRaidButtonOffset[1]
+		 $index[$i][2] = $split[0]+$gRaidTroopBox1[0]+$gRaidButtonOffset[2]
+		 $index[$i][3] = $split[1]+$gRaidTroopBox1[1]+$gRaidButtonOffset[3]
 		 ;DebugWrite("Pass 1 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
 		 ExitLoop ; only one possible button in this pass
@@ -717,17 +715,17 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
 
-   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $raidTroopBox2[0], $raidTroopBox2[1], $raidTroopBox2[2], $raidTroopBox2[3])
+   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $gRaidTroopBox2[0], $gRaidTroopBox2[1], $gRaidTroopBox2[2], $gRaidTroopBox2[3])
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
 	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$raidTroopBox2[0]+$buttonOffset[0]
-		 $index[$i][1] = $split[1]+$raidTroopBox2[1]+$buttonOffset[1]
-		 $index[$i][2] = $split[0]+$raidTroopBox2[0]+$buttonOffset[2]
-		 $index[$i][3] = $split[1]+$raidTroopBox2[1]+$buttonOffset[3]
+		 $index[$i][0] = $split[0]+$gRaidTroopBox2[0]+$gRaidButtonOffset[0]
+		 $index[$i][1] = $split[1]+$gRaidTroopBox2[1]+$gRaidButtonOffset[1]
+		 $index[$i][2] = $split[0]+$gRaidTroopBox2[0]+$gRaidButtonOffset[2]
+		 $index[$i][3] = $split[1]+$gRaidTroopBox2[1]+$gRaidButtonOffset[3]
 		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
 	  EndIf
@@ -750,7 +748,7 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
    EndIf
 
    Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+18, _
-						 $rBarracksTroopCountTextBox[4], $rBarracksTroopCountTextBox[5], _
+						 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
 						 0, 0, 0, 0]
    Local $t = ScrapeFuzzyText($gSmallCharacterMaps, $textBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
    ;DebugWrite("GetAvailableTroops() = " & $t)
