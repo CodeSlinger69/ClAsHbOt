@@ -3,14 +3,12 @@ ClAsHbOt!
 
 Dec 10 Update To Do
 - Charmaps for end winnings and bonus
-- Donate function
 - finish collecting storage images
   - Gold 10.90
   - Dark 6.50, 5.50, 4.50, 2.xx 1.xx
 - finish collecting collectors images
   - Gold L10
   - Elix L10, L9
-- Change troop deployment to "two fingered"
 - Fix texts, remove "Tap or press and hold..."
 
 #ce
@@ -65,7 +63,7 @@ Func Main()
 
 ;DebugWrite("WhereAmI: " & WhereAmI())
 ;ZoomOut(False)
-$gScraperDebug = True
+;$gScraperDebug = True
 ;TestMyStuff()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
@@ -73,8 +71,8 @@ $gScraperDebug = True
 ;TestEndBattleLoot()
 ;TestEndBattleBonus()
 ;TestDeployBoxCalcs()
-TestDonate()
-Exit
+;TestDonate()
+;Exit
 
    InitGUI()
 
