@@ -41,10 +41,14 @@ Func DoCupsDump()
 
    ; Deploy from top or bottom?
    Local $direction = (Random()>0.5) ? "Top" : "Bot"
+   If $direction = "Bot" Then
+	  DragScreenUp()
+   Else
+	  DragScreenDown()
+   EndIf
 
    If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then Return False
 
-   DragScreenDown()
 
    ; Deploy one barb
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], _

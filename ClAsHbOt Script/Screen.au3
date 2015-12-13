@@ -94,6 +94,7 @@ Func ResetToCoCMainScreen()
    WEnd
 
    ZoomOut(True)
+   DragScreenDown()
 EndFunc
 
 Func WhereAmI()
@@ -189,8 +190,6 @@ Func ZoomOut(Const $clearOnSafeSpot)
 		 Sleep(250)
 	  EndIf
 
-	  DragScreenDown()
-
    EndIf
 EndFunc
 
@@ -202,6 +201,20 @@ Func DragScreenDown()
 
    Local $endX, $endY
    Local $endBox[4] = [419, 240, 439, 285]
+   RandomWeightedCoords($endBox, $endX, $endY)
+
+   _ClickDrag($startX, $startY, $endX, $endY)
+   Sleep(250)
+EndFunc
+
+Func DragScreenUp()
+   ; Drag down to set consistent location
+   Local $startX, $startY
+   Local $startBox[4] = [419, 240, 439, 285]
+   RandomWeightedCoords($startBox, $startX, $startY)
+
+   Local $endX, $endY
+   Local $endBox[4] = [419, 65, 439, 110]
    RandomWeightedCoords($endBox, $endX, $endY)
 
    _ClickDrag($startX, $startY, $endX, $endY)

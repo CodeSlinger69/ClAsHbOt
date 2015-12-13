@@ -95,6 +95,7 @@ Func AutoRaidExecuteRaidStrategy1()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy1GetDirection()
+   If $direction = "Bot" Then DragScreenUp()
 
    ; Get buttons
    Local $giantButton[4] = [$troopIndex[$eTroopGiant][0], $troopIndex[$eTroopGiant][1], $troopIndex[$eTroopGiant][2], $troopIndex[$eTroopGiant][3]]
@@ -247,12 +248,14 @@ Func AutoRaidStrategy1GetDirection()
    ; Count em
    Local $storagesTopBot = 0
    For $i = 0 To UBound($allMatchY)-1
-	  $storagesTopBot += ($allMatchY[$i]+16 < 235 ? -1 : 1)
+	  $storagesTopBot += ($allMatchY[$i]+16 < $gScreenCenterDraggedDown[1] ? -1 : 1)
    Next
 
    ; Attack from top or bottom?
-   ;DebugWrite("$storagesTopBot: " & $storagesTopBot)
-   Return ($storagesTopBot<0 ? "Top" : "Bot")
+   Local $dir = $storagesTopBot<0 ? "Top" : "Bot"
+   DebugWrite("More storages found on " & $dir & ".  Attacking from " & $dir)
+
+   Return $dir
 EndFunc
 
 Func AutoRaidStrategy1DeployBoxes(Const $topOrBot, ByRef $selectedBoxes)

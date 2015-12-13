@@ -82,6 +82,7 @@ Func AutoRaidExecuteRaidStrategy3()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy3GetDirection()
+   If $direction = "Bot" Then DragScreenUp()
 
    ;
    ; Deploy troops
@@ -124,7 +125,7 @@ Func AutoRaidStrategy3GetDirection()
 
    For $i = 0 To $matchCount-1
 	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
-	  If $matchY[$i]+21 < $gScreenCenter[1] Then
+	  If $matchY[$i]+21 < $gScreenCenterDraggedDown[1] Then
 		 $collectorsOnTop += 1
 	  Else
 		 $collectorsOnBot += 1
@@ -132,5 +133,11 @@ Func AutoRaidStrategy3GetDirection()
    Next
 
    ; Attack from top or bottom?
-   Return ($collectorsOnTop/($collectorsOnTop+$collectorsOnBot) > 0.65 ? "Top" : "Bot")
+   DebugWrite("Collectors found top: " & $collectorsOnTop & ", bottom: " & $collectorsOnBot)
+
+   Local $dir = $collectorsOnTop/($collectorsOnTop+$collectorsOnBot) >= 0.5 ? "Top" : "Bot"
+
+   DebugWrite("Attacking from " & $dir)
+
+   Return $dir
 EndFunc

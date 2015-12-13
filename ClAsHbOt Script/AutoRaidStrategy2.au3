@@ -96,6 +96,7 @@ Func AutoRaidExecuteRaidStrategy2()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy0GetDirection()
+   If $direction = "Bot" Then DragScreenUp()
 
     ; Get buttons
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]

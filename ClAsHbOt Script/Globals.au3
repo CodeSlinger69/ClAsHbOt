@@ -13,7 +13,8 @@ Global $gLastPossibleKickTime = TimerInit()
 Global $gTitle = "BlueStacks App Player"
 Global $gBlueStacksWidth = 860
 Global $gBlueStacksHeight = 672
-Global $gScreenCenter[2] = [429, 334]
+Global $gScreenCenterDraggedDown[2] = [429, 334]
+Global $gScreenCenterDraggedUp[2] = [429, 232]
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"
@@ -56,15 +57,10 @@ Global $gMyMaxSpells = 999
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 
 ; Deploy locations
-Global $NWSafeDeployBox[4] = [245, 164, 265, 184] ; box 10
-Global $NESafeDeployBox[4] = [600, 164, 620, 184]
-Global $SWSafeDeployBox[4] = [245, 464, 265, 484]
-Global $SESafeDeployBox[4] = [600, 464, 620, 484]
-
 Global $gMaxDeployBoxes = 19
 
 Global $NWDeployBoxes[$gMaxDeployBoxes][4]
-Local $y = 314
+Local $y = $gScreenCenterDraggedDown[1]-20
 Local $i = 0
 For $x = 45 To 405 Step 20
    $NWDeployBoxes[$i][0] = $x
@@ -76,7 +72,7 @@ For $x = 45 To 405 Step 20
 Next
 
 Global $NEDeployBoxes[$gMaxDeployBoxes][4]
-$y = 314
+$y = $gScreenCenterDraggedDown[1]-20
 $i=0
 For $x = 820 To 460 Step -20
    $NEDeployBoxes[$i][0] = $x-60
@@ -88,7 +84,7 @@ For $x = 820 To 460 Step -20
 Next
 
 Global $SWDeployBoxes[$gMaxDeployBoxes][4]
-$y = 314
+$y = $gScreenCenterDraggedUp[1]-20
 $i=0
 For $x = 45 To 405 Step 20
    $SWDeployBoxes[$i][0] = $x
@@ -100,7 +96,7 @@ For $x = 45 To 405 Step 20
 Next
 
 Global $SEDeployBoxes[$gMaxDeployBoxes][4]
-$y = 314
+$y = $gScreenCenterDraggedUp[1]-20
 $i=0
 For $x = 820 To 460 Step -20
    $SEDeployBoxes[$i][0] = $x-60
@@ -111,3 +107,7 @@ For $x = 820 To 460 Step -20
    $y+=15
 Next
 
+Global $NWSafeDeployBox[4] = [$NWDeployBoxes[10][0], $NWDeployBoxes[10][1], $NWDeployBoxes[10][2]-40, $NWDeployBoxes[10][3]-20]
+Global $NESafeDeployBox[4] = [$NEDeployBoxes[10][0]+40, $NEDeployBoxes[10][1], $NEDeployBoxes[10][2], $NEDeployBoxes[10][3]-20]
+Global $SWSafeDeployBox[4] = [$SWDeployBoxes[10][0], $SWDeployBoxes[10][1], $SWDeployBoxes[10][2]-40, $SWDeployBoxes[10][3]-20]
+Global $SESafeDeployBox[4] = [$SEDeployBoxes[10][0]+40, $SEDeployBoxes[10][1], $SEDeployBoxes[10][2], $SEDeployBoxes[10][3]-20]

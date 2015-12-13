@@ -310,7 +310,8 @@ Func GetMyLootNumbers()
 	  ; Only search for my town hall level if we don't already know it
 	  Local $GUIMyTownHall = GUICtrlRead($GUI_MyTownHall)
 	  If $GUIMyTownHall = 0 Then
-		 ZoomOut(False)
+		 ZoomOut(True)
+		 DragScreenDown()
 
 		 Local $location, $top, $left
 		 Local $MyTownHall = GetTownHallLevel($location, $left, $top)

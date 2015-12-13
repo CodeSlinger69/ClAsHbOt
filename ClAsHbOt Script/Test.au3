@@ -125,10 +125,8 @@ Func TestBarracksStatus()
 EndFunc
 
 Func TestDeployBoxCalcs()
-   ; Center 429, 334
-
    Local $box[19][4]
-   Local $y = 314
+   Local $y = $gScreenCenterDraggedDown[1]-20
    Local $i = 0
    For $x = 45 To 405 Step 20
 	  $box[$i][0] = $x
@@ -140,7 +138,7 @@ Func TestDeployBoxCalcs()
 	  $y-=15
    Next
 
-   $y = 314
+   $y = $gScreenCenterDraggedDown[1]-20
    $i=0
    For $x = 820 To 460 Step -20
 	  $box[$i][0] = $x-60
@@ -152,7 +150,7 @@ Func TestDeployBoxCalcs()
 	  $y-=15
    Next
 
-   $y = 314
+   $y = $gScreenCenterDraggedUp[1]-20
    $i=0
    For $x = 45 To 405 Step 20
 	  $box[$i][0] = $x
@@ -164,7 +162,7 @@ Func TestDeployBoxCalcs()
 	  $y+=15
    Next
 
-   $y = 314
+   $y = $gScreenCenterDraggedUp[1]-20
    $i=0
    For $x = 820 To 460 Step -20
 	  $box[$i][0] = $x-60
