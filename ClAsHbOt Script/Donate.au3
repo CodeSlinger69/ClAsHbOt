@@ -5,32 +5,32 @@ Func DonateTroops()
    If OpenChatWindow() = False Then Return False
 
    ; Search for donate button
-   Local $donateButtonAbsolute[4]
-   If FindDonateButton($donateButtonAbsolute) = False Then Return False
+   Local $donateButton[4]
+   If FindDonateButton($donateButton) = False Then Return False
 
    ; Get the request text
    Local $requestText
-   GetRequestText($donateButtonAbsolute, $requestText)
+   GetRequestText($donateButton, $requestText)
 
    ; Open donate droops window
-   If OpenDonateTroopsWindow($donateButtonAbsolute) = False Then Return False
+   If OpenDonateTroopsWindow($donateButton) = False Then Return False
 
    ; Loop until donate troops window goes away, no match for request, or loop limit reached
-   Local $loopLimit = 5
+   Local $loopLimit = 6
    While IsColorPresent($rWindowChatDimmedColor) And $loopLimit>0
 	  DebugWrite("Donate loop " & 6-$loopLimit & " of " & 5)
 
 	  ; Locate troops that are available to donate
-	  Local $donateIndexAbsolute[$eTroopCount][4] ; x1, y1, x2, y2
-	  FindDonateTroopSlots($donateButtonAbsolute, $donateIndexAbsolute)
+	  Local $donateIndex[$eTroopCount][4] ; x1, y1, x2, y2
+	  FindDonateTroopSlots($donateIndex)
 
 	  ; Parse request text, matching with available troops
 	  Local $indexOfTroopToDonate
-	  If ParseRequestText($requestText, $donateIndexAbsolute, $indexOfTroopToDonate) = False Then ExitLoop
-	  If $donateIndexAbsolute[$indexOfTroopToDonate][0] = -1 Then ExitLoop
+	  If ParseRequestText($requestText, $donateIndex, $indexOfTroopToDonate) = False Then ExitLoop
+	  If $donateIndex[$indexOfTroopToDonate][0] = -1 Then ExitLoop
 
 	  ; Click the correct donate troops button
-	  ClickDonateTroops($donateIndexAbsolute, $indexOfTroopToDonate)
+	  ClickDonateTroops($donateIndex, $indexOfTroopToDonate)
 
 	  $loopLimit-=1
    WEnd
@@ -62,8 +62,7 @@ Func OpenChatWindow()
 EndFunc
 
 Func FindDonateButton(ByRef $button)
-   ; Fills $button with absolute screen coords for Donate button
-   GrabFrameToFile("ChatFrame.bmp", 9, 103, 266, 551)
+   GrabFrameToFile("ChatFrame.bmp", $rChatBox[0], $rChatBox[1], $rChatBox[2], $rChatBox[3])
 
    Local $bestMatch, $bestConfidence, $bestX, $bestY
    ScanFrameForBestBMP("ChatFrame.bmp", $DonateButtonBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
@@ -74,12 +73,12 @@ Func FindDonateButton(ByRef $button)
 	  Return False
    EndIf
 
-   $button[0] = $bestX+9
-   $button[1] = $bestY+103
-   $button[2] = $bestX+9+$rChatWindowDonateButton[2]
-   $button[3] = $bestY+103+$rChatWindowDonateButton[3]
+   $button[0] = $bestX
+   $button[1] = $bestY
+   $button[2] = $bestX+$rChatWindowDonateButton[2]
+   $button[3] = $bestY+$rChatWindowDonateButton[3]
 
-   DebugWrite("Donate button found at absolute: " & $button[0] & ", " & $button[1] & ", " _
+   DebugWrite("Donate button found at: " & $button[0] & ", " & $button[1] & ", " _
 	  & $button[2] & ", " & $button[3])
 
    Return True
@@ -88,29 +87,20 @@ EndFunc
 Func GetRequestText(Const ByRef $button, ByRef $text)
    ; Grab text of donate request
    Local $textOffset[2] = [-68, -25] ; relative to donate button
-   Local $donateTextBox[10] = [$button[0]+$textOffset[0], $button[1]+$textOffset[1], _
-							   $button[0]+$textOffset[0]+$rChatTextBox[2], $button[1]+$textOffset[1]+$rChatTextBox[3], _
-							   $rChatTextBox[4], $rChatTextBox[5], $rChatTextBox[6], _
-							   $rChatTextBox[7], $rChatTextBox[8], $rChatTextBox[9]]
+   Local $donateTextBox[10] = [$button[0]+$rChatTextBoxAsOffset[0], $button[1]+$rChatTextBoxAsOffset[1], _
+							   $button[0]+$rChatTextBoxAsOffset[2], $button[1]+$rChatTextBoxAsOffset[3], _
+							   $rChatTextBoxAsOffset[4], $rChatTextBoxAsOffset[5], $rChatTextBoxAsOffset[6], _
+							   $rChatTextBoxAsOffset[7], $rChatTextBoxAsOffset[8], $rChatTextBoxAsOffset[9]]
 
-   $text = ScrapeExactText($gChatCharacterMaps, $donateTextBox, $gChatCharMapsMaxWidth, $eScrapeKeepSpaces)
+   $text = ScrapeExactText($gChatCharacterMaps, $donateTextBox, $gChatCharMapsMaxWidth, $eScrapeDropSpaces)
    DebugWrite("Donate text: '" & $text & "'")
 EndFunc
 
 Func OpenDonateTroopsWindow(Const ByRef $button)
-   Local $topLeftDonateWindow[2] = [$button[0]+67, $button[1]-109]
-   ;DebugWrite("$topLeftDonateWindow: " & $topLeftDonateWindow[0] & ", " & $topLeftDonateWindow[1])
-
-   Local $colorRegion[4] = [$topLeftDonateWindow[0]+$rWindowDonateTroopsColor[0], _
-							$topLeftDonateWindow[1]+$rWindowDonateTroopsColor[1], _
-							$rWindowDonateTroopsColor[2], _
-							$rWindowDonateTroopsColor[3]]
-   ;DebugWrite("$colorRegion: " & $colorRegion[0] & ", " & $colorRegion[1] & ", " & Hex($colorRegion[2]) & ", " & $colorRegion[3])
-
    RandomWeightedClick($button)
 
    Local $failCount = 10
-   While IsColorPresent($colorRegion) = False And $failCount>0
+   While IsColorPresent($rWindowChatDimmedColor) = False And $failCount>0
 	  Sleep(200)
 	  $failCount -= 1
    WEnd
@@ -125,15 +115,9 @@ Func OpenDonateTroopsWindow(Const ByRef $button)
    Return True
 EndFunc
 
-Func FindDonateTroopSlots(Const ByRef $button, ByRef $index)
-   ; Populates index with the absolute screen coords of all available troop donate buttons
-
-   Local $topLeft[2] = [$button[0]+67, $button[1]-109]
-   Local $troopWindowAbsolute[4] = [$topLeft[0], $topLeft[1], $topLeft[0]+492, $topLeft[1]+277]
-
+Func FindDonateTroopSlots(ByRef $index)
    ; Grab a frame
-   GrabFrameToFile("AvailableDonateFrame.bmp", $troopWindowAbsolute[0], $troopWindowAbsolute[1], _
-				   $troopWindowAbsolute[2], $troopWindowAbsolute[3])
+   GrabFrameToFile("AvailableDonateFrame.bmp", $rDonateWindow[0], $rDonateWindow[1], $rDonateWindow[2], $rDonateWindow[3])
 
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableDonateFrame.bmp", "str", "Images\"&$gDonateSlotBMPs[$i], "int", 3)
@@ -141,10 +125,10 @@ Func FindDonateTroopSlots(Const ByRef $button, ByRef $index)
 	  ;DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
 
 	  If $split[2] > $gConfidenceDonateTroopSlot Then
-		 $index[$i][0] = $button[0]+67  + $split[0]
-		 $index[$i][1] = $button[1]-109 + $split[1]
-		 $index[$i][2] = $button[0]+67  + $split[0]+25
-		 $index[$i][3] = $button[1]-109 + $split[1]+45
+		 $index[$i][0] = $split[0]+$rDonateButtonOffset[0]
+		 $index[$i][1] = $split[1]+$rDonateButtonOffset[1]
+		 $index[$i][2] = $split[0]+$rDonateButtonOffset[2]
+		 $index[$i][3] = $split[1]+$rDonateButtonOffset[3]
 		 DebugWrite("Troop " & $gDonateSlotBMPs[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & Round($split[2]*100, 2) & "%")
 	  Else
 		 $index[$i][0] = -1
@@ -226,14 +210,14 @@ Func FindMatchingTroop(Const $text, Const ByRef $strings, Const ByRef $troops, C
    Return -2
 EndFunc
 
-Func ClickDonateTroops(Const ByRef $donateIndexAbsolute, Const $indexOfTroopToDonate)
+Func ClickDonateTroops(Const ByRef $donateIndex, Const $indexOfTroopToDonate)
 
    Local $DonateMaxClicks[16] = [6, 6, 6, 6,   6, 6, 6, 2,   1, 1, 6, 6,   4, 1, 2, 1]
 
-   Local $button[4] = [$donateIndexAbsolute[$indexOfTroopToDonate][0], _
-					   $donateIndexAbsolute[$indexOfTroopToDonate][1], _
-					   $donateIndexAbsolute[$indexOfTroopToDonate][2], _
-					   $donateIndexAbsolute[$indexOfTroopToDonate][3]]
+   Local $button[4] = [$donateIndex[$indexOfTroopToDonate][0] + $rDonateWindow[0], _
+					   $donateIndex[$indexOfTroopToDonate][1] + $rDonateWindow[1], _
+					   $donateIndex[$indexOfTroopToDonate][2] + $rDonateWindow[0], _
+					   $donateIndex[$indexOfTroopToDonate][3] + $rDonateWindow[1]]
 
    Local $donateCount=0
    For $i = 1 To $DonateMaxClicks[$indexOfTroopToDonate]

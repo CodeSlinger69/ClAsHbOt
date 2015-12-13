@@ -694,17 +694,17 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
 
-   GrabFrameToFile("AvailableRaidTroopsFrame1.bmp", $gRaidTroopBox1[0], $gRaidTroopBox1[1], $gRaidTroopBox1[2], $gRaidTroopBox1[3])
+   GrabFrameToFile("AvailableRaidTroopsFrame1.bmp", $rRaidTroopBox1[0], $rRaidTroopBox1[1], $rRaidTroopBox1[2], $rRaidTroopBox1[3])
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
 	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$gRaidTroopBox1[0]+$gRaidButtonOffset[0]
-		 $index[$i][1] = $split[1]+$gRaidTroopBox1[1]+$gRaidButtonOffset[1]
-		 $index[$i][2] = $split[0]+$gRaidTroopBox1[0]+$gRaidButtonOffset[2]
-		 $index[$i][3] = $split[1]+$gRaidTroopBox1[1]+$gRaidButtonOffset[3]
+		 $index[$i][0] = $split[0]+$rRaidTroopBox1[0]+$rRaidButtonOffset[0]
+		 $index[$i][1] = $split[1]+$rRaidTroopBox1[1]+$rRaidButtonOffset[1]
+		 $index[$i][2] = $split[0]+$rRaidTroopBox1[0]+$rRaidButtonOffset[2]
+		 $index[$i][3] = $split[1]+$rRaidTroopBox1[1]+$rRaidButtonOffset[3]
 		 ;DebugWrite("Pass 1 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
 		 ExitLoop ; only one possible button in this pass
@@ -715,17 +715,17 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
 
-   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $gRaidTroopBox2[0], $gRaidTroopBox2[1], $gRaidTroopBox2[2], $gRaidTroopBox2[3])
+   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
 	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$gRaidTroopBox2[0]+$gRaidButtonOffset[0]
-		 $index[$i][1] = $split[1]+$gRaidTroopBox2[1]+$gRaidButtonOffset[1]
-		 $index[$i][2] = $split[0]+$gRaidTroopBox2[0]+$gRaidButtonOffset[2]
-		 $index[$i][3] = $split[1]+$gRaidTroopBox2[1]+$gRaidButtonOffset[3]
+		 $index[$i][0] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[0]
+		 $index[$i][1] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[1]
+		 $index[$i][2] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[2]
+		 $index[$i][3] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[3]
 		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
 	  EndIf

@@ -16,7 +16,7 @@ Global $rCupsTextBoxWithDE[10] = [47, 165, 120, 176, 0xffffff, 9, 34, 170, 0xC59
 
 Global $rBarracksTroopBox[10] = [180, 269, 688, 468]
 Global $rBarracksButtonOffset[4] = [0, 5, 84, 56]
-Global $rBarracksWindowTextBox[10] = [134, 130, 278, 142, 0xffffff, 9, 0, 0, 0, 0]
+Global $rBarracksWindowTextBox[10] = [134, 130, 295, 142, 0xffffff, 9, 0, 0, 0, 0]
 Global $rRaidSlotTroopCountTextBox[10] = [0, 0, 0, 0, 0xffffff, 9, 0, 0, 0, 0]
 Global $rEndBattleGoldTextBox[10] = [340, 268, 440, 285, 0xffffff, 9, 0, 0, 0, 0]
 Global $rEndBattleElixTextBox[10] = [340, 305, 440, 322, 0xffffff, 9, 0, 0, 0, 0]
@@ -27,7 +27,7 @@ Global $rEndBattleBonusGoldTextBox[10] = [575, 317, 662, 328, 0xffffff, 9, 677, 
 Global $rEndBattleBonusElixTextBox[10] = [575, 347, 662, 358, 0xffffff, 9, 677, 352, 0xE555D8, 0]
 Global $rEndBattleBonusDarkTextBox[10] = [575, 377, 662, 388, 0xffffff, 9, 677, 382, 0x584460, 0]
 
-Global $rChatTextBox[10] = [0, 0, 233, 9, 0xffffff, 120, 0, 0, 0, 0] ; Adjust for 12/10 update
+Global $rChatTextBoxAsOffset[10] = [-73, -46, 193, -35, 0xffffff, 140, 0, 0, 0, 0] ; Adjust for 12/10 update
 
 ; Buttons
 ; Left, Top, Right, Bottom,
@@ -46,7 +46,7 @@ Global $rLiveRaidScreenEndBattleButton[8] = [15, 475, 120, 507, 63, 502, 0xC0000
 Global $rLiveRaidScreenEndBattleConfirmButton[8] = [441, 345, 579, 401, 513, 390, 0x5FAC10, 0]
 Global $rMainScreenOpenChatButton[8] = [311, 296, 333, 352, 323, 349, 0xD04A18, 6]
 Global $rMainScreenClosedChatButton[8] = [7, 296, 29, 352, 18, 349, 0xD04A18, 6]
-Global $rChatWindowDonateButton[8] = [0, 0, 82, 25, 0, 0, 0, 0] ; Adjust for 12/10 update
+Global $rChatWindowDonateButton[8] = [0, 0, 101, 38, 0, 0, 0, 0]
 Global $rBattleHasEndedScreenReturnHomeButton[8] = [360, 486, 498, 544, 429, 537, 0x60B010, 6]
 Global $rLiveReplayEndScreenReturnHomeButton[8] = [13, 460, 93, 537, 66, 487, 0xf9eedc, 6] ; Adjust for 12/10 update
 Global $rWindowVilliageWasAttackedOkayButton[8] = [450, 385, 574, 434, 475, 422, 0x5dac10, 6] ; Adjust for 12/10 update
@@ -73,8 +73,7 @@ Global $rScreenMainColor[4] = [209, 30, 0x2880C0, 0]
 Global $rScreenLiveRaid1Color[4] = [779, 472, 0xFFFFFF, 0]
 Global $rScreenLiveRaid2Color[4] = [73, 502, 0xC00000, 0]
 Global $rArmyCampsFullColor[4] = [394, 136, 0xE84E50, 6]
-Global $rRoyaltyHealthGreenColor[4] = [0, 0, 0x005BE10A, 90] ; Adjust for 12/10 update
-Global $rWindowDonateTroopsColor[4] = [6, 6, 0xFFFFFF, 0]
+Global $rRoyaltyHealthGreenColor[4] = [0, 0, 0x005BE10A, 90]
 Global $rWindowChatDimmedColor[4] = [177, 22, 0x383628, 6]
 Global $rNewChatMessagesColor[4] = [39, 289, 0xE80810, 6]
 Global $rDeadBaseIndicatorColor[4] = [26, 28, 0x606460, 6]
@@ -86,6 +85,9 @@ Global $rArmyManagerSelectedColor[4] = [0, 0, 0xE8E8E0, 0]
 
 ; Bounding Boxes
 ; Left, Top, Right, Bottom
-Local $gRaidButtonOffset[4] = [0, -17, 60, 61]
-Local $gRaidTroopBox1[4] = [46, 514, 110, 599] ; first button only
-Local $gRaidTroopBox2[4] = [116, 514, 810, 599] ; buttons 2-11
+Global $rRaidButtonOffset[4] = [0, -17, 60, 61]
+Global $rRaidTroopBox1[4] = [46, 514, 110, 599] ; first button only
+Global $rRaidTroopBox2[4] = [116, 514, 810, 599] ; buttons 2-11
+Global $rChatBox[4] = [0, 0, 302, 623]
+Global $rDonateWindow[4] = [317, 1, 809, 623]
+Global $rDonateButtonOffset[4] = [0, -19, 58, 58]
