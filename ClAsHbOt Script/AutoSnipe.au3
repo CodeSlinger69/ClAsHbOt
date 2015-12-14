@@ -472,7 +472,7 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
    Next
 
    ; Wait for end battle
-   WaitForBattleEnd(True, True)  ; always wait full 3 minutes, or until all troops are dead
+   WaitForBattleEnd(True, True)  ; always wait full time, or until all troops are dead
 
    Return True
 EndFunc

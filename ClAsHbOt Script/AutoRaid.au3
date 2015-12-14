@@ -799,7 +799,7 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 
    While (($kingPoweredUp=False And $troopIndex[$eTroopKing][0]<>-1) Or _
 	      ($queenPoweredUp=False And $troopIndex[$eTroopQueen][0]<>-1)) And _
-		 TimerDiff($deployStart) < 180000 ; 3 minutes
+		 TimerDiff($deployStart) < $gMaxRaidDuration
 
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then

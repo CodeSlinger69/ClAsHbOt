@@ -5,6 +5,9 @@ Global $gVersion = "20151208"
 Global $gScraperDebug = False
 Global $gDebug = True
 
+; Raiding variables
+Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)
+
 ; For detecting rest period
 Global $gPossibleKick = 0
 Global $gLastPossibleKickTime = TimerInit()
@@ -43,7 +46,7 @@ Global $gSpellNames[$eSpellCount] = ["Lightning", "Rage", "Heal", "Jump", "Freez
 Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMatch, _
    $eScreenWaitRaid, $eScreenLiveRaid, $eScreenEndBattle, $eScreenShieldIsActive, _
    $eScreenLiveReplayEndBattle, $eScreenVilliageWasAttacked, $eScreenChatDimmed, _
-   $eWindowArmyManager, $eScreenPlayStore, $eScreenUnknown
+   $eWindowArmyManager, $eScreenPlayStore, $eScreenAndroidMessageBox, $eScreenUnknown
 
 ; Auto Raid/Snipe Stages
 Global Enum $eAutoNotStarted, $eAutoQueueTraining, $eAutoWaitForTrainingToComplete, $eAutoFindMatch, $eAutoExecute

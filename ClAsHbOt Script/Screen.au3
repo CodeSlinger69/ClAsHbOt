@@ -48,6 +48,11 @@ Func ResetToCoCMainScreen()
 		 $countdown = 30
 	  EndIf
 
+   ; Android message box is open
+   Case $eScreenAndroidMessageBox
+	  If IsButtonPresent($rAndroidMessageButton1) Then RandomWeightedClick($rAndroidMessageButton1)
+	  If IsButtonPresent($rAndroidMessageButton2) Then RandomWeightedClick($rAndroidMessageButton2)
+
    ; CoC Chat Open - Close it
    Case $eScreenChatOpen
 	  RandomWeightedClick($rMainScreenOpenChatButton)
@@ -117,6 +122,10 @@ Func WhereAmI()
    If $bestMatch <> -1 Then
 	  Return $eScreenPlayStore
    EndIf
+
+   ; $eScreenAndroidMessageBox
+   If IsButtonPresent($rAndroidMessageButton1) Then Return $eScreenAndroidMessageBox
+   If IsButtonPresent($rAndroidMessageButton2) Then Return $eScreenAndroidMessageBox
 
    ; $ScreenMain
    If IsColorPresent($rScreenMainColor) Then Return $eScreenMain
