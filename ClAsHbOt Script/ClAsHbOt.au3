@@ -9,7 +9,6 @@ Dec 10 Update To Do
 - finish collecting collectors images
   - Gold L10
   - Elix L10, L9
-- Fix texts, remove "Tap or press and hold..."
 - Test strategies 1, 2 and 3
 
 #ce

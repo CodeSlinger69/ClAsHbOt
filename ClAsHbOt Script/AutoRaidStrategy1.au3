@@ -259,34 +259,37 @@ Func AutoRaidStrategy1GetDirection()
 EndFunc
 
 Func AutoRaidStrategy1DeployBoxes(Const $topOrBot, ByRef $selectedBoxes)
+   Local $startBox = $gMaxDeployBoxes-5
+   Local $endBox = $gMaxDeployBoxes-1
+
    If $topOrBot = "Top" Then
 	  ; Top 10 corner boxes
-	  For $i = 16 To 20
-		 $selectedBoxes[$i-16][0] = $NWDeployBoxes[$i][0]
-		 $selectedBoxes[$i-16][1] = $NWDeployBoxes[$i][1]
-		 $selectedBoxes[$i-16][2] = $NWDeployBoxes[$i][0]+10
-		 $selectedBoxes[$i-16][3] = $NWDeployBoxes[$i][1]+10
+	  For $i = $startBox To $endBox
+		 $selectedBoxes[$i-$startBox][0] = $NWDeployBoxes[$i][0]
+		 $selectedBoxes[$i-$startBox][1] = $NWDeployBoxes[$i][1]
+		 $selectedBoxes[$i-$startBox][2] = $NWDeployBoxes[$i][0]+10
+		 $selectedBoxes[$i-$startBox][3] = $NWDeployBoxes[$i][1]+10
 	  Next
-	  For $i = 16 To 20
-		 $selectedBoxes[$i-16+5][0] = $NEDeployBoxes[$i][2]-10
-		 $selectedBoxes[$i-16+5][1] = $NEDeployBoxes[$i][1]
-		 $selectedBoxes[$i-16+5][2] = $NEDeployBoxes[$i][2]
-		 $selectedBoxes[$i-16+5][3] = $NEDeployBoxes[$i][1]+10
+	  For $i = $gMaxDeployBoxes-5 To $gMaxDeployBoxes-1
+		 $selectedBoxes[$i-$startBox+5][0] = $NEDeployBoxes[$i][2]-10
+		 $selectedBoxes[$i-$startBox+5][1] = $NEDeployBoxes[$i][1]
+		 $selectedBoxes[$i-$startBox+5][2] = $NEDeployBoxes[$i][2]
+		 $selectedBoxes[$i-$startBox+5][3] = $NEDeployBoxes[$i][1]+10
 	  Next
 
    ElseIf $topOrBot = "Bot" Then
 	  ; Bottom 10 corner boxes
-	  For $i = 16 To 20
-		 $selectedBoxes[$i-16][0] = $SWDeployBoxes[$i][0]
-		 $selectedBoxes[$i-16][1] = $SWDeployBoxes[$i][3]-10
-		 $selectedBoxes[$i-16][2] = $SWDeployBoxes[$i][0]+10
-		 $selectedBoxes[$i-16][3] = $SWDeployBoxes[$i][3]
+	  For $i = $startBox To $endBox
+		 $selectedBoxes[$i-$startBox][0] = $SWDeployBoxes[$i][0]
+		 $selectedBoxes[$i-$startBox][1] = $SWDeployBoxes[$i][3]-10
+		 $selectedBoxes[$i-$startBox][2] = $SWDeployBoxes[$i][0]+10
+		 $selectedBoxes[$i-$startBox][3] = $SWDeployBoxes[$i][3]
 	  Next
-	  For $i = 16 To 20
-		 $selectedBoxes[$i-16+5][0] = $SEDeployBoxes[$i][2]-10
-		 $selectedBoxes[$i-16+5][1] = $SEDeployBoxes[$i][3]-10
-		 $selectedBoxes[$i-16+5][2] = $SEDeployBoxes[$i][2]
-		 $selectedBoxes[$i-16+5][3] = $SEDeployBoxes[$i][3]
+	  For $i = $gMaxDeployBoxes-5 To $gMaxDeployBoxes-1
+		 $selectedBoxes[$i-$startBox+5][0] = $SEDeployBoxes[$i][2]-10
+		 $selectedBoxes[$i-$startBox+5][1] = $SEDeployBoxes[$i][3]-10
+		 $selectedBoxes[$i-$startBox+5][2] = $SEDeployBoxes[$i][2]
+		 $selectedBoxes[$i-$startBox+5][3] = $SEDeployBoxes[$i][3]
 	  Next
    Else
 	  DebugWrite("ERROR in AutoRaidStrategy1DeployBoxes, $topOrBot = " & $topOrBot)
