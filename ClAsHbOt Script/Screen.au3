@@ -14,14 +14,17 @@ Func ResetToCoCMainScreen()
 
    ; Live raid screen - do nothing - don't interrupt a live raid
    Case $eScreenLiveRaid
+	  DebugWrite("On Live Raid Screen - doing nothing.")
 	  Return
 
    ; Wait raid screen - do nothing - don't interrupt a Find Match or Auto Raid in progress
    Case $eScreenWaitRaid
+	  DebugWrite("On Wait Raid Screen - doing nothing.")
 	  Return
 
    ; Unknown screen - don't do anything
    Case $eScreenUnknown
+	  DebugWrite("On Unknown Screen - doing nothing.")
 	  Return
 
    ; Android Home Screen - start CoC
@@ -50,44 +53,58 @@ Func ResetToCoCMainScreen()
 
    ; Android message box is open
    Case $eScreenAndroidMessageBox
-	  If IsButtonPresent($rAndroidMessageButton1) Then RandomWeightedClick($rAndroidMessageButton1)
-	  If IsButtonPresent($rAndroidMessageButton2) Then RandomWeightedClick($rAndroidMessageButton2)
+	  If IsButtonPresent($rAndroidMessageButton1) Then
+		 DebugWrite("On Android Message Screen (1) - clicking message box.")
+		 RandomWeightedClick($rAndroidMessageButton1)
+	  EndIf
+
+	  If IsButtonPresent($rAndroidMessageButton2) Then
+		 DebugWrite("On Android Message Screen (1) - clicking message box.")
+		 RandomWeightedClick($rAndroidMessageButton2)
+	  EndIf
 
    ; CoC Chat Open - Close it
    Case $eScreenChatOpen
+	  DebugWrite("On Chat Open Screen - closing chat.")
 	  RandomWeightedClick($rMainScreenOpenChatButton)
 
    ; Chat window open but dimmed - click on safe spot
    Case $eScreenChatDimmed
+	  DebugWrite("On Chat Dimmed Screen - clicking safe spot.")
 	  RandomWeightedClick($rSafeAreaButton)
 	  Sleep(1000)
-	  If WhereAmI()=$eScreenChatOpen Then RandomWeightedClick($rMainScreenOpenChatButton)
+	  If WhereAmI()=$eScreenChatOpen Then
+		 DebugWrite("On Chat Open Screen - closing chat.")
+		 RandomWeightedClick($rMainScreenOpenChatButton)
+	  EndIf
 
    ; CoC Find Match screen - exit
    Case $eScreenFindMatch
+	  DebugWrite("On Find Match Screen - clicking close button.")
 	  RandomWeightedClick($rFindMatchScreenCloseWindowButton)
-
-   ; CoC Wait Raid screen - exit
-   Case $eScreenWaitRaid
-	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 
    ; End Battle screen - click button
    Case $eScreenEndBattle
+	  DebugWrite("On End Battle Screen - clicking Return Home button.")
 	  RandomWeightedClick($rBattleHasEndedScreenReturnHomeButton)
 
    ; Live Replay End Battle screen - click "Return Home"
    Case $eScreenLiveReplayEndBattle
+	  DebugWrite("On Live Replay End Battle Screen - clicking Return Home button.")
 	  RandomWeightedClick($rLiveReplayEndScreenReturnHomeButton)
 
    Case $eScreenVilliageWasAttacked
+	  DebugWrite("On Villiage Was Attached Screen - clicking Okay button.")
 	  RandomWeightedClick($rWindowVilliageWasAttackedOkayButton)
 
    ; Army Manager window
    Case $eWindowArmyManager
+	  DebugWrite("On Army Manager window - clicking close button.")
 	  RandomWeightedClick($rArmyManagerWindowCloseButton)
 
    ; Shield Is Active screen
    Case $eScreenShieldIsActive
+	  DebugWrite("On Shield Is Active screen - clicking close button.")
 	  RandomWeightedClick($rShieldIsActivePopupButton)
 
    EndSwitch
