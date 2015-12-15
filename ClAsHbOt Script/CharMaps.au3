@@ -84,7 +84,7 @@ Global $gBarracksStatusCharacterMaps[21][$gBarracksStatusCharMapsMaxWidth+2] = [
 ["/", 6, 3, 15, 60, 112, 448, 256] ]
 
 ; Battle End Winnings
-Global $gBattleEndWinningsCharMapsMaxWidth = 16
+Global $gBattleEndWinningsCharMapsMaxWidth = 28
 Global $gBattleEndWinningsCharacterMaps[12][$gBattleEndWinningsCharMapsMaxWidth+2] = [ _
 ["0", 15, 8184, 16382, 32767, 32767, 65535, 63495, 61447, 61447, 61447, 61447, 65535, 65535, 65535, 16382, 8188], _
 ["1", 6, 24576, 57344, 65535, 65535, 65534, 65534], _
@@ -97,7 +97,8 @@ Global $gBattleEndWinningsCharacterMaps[12][$gBattleEndWinningsCharMapsMaxWidth+
 ["8", 14, 2104, 31870, 65279, 65535, 65535, 50055, 50055, 50055, 59271, 65535, 65535, 65023, 30974, 124], _
 ["9", 13, 3968, 32640, 65415, 65415, 64391, 58311, 58311, 57806, 58334, 65534, 65532, 32764, 4088], _
 ["-", 5, 7, 7, 7, 7, 7], _
-["74", 1, 1] ]
+["74", 27, 49152, 49154, 49183, 49279, 49663, 51198, 65528, 65504, 65408, 65024, 63488, 8192, 112, 496, 2032, 8176, _
+		   32752, 64624, 61552, 57456, 65535, 65535, 65535, 65535, 65534, 112, 48] ]
 
 ; Battle End Bonus
 Global $gBattleEndBonusCharMapsMaxWidth = 16
