@@ -73,11 +73,11 @@ Func TestEndBattleBonus()
 EndFunc
 
 Func TestStorage()
-GrabFrameToFile("StorageUsageFrame.bmp", 261, 200, 761, 550)
-Local $x, $y, $conf, $matchIndex
-Local $usageAdj = 10
+   GrabFrameToFile("StorageUsageFrame.bmp", 261, 200, 761, 550)
+   Local $x, $y, $conf, $matchIndex
+   Local $usageAdj = 10
 
-ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
    DebugWrite("Gold Match Index: " & $matchIndex)
    If $matchIndex <> -1 Then
 	  Local $s = $GoldStorageBMPs[$matchIndex]

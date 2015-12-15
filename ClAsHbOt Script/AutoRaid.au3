@@ -750,7 +750,7 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
    Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+18, _
 						 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
 						 0, 0, 0, 0]
-   Local $t = ScrapeFuzzyText($gSmallCharacterMaps, $textBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
    ;DebugWrite("GetAvailableTroops() = " & $t)
 
    Return StringMid($t, 2)
