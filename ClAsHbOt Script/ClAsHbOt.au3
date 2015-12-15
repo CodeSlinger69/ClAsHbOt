@@ -2,14 +2,14 @@
 ClAsHbOt!
 
 Dec 10 Update To Do
-- Charmaps for end winnings and bonus
+- "74" char maps for end battle bonus
 - finish collecting storage images
   - Gold 10.90
   - Dark 6.50, 5.50, 4.50, 2.xx 1.xx
 - finish collecting collectors images
   - Gold L10
   - Elix L10, L9
-- Test strategies 1, 2 and 3
+- Test BAM and loonion strategies
 
 #ce
 
@@ -72,7 +72,6 @@ Func Main()
 ;TestEndBattleBonus()
 ;TestDeployBoxCalcs()
 ;TestDonate()
-;Exit
 
    InitGUI()
 

@@ -166,9 +166,7 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 	  EndIf
 
 	  ; If snipable, then go do it
-	  If $snipable=True Then
-		 Return $snipable
-	  EndIf
+	  If $snipable=True Then Return $snipable
 
 	  ; Not snipable - click Next
 	  Sleep($gPauseBetweenNexts)
@@ -227,72 +225,30 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 EndFunc
 
 Func CheckForSnipableTH(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
-
-   ; See if we can find the Town Hall on the whole screen: top, middle or bottom
+   ; See if we can find the Town Hall location
    $level = GetTownHallLevel($location, $left, $top)
 
    If $level = -1 Then
 	  DebugWrite("Could not find Town Hall.  Obscured?")
 	  Return False
    EndIf
-#cs
-   ; middle
-   If $location = $eTownHallMiddle Then
-	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 273)
-	  If $dist <=200 Then
-		 DebugWrite("Town Hall level " & $level & " found in Middle at " & $left & ", " & $top & ".  Not snipable.")
-		 Return False
-	  Else
-		 DebugWrite("Town Hall level " & $level & " found in Middle at " & $left & ", " & $top & ".  Snipable!")
-		 Return True
-	  EndIf
 
-   ; top
-   ElseIf $location = $eTownHallTop Then
-	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 320)
-	  If $dist < 150 Then
-		 DebugWrite("Town Hall level " & $level & " found at Top at " & $left & ", " & $top & ".  Not snipable.")
-		 Return False
-	  Else
-		 DebugWrite("Town Hall level " & $level & " found at Top at " & $left & ", " & $top & ".  Snipable!")
-		 Return True
-	  EndIf
-
-   ; bottom
-   ElseIf $location = $eTownHallBottom Then
-	  Local $dist = DistBetweenTwoPoints($left+17, $top+17, 511, 140)
-	  If $dist < 150 Then
-		 DebugWrite("Town Hall level " & $level & " found at Bottom at " & $left & ", " & $top & ".  Not snipable.")
-		 Return False
-	  Else
-		 DebugWrite("Town Hall level " & $level & " found at Bottom at " & $left & ", " & $top & ".  Snipable!")
-		 Return True
-	  EndIf
-
+   Local $dist = DistBetweenTwoPoints($left+11, $top+12, $gScreenCenterDraggedDown[0], $gScreenCenterDraggedDown[1])
+   If $dist <=200 Then
+	  DebugWrite("Town Hall level " & $level & " found at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Not snipable.")
+	  Return False
+   Else
+	  DebugWrite("Town Hall level " & $level & " found at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Snipable!")
+	  Return True
    EndIf
-#ce
+
 EndFunc
 
 Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Const $THTop)
    DebugWrite("AutoSnipeExecuteSnipe()")
 
-   Local $deployTopOrBot = "TODO"
-   Local $actualTHTop = 0
-
-   ; Find best deploy spot, based on deployment boxes
-   Local $boxCount
-   If $deployTopOrBot = "Center" Then
-	  $boxCount = 6
-   ElseIf $deployTopOrBot = "Top" And $actualTHTop+17 < 200 Then
-	  $boxCount = 6
-   ElseIf $deployTopOrBot = "Bottom" And $actualTHTop+17 > 315 Then
-	  $boxCount = 6
-   Else
-	  $boxCount = 3
-   EndIf
-
-   Local $deployBoxes[$boxCount][4]
-   AutoSnipeFindClosestDeployBoxes($deployTopOrBot, $THLeft, $actualTHTop, $deployBoxes)
+   Local $deployBoxes[6][4]
+   AutoSnipeFindClosestDeployBoxes($THLocation, $THLeft, $THTop, $deployBoxes)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][4]
@@ -492,54 +448,41 @@ Func GetAutoSnipeClickPoints(Const $order, Const ByRef $boxes, ByRef $points)
    _ArraySort($points, $order)
 EndFunc
 
-Func AutoSnipeFindClosestDeployBoxes(Const $topOrBot, Const $left, Const $top, ByRef $selectedBoxes)
-   If $topOrBot = "Center" Then
-	  For $i = 0 To 2
-		 $selectedBoxes[$i][0] = ($left+17<=511 ? $NWDeployBoxes[$i][0]       : $NEDeployBoxes[$i][2]-10)
-		 $selectedBoxes[$i][1] = ($left+17<=511 ? $NWDeployBoxes[$i][1]-83    : $NEDeployBoxes[$i][1]-83)
-		 $selectedBoxes[$i][2] = ($left+17<=511 ? $NWDeployBoxes[$i][0]+10    : $NEDeployBoxes[$i][2])
-		 $selectedBoxes[$i][3] = ($left+17<=511 ? $NWDeployBoxes[$i][1]-83+10 : $NEDeployBoxes[$i][1]-83+10)
-		 DebugWrite("Closest side box " & $i & ": " & $selectedBoxes[$i][0] & ", " & $selectedBoxes[$i][1] & ", " & $selectedBoxes[$i][2] & ", " & $selectedBoxes[$i][3])
-	  Next
-	  For $i = 0 To 2
-		 $selectedBoxes[3+$i][0] = ($left+17<=511 ? $SWDeployBoxes[$i][0]        : $SEDeployBoxes[$i][2]-10)
-		 $selectedBoxes[3+$i][1] = ($left+17<=511 ? $SWDeployBoxes[$i][3]+155-10 : $SEDeployBoxes[$i][3]+155-10)
-		 $selectedBoxes[3+$i][2] = ($left+17<=511 ? $SWDeployBoxes[$i][0]+10     : $SEDeployBoxes[$i][2])
-		 $selectedBoxes[3+$i][3] = ($left+17<=511 ? $SWDeployBoxes[$i][3]+155    : $SEDeployBoxes[$i][3]+155)
-		 DebugWrite("Closest side box " & 3+$i & ": " & $selectedBoxes[3+$i][0] & ", " & $selectedBoxes[3+$i][1] & ", " & $selectedBoxes[3+$i][2] & ", " & $selectedBoxes[3+$i][3])
-	  Next
-
-   ElseIf $topOrBot = "Top" Then
+Func AutoSnipeFindClosestDeployBoxes(Const $loc, Const $left, Const $top, ByRef $selectedBoxes)
+   If $loc = "Top" Then
 	  ; If on the top corner
-	  If $top+17<160 And $left+17>=411 And $left+17<=611 Then
-		 For $i = 18 To 20
-			$selectedBoxes[$i-18][0] = $NWDeployBoxes[$i][0]
-			$selectedBoxes[$i-18][1] = $NWDeployBoxes[$i][1]
-			$selectedBoxes[$i-18][2] = $NWDeployBoxes[$i][0]+10
-			$selectedBoxes[$i-18][3] = $NWDeployBoxes[$i][1]+10
+	  If $top+12<160 And $left+11>=$gScreenCenterDraggedDown[0]-80 And $left+11<=$gScreenCenterDraggedDown[0]+80 Then
+		 Local $startBox = $gMaxDeployBoxes-3
+		 Local $endBox = $gMaxDeployBoxes-1
+
+		 For $i = $startBox To $endBox
+			$selectedBoxes[$i-$startBox][0] = $NWDeployBoxes[$i][0]
+			$selectedBoxes[$i-$startBox][1] = $NWDeployBoxes[$i][1]
+			$selectedBoxes[$i-$startBox][2] = $NWDeployBoxes[$i][0]+10
+			$selectedBoxes[$i-$startBox][3] = $NWDeployBoxes[$i][1]+10
 			DebugWrite("Closest top box " & $i-18 & ": " & $selectedBoxes[$i-18][0] & ", " & $selectedBoxes[$i-18][1] & ", " & $selectedBoxes[$i-18][2] & ", " & $selectedBoxes[$i-18][3])
 		 Next
-		 For $i = 18 To 20
-			$selectedBoxes[$i-18+3][0] = $NEDeployBoxes[$i][2]-10
-			$selectedBoxes[$i-18+3][1] = $NEDeployBoxes[$i][1]
-			$selectedBoxes[$i-18+3][2] = $NEDeployBoxes[$i][2]
-			$selectedBoxes[$i-18+3][3] = $NEDeployBoxes[$i][1]+10
+		 For $i = $startBox To $endBox
+			$selectedBoxes[$i-$startBox+3][0] = $NEDeployBoxes[$i][2]-10
+			$selectedBoxes[$i-$startBox+3][1] = $NEDeployBoxes[$i][1]
+			$selectedBoxes[$i-$startBox+3][2] = $NEDeployBoxes[$i][2]
+			$selectedBoxes[$i-$startBox+3][3] = $NEDeployBoxes[$i][1]+10
 			DebugWrite("Closest top box " & $i-18+3 & ": " & $selectedBoxes[$i-18+3][0] & ", " & $selectedBoxes[$i-18+3][1] & ", " & $selectedBoxes[$i-18+3][2] & ", " & $selectedBoxes[$i-18+3][3])
 		 Next
 
 	  Else
-		 Local $allBoxes[21][5] ; 5th column will hold the calculated distance
-		 For $i=0 To 20
-			$allBoxes[$i][0] = ($left+17<=511 ? $NWDeployBoxes[$i][0]    : $NEDeployBoxes[$i][2]-10)
-			$allBoxes[$i][1] = ($left+17<=511 ? $NWDeployBoxes[$i][1]    : $NEDeployBoxes[$i][1])
-			$allBoxes[$i][2] = ($left+17<=511 ? $NWDeployBoxes[$i][0]+10 : $NEDeployBoxes[$i][2])
-			$allBoxes[$i][3] = ($left+17<=511 ? $NWDeployBoxes[$i][1]+10 : $NEDeployBoxes[$i][1]+10)
+		 Local $allBoxes[$gMaxDeployBoxes][5] ; 5th column will hold the calculated distance
+		 For $i=0 To $gMaxDeployBoxes-1
+			$allBoxes[$i][0] = ($left+11<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][0]    : $NEDeployBoxes[$i][2]-10)
+			$allBoxes[$i][1] = ($left+11<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][1]    : $NEDeployBoxes[$i][1])
+			$allBoxes[$i][2] = ($left+11<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][0]+10 : $NEDeployBoxes[$i][2])
+			$allBoxes[$i][3] = ($left+11<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][1]+10 : $NEDeployBoxes[$i][1]+10)
 		 Next
 
 		 ; Get closest point on the edge
 		 Local $edgeX, $edgeY
 		 AutoSnipeGetClosestEdgePoint("Top", $left, $top, $edgeX, $edgeY)
-		 DebugWrite("Closest edge point to " & $left+17 & "," & $top+17 & " is " & $edgeX & "," & $edgeY)
+		 DebugWrite("Closest edge point to " & $left+11 & "," & $top+12 & " is " & $edgeX & "," & $edgeY)
 
 		 ; Get closest boxes
 		 SortBoxesByDistance($edgeX, $edgeY, $allBoxes)
@@ -552,37 +495,40 @@ Func AutoSnipeFindClosestDeployBoxes(Const $topOrBot, Const $left, Const $top, B
 		 Next
 	  EndIf
 
-   ElseIf $topOrBot = "Bottom" Then
+   ElseIf $loc = "Bot" Then
 	  ; If on the bottom corner
-	  If $top+17>315 And $left+17>=411 And $left+17<=611 Then
-		 For $i = 18 To 20
-			$selectedBoxes[$i-18][0] = $SWDeployBoxes[$i][0]
-			$selectedBoxes[$i-18][1] = $SWDeployBoxes[$i][3]-10
-			$selectedBoxes[$i-18][2] = $SWDeployBoxes[$i][0]+10
-			$selectedBoxes[$i-18][3] = $SWDeployBoxes[$i][3]
+	  If $top+12>375 And $left+11>=$gScreenCenterDraggedDown[0]-80 And $left+11<=$gScreenCenterDraggedDown[0]+80 Then
+		 Local $startBox = $gMaxDeployBoxes-3
+		 Local $endBox = $gMaxDeployBoxes-1
+
+		 For $i = $startBox To $endBox
+			$selectedBoxes[$i-$startBox][0] = $SWDeployBoxes[$i][0]
+			$selectedBoxes[$i-$startBox][1] = $SWDeployBoxes[$i][3]-10
+			$selectedBoxes[$i-$startBox][2] = $SWDeployBoxes[$i][0]+10
+			$selectedBoxes[$i-$startBox][3] = $SWDeployBoxes[$i][3]
 			DebugWrite("Closest bottom box " & $i-18 & ": " & $selectedBoxes[$i-18][0] & ", " & $selectedBoxes[$i-18][1] & ", " & $selectedBoxes[$i-18][2] & ", " & $selectedBoxes[$i-18][3])
 		 Next
-		 For $i = 18 To 20
-			$selectedBoxes[$i-18+3][0] = $SEDeployBoxes[$i][2]-10
-			$selectedBoxes[$i-18+3][1] = $SEDeployBoxes[$i][3]-10
-			$selectedBoxes[$i-18+3][2] = $SEDeployBoxes[$i][2]
-			$selectedBoxes[$i-18+3][3] = $SEDeployBoxes[$i][3]
+		 For $i = $startBox To $endBox
+			$selectedBoxes[$i-$startBox+3][0] = $SEDeployBoxes[$i][2]-10
+			$selectedBoxes[$i-$startBox+3][1] = $SEDeployBoxes[$i][3]-10
+			$selectedBoxes[$i-$startBox+3][2] = $SEDeployBoxes[$i][2]
+			$selectedBoxes[$i-$startBox+3][3] = $SEDeployBoxes[$i][3]
 			DebugWrite("Closest bottom box " & $i-18+3 & ": " & $selectedBoxes[$i-18+3][0] & ", " & $selectedBoxes[$i-18+3][1] & ", " & $selectedBoxes[$i-18+3][2] & ", " & $selectedBoxes[$i-18+3][3])
 		 Next
 
 	  Else
-		 Local $allBoxes[21][5] ; 5th column will hold the calculated distance
-		 For $i=0 To 20
-			$allBoxes[$i][0] = ($left+17<=511 ? $SWDeployBoxes[$i][0]    : $SEDeployBoxes[$i][2]-10)
-			$allBoxes[$i][1] = ($left+17<=511 ? $SWDeployBoxes[$i][3]-10 : $SEDeployBoxes[$i][3]-10)
-			$allBoxes[$i][2] = ($left+17<=511 ? $SWDeployBoxes[$i][0]+10 : $SEDeployBoxes[$i][2])
-			$allBoxes[$i][3] = ($left+17<=511 ? $SWDeployBoxes[$i][3]    : $SEDeployBoxes[$i][3])
+		 Local $allBoxes[$gMaxDeployBoxes][5] ; 5th column will hold the calculated distance
+		 For $i=0 To $gMaxDeployBoxes-1
+			$allBoxes[$i][0] = ($left+11<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][0]    : $SEDeployBoxes[$i][2]-10)
+			$allBoxes[$i][1] = ($left+11<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][3]-10 : $SEDeployBoxes[$i][3]-10)
+			$allBoxes[$i][2] = ($left+11<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][0]+10 : $SEDeployBoxes[$i][2])
+			$allBoxes[$i][3] = ($left+11<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][3]    : $SEDeployBoxes[$i][3])
 		 Next
 
 		 ; Get closest point on the edge
 		 Local $edgeX, $edgeY
 		 AutoSnipeGetClosestEdgePoint("Bottom", $left, $top, $edgeX, $edgeY)
-		 DebugWrite("Closest edge point to " & $left+17 & "," & $top+17 & " is " & $edgeX & "," & $edgeY)
+		 DebugWrite("Closest edge point to " & $left+11 & "," & $top+12 & " is " & $edgeX & "," & $edgeY)
 
 		 ; Get closest boxes
 		 SortBoxesByDistance($edgeX, $edgeY, $allBoxes)
@@ -596,7 +542,7 @@ Func AutoSnipeFindClosestDeployBoxes(Const $topOrBot, Const $left, Const $top, B
 	  EndIf
 
    Else
-	  DebugWrite("ERROR in AutoSnipeFindClosestDeployBoxes, $topOrBot = " & $topOrBot)
+	  DebugWrite("ERROR in AutoSnipeFindClosestDeployBoxes, location = " & $loc)
 
    EndIf
 EndFunc

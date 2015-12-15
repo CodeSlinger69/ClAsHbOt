@@ -8,14 +8,28 @@ Func GetTownHallLevel(ByRef $location, ByRef $left, ByRef $top, Const $x1 = -1, 
    Local $bestMatch, $bestConfidence
 
    ; Grab and scan frame
-   GrabFrameToFile("TownHallCenterFrame.bmp", $x1, $y1, $x2, $y2)
-   ScanFrameForBestBMP("TownHallCenterFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
+   DragScreenDown()
+   GrabFrameToFile("TownHallTopFrame.bmp", $x1, $y1, $x2, $y2)
+   ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
 
-   If $bestMatch = -1 Then
-	  ;DebugWrite("Unknown TH Level" & @CRLF)
-	  Return -1
-   Else
+   If $bestMatch <> -1 Then
+	  $location = "Top"
 	  DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
 	  Return $bestMatch+7
    EndIf
+
+   ; If TH is not found, it might be in the bottommost corner and obscured
+   DragScreenUp()
+   GrabFrameToFile("TownHallTopFrame.bmp", $x1, $y1, $x2, $y2)
+   ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
+
+   If $bestMatch <> -1 Then
+	  $location = "Bot"
+	  DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
+	  Return $bestMatch+7
+   EndIf
+
+   ; Couldn't get TH level
+   DebugWrite("Unknown TH Level" & @CRLF)
+   Return -1
 EndFunc
