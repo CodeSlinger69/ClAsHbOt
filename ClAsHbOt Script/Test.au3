@@ -37,7 +37,7 @@ Func TestRaidLoot()
    Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
    DebugWrite("Dead: " & $deadBase)
    Local $location, $top, $left
-   Local $townHall = GetTownHallLevel($location, $left, $top)
+   Local $townHall = GetTownHallLevel(False, $location, $left, $top)
    DebugWrite("TH: " & $townHall)
 EndFunc
 

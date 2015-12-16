@@ -226,7 +226,7 @@ EndFunc
 
 Func CheckForSnipableTH(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
    ; See if we can find the Town Hall location
-   $level = GetTownHallLevel($location, $left, $top)
+   $level = GetTownHallLevel(True, $location, $left, $top)
 
    If $level = -1 Then
 	  DebugWrite("Could not find Town Hall.  Obscured?")

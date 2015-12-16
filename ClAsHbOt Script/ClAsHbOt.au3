@@ -306,7 +306,7 @@ Func GetMyLootNumbers()
 		 ZoomOut(False)
 
 		 Local $location, $top, $left
-		 Local $MyTownHall = GetTownHallLevel($location, $left, $top)
+		 Local $MyTownHall = GetTownHallLevel(False, $location, $left, $top)
 
 		 If $MyTownHall = -1 Then
 			   DebugWrite("Could not detect Town Hall level")

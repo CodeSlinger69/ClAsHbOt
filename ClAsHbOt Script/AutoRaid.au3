@@ -297,7 +297,7 @@ Func CheckForRaidableBase()
 	  If $gold>=$GUIGold And $elix>=$GUIElix And $dark>=$GUIDark Then
 		 ; Get Town Hall level
 		 Local $location, $top, $left
-		 $townHall = GetTownHallLevel($location, $left, $top)
+		 $townHall = GetTownHallLevel(False, $location, $left, $top)
 		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
 		 If $townHall = -1 Or $townHall>$GUITownHall Then
@@ -332,7 +332,7 @@ Func CheckForRaidableBase()
 	  If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
 		 ; Get Town Hall level
 		 Local $location, $top, $left
-		 $townHall = GetTownHallLevel($location, $left, $top)
+		 $townHall = GetTownHallLevel(False, $location, $left, $top)
 		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
 		 If $townHall = -1 Or $townHall>$GUITownHall Then
