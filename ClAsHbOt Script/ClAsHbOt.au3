@@ -4,9 +4,8 @@ ClAsHbOt!
 Dec 10 Update To Do
 - "74" char maps for end battle bonus
 - finish collecting storage images
-  - Gold 10.90
-  - Dark 6.50, 5.50, 4.50, 2.xx 1.xx
-- Test BAM and loonion strategies
+  - Dark 5.50, 4.50
+  - Test BAM and loonion strategies
 
 #ce
 

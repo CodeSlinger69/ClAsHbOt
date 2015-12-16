@@ -38,14 +38,13 @@ Global $ElixStorageBMPs[10] = [ _
   "Storages\ElixStorageL10.00.bmp", "Storages\ElixStorageL10.25.bmp", "Storages\ElixStorageL10.50.bmp", _
   "Storages\ElixStorageL10.75.bmp", "Storages\ElixStorageL10.90.bmp"]
 
-Global $DarkStorageBMPs[17] = [ _
+Global $DarkStorageBMPs[15] = [ _
   "Storages\DarkStorageL6.00.bmp", "Storages\DarkStorageL6.25.bmp", "Storages\DarkStorageL6.50.bmp", _
   "Storages\DarkStorageL6.75.bmp", "Storages\DarkStorageL6.90.bmp", _
   "Storages\DarkStorageL5.00.bmp", "Storages\DarkStorageL5.25.bmp", "Storages\DarkStorageL5.50.bmp", _
   "Storages\DarkStorageL4.00.bmp", "Storages\DarkStorageL4.25.bmp", "Storages\DarkStorageL4.50.bmp", _
   "Storages\DarkStorageL3.00.bmp", "Storages\DarkStorageL3.25.bmp", _
-  "Storages\DarkStorageL2.00.bmp", "Storages\DarkStorageL2.50.bmp", _
-  "Storages\DarkStorageL1.00.bmp", "Storages\DarkStorageL1.25.bmp"]
+  "Storages\DarkStorageL2.00.bmp", "Storages\DarkStorageL2.50.bmp"]
 
 Global $gTroopSlotBMPs[$eTroopCount] = [ _
   "RaidSlots\SlotBarbarian.bmp", "RaidSlots\SlotArcher.bmp", "RaidSlots\SlotGiant.bmp", "RaidSlots\SlotGoblin.bmp", _
