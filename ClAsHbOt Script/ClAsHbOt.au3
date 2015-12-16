@@ -6,9 +6,6 @@ Dec 10 Update To Do
 - finish collecting storage images
   - Gold 10.90
   - Dark 6.50, 5.50, 4.50, 2.xx 1.xx
-- finish collecting collectors images
-  - Gold L10
-  - Elix L10, L9
 - Test BAM and loonion strategies
 
 #ce
