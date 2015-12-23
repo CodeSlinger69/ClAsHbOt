@@ -5,7 +5,10 @@ Func StartBlueStacks()
    Local $clientPos = GetClientPos()
    If $clientPos[2]-$clientPos[0]+1<>$gBlueStacksWidth Or $clientPos[3]-$clientPos[1]+1<>$gBlueStacksHeight Then
 	  Local $res = MsgBox(BitOr($MB_OKCANCEL, $MB_ICONQUESTION), "BlueStacks Wrong Size", "BlueStacks window is the wrong size." & @CRLF & _
-		 "Click OK to resize, or Cancel to Exit.")
+		 "Click OK to resize, or Cancel to Exit." & @CRLF & @CRLF & _
+		 "Note: If you are on Windows 10, automatic resize will not work.  Please Cancel, then use the .reg file in the " & _
+		 "BlueStacks folder to change to the correct resolution.  You will need to manually kill all BlueStacks processes " & _
+		 "(beginning with 'HD-') prior to applying the .reg file.")
 
 	  If $res = $IDCANCEL Then
 		 Exit

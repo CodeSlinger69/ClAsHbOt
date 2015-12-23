@@ -68,6 +68,9 @@ Func Main()
 ;TestEndBattleBonus()
 ;TestDeployBoxCalcs()
 ;TestDonate()
+;TestTownHall()
+;TestCollectors()
+;Exit
 
    InitGUI()
 

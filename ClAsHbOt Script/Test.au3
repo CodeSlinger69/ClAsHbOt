@@ -198,6 +198,28 @@ Func TestDonate()
    ;ParseRequestText($requestText, $donateIndex, $indexOfTroopToDonate)
 
    ;DebugWrite("Donate index: " & $indexOfTroopToDonate)
+EndFunc
 
+Func TestTownHall()
+   Local $bestMatch, $bestConfidence, $left, $top
+
+   GrabFrameToFile("TownHallTopFrame.bmp")
+   ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
+
+   DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
+
+EndFunc
+
+Func TestCollectors()
+   Local $matchX[1], $matchY[1], $matchCount
+
+   ; Grab frame
+   GrabFrameToFile("LocateCollectorsFrame.bmp")
+
+   $matchCount = LocateBuildings("LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
+
+   For $i = 0 To $matchCount-1
+	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
+   Next
 
 EndFunc
