@@ -45,6 +45,7 @@ Opt("GUIOnEventMode", 1)
 #include <Screen.au3>
 #include <Donate.au3>
 #include <Test.au3>
+#include <DefenseFarm.au3>
 
 
 Main()
@@ -82,10 +83,11 @@ Func MainApplicationLoop()
    Local $lastCollectLootTimer = TimerInit()
    Local $lastQueueDonatableTroopsTimer = TimerInit()
    Local $lastTrainingCheckTimer = TimerInit()
+   Local $lastDefenseFarmTimer = TimerInit()
    Local $autoSnipeTHLevel, $autoSnipeTHLocation, $autoSnipeTHLeft, $autoSnipeTHTop
 
    While 1
-	  ;DebugWrite("Main loop: AutoRaid Stage " & $gAutoRaidStage)
+	  ;DebugWrite("Main loop: AutoRaid Stage " & $gAutoStage)
 
 	  ; Update status on GUI
 	  GetMyLootNumbers()
@@ -96,13 +98,11 @@ Func MainApplicationLoop()
 
 		 $gKeepOnlineClicked = False
 
-		 If WhereAmI()=$eScreenAndroidHome Then
-			ResetToCoCMainScreen()
-		 EndIf
+		 If WhereAmI()=$eScreenAndroidHome Then ResetToCoCMainScreen()
 
 		 CheckForAndroidMessageBox()
 		 $lastOnlineCheckTimer = TimerInit()
-		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer)
+		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 	  EndIf
 
 	  Local $autoInProgress = $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute
@@ -110,16 +110,14 @@ Func MainApplicationLoop()
 
 		 ; Donate Troops
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
+			_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) <> $BST_CHECKED And _
 			$gPossibleKick < 2 And _
 			($gDonateTroopsClicked Or IsColorPresent($rNewChatMessagesColor)) Then
 
 			$gDonateTroopsClicked = False
 
 			ResetToCoCMainScreen()
-			If WhereAmI()=$eScreenMain Then
-			   ZoomOut(True)
-			   DonateTroops()
-			EndIf
+			If WhereAmI()=$eScreenMain Then DonateTroops()
 		 EndIf
 
 		 ; Queue Troops for Donation
@@ -138,18 +136,16 @@ Func MainApplicationLoop()
 
 		 ; Collect loot
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED  And _
+			_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) <> $BST_CHECKED And _
 			$gPossibleKick < 2 And _
 			(TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Or $gCollectLootClicked) Then
 
 			$gCollectLootClicked = False
 
 			ResetToCoCMainScreen()
-			If WhereAmI()=$eScreenMain Then
-			   ZoomOut(True)
-			   CollectLoot()
-			EndIf
+			If WhereAmI()=$eScreenMain Then CollectLoot()
 			$lastCollectLootTimer = TimerInit()
-			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer)
+			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 		 EndIf
 
 	  Endif ; If $autoRaidInProgress=False And $autoSnipeInProgress=False
@@ -161,7 +157,6 @@ Func MainApplicationLoop()
 		 $gFindMatchClicked = False
 
 		 ResetToCoCMainScreen()
-		 ZoomOut(True)
 
 		 If WhereAmI()=$eScreenMain Then
 			If AutoRaidFindMatch() = True Then
@@ -206,14 +201,27 @@ Func MainApplicationLoop()
 		 AutoRaid($lastTrainingCheckTimer)
 	  EndIf
 
+	  ; Defense Farm
+	  If _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED And _
+		 $gPossibleKick < 2 And _
+		 IsButtonPresent($rAndroidMessageButton1) = False And _
+		 IsButtonPresent($rAndroidMessageButton2) = False Then
+
+		 $gDefenseFarmClicked = False
+		 CheckForAndroidMessageBox()
+
+		 DefenseFarm($lastDefenseFarmTimer)
+	  EndIf
+
 	  ; Pause for 5 seconds
 	  For $i = 1 To 10
-		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer)
+		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 
 		 If $gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gFindMatchClicked Or $gAutoSnipeClicked Or $gAutoRaidClicked Then ExitLoop
 		 If $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop
+		 If _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED And TimerDiff($lastDefenseFarmTimer) >= $gDefenseFarmOfflineTime Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And IsColorPresent($rNewChatMessagesColor) Then ExitLoop
 
 		 Sleep(500)
@@ -233,7 +241,9 @@ Func MainApplicationLoop()
    WEnd
 EndFunc
 
-Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $trainingTimer)
+Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $trainingTimer, Const $defenseFarmTimer)
+
+   ; Keep online
    If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_UNCHECKED Then
 	  GUICtrlSetData($GUI_KeepOnlineCheckBox, "F5 Keep Online 0:00")
    Else
@@ -242,14 +252,18 @@ Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $training
 	  GUICtrlSetData($GUI_KeepOnlineCheckBox, "F5 Keep Online " & millisecondToMMSS($ms))
    EndIf
 
+   ; Collect loot
    If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_UNCHECKED Then
 	  GUICtrlSetData($GUI_CollectLootCheckBox, "F6 Collect Loot 0:00")
+   ElseIf _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED Then
+	  GUICtrlSetData($GUI_CollectLootCheckBox, "F6 Collect Loot -:--")
    Else
 	  Local $ms = $gCollectLootInterval - TimerDiff($lootTimer)
 	  If $ms < 0 Then $ms = 0
 	  GUICtrlSetData($GUI_CollectLootCheckBox, "F6 Collect Loot " & millisecondToMMSS($ms))
    EndIf
 
+   ; Auto Raid
    If (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED) And _
 	  $gAutoStage = $eAutoWaitForTrainingToComplete Then
 
@@ -257,6 +271,16 @@ Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $training
 	  If $ms < 0 Then $ms = 0
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Waiting For Training " & millisecondToMMSS($ms))
    EndIf
+
+   ; Defense Farm
+   If _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_UNCHECKED Then
+	  GUICtrlSetData($GUI_DefenseFarmCheckBox, "Defense Farm 00:00")
+   Else
+	  Local $ms = $gDefenseFarmOfflineTime - TimerDiff($defenseFarmTimer)
+	  If $ms < 0 Then $ms = 0
+	  GUICtrlSetData($GUI_DefenseFarmCheckBox, "Defense Farm " & millisecondToMMSS($ms))
+   EndIf
+
 EndFunc
 
 Func millisecondToMMSS(Const $ms)

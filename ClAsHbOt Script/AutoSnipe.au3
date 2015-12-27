@@ -110,12 +110,6 @@ Func AutoSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 	  AttackingIsDisabled() = False And _
 	  $failCount>0
 
-	  ; See if Shield Is Active screen pops up
-	  If WhereAmI() = $eScreenShieldIsActive Then
-		 RandomWeightedClick($rShieldIsActivePopupButton)
-		 Sleep(500)
-	  EndIf
-
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd

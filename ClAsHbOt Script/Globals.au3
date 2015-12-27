@@ -24,14 +24,14 @@ Global $gIniFile = "CoC Bot.ini"
 
 ; GUI
 Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False, $gDonateTroopsStartup = False
-Global $gFindMatchClicked = False, $gAutoSnipeClicked = False, $gAutoRaidClicked = False
+Global $gFindMatchClicked = False, $gAutoSnipeClicked = False, $gAutoRaidClicked = False, $gDefenseFarmClicked = False
 
 ; Lists of troop and spell types
 Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroopWallBreaker, _
 			$eTroopBalloon, $eTroopWizard, $eTroopHealer, $eTroopDragon, $eTroopPekka, _
 			$eTroopMinion, $eTroopHogRider, $eTroopValkyrie, $eTroopGolem, $eTroopWitch, _
 			$eTroopLavaHound, _
-			$eTroopKing, $eTroopQueen, $eTroopCount
+			$eTroopKing, $eTroopQueen, $eTroopWarden, $eTroopCount
 Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", _
 									 "Balloon", "Wizard", "Healer", "Dragon", "Pekka", _
 									 "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", _
@@ -44,7 +44,7 @@ Global $gSpellNames[$eSpellCount] = ["Lightning", "Rage", "Heal", "Jump", "Freez
 
 ; Known screen/window types
 Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMatch, _
-   $eScreenWaitRaid, $eScreenLiveRaid, $eScreenEndBattle, $eScreenShieldIsActive, _
+   $eScreenWaitRaid, $eScreenLiveRaid, $eScreenEndBattle, _
    $eScreenLiveReplayEndBattle, $eScreenVilliageWasAttacked, $eScreenChatDimmed, _
    $eWindowArmyManager, $eScreenPlayStore, $eScreenAndroidMessageBox, $eScreenUnknown
 

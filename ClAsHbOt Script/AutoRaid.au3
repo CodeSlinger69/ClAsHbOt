@@ -112,12 +112,6 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
 	  AttackingIsDisabled() = False And _
 	  $failCount>0
 
-	  ; See if Shield Is Active screen pops up
-	  If WhereAmI() = $eScreenShieldIsActive Then
-		 RandomWeightedClick($rShieldIsActivePopupButton)
-		 Sleep(500)
-	  EndIf
-
 	  Sleep(1000)
 	  $failCount -= 1
    WEnd
@@ -690,6 +684,26 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 	  $index[$i][3] = -1
    Next
 
+   ; Check buttons 2-11
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+
+   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
+
+   For $i = 0 To UBound($bitmaps)-1
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
+	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+
+	  If $split[2] > $gConfidenceRaidTroopSlot Then
+		 $index[$i][0] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[0]
+		 $index[$i][1] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[1]
+		 $index[$i][2] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[2]
+		 $index[$i][3] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[3]
+		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
+			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
+	  EndIf
+   Next
+
    ; Check first button
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
@@ -710,26 +724,6 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 ExitLoop ; only one possible button in this pass
 	  EndIf
    Next
-
-   ; Check buttons 2-11
-   RandomWeightedClick($rRaidSlotsButton1)
-   Sleep(200)
-
-   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
-
-   For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-
-	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[0]
-		 $index[$i][1] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[1]
-		 $index[$i][2] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[2]
-		 $index[$i][3] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[3]
-		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
-			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
-	  EndIf
-   Next
 EndFunc
 
 Func GetAvailableTroops(Const $troop, Const ByRef $index)
@@ -747,13 +741,25 @@ Func GetAvailableTroops(Const $troop, Const ByRef $index)
 	  Sleep(200)
    EndIf
 
-   Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+18, _
-						 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
-						 0, 0, 0, 0]
-   Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
-   ;DebugWrite("GetAvailableTroops() = " & $t)
+   Local $count = 0
 
-   Return StringMid($t, 2)
+   If $troop=$eTroopKing And $index[$eTroopKing][0]<>-1 Then
+	  $count = 1
+   ElseIf $troop=$eTroopQueen And $index[$eTroopQueen][0]<>-1 Then
+	  $count = 1
+   ElseIf $troop=$eTroopWarden And $index[$eTroopWarden][0]<>-1 Then
+	  $count = 1
+   Else
+	  Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+18, _
+							$rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
+							0, 0, 0, 0]
+	  Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
+	  ;DebugWrite("GetAvailableTroops() = " & $t)
+
+	  $count = Number(StringMid($t, 2))
+   EndIf
+
+   Return $count
 EndFunc
 
 Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $direction, Const $boxIndex, ByRef $kingDeployed, ByRef $queenDeployed)

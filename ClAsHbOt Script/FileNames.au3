@@ -51,7 +51,8 @@ Global $gTroopSlotBMPs[$eTroopCount] = [ _
   "RaidSlots\SlotWallBreaker.bmp", "RaidSlots\SlotBalloon.bmp", "RaidSlots\SlotWizard.bmp", "RaidSlots\SlotHealer.bmp", _
   "RaidSlots\SlotDragon.bmp", "RaidSlots\SlotPekka.bmp", _
   "RaidSlots\SlotMinion.bmp", "RaidSlots\SlotHogRider.bmp", "RaidSlots\SlotValkyrie.bmp", "RaidSlots\SlotGolem.bmp", _
-  "RaidSlots\SlotWitch.bmp", "RaidSlots\SlotLavaHound.bmp", "RaidSlots\SlotKing.bmp", "RaidSlots\SlotQueen.bmp"]
+  "RaidSlots\SlotWitch.bmp", "RaidSlots\SlotLavaHound.bmp", "RaidSlots\SlotKing.bmp", "RaidSlots\SlotQueen.bmp", _
+  "RaidSlots\SlotWarden.bmp" ]
 
 Global $gSpellSlotBMPs[$eSpellCount] = [ _
   "RaidSlots\SlotLightningSpell.bmp", "RaidSlots\SlotHealSpell.bmp", "RaidSlots\SlotRageSpell.bmp", _
