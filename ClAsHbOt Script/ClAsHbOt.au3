@@ -142,7 +142,12 @@ Func MainApplicationLoop()
 
 			$gCollectLootClicked = False
 
-			ResetToCoCMainScreen()
+			If WhereAmI() = $eScreenMain Then
+			   ZoomOut(True)
+			Else
+			   ResetToCoCMainScreen()
+			EndIf
+
 			If WhereAmI()=$eScreenMain Then CollectLoot()
 			$lastCollectLootTimer = TimerInit()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
@@ -156,7 +161,11 @@ Func MainApplicationLoop()
 
 		 $gFindMatchClicked = False
 
-		 ResetToCoCMainScreen()
+		 If WhereAmI() = $eScreenMain Then
+			ZoomOut(True)
+		 Else
+			ResetToCoCMainScreen()
+		 EndIf
 
 		 If WhereAmI()=$eScreenMain Then
 			If AutoRaidFindMatch() = True Then
