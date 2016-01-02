@@ -387,44 +387,72 @@ EndFunc
 Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level, Const $usage)
    ; How much is in the storage, based on storage level and usage amount?
    ; Assume maximum number of storages for a given TH level
-   Local $inStorage
-   If $level=11 And $targetTHLevel>=9 Then ; TH9 and higher can have 4 storages
-	  $inStorage = 8000000 * $usage
-   ElseIf $level=11 And $targetTHLevel=8 Then ; TH8 can have 3 storages
-	  $inStorage = 6000000 * $usage
-   ElseIf $level=11 And $targetTHLevel<=7 Then ; TH7 and lower can have 2 storages
-	  $inStorage = 4000000 * $usage
-   ElseIf $level=10 And $targetTHLevel>=9 Then ; TH9 and higher can have 4 storages
-	  $inStorage = 4000000 * $usage
-   ElseIf $level=10 And $targetTHLevel=8 Then ; TH8 can have 3 storages
-	  $inStorage = 3000000 * $usage
-   ElseIf $level=10 And $targetTHLevel<=7 Then ; TH7 and lower can have 2 storages
-	  $inStorage = 2000000 * $usage
+   ; TH9 and higher can have 4 storages
+   ; TH8 can have 3 storages
+   ; TH7 and lower can have 2 storages
+   ; Calculations include assumption of proportional storage in TH, as of 12/10/2015 update
+   Local $THStorage, $numStorages
+   If $targetTHLevel=11 Then
+	  $THStorage = 2000000
+	  $numStorages = 4
+   ElseIf $targetTHLevel=10 Then
+	  $THStorage = 1500000
+	  $numStorages = 4
+   ElseIf $targetTHLevel=9 Then
+	  $THStorage = 1000000
+	  $numStorages = 4
+   ElseIf $targetTHLevel=8 Then
+	  $THStorage = 750000
+	  $numStorages = 3
+   ElseIf $targetTHLevel=7 Then
+	  $THStorage = 500000
+	  $numStorages = 2
+   ElseIf $targetTHLevel=6 Then
+	  $THStorage = 300000
+	  $numStorages = 2
+   ElseIf $targetTHLevel=5 Then
+	  $THStorage = 100000
+	  $numStorages = 2
+   Else
+	  $THStorage=50000
+	  $numStorages = 2
+   EndIf
+
+   Local $capacityPerStorage
+   If $level=12 Then
+	  $capacityPerStorage = 2000000
+   ElseIf $level=11 Then
+	  $capacityPerStorage = 1750000
+   ElseIf $level=10 Then
+	  $capacityPerStorage = 850000
    Else
 	  ; TODO: add logic here for other level storages once/if those images are captured
-	  $inStorage = 2000000
+	  $capacityPerStorage = 450000
    EndIf
-   DebugWrite("Estimated amount in storage = " & $inStorage)
+
+   Local $totalInStorage = ($THStorage + $capacityPerStorage*$numStorages) * $usage
+
+   DebugWrite("Estimated amount in storage = " & $totalInStorage)
 
    ; How much of what is in the storage is available to loot, given the target TH level?
    Local $availabletoLoot
-   If $targetTHLevel>=10 Then
-	  $availabletoLoot = $inStorage*0.1
+   If $targetTHLevel>=11 Then
+	  $availabletoLoot = $totalInStorage*0.1
+	  If $availabletoLoot > 450000 Then $availabletoLoot = 450000
+   ElseIf $targetTHLevel=10 Then
+	  $availabletoLoot = $totalInStorage*0.12
 	  If $availabletoLoot > 400000 Then $availabletoLoot = 400000
    ElseIf $targetTHLevel=9 Then
-	  $availabletoLoot = $inStorage*0.12
+	  $availabletoLoot = $totalInStorage*0.14
 	  If $availabletoLoot > 350000 Then $availabletoLoot = 350000
    ElseIf $targetTHLevel=8 Then
-	  $availabletoLoot = $inStorage*0.14
+	  $availabletoLoot = $totalInStorage*0.16
 	  If $availabletoLoot > 300000 Then $availabletoLoot = 300000
    ElseIf $targetTHLevel=7 Then
-	  $availabletoLoot = $inStorage*0.16
+	  $availabletoLoot = $totalInStorage*0.18
 	  If $availabletoLoot > 250000 Then $availabletoLoot = 250000
-   ElseIf $targetTHLevel=6 Then
-	  $availabletoLoot = $inStorage*0.18
-	  If $availabletoLoot > 200000 Then $availabletoLoot = 200000
-   Else
-	  $availabletoLoot = $inStorage*0.20
+   Else ; $targetTHLevel<=6
+	  $availabletoLoot = $totalInStorage*0.20
 	  If $availabletoLoot > 200000 Then $availabletoLoot = 200000
    EndIf
    DebugWrite("Available to loot from storage = " & $availabletoLoot)
@@ -433,7 +461,7 @@ Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level
    If $myTHLevel-$targetTHLevel <= 0 Then
 	  $availabletoLoot*=1 ; no penalty if raiding a base that is my town hall level or higher
    ElseIf $myTHLevel-$targetTHLevel = 1 Then
-	  $availabletoLoot*=0.90
+	  $availabletoLoot*=0.80
    ElseIf $myTHLevel-$targetTHLevel = 2 Then
 	  $availabletoLoot*=0.50
    ElseIf $myTHLevel-$targetTHLevel = 3 Then
