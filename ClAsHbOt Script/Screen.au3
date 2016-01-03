@@ -105,10 +105,15 @@ Func ResetToCoCMainScreen()
    EndSwitch
 
    ; Wait for main screen to appear
-   While WhereAmI() <> $eScreenMain And $countdown > 0
+   While WhereAmI()<>$eScreenMain And WhereAmI()<>$eScreenVilliageWasAttacked And $countdown>0
 	  Sleep(1000)
 	  $countdown -= 1
    WEnd
+
+   If WhereAmI() = $eScreenVilliageWasAttacked Then
+	  DebugWrite("ResetToCoCMainScreen(), On Villiage Was Attached Screen - clicking Okay button.")
+	  RandomWeightedClick($rWindowVilliageWasAttackedOkayButton)
+   EndIf
 
    ZoomOut(True)
    DragScreenDown()

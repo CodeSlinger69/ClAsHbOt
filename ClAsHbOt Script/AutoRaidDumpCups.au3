@@ -14,7 +14,11 @@ Func DumpCups()
 
    ; Make sure we are on the main Clash screen
    If $myCups > $cupsThreshold Then
-	  ResetToCoCMainScreen()
+	  If WhereAmI() = $eScreenMain Then
+		 ZoomOut(True)
+	  Else
+		 ResetToCoCMainScreen()
+	  EndIf
    EndIf
 
    If WhereAmI()<>$eScreenMain Then
