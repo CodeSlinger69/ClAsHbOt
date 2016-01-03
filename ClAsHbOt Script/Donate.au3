@@ -244,7 +244,7 @@ Func QueueDonatableTroops()
    ; been queued manually, or are there due to auto-raid queueing.
 
    ; Count how many troops are in the Army Camps
-   Local $availableTroopCounts[$eTroopCount-2]
+   Local $availableTroopCounts[$gTroopCountExcludingHeroes]
 
    If OpenArmyCampWindow() = False Then
 	  DebugWrite("Donate: Unable to locate Army Camp.")
@@ -269,7 +269,7 @@ Func QueueDonatableTroops()
    EndIf
 
    ; Count queued troops
-   Local $queuedTroopCounts[$eTroopCount-2]
+   Local $queuedTroopCounts[$gTroopCountExcludingHeroes]
    CountQueuedTroops($queuedTroopCounts)
 
    ; See if standard and/or dark are needed
@@ -364,7 +364,7 @@ Func CountQueuedTroops(ByRef $troopCounts)
 	  Sleep(250)
 	  $screenCount += 1
 
-	  Local $counts[$eTroopCount-2]
+	  Local $counts[$gTroopCountExcludingHeroes]
 	  GetBarracksTroopCounts($gBarracksTroopSlotBMPs, $counts)
 	  For $i = $eTroopBarbarian To $eTroopLavaHound
 		 $troopCounts[$i] += $counts[$i]

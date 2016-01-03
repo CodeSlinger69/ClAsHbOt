@@ -71,7 +71,7 @@ Global $gDonateSlotBMPs[16] = [ _
   "Donate\DonateMinion.bmp", "Donate\DonateHogRider.bmp", "Donate\DonateValkyrie.bmp", "Donate\DonateGolem.bmp", _
   "Donate\DonateWitch.bmp", "Donate\DonateLavaHound.bmp"]
 
-Global $gBarracksTroopSlotBMPs [$eTroopCount-2] = [ _
+Global $gBarracksTroopSlotBMPs [$gTroopCountExcludingHeroes] = [ _
   "Barracks\BarracksBarbarian.bmp", "Barracks\BarracksArcher.bmp", "Barracks\BarracksGiant.bmp", "Barracks\BarracksGoblin.bmp", _
   "Barracks\BarracksWallBreaker.bmp", "Barracks\BarracksBalloon.bmp", "Barracks\BarracksWizard.bmp", "Barracks\BarracksHealer.bmp", _
   "Barracks\BarracksDragon.bmp", "Barracks\BarracksPekka.bmp", _

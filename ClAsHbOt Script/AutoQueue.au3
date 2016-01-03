@@ -16,7 +16,7 @@ Func AutoQueueTroops(Const ByRef $initialFill)
 
    ; Count how many troops are already built
    ; TODO: capture images, etc for this
-   Local $availableTroopCounts[$eTroopCount-2]
+   Local $availableTroopCounts[$gTroopCountExcludingHeroes]
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  $availableTroopCounts[$i] = 0
    Next

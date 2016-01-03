@@ -51,7 +51,7 @@ Func ReadSettings()
    DebugWrite("Setting Interval Pause Between Nexts = " & $gPauseBetweenNexts)
 
    ; Donate
-   Global $gDonateMatchTroopStrings[$eTroopCount-2]
+   Global $gDonateMatchTroopStrings[$gTroopCountExcludingHeroes]
    $gDonateMatchTroopStrings[$eTroopBarbarian] = IniRead($gIniFile, "Donate", "Barbarian Match Strings", "barb")
    $gDonateMatchTroopStrings[$eTroopArcher] = IniRead($gIniFile, "Donate", "Archer Match Strings", "barb")
    $gDonateMatchTroopStrings[$eTroopGoblin] = IniRead($gIniFile, "Donate", "Goblin Match Strings", "barb")
@@ -94,7 +94,7 @@ Func ReadSettings()
    ;Global $gDonateBarracksStandardMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Standard Maximum", 4)
    ;Global $gDonateBarracksDarkMaximum = IniRead($gIniFile, "Donate", "Donate Barracks Dark Maximum", 2)
 
-   ;Global $gDonateTroopStock[$eTroopCount-2]
+   ;Global $gDonateTroopStock[$gTroopCountExcludingHeroes]
    ;$gDonateTroopStock[$eTroopBarbarian] = Number(IniRead($gIniFile, "Donate", "Barbarian Stock Amount", 0))
    ;$gDonateTroopStock[$eTroopArcher] = Number(IniRead($gIniFile, "Donate", "Archer Stock Amount", 0))
    ;$gDonateTroopStock[$eTroopGoblin] = Number(IniRead($gIniFile, "Donate", "Goblin Stock Amount", 0))
