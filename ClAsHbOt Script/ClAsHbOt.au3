@@ -106,11 +106,10 @@ Func MainApplicationLoop()
 	  EndIf
 
 	  Local $autoInProgress = $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute
-	  If $autoInProgress=False Then
+	  If $autoInProgress=False And _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) <> $BST_CHECKED Then
 
 		 ; Donate Troops
-		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED  And _
-			_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) <> $BST_CHECKED And _
+		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And _
 			$gPossibleKick < 2 And _
 			($gDonateTroopsClicked Or IsColorPresent($rNewChatMessagesColor)) Then
 
@@ -135,8 +134,7 @@ Func MainApplicationLoop()
 		 #ce
 
 		 ; Collect loot
-		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED  And _
-			_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) <> $BST_CHECKED And _
+		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And _
 			$gPossibleKick < 2 And _
 			(TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Or $gCollectLootClicked) Then
 
@@ -226,7 +224,8 @@ Func MainApplicationLoop()
 	  For $i = 1 To 10
 		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 
-		 If $gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gFindMatchClicked Or $gAutoSnipeClicked Or $gAutoRaidClicked Then ExitLoop
+		 If ($gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gFindMatchClicked Or $gAutoSnipeClicked Or $gAutoRaidClicked) And _
+			_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox)<>$BST_CHECKED Then ExitLoop
 		 If $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecute Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop
