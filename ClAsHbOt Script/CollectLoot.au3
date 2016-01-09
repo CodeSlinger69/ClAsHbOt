@@ -49,6 +49,8 @@ Func CollectLoot()
 	  $matchY[$totalMatches-1] = $mY[$i]
    Next
 
+   If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox)<>$BST_CHECKED Then Return
+
    ; Do the collecting
    If $totalMatches > 0 Then
 	  ; Sort the matches

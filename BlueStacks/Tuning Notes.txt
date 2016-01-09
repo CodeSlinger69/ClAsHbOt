@@ -1,0 +1,34 @@
+BlueStacks tuning/tweaking notes
+
+Courtesy rumbla, to prevent BlueStacks from calling home and to disable unneeded services:
+1. Modify these registry keys:
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Agent\AppSync /f /v Enabled /t REG_DWORD /d 0
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Agent\Cloud /f /v Host /t REG_SZ /d https://127.0.0.1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Agent\Cloud /f /v Host2 /t REG_SZ /d https://127.0.0.1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Agent\Cloud /f /v SyncIntervalSecs /t REG_DWORD /d 172800
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Updater /f /v ManifestURL /t REG_SZ /d "http://127.0.0.1/updates/manifest_0.10.7.5601"
+
+2. Go to the BlueStacks install folder, and with admin privileges, rename the following files:
+HD-UpdaterService.exe ---> HD-UpdaterService.exe.norun
+HD-UpdateHelper.exe ---> HD-UpdateHelper.exe.norun
+HD-LogRotatorService.exe --> HD-LogRotatorService.exe.norun
+HD-LogRotator.exe --> HD-LogRotator.exe.norun
+HD-LogCollector.exe --> HD-LogCollector.exe.norun
+
+3. Run services.msc and change the following services to disabled:
+BlueStacks Log Rotator Service
+BlueStacks Updater Service
+
+
+Some BlueStacks bloatware that can be removed/disabled:
+- Force stop from 'Settings' (NOT 'Bluestacks Settings')> Apps> Running tab
+  BS-Services
+  GamePop-Home
+- Disable the following apps in 'Settings' (NOT 'Bluestacks Settings')
+  AppFinder
+  AppSettings
+  BS-Services
+  MyBluestacks
+  Notepad
+  Picasa Uploader
+  Search
