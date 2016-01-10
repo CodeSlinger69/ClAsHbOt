@@ -26,11 +26,11 @@ Global $CollectorBMPs[8] = [ _
   "Collectors\ElixCollectorL12.bmp", "Collectors\ElixCollectorL11.bmp", "Collectors\ElixCollectorL10.bmp", _
   "Collectors\ElixCollectorL9.bmp"]
 
-Global $GoldStorageBMPs[10] = [ _
+Global $GoldStorageBMPs[11] = [ _
   "Storages\GoldStorageL12.00.bmp", _
   "Storages\GoldStorageL12.90.bmp", _
   "Storages\GoldStorageL11.00.bmp", "Storages\GoldStorageL11.25.bmp", "Storages\GoldStorageL11.50.bmp", _
-  "Storages\GoldStorageL11.90.bmp", _
+  "Storages\GoldStorageL11.75.bmp", "Storages\GoldStorageL11.90.bmp", _
   "Storages\GoldStorageL10.00.bmp", "Storages\GoldStorageL10.25.bmp", "Storages\GoldStorageL10.50.bmp", _
   "Storages\GoldStorageL10.90.bmp" ]
 
@@ -82,3 +82,11 @@ Global $gBarracksSpellSlotBMPs [$eSpellCount] = [ _
   "Barracks\BarracksLightningSpell.bmp", "Barracks\BarracksHealSpell.bmp", "Barracks\BarracksRageSpell.bmp", _
   "Barracks\BarracksJumpSpell.bmp", "Barracks\BarracksFreezeSpell.bmp", "Barracks\BarracksPoisonSpell.bmp", _
   "Barracks\BarracksEarthquakeSpell.bmp", "Barracks\BarracksHasteSpell.bmp"]
+
+Global $gArmyCampTroopsBMPs [$eTroopCount] = [ _
+  "Camp\CampBarbarian.bmp", "Camp\CampArcher.bmp", "Camp\CampGiant.bmp", "Camp\CampGoblin.bmp", _
+  "Camp\CampWallBreaker.bmp", "Camp\CampBalloon.bmp", "Camp\CampWizard.bmp", "Camp\CampHealer.bmp", _
+  "Camp\CampDragon.bmp", "Camp\CampPekka.bmp", _
+  "Camp\CampMinion.bmp", "Camp\CampHogRider.bmp", "Camp\CampValkyrie.bmp", "Camp\CampGolem.bmp", _
+  "Camp\CampWitch.bmp", "Camp\CampLavaHound.bmp", _
+  "Camp\CampKing.bmp", "Camp\CampQueen.bmp", "Camp\CampWarden.bmp"]

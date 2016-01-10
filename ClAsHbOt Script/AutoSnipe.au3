@@ -245,16 +245,18 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
    AutoSnipeFindClosestDeployBoxes($THLocation, $THLeft, $THTop, $deployBoxes)
 
    ; What troops are available?
-   Local $troopIndex[$eTroopCount][4]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   Local $troopIndex[$eTroopCount][5]
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+
    Local $breakerButton[4] = [$troopIndex[$eTroopWallBreaker][0], $troopIndex[$eTroopWallBreaker][1], $troopIndex[$eTroopWallBreaker][2], $troopIndex[$eTroopWallBreaker][3]]
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    Local $archButton[4] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], $troopIndex[$eTroopArcher][3]]
    Local $kingButton[4] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], $troopIndex[$eTroopKing][3]]
    Local $queenButton[4] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], $troopIndex[$eTroopQueen][3]]
+   Local $wardenButton[4] = [$troopIndex[$eTroopWarden][0], $troopIndex[$eTroopWarden][1], $troopIndex[$eTroopWarden][2], $troopIndex[$eTroopWarden][3]]
 
    ; send troops in waves, check star color region for success
-   Local $breakersDeployed = False, $kingDeployed = False, $queenDeployed = False
+   Local $breakersDeployed = False, $kingDeployed = False, $queenDeployed = False, $wardenDeployed = False
    Local $waveDelay = 13000
    Local $waveTroopsBarb = 30
    Local $waveTroopsArch = 20
@@ -266,9 +268,10 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 	  DebugWrite("Auto snipe, wave " & $waveCount)
 
 	  ; Get counts of available troops
-	  Local $availableBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
-	  Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
-	  Local $availableBreakers = GetAvailableTroops($eTroopWallBreaker, $troopIndex)
+	  Local $availableBarbs = $troopIndex[$eTroopBarbarian][4]
+	  Local $availableArchs = $troopIndex[$eTroopArcher][4]
+	  Local $availableBreakers = $troopIndex[$eTroopWallBreaker][4]
+
 	  DebugWrite("Troops available: Barbarians=" & $availableBarbs & " Archers=" & $availableArchs & _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED ? " Breakers=" & $availableBreakers : "") )
 
@@ -297,7 +300,8 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 			   Sleep($gDeployTroopClickDelay)
 			Next
 
-			$currentBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
+			FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+			$currentBarbs = $troopIndex[$eTroopBarbarian][4]
 			$failCount-=1
 		 WEnd
 	  EndIf
@@ -347,7 +351,9 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 			   _MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
 			   Sleep($gDeployTroopClickDelay)
 			Next
-			$currentArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
+
+			FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+			$currentArchs = $troopIndex[$eTroopArcher][4]
 			$failCount-=1
 		 WEnd
 
@@ -397,6 +403,25 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
 		 $queenDeployed = True
 	  EndIf
 
+	  ; Deploy Warden if we ran out of Archs and power up after 2 seconds
+	  If $wardenButton[0] <> -1 And $availableArchs=0 And $wardenDeployed=False Then
+		 DebugWrite("Deploying Grand Warden.")
+		 RandomWeightedClick($wardenButton)
+		 Sleep(500)
+
+		 Local $xClick, $yClick
+		 Local $box[4] = [$deployBoxes[0][0], $deployBoxes[0][1], $deployBoxes[0][2], $deployBoxes[0][3]]
+		 RandomCoords($box, $xClick, $yClick)
+		 _MouseClickFast($xClick, $yClick)
+		 Sleep(2000)
+
+		 DebugWrite("Powering up Grand Warden.")
+		 RandomWeightedClick($wardenButton)
+		 Sleep(500)
+
+		 $wardenDeployed = True
+	  EndIf
+
 	  If $availableBarbs=0 And $availableArchs=0 Then ExitLoop
 
 	  ; Wait for timer
@@ -422,7 +447,7 @@ Func AutoSnipeExecuteSnipe(Const $THLevel, Const $THLocation, Const $THLeft, Con
    Next
 
    ; Wait for end battle
-   WaitForBattleEnd(True, True)  ; always wait full time, or until all troops are dead
+   WaitForBattleEnd(True, True, True)  ; always wait full time, or until all troops are dead
 
    Return True
 EndFunc

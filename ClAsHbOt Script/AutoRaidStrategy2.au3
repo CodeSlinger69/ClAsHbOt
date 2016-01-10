@@ -8,11 +8,11 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $availableTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
    DebugWrite("FillBarracksStrategy2(), " & ($initialFillFlag ? "initial fill." : "top up.") )
 
    ; How many breakers are needed?
-   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $availableTroopCounts[$eTroopWallBreaker]
+   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $builtTroopCounts[$eTroopWallBreaker]
    If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
    Else
@@ -79,14 +79,13 @@ Func AutoRaidExecuteRaidStrategy2()
    DebugWrite("AutoRaidExecuteRaidStrategy2()")
 
    ; What troops are available?
-   Local $troopIndex[$eTroopCount][4]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   Local $troopIndex[$eTroopCount][5]
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
 
-   ; Get counts of available troops
-   Local $availableBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
-   Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
-   Local $availableMinions = GetAvailableTroops($eTroopMinion, $troopIndex)
-   Local $availableBreakers = GetAvailableTroops($eTroopWallBreaker, $troopIndex)
+   Local $availableBarbs = $troopIndex[$eTroopBarbarian][4]
+   Local $availableArchs = $troopIndex[$eTroopArcher][4]
+   Local $availableMinions = $troopIndex[$eTroopMinion][4]
+   Local $availableBreakers = $troopIndex[$eTroopWallBreaker][4]
 
    DebugWrite("Available Barbarians: " & $availableBarbs)
    DebugWrite("Avaliable Archers: " & $availableArchs)
@@ -150,11 +149,11 @@ Func AutoRaidExecuteRaidStrategy2()
    EndIf
 
    ; Deploy and monitor heroes
-   Local $kingDeployed = False, $queenDeployed = False
-   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed)
+   Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
+   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($kingDeployed, $queenDeployed)
+   WaitForBattleEnd($kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc

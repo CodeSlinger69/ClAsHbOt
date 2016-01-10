@@ -187,7 +187,7 @@ Func FillBarracksWithTroops(Const $troop, Const ByRef $troopSlots)
    Local $troopsToFill = 999
 
    ; Get number of troops already queued in this barracks
-   Local $queueStatus = ScrapeFuzzyText($gBarracksStatusCharacterMaps, $rBarracksWindowTextBox, $gBarracksStatusCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $queueStatus = ScrapeFuzzyText($gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
    ;DebugWrite("Barracks queue status: " & $queueStatus)
 
    Local $stringLoc = StringInStr($queueStatus, "troops")

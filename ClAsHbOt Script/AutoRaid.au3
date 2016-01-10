@@ -311,7 +311,7 @@ Func CheckForRaidableBase()
    SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Do we have a gold/elix/dark/townhall/dead match?
-   If $GUIIgnoreStorages And $myTHLevel-$townHall<2 Then ; "ignore storages" only valid if target TH < 2 levels from my TH level
+   If $GUIIgnoreStorages And ($myTHLevel-$townHall<2 Or $myTHLevel>=11) Then ; "ignore storages" only valid if target TH<2 levels from my TH level. or my TH level>=11
 	  If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
 		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
 					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
@@ -346,7 +346,8 @@ EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
 Func AutoRaidAdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   GrabFrameToFile("StorageUsageFrame.bmp", 261, 200, 761, 550)
+   GrabFrameToFile("StorageUsageFrame.bmp", $gScreenCenterDraggedDown[0]-200, $gScreenCenterDraggedDown[1]-200, _
+										    $gScreenCenterDraggedDown[0]+200, $gScreenCenterDraggedDown[1]+180)
    Local $x, $y, $conf, $matchIndex, $saveFrame = False
    Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
@@ -357,6 +358,7 @@ Func AutoRaidAdjustLootForStorages(Const $townHall, Const $gold, Const $elix, By
    If $matchIndex = -1 Then
 	  $saveFrame = True
 	  DebugWrite("Could not find gold storage match.")
+	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameGold" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
 	  Local $s = $GoldStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
@@ -373,6 +375,7 @@ Func AutoRaidAdjustLootForStorages(Const $townHall, Const $gold, Const $elix, By
    If $matchIndex = -1 Then
 	  $saveFrame = True
 	  DebugWrite("Could not find elixir storage match.")
+	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameElix" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
 	  Local $s = $ElixStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
@@ -475,7 +478,7 @@ Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level
 EndFunc
 
 ; howMany: $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
-Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
+Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
    DebugWrite("DeployTroopsToSides()")
    Local $xClick, $yClick
    Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
@@ -488,8 +491,8 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 	  Return
    EndIf
 
-   ; Firgure out how many of the available to deploy
-   Local $troopsAvailable = GetAvailableTroops($troop, $index)
+   ; Figure out how many of the available to deploy
+   Local $troopsAvailable = $index[$troop][4]
    Local $troopsToDeploy
    If $howMany = $eAutoRaidDeploySixtyPercent Then
 	    $troopsToDeploy = Int($troopsAvailable * 0.6)
@@ -518,7 +521,8 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
    If $howMany=$eAutoRaidDeploySixtyPercent Or $howMany=$eAutoRaidDeployFiftyPercent Then Return
 
    ; If we are deploying all, then check remaining and continue to deploy to make sure they all get out there
-   $troopsAvailable = GetAvailableTroops($troop, $index)
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $index)
+   $troopsAvailable = $index[$troop][4]
 
    If $troopsAvailable>0 Then
 	  DebugWrite("Continuing: " & $troopsAvailable & " troops available.")
@@ -535,20 +539,22 @@ Func DeployTroopsToSides(Const $troop, Const ByRef $index, Const $howMany, Const
 	  Next
    EndIf
 
-   $troopsAvailable = GetAvailableTroops($troop, $index)
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $index)
+   $troopsAvailable = $index[$troop][4]
+
    If $troopsAvailable>0 Then
 	  DebugWrite("Finishing to safe boxes: " & $troopsAvailable & " troops available.")
 	  DeployTroopsToSafeBoxes($troop, $index, $dir)
    EndIf
 EndFunc
 
-Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
+Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
    DebugWrite("DeployTroopsToSafeBoxes()")
    Local $xClick, $yClick, $count
    Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
 
    ; Deploy half to left
-   Local $troopsAvailable = Int(GetAvailableTroops($troop, $index) / 2)
+   Local $troopsAvailable = Int($index[$troop][4] / 2)
    DebugWrite("Deploying to left safe box: " & $troopsAvailable & " troops.")
    $count=0
    RandomWeightedClick($troopButton)
@@ -562,7 +568,9 @@ Func DeployTroopsToSafeBoxes(Const $troop, Const ByRef $index, Const $dir)
    Next
 
    ; Deploy half to right
-   $troopsAvailable = GetAvailableTroops($troop, $index)
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $index)
+   $troopsAvailable = $index[$troop][4]
+
    DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
    $count=0
    RandomWeightedClick($troopButton)
@@ -603,7 +611,7 @@ Func GetAutoRaidClickPoints(Const $order, Const $topBotDirection, Const $numberP
    _ArraySort($points, $order)
 EndFunc
 
-Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
+Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed, Const $wardenDeployed)
    DebugWrite("WaitForBattleEnd()")
    ; Wait for battle end screen
 
@@ -630,7 +638,7 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
 	  ; If $gAutoRaidEndDelay=0, the use the legacy logic: If 30 seconds have passed with no change in available loot, then
 	  ;   exit battle, but only if we have not deployed a king or queen.  If BK or AQ deployed, then do not end early.
 	  ; Otherwise end after $gAutoRaidEndDelay number of seconds.
-	  If ($gAutoRaidEndDelay=0 And TimerDiff($activeTimer)>30000 And $kingDeployed=False And $queenDeployed=False) Or _
+	  If ($gAutoRaidEndDelay=0 And TimerDiff($activeTimer)>30000 And $kingDeployed=False And $queenDeployed=False And $wardenDeployed=False) Or _
 		 ($gAutoRaidEndDelay<>0 And TimerDiff($activeTimer)>$gAutoRaidEndDelay*1000) Then
 
 		 If $gAutoRaidEndDelay=0 Then
@@ -703,13 +711,14 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed)
    EndIf
 EndFunc
 
-Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
+Func FindRaidTroopSlotsAndCounts(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
    For $i = 0 To UBound($index)-1
 	  $index[$i][0] = -1
 	  $index[$i][1] = -1
 	  $index[$i][2] = -1
 	  $index[$i][3] = -1
+	  $index[$i][4] = 0
    Next
 
    ; Check buttons 2-11
@@ -729,6 +738,18 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][3] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[3]
 		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
+
+		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
+			$index[$i][4] = 1
+		 Else
+			Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
+								  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
+								  0, 0, 0, 0]
+			Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
+			;DebugWrite("GetAvailableTroops() = " & $t)
+
+			$index[$i][4] = Number(StringMid($t, 2))
+		 EndIf
 	  EndIf
    Next
 
@@ -749,51 +770,30 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][3] = $split[1]+$rRaidTroopBox1[1]+$rRaidButtonOffset[3]
 		 ;DebugWrite("Pass 1 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
+
+		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
+			$index[$i][4] = 1
+		 Else
+			Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
+								  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
+								  0, 0, 0, 0]
+			Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
+			;DebugWrite("GetAvailableTroops() = " & $t)
+
+			$index[$i][4] = Number(StringMid($t, 2))
+		 EndIf
+
 		 ExitLoop ; only one possible button in this pass
 	  EndIf
    Next
 EndFunc
 
-Func GetAvailableTroops(Const $troop, Const ByRef $index)
-   If $index[$troop][0] = -1 Then Return 0
-
-   Local $midX = $index[$troop][0] + ($index[$troop][2]- $index[$troop][0])/2
-
-   If $midX>$rRaidSlotsButton1[0] And $midX<$rRaidSlotsButton1[2] Then
-	  ; This is button 1
-	  RandomWeightedClick($rRaidSlotsButton2)
-	  Sleep(200)
-   Else
-	  ; This is not button 1
-	  RandomWeightedClick($rRaidSlotsButton1)
-	  Sleep(200)
-   EndIf
-
-   Local $count = 0
-
-   If $troop=$eTroopKing And $index[$eTroopKing][0]<>-1 Then
-	  $count = 1
-   ElseIf $troop=$eTroopQueen And $index[$eTroopQueen][0]<>-1 Then
-	  $count = 1
-   ElseIf $troop=$eTroopWarden And $index[$eTroopWarden][0]<>-1 Then
-	  $count = 1
-   Else
-	  Local $textBox[10] = [$index[$troop][0]+5, $index[$troop][1], $index[$troop][2]-5, $index[$troop][1]+18, _
-							$rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
-							0, 0, 0, 0]
-	  Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
-	  ;DebugWrite("GetAvailableTroops() = " & $t)
-
-	  $count = Number(StringMid($t, 2))
-   EndIf
-
-   Return $count
-EndFunc
-
-Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $direction, Const $boxIndex, ByRef $kingDeployed, ByRef $queenDeployed)
+Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $direction, Const $boxIndex, _
+						    ByRef $kingDeployed, ByRef $queenDeployed, ByRef $wardenDeployed)
 
    Local $kingButton[4] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], $troopIndex[$eTroopKing][3]]
    Local $queenButton[4] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], $troopIndex[$eTroopQueen][3]]
+   Local $wardenButton[4] = [$troopIndex[$eTroopWarden][0], $troopIndex[$eTroopWarden][1], $troopIndex[$eTroopWarden][2], $troopIndex[$eTroopWarden][3]]
 
    ; Get box to deploy into
    Local $deployBox[4]
@@ -824,15 +824,17 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 	  EndIf
    EndIf
 
-   ; Loop, while monitoring King / Queen health bars, power up king/queen when health falls below green (50%)
-   ; Also, deploy queen after specified amount of time after king deploys
-   Local $kingDeployTime, $queenDeployTime
-   Local $kingPoweredUp=False, $queenPoweredUp=False
+   ; Loop, while monitoring King / Queen / Warden health bars, power up king/queen/warden when health falls below green (50%)
+   ; Also, deploy queen after specified amount of time after king deploys, and warden a specified amount of time after queen or king deploys
+   Local $kingDeployTime, $queenDeployTime, $wardenDeployTime
+   Local $kingPoweredUp=False, $queenPoweredUp=False, $wardenPoweredUp=False
    Local $queenDeployDelay = 5000 ; 5 seconds after king
+   Local $wardenDeployDelay = 3000 ; 3 seconds after queen or king
    Local $royaltyDeploySide = Random()
 
    While (($kingPoweredUp=False And $troopIndex[$eTroopKing][0]<>-1) Or _
-	      ($queenPoweredUp=False And $troopIndex[$eTroopQueen][0]<>-1)) And _
+	      ($queenPoweredUp=False And $troopIndex[$eTroopQueen][0]<>-1) Or _
+	      ($wardenPoweredUp=False And $troopIndex[$eTroopWarden][0]<>-1)) And _
 		 TimerDiff($deployStart) < $gMaxRaidDuration
 
 	  ; Get King's health color, and power up if needed
@@ -859,6 +861,18 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 		 EndIf
 	  EndIf
 
+	  ; Get Warden's health color, and power up if needed
+	  If $wardenDeployed And $wardenPoweredUp = False Then
+		 Local $wardenColor[4] = [$troopIndex[$eTroopWarden][0]+6, $troopIndex[$eTroopWarden][1]-8, $rRoyaltyHealthGreenColor[2], $rRoyaltyHealthGreenColor[3]]
+
+		 If IsColorPresent($wardenColor) = False Then
+			;GrabFrameToFile("PreWardenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
+			DebugWrite("Powering up Warden")
+			RandomWeightedClick($wardenButton)
+			$wardenPoweredUp = True
+		 EndIf
+	  EndIf
+
 	  ; Deploy King if not already deployed
 	  If $kingButton[0]<>-1 And $kingDeployed=False Then
 		 DebugWrite("Deploying Barbarian King")
@@ -873,7 +887,7 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 	  EndIf
 
 	  ; Deploy Queen after specified amount of time after king deploy, if not already deployed
-	  If $queenButton[0]<>-1 And TimerDiff($kingDeployTime)>$queenDeployDelay And $queenDeployed=False Then
+	  If $queenButton[0]<>-1 And $queenDeployed=False And TimerDiff($kingDeployTime)>$queenDeployDelay Then
 		 DebugWrite("Deploying Archer Queen")
 		 RandomWeightedClick($queenButton)
 		 Sleep(500)
@@ -883,6 +897,20 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 
 		 $queenDeployTime = TimerInit()
 		 $queenDeployed = True
+	  EndIf
+
+	  ; Deploy Warden after specified amount of time after queen and/or king deploy, if not already deployed
+	  If $wardenButton[0]<>-1 And $wardenDeployed=False And _
+		 (TimerDiff($kingDeployTime)>$wardenDeployDelay Or TimerDiff($queenDeployTime)>$wardenDeployDelay) Then
+		 DebugWrite("Deploying Grand Warden")
+		 RandomWeightedClick($wardenButton)
+		 Sleep(500)
+
+		 RandomWeightedClick($deployBox)
+		 Sleep(500)
+
+		 $wardenDeployTime = TimerInit()
+		 $wardenDeployed = True
 	  EndIf
 
 	  Sleep(1000)

@@ -109,18 +109,18 @@ Func TestStorage()
 EndFunc
 
 Func TestRaidTroopsCount()
-   Local $troopIndex[$eTroopCount][4]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   Local $troopIndex[$eTroopCount][5]
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
 
-   Local $availableBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
-   Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
+   Local $availableBarbs = $troopIndex[$eTroopBarbarian][4]
+   Local $availableArchs = $troopIndex[$eTroopArcher][4]
 
    DebugWrite("Available Barbarians: " & $availableBarbs)
    DebugWrite("Avaliable Archers: " & $availableArchs)
 EndFunc
 
 Func TestBarracksStatus()
-   Local $queueStatus = ScrapeFuzzyText($gBarracksStatusCharacterMaps, $rBarracksWindowTextBox, $gBarracksStatusCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $queueStatus = ScrapeFuzzyText($gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
    DebugWrite("Barracks queue status: " & $queueStatus)
 EndFunc
 
@@ -216,7 +216,7 @@ Func TestCollectors()
    ; Grab frame
    GrabFrameToFile("LocateCollectorsFrame.bmp")
 
-   $matchCount = LocateBuildings("LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
+   $matchCount = LocateBuildings("All collectors", "LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
 
    For $i = 0 To $matchCount-1
 	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])

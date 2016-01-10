@@ -9,12 +9,13 @@
 
 ; GUI Globals
 Global $GUI, $GUIImage, $GUIGraphic
-Global $GUI_Width=285, $GUI_Height=440
+Global $GUI_Width=285, $GUI_Height=459
 Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheckBox, _
 	  $GUI_FindMatchCheckBox, $GUI_AutoSnipeCheckBox, $GUI_AutoRaidCheckBox, $GUI_DefenseFarmCheckBox
 Global $GUI_CloseButton
 Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_AutoRaidUseBreakers, $GUI_AutoRaidBreakerCountEdit, _
-	  $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidIgnoreStorages, $GUI_AutoRaidDumpCupsThreshold, $GUI_AutoRaidStrategyCombo
+	  $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidIgnoreStorages, $GUI_AutoRaidDumpCupsThreshold, $GUI_AutoRaidStrategyCombo, _
+	  $GUI_AutoRaidWaitForHeroesCombo
 Global $GUI_MyGold, $GUI_MyElix, $GUI_MyDark, $GUI_MyGems, $GUI_MyCups, $GUI_MyTownHall
 Global $GUI_Winnings, $GUI_Results, $GUI_AutoStatus
 
@@ -109,7 +110,7 @@ Func InitGUI()
 
    ; Right side, auto raid options group
    $y += 29
-   $h=138
+   $h=160
    GUICtrlCreateGroup("Auto Raid/Snipe", $x, $y, $w, $h)
 
    $y += 14
@@ -130,7 +131,16 @@ Func InitGUI()
    $GUI_AutoRaidIgnoreStorages = GUICtrlCreateCheckbox("Ignore Storages", $x+5, $y, 110, 25)
    _GUICtrlButton_SetCheck($GUI_AutoRaidIgnoreStorages, IniRead($gIniFile, "General", "Ignore Storages", $BST_UNCHECKED))
 
-   $y += 24
+   $y += 23
+   GUICtrlCreateLabel("Wait for Heroes", $x+5, $y+5, 80, 17)
+   $GUI_AutoRaidWaitForHeroesCombo = GUICtrlCreateCombo("", $x+85, $y+2, 35, 17, $CBS_DROPDOWNLIST)
+   _GUICtrlComboBox_AddString($GUI_AutoRaidWaitForHeroesCombo, "0")
+   _GUICtrlComboBox_AddString($GUI_AutoRaidWaitForHeroesCombo, "1")
+   _GUICtrlComboBox_AddString($GUI_AutoRaidWaitForHeroesCombo, "2")
+   _GUICtrlComboBox_AddString($GUI_AutoRaidWaitForHeroesCombo, "3")
+   _GUICtrlComboBox_SetCurSel($GUI_AutoRaidWaitForHeroesCombo, IniRead($gIniFile, "General", "Wait For Heroes", 0))
+
+   $y += 23
    GUICtrlCreateLabel("Strategy:", $x+5, $y, 116, 17)
 
    $y += 17
@@ -143,7 +153,7 @@ Func InitGUI()
 
    ; Bottom
    $x = 10
-   $y = 272
+   $y = 291
    $w = 265
    $GUI_Winnings = GUICtrlCreateLabel("Net winnings: - / - / - / -", $x, $y, $w, 17)
 
@@ -376,6 +386,7 @@ Func GUIDefenseFarmCheckBox()
 	  HotKeySet("{F8}") ; Find Match
 	  HotKeySet("{F9}") ; Find Snipable TH
 	  HotKeySet("{F10}") ; Auto Raid
+	  _GUICtrlButton_SetCheck($GUI_KeepOnlineCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoSnipeCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoRaidCheckBox, $BST_UNCHECKED)

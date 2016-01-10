@@ -14,7 +14,7 @@ Func GetTownHallLevel(Const $fullScan, ByRef $location, ByRef $left, ByRef $top,
 
    If $bestMatch <> -1 Then
 	  $location = "Top"
-	  DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
+	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence)
 	  Return $bestMatch+7
    EndIf
 

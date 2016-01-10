@@ -1,5 +1,5 @@
 ;
-; Strategy 1 - GiBarch, top or bottom, 12 giants
+; Strategy 1 - GiBarch, top or bottom, 8 giants
 ; Deploy from either NW/NE or SW/SE sides
 ; 50% giants on each side from safe spots
 ; 50% breakers on each side from safe spots
@@ -8,12 +8,12 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $availableTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
    DebugWrite("FillBarracksStrategy1(), " & ($initialFillFlag ? "initial fill." : "top up.") )
    Local $giantsNeededInStrategy = 8
 
    ; How many breakers are needed?
-   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $availableTroopCounts[$eTroopWallBreaker]
+   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $builtTroopCounts[$eTroopWallBreaker]
    If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
    Else
@@ -21,7 +21,7 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $availableTroopCo
    EndIf
 
    ; How many giants are needed?
-   Local $giantsToQueue = $giantsNeededInStrategy - $availableTroopCounts[$eTroopGiant]
+   Local $giantsToQueue = $giantsNeededInStrategy - $builtTroopCounts[$eTroopGiant]
    DebugWrite("Giants needed: " & ($giantsToQueue>0 ? $giantsToQueue : 0))
 
    ; Loop through each standard barracks window and queue troops
@@ -59,7 +59,7 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $availableTroopCo
 	  Local $fillTries=1
 	  Local $troopsToFill
 	  Do
-		 If $barracksCount=1 Or $barracksCount=3 Or $barracksCount=4 Then
+		 If $barracksCount=1 Or $barracksCount=3 Then
 			$troopsToFill = FillBarracksWithTroops($eTroopArcher, $troopSlots)
 		 Else
 			$troopsToFill = FillBarracksWithTroops($eTroopBarbarian, $troopSlots)
@@ -78,14 +78,13 @@ Func AutoRaidExecuteRaidStrategy1()
    DebugWrite("AutoRaidExecuteRaidStrategy1()")
 
    ; What troops are available?
-   Local $troopIndex[$eTroopCount][4]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   Local $troopIndex[$eTroopCount][5]
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
 
-   ; Get counts of available troops
-   Local $availableBarbs = GetAvailableTroops($eTroopBarbarian, $troopIndex)
-   Local $availableArchs = GetAvailableTroops($eTroopArcher, $troopIndex)
-   Local $availableGiants = GetAvailableTroops($eTroopGiant, $troopIndex)
-   Local $availableBreakers = GetAvailableTroops($eTroopWallBreaker, $troopIndex)
+   Local $availableBarbs = $troopIndex[$eTroopBarbarian][4]
+   Local $availableArchs = $troopIndex[$eTroopArcher][4]
+   Local $availableGiants = $troopIndex[$eTroopGiant][4]
+   Local $availableBreakers = $troopIndex[$eTroopWallBreaker][4]
 
    DebugWrite("Available Barbarians: " & $availableBarbs)
    DebugWrite("Avaliable Archers: " & $availableArchs)
@@ -108,29 +107,8 @@ Func AutoRaidExecuteRaidStrategy1()
 
    ; Deploy giants
    If $giantButton[0] <> -1 Then
-
-	  ; Get deploy boxes
-	  Local $deployBoxes[10][4]
-	  AutoRaidStrategy1DeployBoxes($direction, $deployBoxes)
-
-	  Local $failCount = 5
-	  While $availableGiants>0 And $failCount>0
-		 DebugWrite("Deploying Giants " & $availableGiants & " remaining.")
-
-		 RandomWeightedClick($giantButton)
-		 Sleep(500)
-
-		 Local $clickPoints[$availableGiants][2]
-		 GetAutoSnipeClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
-
-		 For $i = 0 To $availableGiants-1
-			_MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
-			Sleep($gDeployTroopClickDelay)
-		 Next
-
-		 $availableGiants = GetAvailableTroops($eTroopGiant, $troopIndex)>0
-		 $failCount-=1
-	  WEnd
+	  Local $numGiantBoxesPerSide = 5
+	  DeployTroopsToSides($eTroopGiant, $troopIndex, $eAutoRaidDeployRemaining, $direction, $numGiantBoxesPerSide)
    EndIf
 
    Sleep(3000)
@@ -176,15 +154,16 @@ Func AutoRaidExecuteRaidStrategy1()
    EndIf
 
    ; Deploy 50% of barbs
+   Local $archBarbNumDeployBoxesPerSide = 10 ; focus on the top or bottom corner to follow the giants
    If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying 50% of Barbarians (" & Int($availableBarbs*0.5) & ")")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy 50% of archers
    If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying 50% of Archers (" & Int($availableArchs*0.5) & ")")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    Sleep(3000)
@@ -192,21 +171,21 @@ Func AutoRaidExecuteRaidStrategy1()
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][0] <> -1 Then
 	  DebugWrite("Deploying remaining Barbarians")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy rest of archers
    If $troopIndex[$eTroopArcher][0] <> -1 Then
 	  DebugWrite("Deploying remaining Archers")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy and monitor heroes
-   Local $kingDeployed=False, $queenDeployed=False
-   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 18, $kingDeployed, $queenDeployed)
+   Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
+   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 18, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($kingDeployed, $queenDeployed)
+   WaitForBattleEnd($kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc
@@ -221,7 +200,7 @@ Func AutoRaidStrategy1GetDirection()
    ; Grab frame
    GrabFrameToFile("LocateStoragesFrame.bmp")
 
-   $matchCount = LocateBuildings("LocateStoragesFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
+   $matchCount = LocateBuildings("Gold Storages", "LocateStoragesFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
    $totalMatches+=$matchCount
    DebugWrite("Found " & $matchCount & " gold storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -229,7 +208,7 @@ Func AutoRaidStrategy1GetDirection()
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   $matchCount = LocateBuildings("LocateStoragesFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
+   $matchCount = LocateBuildings("Elixir Storages", "LocateStoragesFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
    $totalMatches+=$matchCount
    DebugWrite("Found " & $matchCount & " elix storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -237,7 +216,8 @@ Func AutoRaidStrategy1GetDirection()
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   $matchCount = LocateBuildings("LocateStoragesFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
+   $matchCount = LocateBuildings("Dark Elixir Storages", "LocateStoragesFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
+   If $matchCount=0 Then FileCopy("LocateStoragesFrame.bmp", "LocateStoragesFrameDark" & FileGetTime("LocateStoragesFrame.bmp", 0, $FT_STRING) & ".bmp")
    $totalMatches+=$matchCount
    DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -258,38 +238,36 @@ Func AutoRaidStrategy1GetDirection()
    Return $dir
 EndFunc
 
-Func AutoRaidStrategy1DeployBoxes(Const $topOrBot, ByRef $selectedBoxes)
-   Local $startBox = $gMaxDeployBoxes-5
-   Local $endBox = $gMaxDeployBoxes-1
+Func AutoRaidStrategy1DeployBoxes(Const $topOrBot, Const $numBoxesPerSide, ByRef $selectedBoxes)
+   Local $startBox = ($gMaxDeployBoxes-1)-$numBoxesPerSide+1
+   Local $endBox = ($gMaxDeployBoxes-1)
 
    If $topOrBot = "Top" Then
-	  ; Top 10 corner boxes
+	  ; Top $numBoxes corner boxes
 	  For $i = $startBox To $endBox
 		 $selectedBoxes[$i-$startBox][0] = $NWDeployBoxes[$i][0]
 		 $selectedBoxes[$i-$startBox][1] = $NWDeployBoxes[$i][1]
 		 $selectedBoxes[$i-$startBox][2] = $NWDeployBoxes[$i][0]+10
 		 $selectedBoxes[$i-$startBox][3] = $NWDeployBoxes[$i][1]+10
-	  Next
-	  For $i = $gMaxDeployBoxes-5 To $gMaxDeployBoxes-1
-		 $selectedBoxes[$i-$startBox+5][0] = $NEDeployBoxes[$i][2]-10
-		 $selectedBoxes[$i-$startBox+5][1] = $NEDeployBoxes[$i][1]
-		 $selectedBoxes[$i-$startBox+5][2] = $NEDeployBoxes[$i][2]
-		 $selectedBoxes[$i-$startBox+5][3] = $NEDeployBoxes[$i][1]+10
+
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][0] = $NEDeployBoxes[$i][2]-10
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][1] = $NEDeployBoxes[$i][1]
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][2] = $NEDeployBoxes[$i][2]
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][3] = $NEDeployBoxes[$i][1]+10
 	  Next
 
    ElseIf $topOrBot = "Bot" Then
-	  ; Bottom 10 corner boxes
+	  ; Bottom $numBoxes corner boxes
 	  For $i = $startBox To $endBox
 		 $selectedBoxes[$i-$startBox][0] = $SWDeployBoxes[$i][0]
 		 $selectedBoxes[$i-$startBox][1] = $SWDeployBoxes[$i][3]-10
 		 $selectedBoxes[$i-$startBox][2] = $SWDeployBoxes[$i][0]+10
 		 $selectedBoxes[$i-$startBox][3] = $SWDeployBoxes[$i][3]
-	  Next
-	  For $i = $gMaxDeployBoxes-5 To $gMaxDeployBoxes-1
-		 $selectedBoxes[$i-$startBox+5][0] = $SEDeployBoxes[$i][2]-10
-		 $selectedBoxes[$i-$startBox+5][1] = $SEDeployBoxes[$i][3]-10
-		 $selectedBoxes[$i-$startBox+5][2] = $SEDeployBoxes[$i][2]
-		 $selectedBoxes[$i-$startBox+5][3] = $SEDeployBoxes[$i][3]
+
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][0] = $SEDeployBoxes[$i][2]-10
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][1] = $SEDeployBoxes[$i][3]-10
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][2] = $SEDeployBoxes[$i][2]
+		 $selectedBoxes[$i-$startBox+$numBoxesPerSide][3] = $SEDeployBoxes[$i][3]
 	  Next
    Else
 	  DebugWrite("ERROR in AutoRaidStrategy1DeployBoxes, $topOrBot = " & $topOrBot)

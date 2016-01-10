@@ -6,7 +6,7 @@
 ;
 ; Note: Train 20 balloons, rest minions
 
-Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $availableTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
    DebugWrite("FillBarracksStrategy3(), " & ($initialFillFlag ? "initial fill." : "top up.") )
 
    Local $numberOfBalloons = 20
@@ -70,12 +70,11 @@ Func AutoRaidExecuteRaidStrategy3()
    DebugWrite("AutoRaidExecuteRaidStrategy3()")
 
    ; What troops are available?
-   Local $troopIndex[$eTroopCount][4]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   Local $troopIndex[$eTroopCount][5]
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
 
-   ; Get counts of available troops
-   Local $availableBalloons = GetAvailableTroops($eTroopBalloon, $troopIndex)
-   Local $availableMinions = GetAvailableTroops($eTroopMinion, $troopIndex)
+   Local $availableBalloons = $troopIndex[$eTroopBalloon][4]
+   Local $availableMinions = $troopIndex[$eTroopMinion][4]
 
    DebugWrite("Available Balloons: " & $availableBalloons)
    DebugWrite("Avaliable Minions: " & $availableMinions)
@@ -102,11 +101,11 @@ Func AutoRaidExecuteRaidStrategy3()
    EndIf
 
    ; Deploy and monitor heroes
-   Local $kingDeployed = False, $queenDeployed = False
-   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed)
+   Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
+   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($kingDeployed, $queenDeployed)
+   WaitForBattleEnd($kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc
@@ -120,7 +119,7 @@ Func AutoRaidStrategy3GetDirection()
    ; Grab frame
    GrabFrameToFile("LocateCollectorsFrame.bmp")
 
-   $matchCount = LocateBuildings("LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
+   $matchCount = LocateBuildings("All collectors", "LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To $matchCount-1

@@ -12,8 +12,8 @@ Func ExitScraper()
    _GDIPlus_Shutdown()
 EndFunc
 
-Func LocateBuildings(Const $frame, Const ByRef $buildingBMPs, Const $buildingConfidence, ByRef $matchX, ByRef $matchY)
-   DebugWrite("LocateBuildings()")
+Func LocateBuildings(Const $type, Const $frame, Const ByRef $buildingBMPs, Const $buildingConfidence, ByRef $matchX, ByRef $matchY)
+   DebugWrite("LocateBuildings() " & $type)
 
    ; Find all the buildings of the specified type
    Local $matchCount = 0

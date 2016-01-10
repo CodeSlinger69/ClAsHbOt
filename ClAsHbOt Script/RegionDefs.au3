@@ -18,6 +18,7 @@ Global $rBarracksTroopBox[10] = [180, 269, 688, 468]
 Global $rBarracksButtonOffset[4] = [0, 5, 84, 56]
 Global $rBarracksWindowTextBox[10] = [134, 130, 295, 142, 0xffffff, 9, 0, 0, 0, 0]
 Global $rRaidSlotTroopCountTextBox[10] = [0, 0, 0, 0, 0xffffff, 9, 0, 0, 0, 0]
+Global $rCampSlotTroopCountTextBox[10] = [4, -17, 50, -5, 0xffffff, 9, 0, 0, 0, 0]
 Global $rEndBattleGoldTextBox[10] = [340, 268, 440, 285, 0xffffff, 9, 0, 0, 0, 0]
 Global $rEndBattleElixTextBox[10] = [340, 305, 440, 322, 0xffffff, 9, 0, 0, 0, 0]
 Global $rEndBattleDarkTextBox[10] = [340, 342, 440, 359, 0xffffff, 9, 459, 355, 0x483855, 6]
@@ -89,9 +90,11 @@ Global $rArmyManagerSelectedColor[4] = [0, 0, 0xE8E8E0, 0]
 
 ; Bounding Boxes
 ; Left, Top, Right, Bottom
-Global $rRaidButtonOffset[4] = [0, -17, 60, 61]
 Global $rRaidTroopBox1[4] = [46, 514, 110, 599] ; first button only
 Global $rRaidTroopBox2[4] = [116, 514, 810, 599] ; buttons 2-11
+Global $rRaidButtonOffset[4] = [0, -17, 60, 61]
+Global $rCampTroopBox1[4] = [134, 148, 728, 223] ; main troops
+Global $rCampTroopBox2[4] = [421, 386, 600, 462] ; heroes
 Global $rChatBox[4] = [0, 0, 302, 623]
 Global $rDonateWindow[4] = [317, 1, 809, 623]
 Global $rDonateButtonOffset[4] = [0, -19, 58, 58]

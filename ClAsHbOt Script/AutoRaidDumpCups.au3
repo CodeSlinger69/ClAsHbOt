@@ -18,12 +18,12 @@ Func DumpCups()
 		 ZoomOut(True)
 	  Else
 		 ResetToCoCMainScreen()
-	  EndIf
-   EndIf
 
-   If WhereAmI()<>$eScreenMain Then
-	  DebugWrite("DumpCups(), error: timeout waiting for Clash main screen")
-	  Return
+		 If WhereAmI()<>$eScreenMain Then
+			DebugWrite("DumpCups(), error: Not on Clash main screen")
+			Return
+		 EndIf
+	  EndIf
    EndIf
 
    ; Dump 'em
@@ -48,23 +48,14 @@ Func DoCupsDump()
    DragScreenDown()
 
    ; What troops are available?
-   Local $troopIndex[$eTroopCount][4]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   Local $queenCount=-1, $wardenCount=-1, $barbCount=-1, $archCount=-1
+   Local $troopIndex[$eTroopCount][5]
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
 
-   Local $kingCount = GetAvailableTroops($eTroopKing, $troopIndex)
-   If $kingCount<1 Then
-	  $queenCount = GetAvailableTroops($eTroopQueen, $troopIndex)
-	  If $queenCount<1 Then
-		 $wardenCount = GetAvailableTroops($eTroopWarden, $troopIndex)
-		 If $wardenCount<1 Then
-			$barbCount = GetAvailableTroops($eTroopBarbarian, $troopIndex)
-			If $barbCount<1 Then
-			   $archCount = GetAvailableTroops($eTroopArcher, $troopIndex)
-			EndIf
-		 EndIf
-	  EndIf
-   EndIf
+   Local $kingCount = $troopIndex[$eTroopKing][4]
+   Local $queenCount = $troopIndex[$eTroopQueen][4]
+   Local $wardenCount = $troopIndex[$eTroopWarden][4]
+   Local $barbCount = $troopIndex[$eTroopBarbarian][4]
+   Local $archCount = $troopIndex[$eTroopArcher][4]
 
    DebugWrite("DoCupsDump(), king, queen, warden, barb, arch: " & $kingCount & ", " & $queenCount & ", " &  $wardenCount & ", " & $barbCount & ", " & $archCount)
 

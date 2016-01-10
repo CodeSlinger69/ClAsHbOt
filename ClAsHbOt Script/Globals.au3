@@ -37,7 +37,7 @@ Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "
 									 "Balloon", "Wizard", "Healer", "Dragon", "Pekka", _
 									 "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", _
 									 "Lava Hound", _
-									 "Barbarian King", "Archer Queen"]
+									 "Barbarian King", "Archer Queen", "Grand Warden"]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _
    $eSpellEarthquake, $eSpellHaste, $eSpellCount
 Global $gSpellNames[$eSpellCount] = ["Lightning", "Rage", "Heal", "Jump", "Freeze", "Poison", _

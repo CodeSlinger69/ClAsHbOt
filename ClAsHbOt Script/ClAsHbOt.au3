@@ -5,7 +5,11 @@ Dec 10 Update To Do
 - "74" char maps for end battle bonus
 - finish collecting storage images
   - Dark 5.50, 4.50
-  - Test BAM and loonion strategies
+  - L10: Gold: 10.75
+  - L12: Gold: 12.25, 12.50; Elix: 12.00, 12.25, 12.75, 12.90
+- Test BAM and loonion strategies
+- Rename auto snipe to auto push
+- Add TH snipe option during autoraid
 
 #ce
 
@@ -71,6 +75,7 @@ Func Main()
 ;TestDonate()
 ;TestTownHall()
 ;TestCollectors()
+;$gScraperDebug = True
 ;Exit
 
    InitGUI()
@@ -215,7 +220,6 @@ Func MainApplicationLoop()
 		 IsButtonPresent($rAndroidMessageButton2) = False Then
 
 		 $gDefenseFarmClicked = False
-		 CheckForAndroidMessageBox()
 
 		 DefenseFarm($lastDefenseFarmTimer)
 	  EndIf

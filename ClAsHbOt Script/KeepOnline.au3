@@ -1,10 +1,12 @@
 Func CheckForAndroidMessageBox()
 
+   ;DebugWrite("CheckForAndroidMessageBox()")
+
    Local $boxPresent = False
 
    ; Check for Android message boxes
    If IsButtonPresent($rAndroidMessageButton1) Then
-	  DebugWrite("Online check: Clicking short Android Msg Box")
+	  DebugWrite("CheckForAndroidMessageBox() Clicking short Android Msg Box")
 
 	  WinActivate($gTitle)
 	  WinWaitActive($gTitle)
@@ -15,7 +17,7 @@ Func CheckForAndroidMessageBox()
    EndIf
 
    If IsButtonPresent($rAndroidMessageButton2) Then
-	  DebugWrite("Online check: Clicking long Android Msg Box")
+	  DebugWrite("CheckForAndroidMessageBox() Clicking long Android Msg Box")
 
 	  WinActivate($gTitle)
 	  WinWaitActive($gTitle)

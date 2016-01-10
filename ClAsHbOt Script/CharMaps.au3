@@ -59,8 +59,8 @@ Global $gRaidLootCharMaps[10][$gRaidLootCharMapsMaxWidth+2] = [ _
 ["9", 7, 496, 1009, 819, 819, 818, 1022, 510] ]
 
 ; Barracks Status
-Global $gBarracksStatusCharMapsMaxWidth = 14
-Global $gBarracksStatusCharacterMaps[21][$gBarracksStatusCharMapsMaxWidth+2] = [ _
+Global $gBarracksCharMapsMaxWidth = 14
+Global $gBarracksCharacterMaps[22][$gBarracksCharMapsMaxWidth+2] = [ _
 ["T", 7, 384, 384, 511, 511, 511, 384, 384], _
 ["r", 7, 127, 127, 68, 68, 110, 127, 49], _
 ["a", 6, 15, 79, 73, 65, 127, 127], _
@@ -70,6 +70,7 @@ Global $gBarracksStatusCharacterMaps[21][$gBarracksStatusCharMapsMaxWidth+2] = [
 ["o", 7, 62, 127, 65, 65, 67, 127, 62], _
 ["p", 7, 255, 255, 140, 132, 204, 248, 112], _
 ["s", 6, 57, 121, 73, 79, 78, 14], _
+["x", 6, 65, 119, 60, 28, 62, 99], _
 ["0", 8, 254, 255, 451, 385, 385, 511, 255, 126], _
 ["1", 3, 384, 511, 510], _
 ["2", 6, 399, 287, 283, 435, 499, 226], _
