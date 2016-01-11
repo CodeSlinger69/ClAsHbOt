@@ -69,18 +69,7 @@ EndFunc
 Func AutoRaidExecuteRaidStrategy0()
    DebugWrite("AutoRaidExecuteRaidStrategy0()")
 
-   ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
-
-   Local $availableBarbs = $troopIndex[$eTroopBarbarian][4]
-   Local $availableArchs = $troopIndex[$eTroopArcher][4]
-   Local $availableBreakers = $troopIndex[$eTroopWallBreaker][4]
-
-   DebugWrite("Available Barbarians: " & $availableBarbs)
-   DebugWrite("Avaliable Archers: " & $availableArchs)
-   If $gDebug And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then _
-	  DebugWrite("Avaliable Breakers: " & $availableBreakers)
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy0GetDirection()
@@ -91,33 +80,44 @@ Func AutoRaidExecuteRaidStrategy0()
    ;
    Local $deployStart = TimerInit()
 
+   ; 1st wave
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+
+   DebugWrite("Available Barbarians: " & $troopIndex[$eTroopBarbarian][4])
+   DebugWrite("Avaliable Archers: " & $troopIndex[$eTroopArcher][4])
+   If $gDebug And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then _
+	  DebugWrite("Avaliable Breakers: " & $troopIndex[$eTroopWallBreaker][4])
+
    ; Deploy 60% of barbs
-   If $troopIndex[$eTroopBarbarian][0] <> -1 Then
-	  DebugWrite("Deploying 60% of Barbarians (" & Int($availableBarbs*0.6) & ")")
+   If $troopIndex[$eTroopBarbarian][4] > 0 Then
+	  DebugWrite("Deploying 60% of Barbarians (" & Int($troopIndex[$eTroopBarbarian][4]*0.6) & ")")
 	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy 60% of archers
-   If $troopIndex[$eTroopArcher][0] <> -1 Then
-	  DebugWrite("Deploying 60% of Archers (" & Int($availableArchs*0.6) & ")")
+   If $troopIndex[$eTroopArcher][4] > 0 Then
+	  DebugWrite("Deploying 60% of Archers (" & Int($troopIndex[$eTroopArcher][4]*0.6) & ")")
 	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy breakers
-   If $troopIndex[$eTroopWallBreaker][0] <> -1 And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
+   If $troopIndex[$eTroopWallBreaker][4] > 0 And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Deploying Breakers")
 	  DeployTroopsToSafeBoxes($eTroopWallBreaker, $troopIndex, $direction)
    EndIf
 
+   ; 2nd wave
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+
    ; Deploy rest of barbs
-   If $troopIndex[$eTroopBarbarian][0] <> -1 Then
-	  DebugWrite("Deploying remaining Barbarians")
+   If $troopIndex[$eTroopBarbarian][4] > 0 Then
+	  DebugWrite("Deploying remaining Barbarians (" & $troopIndex[$eTroopBarbarian][4] & ")")
 	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy rest of archers
-   If $troopIndex[$eTroopArcher][0] <> -1 Then
-	  DebugWrite("Deploying remaining Archers")
+   If $troopIndex[$eTroopArcher][4] > 0 Then
+	  DebugWrite("Deploying remaining Archers (" & $troopIndex[$eTroopArcher][4] & ")")
 	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 

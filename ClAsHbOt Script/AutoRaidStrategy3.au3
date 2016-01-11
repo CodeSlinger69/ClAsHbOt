@@ -69,15 +69,7 @@ EndFunc
 Func AutoRaidExecuteRaidStrategy3()
    DebugWrite("AutoRaidExecuteRaidStrategy3()")
 
-   ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
-
-   Local $availableBalloons = $troopIndex[$eTroopBalloon][4]
-   Local $availableMinions = $troopIndex[$eTroopMinion][4]
-
-   DebugWrite("Available Balloons: " & $availableBalloons)
-   DebugWrite("Avaliable Minions: " & $availableMinions)
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy3GetDirection()
@@ -88,15 +80,21 @@ Func AutoRaidExecuteRaidStrategy3()
    ;
    Local $deployStart = TimerInit()
 
+   ; 1st wave (only one wave in this strategy)
+   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+
+   DebugWrite("Available Balloons: " & $troopIndex[$eTroopBalloon][4])
+   DebugWrite("Avaliable Minions: " & $troopIndex[$eTroopMinion][4])
+
    ; Deploy all balloons
-   If $troopIndex[$eTroopBalloon][0] <> -1 Then
-	  DebugWrite("Deploying all balloons.")
+   If $troopIndex[$eTroopBalloon][4] > 0 Then
+	  DebugWrite("Deploying all balloons (" & $troopIndex[$eTroopBalloon][4] & ")")
 	  DeployTroopsToSides($eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy all minions
-   If $troopIndex[$eTroopMinion][0] <> -1 Then
-	  DebugWrite("Deploying all minions.")
+   If $troopIndex[$eTroopMinion][4] > 0 Then
+	  DebugWrite("Deploying all minions (" & $troopIndex[$eTroopMinion][4] & ")")
 	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 

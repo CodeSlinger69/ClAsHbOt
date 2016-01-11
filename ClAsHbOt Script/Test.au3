@@ -112,11 +112,17 @@ Func TestRaidTroopsCount()
    Local $troopIndex[$eTroopCount][5]
    FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
 
-   Local $availableBarbs = $troopIndex[$eTroopBarbarian][4]
-   Local $availableArchs = $troopIndex[$eTroopArcher][4]
+   For $i=0 To $eTroopCount-1
+	  If $troopIndex[$i][4]>0 Then DebugWrite("Available " & $gTroopNames[$i] & ": " & $troopIndex[$i][4])
+   Next
 
-   DebugWrite("Available Barbarians: " & $availableBarbs)
-   DebugWrite("Avaliable Archers: " & $availableArchs)
+   Local $spellIndex[$eSpellCount][5]
+   FindRaidTroopSlotsAndCounts($gSpellSlotBMPs, $spellIndex)
+
+   For $i=0 To $eSpellCount-1
+	  If $spellIndex[$i][4]>0 Then DebugWrite("Available " & $gSpellNames[$i] & ": " & $spellIndex[$i][4])
+   Next
+
 EndFunc
 
 Func TestBarracksStatus()
