@@ -30,7 +30,7 @@ Func AutoQueueTroops(Const ByRef $initialFill)
    ; Fill
    Local $armyCampsFull = False
 
-   If _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED Then
+   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED Then
 	  FillBarracksStrategy0($initialFill, $builtTroopCounts, $armyCampsFull)
    Else
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)

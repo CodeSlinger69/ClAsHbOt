@@ -24,7 +24,7 @@ Global $gIniFile = "CoC Bot.ini"
 
 ; GUI
 Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False, $gDonateTroopsStartup = False
-Global $gFindMatchClicked = False, $gAutoSnipeClicked = False, $gAutoRaidClicked = False, $gDefenseFarmClicked = False
+Global $gFindMatchClicked = False, $gAutoPushClicked = False, $gAutoRaidClicked = False, $gDefenseFarmClicked = False
 
 ; Lists of troop and spell types
 Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroopWallBreaker, _
@@ -49,8 +49,8 @@ Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMat
    $eScreenLiveReplayEndBattle, $eScreenVilliageWasAttacked, $eScreenChatDimmed, _
    $eWindowArmyManager, $eScreenPlayStore, $eScreenAndroidMessageBox, $eScreenUnknown
 
-; Auto Raid/Snipe Stages
-Global Enum $eAutoNotStarted, $eAutoQueueTraining, $eAutoWaitForTrainingToComplete, $eAutoFindMatch, $eAutoExecute
+; Auto Raid/Push Stages
+Global Enum $eAutoNotStarted, $eAutoQueueTraining, $eAutoWaitForTrainingToComplete, $eAutoFindMatch, $eAutoExecuteRaid, $eAutoExecuteSnipe
 Global $gAutoStage = $eAutoNotStarted
 
 ; Auto Raid troop deployment

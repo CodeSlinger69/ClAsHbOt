@@ -151,6 +151,7 @@ Func SaveSettings()
    IniWrite($gIniFile, "General", "Dump Cups Threshold", GUICtrlRead($GUI_AutoRaidDumpCupsThreshold))
    IniWrite($gIniFile, "General", "Dead Bases Only", _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases))
    IniWrite($gIniFile, "General", "Ignore Storages", _GUICtrlButton_GetCheck($GUI_AutoRaidIgnoreStorages))
+   IniWrite($gIniFile, "General", "Snipe Exposed TH",  _GUICtrlButton_GetCheck($GUI_AutoRaidSnipeExposedTH))
    IniWrite($gIniFile, "General", "Wait For Heroes", _GUICtrlComboBox_GetCurSel($GUI_AutoRaidWaitForHeroesCombo))
    IniWrite($gIniFile, "General", "Raid Strategy", _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo))
 EndFunc

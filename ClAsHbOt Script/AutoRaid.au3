@@ -1,4 +1,4 @@
-Func AutoRaid(ByRef $timer)
+Func AutoRaid(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
    ;DebugWrite("AutoRaid()")
 
    Switch $gAutoStage
@@ -27,20 +27,19 @@ Func AutoRaid(ByRef $timer)
 
 	  ResetToCoCMainScreen()
 
-	  If AutoRaidFindMatch()=False Then
+	  Local $findResults = AutoRaidFindMatch(False, $THLevel, $THLocation, $THLeft, $THTop)
+	  If $findResults = False Then
 		 ; Reset if there was an error
 		 DebugWrite("Auto: Error finding match, resetting.")
 		 ResetToCoCMainScreen()
 		 $gAutoStage = $eAutoQueueTraining
 	  Else
-		 $gAutoStage = $eAutoExecute
+		 $gAutoStage = $findResults
 	  EndIf
 
    ; Stage Execute Raid
-   Case $eAutoExecute
+   Case $eAutoExecuteRaid
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Raid")
-
-	  DragScreenDown()
 
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
@@ -66,10 +65,21 @@ Func AutoRaid(ByRef $timer)
 	  EndSwitch
 
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Raid Complete")
+
+   Case $eAutoExecuteSnipe
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute TH Snipe")
+
+	  If THSnipeExecute($THLevel, $THLocation, $THLeft, $THTop) Then
+		 $gAutoStage = $eAutoQueueTraining
+		 UpdateWinnings()
+	  EndIf
+
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: TH Snipe Complete")
+
    EndSwitch
 EndFunc
 
-Func AutoRaidFindMatch(Const $returnFirstMatch = False)
+Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
    DebugWrite("FindAValidMatch()")
 
    ; Make sure we are on the main screen
@@ -155,7 +165,7 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
 	  ; Update my loot status on GUI
 	  GetMyLootNumbers()
 
-	  Local $raidable = False
+	  Local $raidable = False, $snipable = False
 
 	  ; Check dead base settings
 	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
@@ -168,13 +178,27 @@ Func AutoRaidFindMatch(Const $returnFirstMatch = False)
 
 	  EndIf
 
-	  ; If raidable, then go do it
+	  ; If raidable or snipable, then go do it
 	  If $raidable<>False Then
 		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
 		 Return $raidable
 	  EndIf
 
-	  ; Not raidable - click Next
+	  ; If not raidable, see if it is snipable
+	  If $raidable=False And _GUICtrlButton_GetCheck($GUI_AutoRaidSnipeExposedTH)=$BST_CHECKED Then
+		 Local $gold, $elix, $dark, $cups, $deadBase
+		 AutoRaidGetDisplayedLoot($gold, $elix, $dark, $cups, $deadbase)
+
+		 If $gold>=GUICtrlRead($GUI_GoldEdit) And $elix>=GUICtrlRead($GUI_ElixEdit) And $dark>=GUICtrlRead($GUI_DarkEdit) Then
+			$snipable = CheckForSnipableTH($THLevel, $THLocation, $THLeft, $THTop)
+			If $snipable<>False Then
+			   If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
+			   Return $snipable
+			EndIf
+		 EndIf
+	  EndIf
+
+	  ; Not raidable or snipable - click Next
 	  Sleep($gPauseBetweenNexts)
 	  If IsButtonPresent($rWaitRaidScreenNextButton) Then
 		 RandomWeightedClick($rWaitRaidScreenNextButton)
@@ -261,21 +285,9 @@ Func ShowFindMatchPopup()
 EndFunc
 
 Func CheckForRaidableBase()
-   ; Scrape info
-   Local $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   Local $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   Local $dark = 0
-   Local $cups = 0
    Local $townHall = -1
-
-   If IsTextBoxPresent($rDarkTextBox)=False Then
-	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   Else
-	  $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxWithDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   EndIf
-
-   Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
+   Local $gold, $elix, $dark, $cups, $deadBase
+   AutoRaidGetDisplayedLoot($gold, $elix, $dark, $cups, $deadbase)
 
    ; Grab settings from the GUI
    Local $GUIGold = GUICtrlRead($GUI_GoldEdit)
@@ -315,7 +327,7 @@ Func CheckForRaidableBase()
 	  If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
 		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
 					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
-		 Return $eAutoExecute
+		 Return $eAutoExecuteRaid
 	  Else
 		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
 					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
@@ -334,7 +346,7 @@ Func CheckForRaidableBase()
 			Return False
 		 Else
 			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase)
-			Return $eAutoExecute
+			Return $eAutoExecuteRaid
 		 EndIf
 	  Else
 		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
@@ -342,6 +354,20 @@ Func CheckForRaidableBase()
 	  EndIf
    EndIf
 
+EndFunc
+
+Func AutoRaidGetDisplayedLoot(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $deadbase)
+   $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+
+   If IsTextBoxPresent($rDarkTextBox)=False Then
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   Else
+	  $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxWithDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   EndIf
+
+   $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
 EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
@@ -502,7 +528,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
 	    $troopsToDeploy = $troopsAvailable
 	 EndIf
 
-   DebugWrite("Available: " & $troopsAvailable & ", deploying " & $troopsToDeploy)
+   ;DebugWrite("Available: " & $troopsAvailable & ", deploying " & $troopsToDeploy)
 
    ; Deploy the troops
    Local $clickPoints1[$troopsToDeploy][2]

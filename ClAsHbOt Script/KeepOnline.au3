@@ -47,7 +47,13 @@ Func CheckForAndroidMessageBox()
 EndFunc
 
 Func AttackingIsDisabled()
-   Return IsColorPresent($rAttackingDisabledPoint1Color) And _
-		  IsColorPresent($rAttackingDisabledPoint2Color) And _
-		  IsColorPresent($rAttackingDisabledPoint3Color)
+   If IsColorPresent($rAttackingDisabledPoint1Color) And _
+	  IsColorPresent($rAttackingDisabledPoint2Color) And _
+	  IsColorPresent($rAttackingDisabledPoint3Color) Then Return True
+
+   If IsColorPresent($rWaitForPersonalBreakPoint1Color) And _
+	  IsColorPresent($rWaitForPersonalBreakPoint2Color) And _
+	  IsColorPresent($rWaitForPersonalBreakPoint3Color) Then Return True
+
+   Return False
 EndFunc

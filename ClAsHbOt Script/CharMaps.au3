@@ -102,8 +102,8 @@ Global $gBattleEndWinningsCharacterMaps[12][$gBattleEndWinningsCharMapsMaxWidth+
 		   32752, 64624, 61552, 57456, 65535, 65535, 65535, 65535, 65534, 112, 48] ]
 
 ; Battle End Bonus
-Global $gBattleEndBonusCharMapsMaxWidth = 16
-Global $gBattleEndBonusCharacterMaps[12][$gBattleEndBonusCharMapsMaxWidth+2] = [ _
+Global $gBattleEndBonusCharMapsMaxWidth = 11
+Global $gBattleEndBonusCharacterMaps[11][$gBattleEndBonusCharMapsMaxWidth+2] = [ _
 ["0", 10, 510, 1023, 1023, 771, 771, 771, 899, 1023, 1022, 252], _
 ["1", 4, 256, 511, 1023, 896], _
 ["2", 7, 543, 1567, 1599, 1651, 1635, 2019, 1986], _
@@ -114,7 +114,6 @@ Global $gBattleEndBonusCharacterMaps[12][$gBattleEndBonusCharMapsMaxWidth+2] = [
 ["7", 7, 1536, 1543, 1567, 1660, 2032, 1984, 1792], _
 ["8", 9, 398, 2015, 2047, 1123, 1057, 1635, 2047, 1950, 28], _
 ["9", 8, 480, 993, 2019, 1587, 1586, 1590, 1022, 508], _
-["74", 1, 1], _
 ["+", 5, 4, 63, 63, 12, 4] ]
 
 ; Chat window

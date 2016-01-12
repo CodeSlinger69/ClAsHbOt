@@ -28,7 +28,7 @@ Func DumpCups()
 
    ; Dump 'em
    While (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _
-		  _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox) = $BST_CHECKED Or _
+		  _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED Or _
 		  _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED) And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
 		 $myCups > $cupsThreshold
@@ -44,7 +44,8 @@ EndFunc
 
 Func DoCupsDump()
    ; Get first available match
-   AutoRaidFindMatch(True)
+   Local $dummy1, $dummy2, $dummy3, $dummy4
+   AutoRaidFindMatch(True, $dummy1, $dummy2, $dummy3, $dummy4)
    DragScreenDown()
 
    ; What troops are available?

@@ -60,14 +60,14 @@ Func FillBarracksStrategy0(Const $initialFillFlag, Const ByRef $builtTroopCounts
 
 		 $fillTries+=1
 	  Until $troopsToFill=0 Or $fillTries>=6 Or _
-		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_UNCHECKED)
+		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED)
 
 	  $barracksCount+=1
    WEnd
 EndFunc
 
 Func AutoRaidExecuteRaidStrategy0()
-   DebugWrite("AutoRaidExecuteRaidStrategy0()")
+   DebugWrite(@CRLF & "AutoRaidExecuteRaidStrategy0()")
 
    Local $troopIndex[$eTroopCount][5]
 

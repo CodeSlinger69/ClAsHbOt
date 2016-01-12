@@ -152,7 +152,7 @@ Func DequeueTroops()
    Local $dequeueTries = 6
    While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
-		  _GUICtrlButton_GetCheck($GUI_AutoSnipeCheckBox)=$BST_CHECKED)
+		  _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 
 	  DebugWrite("Dequeueing troops.")
 	  Local $xClick, $yClick
