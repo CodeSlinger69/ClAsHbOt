@@ -25,20 +25,6 @@ Func ReadSettings()
    Global $gDefenseFarmOfflineTime = IniRead($gIniFile, "DefenseFarm", "Defense Farm Offline Time", 1200000) ; Duration to wait before logging in and dumping cups
    DebugWrite("Setting Defense Farm Offline Time = " & millisecondToMMSS($gDefenseFarmOfflineTime))
 
-   ; Confidence Levels
-   Global $gConfidenceTownHall = IniRead($gIniFile, "Confidence", "Town Hall", 0.95)
-   Global $gConfidenceCollectLoot = IniRead($gIniFile, "Confidence", "Collect Loot", 0.95)
-   Global $gConfidenceArmyCamp = IniRead($gIniFile, "Confidence", "Army Camp", 0.94)
-   Global $gConfidenceBarracks = IniRead($gIniFile, "Confidence", "Barracks", 0.95)
-   Global $gConfidenceCollector =IniRead($gIniFile, "Confidence", "Collector",  0.92)
-   Global $gConfidenceDEStorage = IniRead($gIniFile, "Confidence", "Dark Elixir Storage", 0.95)
-   Global $gConfidenceRaidTroopSlot = IniRead($gIniFile, "Confidence", "Raid Troop Slot", 0.98)
-   Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.99)
-   Global $gConfidenceBarracksTroopSlot = IniRead($gIniFile, "Confidence", "Barracks Troop Slot", 0.99)
-   Global $gConfidenceCampTroopSlot = IniRead($gIniFile, "Confidence", "Camp Troop Slot", 0.99)
-   Global $gConfidenceTrainTroopsButton = IniRead($gIniFile, "Confidence", "Train Troops Button", 0.99)
-   Global $gConfidenceStorages = IniRead($gIniFile, "Confidence", "Storages", 0.95)
-
    ; Intervals
    Global $gOnlineCheckInterval = IniRead($gIniFile, "Interval", "Online Check", 15000)
    DebugWrite("Setting Interval Online Check = " & $gOnlineCheckInterval)

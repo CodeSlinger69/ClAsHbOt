@@ -12,7 +12,7 @@ Func GetTownHallLevel(Const $fullScan, ByRef $location, ByRef $left, ByRef $top,
    GrabFrameToFile("TownHallTopFrame.bmp", $x1, $y1, $x2, $y2)
    ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
 
-   If $bestMatch <> -1 And ($fullScan=False Or $top<430) Then
+   If $bestMatch <> -1 And ($fullScan=False Or $top+12<=$gScreenCenterDraggedDown[1]) Then
 	  $location = "Top"
 	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence)
 	  Return $bestMatch+7

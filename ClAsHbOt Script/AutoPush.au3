@@ -239,10 +239,10 @@ Func CheckForSnipableTH(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
    EndIf
 
    If $dist <= 175 Then
-	  DebugWrite("Town Hall level " & $level & " found at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Not snipable.")
+	  DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Not snipable.")
 	  Return False
    Else
-	  DebugWrite("Town Hall level " & $level & " found at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Snipable!")
+	  DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Snipable!" & @CRLF)
 	  Return $eAutoExecuteSnipe
    EndIf
 
@@ -433,7 +433,7 @@ Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THT
 	  ; Wait for timer
 	  Local $rand = Random(1000, 3000, 1)
 	  While TimerDiff($waveTimer) < $waveDelay+$rand
-		 If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_UNCHECKED Then Return False
+		 If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 		 If IsColorPresent($rFirstStarColor) = True Then ExitLoop 2
 		 Sleep(200)
 	  WEnd
@@ -571,52 +571,49 @@ EndFunc
 
 ; WARNING: Algebra!
 ; https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+
+; NW edge end points are 72, 332 and 429, 66
+; slope ==> y2-y1/x2-x1 ==> 66-332/429-72 ==> -0.745
+; line eq ==> y-y1=m(x-x1) ==> y-332=-0.745(x-72) ==> y=-0.745x+385.64
+; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + -0.745*$y + 287.302) / 1.555
+; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> -0.745 * ( ($x + -0.745*$y + 287.302) / 1.555 ) + 385.64
+
+; NE edge end points are 429, 66 and 786, 332
+; slope ==> y2-y1/x2-x1 ==> 332-66/786-429 ==> 0.745
+; line eq ==> y-y1=m(x-x1) ==> y-66=0.745(x-429) ==> y=0.745x-253.605
+; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + 0.745*$y + 188.936) / 1.555
+; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> 0.745 * ( ($x + 0.745*$y + 188.936) / 1.555 ) - 253.605
+
+; SW edge end points are 72, 234 and 429, 500
+; slope ==> y2-y1/x2-x1 ==> 500-234/429-72 ==> 0.745
+; line eq ==> y-y1=m(x-x1) ==> y-234=0.745(x-72) ==> y=0.745x+180.36
+; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + 0.745*$y - 134.368) / 1.555
+; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> 0.745 * ( ($x + 0.745*$y - 134.368) / 1.555 ) + 180.36
+
+; SE edge end points are 429, 500 and 786, 234
+; slope ==> y2-y1/x2-x1 ==> 234-500/786-429 ==> -0.745
+; line eq ==> y-y1=m(x-x1) ==> y-500=-0.745(x-429) ==> y=-0.745x+819.605
+; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + -0.745*$y + 610.606) / 1.555
+; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> -0.745 * ( ($x + -0.745*$y + 610.606) / 1.555 ) + 819.605
 Func THSnipeGetClosestEdgePoint(Const $topOrBot, Const $left, Const $top, ByRef $edgeX, ByRef $edgeY)
    ; Town Hall images are 22x24
    Local $x = $left+11
    Local $y = $top+12
 
    If $topOrBot = "Top" Then
-	  If $x <= $gScreenCenterDraggedDown[0] Then
-		 ; NW edge end points are 72, 332 and 429, 66
-		 ; slope ==> y2-y1/x2-x1 ==> 66-332/429-72 ==> -0.745
-		 ; line eq ==> y-y1=m(x-x1) ==> y-332=-0.745(x-72) ==> y=-0.745x+385.64
-		 ; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + -0.745*$y + 287.302) / 1.555
-		 ; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> -0.745 * ( ($x + -0.745*$y + 287.302) / 1.555 ) + 385.64
-
+	  If $x <= $gScreenCenterDraggedDown[0] Then ; NW
 		 $edgeX = Int( ($x + -0.745*$y + 287.302) / 1.555 )
 		 $edgeY = Int( -0.745 * ( ($x + -0.745*$y + 287.302) / 1.555 ) + 385.64 )
-
-	  Else
-		 ; NE edge end points are 429, 66 and 786, 332
-		 ; slope ==> y2-y1/x2-x1 ==> 332-66/786-429 ==> 0.745
-		 ; line eq ==> y-y1=m(x-x1) ==> y-66=0.745(x-429) ==> y=0.745x-253.605
-		 ; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + 0.745*$y + 188.936) / 1.555
-		 ; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> 0.745 * ( ($x + 0.745*$y + 188.936) / 1.555 ) - 253.605
-
+	  Else ; NE
 		 $edgeX = Int( ($x + 0.745*$y + 188.936) / 1.555 )
 		 $edgeY = Int( 0.745 * ( ($x + 0.745*$y + 188.936) / 1.555 ) - 253.605 )
-
 	  EndIf
 
    Else
-	  If $x <= $gScreenCenterDraggedDown[0] Then
-		 ; SW edge end points are 72, 234 and 429, 500
-		 ; slope ==> y2-y1/x2-x1 ==> 500-234/429-72 ==> 0.745
-		 ; line eq ==> y-y1=m(x-x1) ==> y-234=0.745(x-72) ==> y=0.745x+180.36
-		 ; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + 0.745*$y - 134.368) / 1.555
-		 ; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> 0.745 * ( ($x + 0.745*$y - 134.368) / 1.555 ) + 180.36
-
+	  If $x <= $gScreenCenterDraggedDown[0] Then ; SW
 		 $edgeX = Int( ($x + 0.745*$y - 134.368) / 1.555 )
 		 $edgeY = Int( 0.745 * ( ($x + 0.745*$y - 134.368) / 1.555 ) + 180.36 )
-
-	  Else
-		 ; SE edge end points are 429, 500 and 786, 234
-		 ; slope ==> y2-y1/x2-x1 ==> 234-500/786-429 ==> -0.745
-		 ; line eq ==> y-y1=m(x-x1) ==> y-500=-0.745(x-429) ==> y=-0.745x+819.605
-		 ; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + -0.745*$y + 610.606) / 1.555
-		 ; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> -0.745 * ( ($x + -0.745*$y + 610.606) / 1.555 ) + 819.605
-
+	  Else ; SE
 		 $edgeX = Int( ($x + -0.745*$y + 610.606) / 1.555 )
 		 $edgeY = Int( -0.745 * ( ($x + -0.745*$y + 610.606) / 1.555 ) + 819.605 )
 	  EndIf

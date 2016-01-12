@@ -1,13 +1,14 @@
 #cs
 ClAsHbOt!
 
+Atutomatic farming bot for Clash of Clans, with a few other features.
+
 Dec 10 Update To Do
 - finish collecting storage images
   - Dark 5.50, 4.50
   - L10: Gold: 10.75
   - L12: Gold: 12.25, 12.50; Elix: 12.00, 12.25, 12.75, 12.90
 - Test BAM and loonion strategies
-- Add TH snipe option during autoraid
 
 #ce
 
