@@ -67,7 +67,7 @@ Func FillBarracksStrategy0(Const $initialFillFlag, Const ByRef $builtTroopCounts
 EndFunc
 
 Func AutoRaidExecuteRaidStrategy0()
-   DebugWrite(@CRLF & "AutoRaidExecuteRaidStrategy0()")
+   DebugWrite("AutoRaidExecuteRaidStrategy0()")
 
    Local $troopIndex[$eTroopCount][5]
 

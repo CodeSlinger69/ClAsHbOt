@@ -20,6 +20,8 @@ Func ReadSettings()
    ; If set to true, the bot will stop when it detects a snipable base, and wait for you to manually raid
    Global $gAutoSnipeNotifyOnly = _Boolean(IniRead($gIniFile, "AutoSnipe", "Auto Snipe Notify Only", False))
    DebugWrite("Setting AutoSnipe Notify Only = " & $gAutoSnipeNotifyOnly)
+   Global $gTHSnipeMaxDistFromCorner = IniRead($gIniFile, "AutoSnipe", "Max Distance From Corner", 150)
+   DebugWrite("Setting TH Snipe Max Distance From Corner = " & $gTHSnipeMaxDistFromCorner)
 
    ; Defense Farm
    Global $gDefenseFarmOfflineTime = IniRead($gIniFile, "DefenseFarm", "Defense Farm Offline Time", 1200000) ; Duration to wait before logging in and dumping cups

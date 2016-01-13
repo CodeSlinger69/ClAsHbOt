@@ -75,6 +75,9 @@ Func Main()
 ;TestTownHall()
 ;TestCollectors()
 ;$gScraperDebug = True
+
+;DebugWrite(DistBetweenTwoPoints(418, 447, $gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1]))
+
 ;Exit
 
    InitGUI()
@@ -88,7 +91,7 @@ Func MainApplicationLoop()
    Local $lastQueueDonatableTroopsTimer = TimerInit()
    Local $lastTrainingCheckTimer = TimerInit()
    Local $lastDefenseFarmTimer = TimerInit()
-   Local $snipeTHLevel, $snipeTHLocation, $snipeTHLeft, $snipeTHTop
+   Local $snipeTHCorner
 
    While 1
 	  ;DebugWrite("Main loop: AutoRaid Stage " & $gAutoStage)
@@ -170,8 +173,8 @@ Func MainApplicationLoop()
 		 EndIf
 
 		 If WhereAmI()=$eScreenMain Then
-			Local $dummy1, $dummy2, $dummy3, $dummy4
-			If AutoRaidFindMatch(False, $dummy1, $dummy2, $dummy3, $dummy4) = True Then
+			Local $dummy
+			If AutoRaidFindMatch(False, $dummy) = True Then
 			   _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 			   _GUICtrlButton_Enable($GUI_AutoPushCheckBox, True)
 			   _GUICtrlButton_Enable($GUI_AutoRaidCheckBox, True)
@@ -188,7 +191,7 @@ Func MainApplicationLoop()
 		 $gAutoPushClicked = False
 		 CheckForAndroidMessageBox()
 
-		 AutoPush($lastTrainingCheckTimer, $snipeTHLevel, $snipeTHLocation, $snipeTHLeft, $snipeTHTop)
+		 AutoPush($lastTrainingCheckTimer, $snipeTHCorner)
 	  EndIf
 
 	  ; Auto Raid / AutoPush, Dump Cups
@@ -210,7 +213,7 @@ Func MainApplicationLoop()
 		 $gAutoRaidClicked = False
 		 CheckForAndroidMessageBox()
 
-		 AutoRaid($lastTrainingCheckTimer, $snipeTHLevel, $snipeTHLocation, $snipeTHLeft, $snipeTHTop)
+		 AutoRaid($lastTrainingCheckTimer, $snipeTHCorner)
 	  EndIf
 
 	  ; Defense Farm

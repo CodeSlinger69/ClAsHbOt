@@ -44,8 +44,8 @@ EndFunc
 
 Func DoCupsDump()
    ; Get first available match
-   Local $dummy1, $dummy2, $dummy3, $dummy4
-   AutoRaidFindMatch(True, $dummy1, $dummy2, $dummy3, $dummy4)
+   Local $dummy
+   AutoRaidFindMatch(True, $dummy)
    DragScreenDown()
 
    ; What troops are available?

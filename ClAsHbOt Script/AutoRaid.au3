@@ -1,4 +1,4 @@
-Func AutoRaid(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
+Func AutoRaid(ByRef $timer, ByRef $THCorner)
    ;DebugWrite("AutoRaid()")
 
    Switch $gAutoStage
@@ -27,7 +27,7 @@ Func AutoRaid(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, By
 
 	  ResetToCoCMainScreen()
 
-	  Local $findResults = AutoRaidFindMatch(False, $THLevel, $THLocation, $THLeft, $THTop)
+	  Local $findResults = AutoRaidFindMatch(False, $THCorner)
 	  If $findResults = False Then
 		 ; Reset if there was an error
 		 DebugWrite("Auto: Error finding match, resetting.")
@@ -69,7 +69,7 @@ Func AutoRaid(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, By
    Case $eAutoExecuteSnipe
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute TH Snipe")
 
-	  If THSnipeExecute($THLevel, $THLocation, $THLeft, $THTop) Then
+	  If THSnipeExecute($THCorner) Then
 		 $gAutoStage = $eAutoQueueTraining
 		 UpdateWinnings()
 	  EndIf
@@ -79,7 +79,7 @@ Func AutoRaid(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, By
    EndSwitch
 EndFunc
 
-Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
+Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THCorner)
    DebugWrite("FindAValidMatch()")
 
    ; Make sure we are on the main screen
@@ -190,7 +190,7 @@ Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THLevel, ByRef $THLocatio
 		 AutoRaidGetDisplayedLoot($gold, $elix, $dark, $cups, $deadbase)
 
 		 If $gold>=GUICtrlRead($GUI_GoldEdit) And $elix>=GUICtrlRead($GUI_ElixEdit) And $dark>=GUICtrlRead($GUI_DarkEdit) Then
-			$snipable = CheckForSnipableTH($THLevel, $THLocation, $THLeft, $THTop)
+			$snipable = CheckForSnipableTH($THCorner)
 			If $snipable<>False Then
 			   If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
 			   Return $snipable
@@ -326,7 +326,7 @@ Func CheckForRaidableBase()
    If $GUIIgnoreStorages And ($myTHLevel-$townHall<2 Or $myTHLevel>=11) Then ; "ignore storages" only valid if target TH<2 levels from my TH level. or my TH level>=11
 	  If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
 		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
-					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
+					" (Adj: " & $adjGold & " / " & $adjElix & ")" & @CRLF)
 		 Return $eAutoExecuteRaid
 	  Else
 		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
@@ -345,7 +345,7 @@ Func CheckForRaidableBase()
 			DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
 			Return False
 		 Else
-			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase)
+			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & @CRLF)
 			Return $eAutoExecuteRaid
 		 EndIf
 	  Else

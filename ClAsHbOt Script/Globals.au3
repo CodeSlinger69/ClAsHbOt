@@ -1,4 +1,4 @@
-Global $gVersion = "20151208"
+Global $gVersion = "20151210 Update WIP"
 
 ; Debug - these are overwritten once ReadSettings() in Settings.au3 is called, however these need to be defined here, as there can
 ;   be a need to write debug statements prior to ReadSettings() being called.
@@ -18,6 +18,10 @@ Global $gBlueStacksWidth = 860
 Global $gBlueStacksHeight = 672
 Global $gScreenCenterDraggedDown[2] = [429, 334]
 Global $gScreenCenterDraggedUp[2] = [429, 232]
+Global $gNorthPointDraggedDown[2] = [429, 66]
+Global $gEastPointDraggedDown[2] = [72, 334]
+Global $gWestPointDraggedDown[2] = [786, 334]
+Global $gSouthPointDraggedUp[2] = [429, 500]
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"

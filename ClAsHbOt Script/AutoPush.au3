@@ -1,4 +1,4 @@
-Func AutoPush(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, ByRef $THTop)
+Func AutoPush(ByRef $timer, ByRef $THCorner)
    ;DebugWrite("AutoPush()")
 
    If $gAutoSnipeNotifyOnly Then
@@ -30,7 +30,7 @@ Func AutoPush(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, By
    Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Snipable TH")
 
-	  Local $findMatchResults = THSnipeFindMatch($THLevel, $THLocation, $THLeft, $THTop)
+	  Local $findMatchResults = THSnipeFindMatch($THCorner)
 
 	  ; Reset if there was an error
 	  If $findMatchResults=False Then
@@ -56,7 +56,7 @@ Func AutoPush(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, By
    ; Stage Execute TH Snipe to Push
    Case $eAutoExecuteSnipe
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Snipe")
-	  If THSnipeExecute($THLevel, $THLocation, $THLeft, $THTop) Then
+	  If THSnipeExecute($THCorner) Then
 		 $gAutoStage = $eAutoQueueTraining
 		 UpdateWinnings()
 	  EndIf
@@ -67,7 +67,7 @@ Func AutoPush(ByRef $timer, ByRef $THLevel, ByRef $THLocation, ByRef $THLeft, By
 
 EndFunc
 
-Func THSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
+Func THSnipeFindMatch(ByRef $THCorner)
    DebugWrite("AutoPushFindMatch()")
 
    ; Make sure we are on the main screen
@@ -155,7 +155,7 @@ Func THSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 		 DebugWrite("Not dead base, skipping.")
 
 	  Else
-		 $snipable = CheckForSnipableTH($level, $location, $left, $top)
+		 $snipable = CheckForSnipableTH($THCorner)
 
 	  EndIf
 
@@ -218,9 +218,10 @@ Func THSnipeFindMatch(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 
 EndFunc
 
-Func CheckForSnipableTH(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
+Func CheckForSnipableTH(ByRef $THCorner)
    ; See if we can find the Town Hall location
-   $level = GetTownHallLevel(True, $location, $left, $top)
+   Local $location, $left, $top
+   Local $level = GetTownHallLevel(True, $location, $left, $top)
 
    ; Town Hall images are 22x24
    Local $x = $left+11
@@ -231,28 +232,39 @@ Func CheckForSnipableTH(ByRef $level, ByRef $location, ByRef $left, ByRef $top)
 	  Return False
    EndIf
 
-   Local $dist
    If $location = "Top" Then
-	  $dist = DistBetweenTwoPoints($x, $y, $gScreenCenterDraggedDown[0], $gScreenCenterDraggedDown[1])
+	  If DistBetweenTwoPoints($x, $y, $gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
+		 DebugWrite("Town Hall level " & $level & " found on North corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 $THCorner = "North"
+		 Return $eAutoExecuteSnipe
+	  ElseIf DistBetweenTwoPoints($x, $y, $gEastPointDraggedDown[0], $gEastPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
+		 DebugWrite("Town Hall level " & $level & " found on East corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 $THCorner = "East"
+		 Return $eAutoExecuteSnipe
+	  ElseIf DistBetweenTwoPoints($x, $y, $gWestPointDraggedDown[0], $gWestPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
+		 DebugWrite("Town Hall level " & $level & " found on West corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 $THCorner = "West"
+		 Return $eAutoExecuteSnipe
+	  EndIf
    Else
-	  $dist = DistBetweenTwoPoints($x, $y, $gScreenCenterDraggedUp[0], $gScreenCenterDraggedUp[1])
+	  If DistBetweenTwoPoints($x, $y, $gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1]) <= $gTHSnipeMaxDistFromCorner Then
+		 DebugWrite("Town Hall level " & $level & " found on South corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 $THCorner = "South"
+		 Return $eAutoExecuteSnipe
+	  EndIf
    EndIf
 
-   If $dist <= 175 Then
-	  DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Not snipable.")
-	  Return False
-   Else
-	  DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $left & ", " & $top & ".  Dist = " & Round($dist) & ". Snipable!" & @CRLF)
-	  Return $eAutoExecuteSnipe
-   EndIf
+   DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $left & ", " & $top & ". Not snipable. Dist:" & _
+	  " North, " & Int(DistBetweenTwoPoints($x, $y, $gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1])) & _
+	  " East, " & Int(DistBetweenTwoPoints($x, $y, $gEastPointDraggedDown[0], $gEastPointDraggedDown[1])) & _
+	  " West, " & Int(DistBetweenTwoPoints($x, $y, $gWestPointDraggedDown[0], $gWestPointDraggedDown[1])) & _
+	  " South, " & Int(DistBetweenTwoPoints($x, $y, $gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1])))
 
+   Return False
 EndFunc
 
-Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THTop)
+Func THSnipeExecute(Const $THCorner)
    DebugWrite("THSnipeExecute()")
-
-   Local $deployBoxes[2][4]
-   THSnipeFindClosestDeployBoxes($THLocation, $THLeft, $THTop, $deployBoxes)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
@@ -271,10 +283,7 @@ Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THT
 	  RandomWeightedClick($kingButton)
 	  Sleep(200)
 
-	  Local $xClick, $yClick
-	  Local $box[4] = [$deployBoxes[0][0], $deployBoxes[0][1], $deployBoxes[0][2], $deployBoxes[0][3]]
-	  RandomCoords($box, $xClick, $yClick)
-	  _MouseClickFast($xClick, $yClick)
+	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
    EndIf
 
@@ -286,10 +295,7 @@ Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THT
 	  RandomWeightedClick($queenButton)
 	  Sleep(200)
 
-	  Local $xClick, $yClick
-	  Local $box[4] = [$deployBoxes[0][0], $deployBoxes[0][1], $deployBoxes[0][2], $deployBoxes[0][3]]
-	  RandomCoords($box, $xClick, $yClick)
-	  _MouseClickFast($xClick, $yClick)
+	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
    EndIf
 
@@ -301,10 +307,7 @@ Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THT
 	  RandomWeightedClick($wardenButton)
 	  Sleep(200)
 
-	  Local $xClick, $yClick
-	  Local $box[4] = [$deployBoxes[0][0], $deployBoxes[0][1], $deployBoxes[0][2], $deployBoxes[0][3]]
-	  RandomCoords($box, $xClick, $yClick)
-	  _MouseClickFast($xClick, $yClick)
+	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
    EndIf
 
@@ -391,12 +394,8 @@ Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THT
 		 RandomWeightedClick($barbButton)
 		 Sleep(500)
 
-		 Local $clickPoints[$deployAmount][2]
-		 THSnipeGetClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
-
 		 For $i = 0 To $deployAmount-1
-			_MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
-			Sleep($gDeployTroopClickDelay)
+			THSnipeClickCorner($THCorner)
 		 Next
 	  EndIf
 
@@ -413,12 +412,8 @@ Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THT
 		 RandomWeightedClick($archButton)
 		 Sleep(500)
 
-		 Local $clickPoints[$deployAmount][2]
-		 THSnipeGetClickPoints(Random(0,1,1), $deployBoxes, $clickPoints)
-
 		 For $i = 0 To $deployAmount-1
-			_MouseClickFast($clickPoints[$i][0], $clickPoints[$i][1])
-			Sleep($gDeployTroopClickDelay)
+			THSnipeClickCorner($THCorner)
 		 Next
 	  EndIf
 
@@ -459,177 +454,17 @@ Func THSnipeExecute(Const $THLevel, Const $THLocation, Const $THLeft, Const $THT
    Return True
 EndFunc
 
-Func THSnipeGetClickPoints(Const $order, Const ByRef $boxes, ByRef $points)
-   ; First parameter is 0 = ascending, 1 = descending
-   For $i = 0 To UBound($points)-1
-	  Local $deployBox[4]
-	  Local $boxIndex = Random(0, UBound($boxes)-1, 1)
-	  For $j = 0 To 3
-		 $deployBox[$j] = $boxes[$boxIndex][$j]
-	  Next
-
-	  RandomCoords($deployBox, $points[$i][0], $points[$i][1])
-   Next
-
-   _ArraySort($points, $order)
-EndFunc
-
-Func THSnipeFindClosestDeployBoxes(Const $loc, Const $left, Const $top, ByRef $selectedBoxes)
-   ; Town Hall images are 22x24
-   Local $x = $left+11
-   Local $y = $top+12
-
-   If $loc = "Top" Then
-	  ; If on the North corner
-	  If $y<160 And $x>=$gScreenCenterDraggedDown[0]-80 And $x<=$gScreenCenterDraggedDown[0]+80 Then
-		 $selectedBoxes[0][0] = $rTHSnipeNorthDeployBox[0]
-		 $selectedBoxes[0][1] = $rTHSnipeNorthDeployBox[1]
-		 $selectedBoxes[0][2] = $rTHSnipeNorthDeployBox[2]
-		 $selectedBoxes[0][3] = $rTHSnipeNorthDeployBox[3]
-		 DebugWrite("Closest top box " & $selectedBoxes[0][0] & ", " & $selectedBoxes[0][1] & ", " & $selectedBoxes[0][2] & ", " & $selectedBoxes[0][3])
-
-	  ; If on the East corner
-	  ElseIf $x<189 And $y>=$gScreenCenterDraggedDown[1]-80 And $y<=$gScreenCenterDraggedDown[1]+80 Then
-		 $selectedBoxes[0][0] = $rTHSnipeEastDeployBox[0]
-		 $selectedBoxes[0][1] = $rTHSnipeEastDeployBox[1]
-		 $selectedBoxes[0][2] = $rTHSnipeEastDeployBox[2]
-		 $selectedBoxes[0][3] = $rTHSnipeEastDeployBox[3]
-		 DebugWrite("Closest east box " & $selectedBoxes[0][0] & ", " & $selectedBoxes[0][1] & ", " & $selectedBoxes[0][2] & ", " & $selectedBoxes[0][3])
-
-	  ; If on the West corner
-	  ElseIf $x>669 And $y>=$gScreenCenterDraggedDown[1]-80 And $y<=$gScreenCenterDraggedDown[1]+80 Then
-		 $selectedBoxes[0][0] = $rTHSnipeWestDeployBox[0]
-		 $selectedBoxes[0][1] = $rTHSnipeWestDeployBox[1]
-		 $selectedBoxes[0][2] = $rTHSnipeWestDeployBox[2]
-		 $selectedBoxes[0][3] = $rTHSnipeWestDeployBox[3]
-		 DebugWrite("Closest west box " & $selectedBoxes[0][0] & ", " & $selectedBoxes[0][1] & ", " & $selectedBoxes[0][2] & ", " & $selectedBoxes[0][3])
-
-	  Else
-		 Local $allBoxes[$gMaxDeployBoxes][5] ; 5th column will hold the calculated distance
-		 For $i=0 To $gMaxDeployBoxes-1
-			$allBoxes[$i][0] = ($x<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][0]    : $NEDeployBoxes[$i][2]-10)
-			$allBoxes[$i][1] = ($x<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][1]    : $NEDeployBoxes[$i][1])
-			$allBoxes[$i][2] = ($x<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][0]+10 : $NEDeployBoxes[$i][2])
-			$allBoxes[$i][3] = ($x<=$gScreenCenterDraggedDown[0] ? $NWDeployBoxes[$i][1]+10 : $NEDeployBoxes[$i][1]+10)
-		 Next
-
-		 ; Get closest point on the edge
-		 Local $edgeX, $edgeY
-		 THSnipeGetClosestEdgePoint("Top", $left, $top, $edgeX, $edgeY)
-		 DebugWrite("Closest edge point to " & $x & "," & $y & " is " & $edgeX & "," & $edgeY)
-
-		 ; Get closest boxes
-		 SortBoxesByDistance($edgeX, $edgeY, $allBoxes)
-
-		 For $i = 0 To UBound($selectedBoxes)-1
-			For $j = 0 To 3
-			   $selectedBoxes[$i][$j] = $allBoxes[$i][$j]
-			Next
-			DebugWrite("Closest top half box " & $i & ": " & $selectedBoxes[$i][0] & ", " & $selectedBoxes[$i][1] & ", " & $selectedBoxes[$i][2] & ", " & $selectedBoxes[$i][3])
-		 Next
-	  EndIf
-
-   ElseIf $loc = "Bot" Then
-	  ; If on the South corner
-	  If $y>406 And $x>=$gScreenCenterDraggedDown[0]-80 And $x<=$gScreenCenterDraggedDown[0]+80 Then
-		 $selectedBoxes[0][0] = $rTHSnipeSouthDeployBox[0]
-		 $selectedBoxes[0][1] = $rTHSnipeSouthDeployBox[1]
-		 $selectedBoxes[0][2] = $rTHSnipeSouthDeployBox[2]
-		 $selectedBoxes[0][3] = $rTHSnipeSouthDeployBox[3]
-		 DebugWrite("Closest bottom box " & $selectedBoxes[0][0] & ", " & $selectedBoxes[0][1] & ", " & $selectedBoxes[0][2] & ", " & $selectedBoxes[0][3])
-
-	  Else
-		 Local $allBoxes[$gMaxDeployBoxes][5] ; 5th column will hold the calculated distance
-		 For $i=0 To $gMaxDeployBoxes-1
-			$allBoxes[$i][0] = ($x<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][0]    : $SEDeployBoxes[$i][2]-10)
-			$allBoxes[$i][1] = ($x<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][3]-10 : $SEDeployBoxes[$i][3]-10)
-			$allBoxes[$i][2] = ($x<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][0]+10 : $SEDeployBoxes[$i][2])
-			$allBoxes[$i][3] = ($x<=$gScreenCenterDraggedUp[0] ? $SWDeployBoxes[$i][3]    : $SEDeployBoxes[$i][3])
-		 Next
-
-		 ; Get closest point on the edge
-		 Local $edgeX, $edgeY
-		 THSnipeGetClosestEdgePoint("Bot", $left, $top, $edgeX, $edgeY)
-		 DebugWrite("Closest edge point to " & $x & "," & $y & " is " & $edgeX & "," & $edgeY)
-
-		 ; Get closest boxes
-		 SortBoxesByDistance($edgeX, $edgeY, $allBoxes)
-
-		 For $i = 0 To UBound($selectedBoxes)-1
-			For $j = 0 To 3
-			   $selectedBoxes[$i][$j] = $allBoxes[$i][$j]
-			Next
-			DebugWrite("Closest bottom half box " & $i & ": " & $selectedBoxes[$i][0] & ", " & $selectedBoxes[$i][1] & ", " & $selectedBoxes[$i][2] & ", " & $selectedBoxes[$i][3])
-		 Next
-	  EndIf
-
-   Else
-	  DebugWrite("ERROR in THSnipeFindClosestDeployBoxes, location = " & $loc)
-
+Func THSnipeClickCorner(Const $THCorner)
+   If $THCorner = "North" Then
+	  _MouseClickFast($gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1])
+   ElseIf $THCorner = "East" Then
+	  _MouseClickFast($gEastPointDraggedDown[0], $gEastPointDraggedDown[1])
+   ElseIf $THCorner = "West" Then
+	  _MouseClickFast($gWestPointDraggedDown[0], $gWestPointDraggedDown[1])
+   ElseIf $THCorner = "South" Then
+	  _MouseClickFast($gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1])
    EndIf
+
+   Sleep($gDeployTroopClickDelay)
 EndFunc
-
-; WARNING: Algebra!
-; https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-
-; NW edge end points are 72, 332 and 429, 66
-; slope ==> y2-y1/x2-x1 ==> 66-332/429-72 ==> -0.745
-; line eq ==> y-y1=m(x-x1) ==> y-332=-0.745(x-72) ==> y=-0.745x+385.64
-; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + -0.745*$y + 287.302) / 1.555
-; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> -0.745 * ( ($x + -0.745*$y + 287.302) / 1.555 ) + 385.64
-
-; NE edge end points are 429, 66 and 786, 332
-; slope ==> y2-y1/x2-x1 ==> 332-66/786-429 ==> 0.745
-; line eq ==> y-y1=m(x-x1) ==> y-66=0.745(x-429) ==> y=0.745x-253.605
-; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + 0.745*$y + 188.936) / 1.555
-; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> 0.745 * ( ($x + 0.745*$y + 188.936) / 1.555 ) - 253.605
-
-; SW edge end points are 72, 234 and 429, 500
-; slope ==> y2-y1/x2-x1 ==> 500-234/429-72 ==> 0.745
-; line eq ==> y-y1=m(x-x1) ==> y-234=0.745(x-72) ==> y=0.745x+180.36
-; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + 0.745*$y - 134.368) / 1.555
-; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> 0.745 * ( ($x + 0.745*$y - 134.368) / 1.555 ) + 180.36
-
-; SE edge end points are 429, 500 and 786, 234
-; slope ==> y2-y1/x2-x1 ==> 234-500/786-429 ==> -0.745
-; line eq ==> y-y1=m(x-x1) ==> y-500=-0.745(x-429) ==> y=-0.745x+819.605
-; closest x = ($x + m*$y - m*b) / (m*m + 1) ==> ($x + -0.745*$y + 610.606) / 1.555
-; closest y = m * ( ($x + m*$y - m*b) / (m*m + 1) ) + b ==> -0.745 * ( ($x + -0.745*$y + 610.606) / 1.555 ) + 819.605
-Func THSnipeGetClosestEdgePoint(Const $topOrBot, Const $left, Const $top, ByRef $edgeX, ByRef $edgeY)
-   ; Town Hall images are 22x24
-   Local $x = $left+11
-   Local $y = $top+12
-
-   If $topOrBot = "Top" Then
-	  If $x <= $gScreenCenterDraggedDown[0] Then ; NW
-		 $edgeX = Int( ($x + -0.745*$y + 287.302) / 1.555 )
-		 $edgeY = Int( -0.745 * ( ($x + -0.745*$y + 287.302) / 1.555 ) + 385.64 )
-	  Else ; NE
-		 $edgeX = Int( ($x + 0.745*$y + 188.936) / 1.555 )
-		 $edgeY = Int( 0.745 * ( ($x + 0.745*$y + 188.936) / 1.555 ) - 253.605 )
-	  EndIf
-
-   Else
-	  If $x <= $gScreenCenterDraggedDown[0] Then ; SW
-		 $edgeX = Int( ($x + 0.745*$y - 134.368) / 1.555 )
-		 $edgeY = Int( 0.745 * ( ($x + 0.745*$y - 134.368) / 1.555 ) + 180.36 )
-	  Else ; SE
-		 $edgeX = Int( ($x + -0.745*$y + 610.606) / 1.555 )
-		 $edgeY = Int( -0.745 * ( ($x + -0.745*$y + 610.606) / 1.555 ) + 819.605 )
-	  EndIf
-
-   EndIf
-EndFunc
-
-Func SortBoxesByDistance(Const $x, Const $y, ByRef $boxes)
-   For $i = 0 To UBound($boxes)-1
-	  Local $boxX = $boxes[$i][0] + Int( ($boxes[$i][2]-$boxes[$i][0])/2 )
-	  Local $boxY = $boxes[$i][1] + Int( ($boxes[$i][3]-$boxes[$i][1])/2 )
-	  $boxes[$i][4] = DistBetweenTwoPoints($x, $y, $boxX, $boxY)
-   Next
-
-   _ArraySort($boxes, 0, 0, UBound($boxes)-1, 4)
-EndFunc
-
-
 

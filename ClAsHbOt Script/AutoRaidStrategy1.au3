@@ -75,7 +75,7 @@ EndFunc
 
 
 Func AutoRaidExecuteRaidStrategy1()
-   DebugWrite(@CRLF & "AutoRaidExecuteRaidStrategy1()")
+   DebugWrite("AutoRaidExecuteRaidStrategy1()")
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
