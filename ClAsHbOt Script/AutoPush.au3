@@ -234,27 +234,27 @@ Func CheckForSnipableTH(ByRef $THCorner)
 
    If $location = "Top" Then
 	  If DistBetweenTwoPoints($x, $y, $gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on North corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 DebugWrite("Town Hall level " & $level & " found on North corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 		 $THCorner = "North"
 		 Return $eAutoExecuteSnipe
 	  ElseIf DistBetweenTwoPoints($x, $y, $gEastPointDraggedDown[0], $gEastPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on East corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 DebugWrite("Town Hall level " & $level & " found on East corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 		 $THCorner = "East"
 		 Return $eAutoExecuteSnipe
 	  ElseIf DistBetweenTwoPoints($x, $y, $gWestPointDraggedDown[0], $gWestPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on West corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 DebugWrite("Town Hall level " & $level & " found on West corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 		 $THCorner = "West"
 		 Return $eAutoExecuteSnipe
 	  EndIf
    Else
 	  If DistBetweenTwoPoints($x, $y, $gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on South corner at " & $left & ", " & $top & " Snipable!" & @CRLF)
+		 DebugWrite("Town Hall level " & $level & " found on South corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 		 $THCorner = "South"
 		 Return $eAutoExecuteSnipe
 	  EndIf
    EndIf
 
-   DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $left & ", " & $top & ". Not snipable. Dist:" & _
+   DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $x & ", " & $y & ". Not snipable. Dist:" & _
 	  " North, " & Int(DistBetweenTwoPoints($x, $y, $gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1])) & _
 	  " East, " & Int(DistBetweenTwoPoints($x, $y, $gEastPointDraggedDown[0], $gEastPointDraggedDown[1])) & _
 	  " West, " & Int(DistBetweenTwoPoints($x, $y, $gWestPointDraggedDown[0], $gWestPointDraggedDown[1])) & _
