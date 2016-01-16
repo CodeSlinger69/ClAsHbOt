@@ -110,14 +110,16 @@ EndFunc
 
 Func TestRaidTroopsCount()
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    For $i=0 To $eTroopCount-1
 	  If $troopIndex[$i][4]>0 Then DebugWrite("Available " & $gTroopNames[$i] & ": " & $troopIndex[$i][4])
    Next
 
    Local $spellIndex[$eSpellCount][5]
-   FindRaidTroopSlotsAndCounts($gSpellSlotBMPs, $spellIndex)
+   FindRaidTroopSlots($gSpellSlotBMPs, $spellIndex)
+   UpdateRaidTroopCounts($spellIndex)
 
    For $i=0 To $eSpellCount-1
 	  If $spellIndex[$i][4]>0 Then DebugWrite("Available " & $gSpellNames[$i] & ": " & $spellIndex[$i][4])

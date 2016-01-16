@@ -74,10 +74,6 @@ Func Main()
 ;TestDonate()
 ;TestTownHall()
 ;TestCollectors()
-;$gScraperDebug = True
-
-;DebugWrite(DistBetweenTwoPoints(418, 447, $gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1]))
-
 ;Exit
 
    InitGUI()

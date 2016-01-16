@@ -81,7 +81,8 @@ Func AutoRaidExecuteRaidStrategy3()
    Local $deployStart = TimerInit()
 
    ; 1st wave (only one wave in this strategy)
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    DebugWrite("Available Balloons: " & $troopIndex[$eTroopBalloon][4])
    DebugWrite("Avaliable Minions: " & $troopIndex[$eTroopMinion][4])

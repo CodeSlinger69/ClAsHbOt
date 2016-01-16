@@ -81,7 +81,8 @@ Func AutoRaidExecuteRaidStrategy0()
    Local $deployStart = TimerInit()
 
    ; 1st wave
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    DebugWrite("Available Barbarians: " & $troopIndex[$eTroopBarbarian][4])
    DebugWrite("Avaliable Archers: " & $troopIndex[$eTroopArcher][4])
@@ -107,7 +108,7 @@ Func AutoRaidExecuteRaidStrategy0()
    EndIf
 
    ; 2nd wave
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][4] > 0 Then

@@ -526,7 +526,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
 	    $troopsToDeploy = Int($troopsAvailable * 0.5)
    Else
 	    $troopsToDeploy = $troopsAvailable
-	 EndIf
+   EndIf
 
    ;DebugWrite("Available: " & $troopsAvailable & ", deploying " & $troopsToDeploy)
 
@@ -547,7 +547,8 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
    If $howMany=$eAutoRaidDeploySixtyPercent Or $howMany=$eAutoRaidDeployFiftyPercent Then Return
 
    ; If we are deploying all, then check remaining and continue to deploy to make sure they all get out there
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $index)
+   UpdateRaidTroopCounts($index)
+
    $troopsAvailable = $index[$troop][4]
 
    If $troopsAvailable>0 Then
@@ -565,7 +566,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
 	  Next
    EndIf
 
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $index)
+   UpdateRaidTroopCounts($index)
    $troopsAvailable = $index[$troop][4]
 
    If $troopsAvailable>0 Then
@@ -594,7 +595,7 @@ Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
    Next
 
    ; Deploy half to right
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $index)
+   UpdateRaidTroopCounts($index)
    $troopsAvailable = $index[$troop][4]
 
    DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
@@ -737,7 +738,7 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed, Const $wardenDe
    EndIf
 EndFunc
 
-Func FindRaidTroopSlotsAndCounts(Const ByRef $bitmaps, ByRef $index)
+Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
    For $i = 0 To UBound($index)-1
 	  $index[$i][0] = -1
@@ -764,18 +765,6 @@ Func FindRaidTroopSlotsAndCounts(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][3] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[3]
 		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
-
-		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
-			$index[$i][4] = 1
-		 Else
-			Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
-								  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
-								  0, 0, 0, 0]
-			Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
-			;DebugWrite("GetAvailableTroops() = " & $t)
-
-			$index[$i][4] = Number(StringMid($t, 2))
-		 EndIf
 	  EndIf
    Next
 
@@ -796,20 +785,41 @@ Func FindRaidTroopSlotsAndCounts(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][3] = $split[1]+$rRaidTroopBox1[1]+$rRaidButtonOffset[3]
 		 ;DebugWrite("Pass 1 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
 			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
+		 ExitLoop ; only one possible button in this pass
+	  EndIf
+   Next
+EndFunc
+
+Func UpdateRaidTroopCounts(ByRef $index)
+   For $i = 0 To UBound($index) - 1
+	  If $index[$i][0] <> -1 Then
 
 		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
 			$index[$i][4] = 1
 		 Else
-			Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
-								  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
-								  0, 0, 0, 0]
-			Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
-			;DebugWrite("GetAvailableTroops() = " & $t)
+			Local $loc[4] = [ $index[$i][0]+30, $index[$i][3], $rRaidTroopSelectedColor[2], $rRaidTroopSelectedColor[3] ]
+			If IsColorPresent($loc) Then
+			   ; Troop is "selected"
+			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1]-4, $index[$i][2]-5, $index[$i][1]+10, _
+									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
+									 0, 0, 0, 0]
+			   ;DebugWrite($textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
+			   ;	$textBox[5] & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
+			   Local $t = ScrapeFuzzyText($gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
+			   ;DebugWrite("GetAvailableTroops() (selected) = " & $t)
+
+			Else
+			   ; Troop is not "selected"
+			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
+									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
+									 0, 0, 0, 0]
+			   Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
+			   ;DebugWrite("GetAvailableTroops() (not selected) = " & $t)
+
+			EndIf
 
 			$index[$i][4] = Number(StringMid($t, 2))
 		 EndIf
-
-		 ExitLoop ; only one possible button in this pass
 	  EndIf
    Next
 EndFunc

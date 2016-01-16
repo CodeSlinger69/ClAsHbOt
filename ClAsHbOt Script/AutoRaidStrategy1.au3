@@ -79,7 +79,8 @@ Func AutoRaidExecuteRaidStrategy1()
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    DebugWrite("Available Barbarians: " & $troopIndex[$eTroopBarbarian][4])
    DebugWrite("Avaliable Archers: " & $troopIndex[$eTroopArcher][4])
@@ -149,7 +150,7 @@ Func AutoRaidExecuteRaidStrategy1()
    EndIf
 
    ; 1st wave
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    ; Deploy 50% of barbs
    Local $archBarbNumDeployBoxesPerSide = 10 ; focus on the top or bottom corner to follow the giants
@@ -167,7 +168,7 @@ Func AutoRaidExecuteRaidStrategy1()
    Sleep(3000)
 
    ; 2nd wave
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][4] > 0 Then

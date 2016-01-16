@@ -90,12 +90,13 @@ Global $rWaitForPersonalBreakPoint1Color[4] = [164, 162, 0xff1919, 0]
 Global $rWaitForPersonalBreakPoint2Color[4] = [434, 181, 0xff1919, 0]
 Global $rWaitForPersonalBreakPoint3Color[4] = [698, 167, 0xff1919, 0]
 Global $rArmyManagerSelectedColor[4] = [0, 0, 0xE8E8E0, 0]
+Global $rRaidTroopSelectedColor[4] = [0, 0, 0xffffff, 0 ]
 
 ; Bounding Boxes
 ; Left, Top, Right, Bottom
 Global $rRaidTroopBox1[4] = [46, 514, 110, 599] ; first button only
 Global $rRaidTroopBox2[4] = [116, 514, 810, 599] ; buttons 2-11
-Global $rRaidButtonOffset[4] = [0, -17, 60, 61]
+Global $rRaidButtonOffset[4] = [0, -17, 60, 63]
 Global $rCampTroopBox1[4] = [134, 148, 728, 223] ; main troops
 Global $rCampTroopBox2[4] = [421, 386, 600, 462] ; heroes
 Global $rChatBox[4] = [0, 0, 302, 623]

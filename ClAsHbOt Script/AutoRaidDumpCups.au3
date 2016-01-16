@@ -50,7 +50,8 @@ Func DoCupsDump()
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    Local $kingCount = $troopIndex[$eTroopKing][4]
    Local $queenCount = $troopIndex[$eTroopQueen][4]

@@ -268,7 +268,8 @@ Func THSnipeExecute(Const $THCorner)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    Local $archButton[4] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], $troopIndex[$eTroopArcher][3]]
@@ -422,7 +423,8 @@ Func THSnipeExecute(Const $THCorner)
 	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
 	  ; Get counts of available troops
-	  FindRaidTroopSlotsAndCounts($gTroopSlotBMPs, $troopIndex)
+	  UpdateRaidTroopCounts($troopIndex)
+
 	  If $availableBarbs=0 And $availableArchs=0 Then ExitLoop
 
 	  ; Wait for timer

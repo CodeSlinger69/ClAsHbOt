@@ -44,7 +44,7 @@ Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "
 									 "Barbarian King", "Archer Queen", "Grand Warden"]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _
    $eSpellEarthquake, $eSpellHaste, $eSpellCount
-Global $gSpellNames[$eSpellCount] = ["Lightning", "Rage", "Heal", "Jump", "Freeze", "Poison", _
+Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freeze", "Poison", _
    "Earthquake", "Haste"]
 
 ; Known screen/window types
