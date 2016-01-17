@@ -14,8 +14,8 @@ Func GetTownHallLevel(Const $fullScan, ByRef $location, ByRef $left, ByRef $top,
 
    If $bestMatch <> -1 And ($fullScan=False Or $top+12<=$gScreenCenterDraggedDown[1]) Then
 	  $location = "Top"
-	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence)
-	  Return $bestMatch+7
+	  ;DebugWrite("Likely TH Level " & $bestMatch+6 & " conf: " & $bestConfidence)
+	  Return $bestMatch+6
    EndIf
 
    If $fullScan=False Then Return -1
@@ -27,8 +27,8 @@ Func GetTownHallLevel(Const $fullScan, ByRef $location, ByRef $left, ByRef $top,
 
    If $bestMatch <> -1 Then
 	  $location = "Bot"
-	  ;DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
-	  Return $bestMatch+7
+	  ;DebugWrite("Likely TH Level " & $bestMatch+6 & " conf: " & $bestConfidence & @CRLF)
+	  Return $bestMatch+6
    EndIf
 
    ; Couldn't get TH level

@@ -20,7 +20,7 @@ Func ReadSettings()
    ; If set to true, the bot will stop when it detects a snipable base, and wait for you to manually raid
    Global $gAutoSnipeNotifyOnly = _Boolean(IniRead($gIniFile, "AutoSnipe", "Auto Snipe Notify Only", False))
    DebugWrite("Setting AutoSnipe Notify Only = " & $gAutoSnipeNotifyOnly)
-   Global $gTHSnipeMaxDistFromCorner = IniRead($gIniFile, "AutoSnipe", "Max Distance From Corner", 80)
+   Global $gTHSnipeMaxDistFromCorner = IniRead($gIniFile, "AutoSnipe", "Max Distance From Corner", 90)
    DebugWrite("Setting TH Snipe Max Distance From Corner = " & $gTHSnipeMaxDistFromCorner)
 
    ; Defense Farm

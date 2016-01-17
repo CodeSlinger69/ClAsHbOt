@@ -264,7 +264,7 @@ Func CheckForSnipableTH(ByRef $THCorner)
 EndFunc
 
 Func THSnipeExecute(Const $THCorner)
-   DebugWrite("THSnipeExecute()")
+   ;DebugWrite("THSnipeExecute()")
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
@@ -277,58 +277,74 @@ Func THSnipeExecute(Const $THCorner)
    Local $queenButton[4] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], $troopIndex[$eTroopQueen][3]]
    Local $wardenButton[4] = [$troopIndex[$eTroopWarden][0], $troopIndex[$eTroopWarden][1], $troopIndex[$eTroopWarden][2], $troopIndex[$eTroopWarden][3]]
 
+   If WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
+	  DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
+	  ResetToCoCMainScreen()
+	  Return False
+   EndIf
+
    ; Try deploying heroes first, immediately power them up
+   Local $heroDeployed = False
    ; Deploy King
    If $troopIndex[$eTroopKing][4]>0 Then
-	  DebugWrite("Deploying Barbarian King.")
+	  DebugWrite("THSnipeExecute() Deploying Barbarian King.")
 	  RandomWeightedClick($kingButton)
 	  Sleep(200)
 
 	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
+	  $heroDeployed = True
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Deploy Queen
    If $troopIndex[$eTroopQueen][4] > 0 Then
-	  DebugWrite("Deploying Archer Queen.")
+	  DebugWrite("THSnipeExecute() Deploying Archer Queen.")
 	  RandomWeightedClick($queenButton)
 	  Sleep(200)
 
 	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
+	  $heroDeployed = True
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Deploy Warden
    If $troopIndex[$eTroopWarden][4] > 0 Then
-	  DebugWrite("Deploying Grand Warden.")
+	  DebugWrite("THSnipeExecute() Deploying Grand Warden.")
 	  RandomWeightedClick($wardenButton)
 	  Sleep(200)
 
 	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
+	  $heroDeployed = True
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
+   If WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
+	  DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
+	  ResetToCoCMainScreen()
+	  Return False
+   EndIf
+
    ; Power up heroes
    If $troopIndex[$eTroopKing][4] > 0 Then
-	  DebugWrite("Powering up Barbarian King.")
+	  DebugWrite("THSnipeExecute() Powering up Barbarian King.")
 	  RandomWeightedClick($kingButton)
 	  Sleep(200)
    EndIf
 
    If $troopIndex[$eTroopQueen][4] > 0 Then
-	  DebugWrite("Powering up Archer Queen.")
+	  DebugWrite("THSnipeExecute() Powering up Archer Queen.")
 	  RandomWeightedClick($queenButton)
 	  Sleep(200)
    EndIf
 
    If $troopIndex[$eTroopWarden][4] > 0 Then
-	  DebugWrite("Powering up Grand Warden.")
+	  DebugWrite("THSnipeExecute() Powering up Grand Warden.")
 	  RandomWeightedClick($wardenButton)
 	  Sleep(200)
    EndIf
@@ -338,27 +354,45 @@ Func THSnipeExecute(Const $THCorner)
    ; Wait for 15 seconds and see if heroes take care of the TH
    If $troopIndex[$eTroopKing][4]>0 Or $troopIndex[$eTroopQueen][4]>0 Or $troopIndex[$eTroopWarden][4]>0 Then
 	  Local $t = TimerInit()
-	  While IsColorPresent($rFirstStarColor)=False And TimerDiff($t)<15000
+	  Local $ctdn = 0
+	  While 1
+		 If IsColorPresent($rFirstStarColor) = True Then
+			DebugWrite("THSnipeExecute() Exiting hero wait loop: star present")
+			ExitLoop
+		 EndIf
+
+		 If TimerDiff($t)>21000 Then
+			DebugWrite("THSnipeExecute() Exiting hero wait loop: 21 secs expired")
+			ExitLoop
+		 EndIf
+
+		 Local $n = Int(TimerDiff($t)/1000)
+		 If $n <> $ctdn Then
+			$ctdn=$n
+			DebugWrite(21-$ctdn)
+		 EndIf
 		 Sleep(200)
 	  WEnd
 
+	  If WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
+		 DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
+		 ResetToCoCMainScreen()
+		 Return False
+	  EndIf
+
 	  If IsColorPresent($rFirstStarColor) = True Then
 		 ; End Battle
-		 For $i = 1 to 5
-			If IsColorPresent($rFirstStarColor) Then
-			   RandomWeightedClick($rLiveRaidScreenEndBattleButton)
+		 RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 
-			   Local $t=TimerInit()
-			   While IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton) = False And TimerDiff($t)<2000
-				  Sleep(50)
-			   WEnd
+		 Local $t=TimerInit()
+		 While IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton) = False And TimerDiff($t)<2000
+			Sleep(50)
+		 WEnd
 
-			   RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
-			   ExitLoop
-			EndIf
-
+		 If IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton) Then
+			RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
 			Sleep(1000)
-		 Next
+		 EndIf
 
 		 WaitForBattleEnd(True, True, True)
 
@@ -378,19 +412,25 @@ Func THSnipeExecute(Const $THCorner)
    While IsColorPresent($rFirstStarColor) = False
 	  Local $waveTimer = TimerInit()
 	  $waveCount+=1
-	  DebugWrite("Town hall snipe, wave " & $waveCount)
+	  DebugWrite("THSnipeExecute() Town hall snipe, wave " & $waveCount)
 
 	  Local $availableBarbs = $troopIndex[$eTroopBarbarian][4]
 	  Local $availableArchs = $troopIndex[$eTroopArcher][4]
-	  DebugWrite("Troops available: Barbarians=" & $availableBarbs & " Archers=" & $availableArchs)
+	  DebugWrite("THSnipeExecute() Troops available: Barbarians=" & $availableBarbs & " Archers=" & $availableArchs)
 
 	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
+
+	  If WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
+		 DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
+		 ResetToCoCMainScreen()
+		 Return False
+	  EndIf
 
 	  ; Deploy barbs to boxes
 	  If $availableBarbs>0 Then
 		 Local $c = $waveTroopsBarb + Random(1, 5, 1)
 		 Local $deployAmount = ($availableBarbs<=$c ? $availableBarbs : $c)
-		 DebugWrite("Deploying " & $deployAmount & " barbarians.")
+		 DebugWrite("THSnipeExecute() Deploying " & $deployAmount & " barbarians.")
 
 		 RandomWeightedClick($barbButton)
 		 Sleep(500)
@@ -408,7 +448,7 @@ Func THSnipeExecute(Const $THCorner)
 	  If $availableArchs>0 Then
 		 Local $c = $waveTroopsArch + Random(1, 5, 1)
 		 Local $deployAmount = ($availableArchs<=$c ? $availableArchs : $c)
-		 DebugWrite("Deploying " & $deployAmount & " archers.")
+		 DebugWrite("THSnipeExecute() Deploying " & $deployAmount & " archers.")
 
 		 RandomWeightedClick($archButton)
 		 Sleep(500)
@@ -437,21 +477,30 @@ Func THSnipeExecute(Const $THCorner)
 
    WEnd
 
+   If WhereAmI()<>$eScreenWaitRaid And WhereAmI()<>$eScreenLiveRaid Then
+	  DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
+	  ResetToCoCMainScreen()
+	  Return False
+   EndIf
+
    ; End battle
-   For $i = 1 to 5
+   If $heroDeployed = True Then
+	  ; End battle
+	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 
-	  If IsColorPresent($rFirstStarColor) Then
-		 RandomWeightedClick($rLiveRaidScreenEndBattleButton)
-		 Sleep(1000)
+	  Local $t=TimerInit()
+	  While IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton) = False And TimerDiff($t)<2000
+		 Sleep(50)
+	  WEnd
+
+	  If IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton) Then
 		 RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
-		 ExitLoop
+		 Sleep(1000)
 	  EndIf
-
-	  Sleep(1000)
-   Next
+   EndIf
 
    ; Wait for end battle
-   WaitForBattleEnd(True, True, True)  ; always wait full time, or until all troops are dead
+   WaitForBattleEnd(False, False, False)
 
    Return True
 EndFunc
