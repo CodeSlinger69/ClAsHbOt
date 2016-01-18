@@ -1,4 +1,17 @@
 Func ReadSettings()
+   ; AutoIt Version Check
+   DebugWrite("AutoIt Version: " & @AutoItVersion)
+   If VersionCompare(@AutoItVersion, $gAutoItVersionRequired) < 0 Then
+	  Local $res = MsgBox(BitOr($MB_OKCANCEL, $MB_ICONQUESTION), "AutoIt Version - ClAsHbOt", _
+	  "Your AutoIt version (" & @AutoItVersion & ") is not up to date." & @CRLF & _
+	  "You may expereience issues unless you update to AutoIt version " & $gAutoItVersionRequired & " or higher." & @CRLF & @CRLF & _
+	  "Click OK to continue, or Cancel to Exit.")
+
+	  If $res = $IDCANCEL Then
+		 Exit
+	  EndIf
+   EndIf
+
    ; Debug
    $gScraperDebug = _Boolean(IniRead($gIniFile, "Debug", "Scraper Debug", False))
    $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))

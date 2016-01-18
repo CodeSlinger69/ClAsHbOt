@@ -9,7 +9,6 @@ Dec 10 Update To Do
   - Gold: 10.75, 12.25, 12.50
   - Elix: 12.00, 12.25, 12.75, 12.90
 - Test BAM and loonion strategies
-
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -28,6 +27,7 @@ Opt("GUIOnEventMode", 1)
 ; CoC Bot Includes
 #include <Globals.au3>
 #include <FileNames.au3>
+#include <Version.au3>
 #include <GUI.au3>
 #include <Settings.au3>
 #include <Scraper.au3>
@@ -54,7 +54,6 @@ Opt("GUIOnEventMode", 1)
 Main()
 
 Func Main()
-
    StartBlueStacks()
 
    InitScraper()

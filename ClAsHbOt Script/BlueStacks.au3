@@ -5,10 +5,7 @@ Func StartBlueStacks()
    Local $clientPos = GetClientPos()
    If $clientPos[2]-$clientPos[0]+1<>$gBlueStacksWidth Or $clientPos[3]-$clientPos[1]+1<>$gBlueStacksHeight Then
 	  Local $res = MsgBox(BitOr($MB_OKCANCEL, $MB_ICONQUESTION), "BlueStacks Wrong Size", "BlueStacks window is the wrong size." & @CRLF & _
-		 "Click OK to resize, or Cancel to Exit." & @CRLF & @CRLF & _
-		 "Note: If you are on Windows 10, automatic resize will not work.  Please Cancel, then use the .reg file in the " & _
-		 "BlueStacks folder to change to the correct resolution.  You will need to manually kill all BlueStacks processes " & _
-		 "(beginning with 'HD-') prior to applying the .reg file.")
+		 "Click OK to resize, or Cancel to Exit.")
 
 	  If $res = $IDCANCEL Then
 		 Exit
@@ -39,38 +36,34 @@ Func CheckIfBlueStacksIsRunning()
    Local $isActive = WinWaitActive($gTitle, "", 2)
 
    If $isActive Then
-	  WinMove($gTitle, "", 4, 4)
+	  BlueStacksMoveWindow()
    Else
-	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks Not Running", "Cannot find or activate BlueStacks window." & @CRLF & @CRLF & "Exiting.")
-	  Exit
+	  Local $res = MsgBox(BitOr($MB_YESNO, $MB_ICONQUESTION), "BlueStacks Not Running", _
+	  "Cannot find or activate BlueStacks window." & @CRLF & @CRLF & _
+	  "Should ClAsHbOt try to start BlueStacks?")
+
+	  If $res = $IDNO Then
+		 Exit
+	  EndIf
+
+	  BlueStacksStartLauncher()
    EndIf
 EndFunc
 
 Func FixBlueStacksSize()
    Local $res
 
-   ; Stop service
-   DebugWrite("Stopping BlueStacks process: BstHdAndroidSvc")
-   RunWait(@ComSpec & " /c " & 'net stop BstHdAndroidSvc', "", @SW_HIDE)
+   Local $hdQuit = """" & RegRead("HKLM\SOFTWARE\BlueStacks", "InstallDir") & "HD-Quit.exe" & """"
+   DebugWrite("FixBlueStacksSize() BlueStacks HD Quit Path: " & $hdQuit)
 
-   ; Kill processes
-   Local $bsProcesses[7] = ["HD-Service.exe", "HD-FrontEnd.exe", "HD-Agent.exe", "HD-BlockDevice.exe", "HD-Network.exe", _
-						    "HD-SharedFolder.exe", "HD-UpdaterService.exe"]
+   RunWait($hdQuit)
 
-   For $i = 0 To UBound($bsProcesses)-1
-
-	  If ProcessExists($bsProcesses[$i]) Then
-		 $res = ProcessClose($bsProcesses[$i])
-		 If $res<>1 Then
-			DebugWrite("Error killing BlueStacks process: " & $bsProcesses[$i] & " Code: " & $res)
-			MsgBox(BitOr($MB_OK, $MB_ICONERROR), "Error killing process", "Error killing BlueStacks process: " & $bsProcesses[$i] & @CRLF & _
-			   "Please correct manually.")
-			Exit
-		 Else
-			DebugWrite("Killed BlueStacks process: " & $bsProcesses[$i])
-		 EndIf
-	  EndIf
-   Next
+   If @error Then
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "Error killing process", "Error killing BlueStacks processes." & @CRLF & _
+	  "Please correct manually.")
+	  DebugWrite("FixBlueStacksSize() Error killing BlueStacks processes: " & @error)
+	  Exit
+   EndIf
 
    ; Write correct registry entries
    Local $bsKeys[6] = ["Width", "Height", "WindowWidth", "WindowHeight", "GuestWidth", "GuestHeight"]
@@ -80,56 +73,41 @@ Func FixBlueStacksSize()
    For $i = 0 To UBound($bsKeys)-1
 	  $res = RegWrite("HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Guests\Android\FrameBuffer\0", $bsKeys[$i], "REG_DWORD", $bsValues[$i])
 	  If $res=1 Then
-		 DebugWrite("Wrote registry entry: HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Guests\Android\FrameBuffer\0\" & $bsKeys[$i] & " = " & $bsValues[$i])
+		 DebugWrite("FixBlueStacksSize(), Wrote registry entry: HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Guests\Android\FrameBuffer\0\" & $bsKeys[$i] & " = " & $bsValues[$i])
 	  Else
-		 DebugWrite("ERROR writing registry entry: HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Guests\Android\FrameBuffer\0\" & $bsKeys[$i] & " = " & $bsValues[$i] & " Code: " & $res)
+		 DebugWrite("FixBlueStacksSize(), ERROR writing registry entry: HKEY_LOCAL_MACHINE\SOFTWARE\BlueStacks\Guests\Android\FrameBuffer\0\" & $bsKeys[$i] & " = " & $bsValues[$i] & " Code: " & $res)
 		 $regError = True
 	  EndIf
    Next
 
    If $regError = True Then
-	  DebugWrite("Error writing BlueStacks registry value(s)")
+	  DebugWrite("FixBlueStacksSize(), Error writing BlueStacks registry value(s)")
 	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "Error writing registry", "Error writing BlueStacks registry value(s)" & @CRLF & _
 		 "Please correct manually.")
 	  Exit
    EndIf
 
+   BlueStacksStartLauncher()
+EndFunc
+
+Func BlueStacksStartLauncher()
    ; Locate BS Launcher
-   DebugWrite("Restarting BlueStacks.")
-   Local $blueStacksLauncherPath = _FileListToArrayRec(@ProgramFilesDir, "HD-StartLauncher.exe", $FLTAR_FILES, _
-													   $FLTAR_RECUR, $FLTAR_NOSORT, $FLTAR_FULLPATH)
+   Local $hdLaunch = """" & RegRead("HKLM\SOFTWARE\BlueStacks", "InstallDir") & "HD-StartLauncher.exe" & """"
+   DebugWrite("BlueStacksStartLauncher(), BlueStacks HD Launch Path: " & $hdLaunch)
 
-   If $blueStacksLauncherPath[0] = 0 Then
-	  DebugWrite("Unable to locate BlueStacks launcher in " & @ProgramFilesDir)
-	  MsgBox($MB_OK, "BlueStacks Launcher Not Found", "Restarting BlueStacks" & @CRLF & @CRLF & _
-		 "Cannot locate BlueStacks launcher in " & @ProgramFilesDir & @CRLF & _
-		 "Please manually start BlueStacks, then click OK.")
-	  Return
-
-   ElseIf $blueStacksLauncherPath[0] > 1 Then
-	  DebugWrite("Found multiple BlueStacks launchers in " & @ProgramFilesDir)
-	  MsgBox($MB_OK, "Multiple BlueStacks Launchers Found", "Restarting BlueStacks" & @CRLF & @CRLF & _
-		 "Found multiple BlueStacks launchers in " & @ProgramFilesDir & @CRLF & _
-		 "Please manually start BlueStacks, then click OK.")
-	  Return
-   EndIf
-
-   ; Found a single BlueStacks launcher, start it up
-   Local $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
-   Local $aPathSplit = _PathSplit($blueStacksLauncherPath[1], $sDrive, $sDir, $sFilename, $sExtension)
-
-   Local $blueStacksPID = Run($blueStacksLauncherPath[1], $sDrive & $sDir)
+   ; Start it up
+   Local $blueStacksPID = Run($hdLaunch)
    If $blueStacksPID = 0 Then
-	  DebugWrite("Error launching BlueStacks, @error=" & @error)
+	  DebugWrite("BlueStacksStartLauncher(), Error launching BlueStacks, @error=" & @error)
 	  MsgBox($MB_OK, "BlueStacks Launch Error", "Error starting BlueStacks" & @CRLF & _
 		 "Please manually start BlueStacks, then click OK.")
 	  Return
    Else
-	  DebugWrite("Launched BlueStacks, pid=" & $blueStacksPID)
+	  DebugWrite("BlueStacksStartLauncher(), Launched BlueStacks, pid=" & $blueStacksPID)
    EndIf
 
    ; Wait 10 seconds for BlueStacks window
-   $res = WinWait($gTitle, "", 10)
+   Local $res = WinWait($gTitle, "", 10)
 
    If $res = 0 Then
 	  DebugWrite("Time out launching BlueStacks")
@@ -138,7 +116,16 @@ Func FixBlueStacksSize()
 	  Return
    EndIf
 
-   DebugWrite("BlueStacks started successfully.")
+   DebugWrite("BlueStacksStartLauncher(), BlueStacks started successfully.")
 
-   Sleep(1000)
+   BlueStacksMoveWindow()
 EndFunc
+
+Func BlueStacksMoveWindow()
+   If _OsVersionTest($VER_GREATER_EQUAL, 10) Then
+	  WinMove($gTitle, "", 0, 0)
+   Else
+	  WinMove($gTitle, "", 4, 4)
+   EndIf
+EndFunc
+
