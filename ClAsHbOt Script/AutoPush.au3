@@ -366,11 +366,11 @@ Func THSnipeExecute(Const $THCorner)
 			ExitLoop
 		 EndIf
 
-		 Local $n = Int(TimerDiff($t)/1000)
-		 If $n <> $ctdn Then
-			$ctdn=$n
-			DebugWrite(21-$ctdn)
-		 EndIf
+		 ;Local $n = Int(TimerDiff($t)/1000)
+		 ;If $n <> $ctdn Then
+			;$ctdn=$n
+			;DebugWrite(21-$ctdn)
+		 ;EndIf
 		 Sleep(200)
 	  WEnd
 
