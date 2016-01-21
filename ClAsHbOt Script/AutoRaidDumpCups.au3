@@ -14,9 +14,7 @@ Func DumpCups()
 
    ; Make sure we are on the main Clash screen
    If $myCups > $cupsThreshold Then
-	  If WhereAmI() = $eScreenMain Then
-		 ZoomOut(True)
-	  Else
+	  If WhereAmI() <> $eScreenMain Then
 		 ResetToCoCMainScreen()
 
 		 If WhereAmI()<>$eScreenMain Then
@@ -46,7 +44,6 @@ Func DoCupsDump()
    ; Get first available match
    Local $dummy
    AutoRaidFindMatch(True, $dummy)
-   DragScreenDown()
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]

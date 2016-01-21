@@ -8,9 +8,6 @@ Func CheckForAndroidMessageBox()
    If IsButtonPresent($rAndroidMessageButton1) Then
 	  DebugWrite("CheckForAndroidMessageBox() Clicking short Android Msg Box")
 
-	  WinActivate($gTitle)
-	  WinWaitActive($gTitle)
-
 	  RandomWeightedClick($rAndroidMessageButton1)
 
 	  $boxPresent = True
@@ -18,9 +15,6 @@ Func CheckForAndroidMessageBox()
 
    If IsButtonPresent($rAndroidMessageButton2) Then
 	  DebugWrite("CheckForAndroidMessageBox() Clicking long Android Msg Box")
-
-	  WinActivate($gTitle)
-	  WinWaitActive($gTitle)
 
 	  RandomWeightedClick($rAndroidMessageButton2)
 
@@ -41,7 +35,7 @@ Func CheckForAndroidMessageBox()
 		 $s = WhereAmI()
 	  WEnd
 
-	  If $failCount>0 Then ZoomOut(False)
+	  If $failCount>0 Then ZoomOut2()
    EndIf
 
 EndFunc

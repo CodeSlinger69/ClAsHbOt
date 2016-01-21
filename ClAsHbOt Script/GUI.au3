@@ -357,7 +357,6 @@ Func GUIAutoRaidCheckBox()
 	  HotKeySet("{F9}") ; Find Snipable TH
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoPushCheckBox, $BST_UNCHECKED)
-	  ZoomOut(True)
 	  $gPossibleKick = 0
    Else
 	  HotKeySet("{F8}", HotKeyPressed) ; Find Match
@@ -398,7 +397,6 @@ Func GUIDefenseFarmCheckBox()
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoPushCheckBox, $BST_UNCHECKED)
 	  _GUICtrlButton_SetCheck($GUI_AutoRaidCheckBox, $BST_UNCHECKED)
-	  ZoomOut(True)
 	  $gPossibleKick = 0
    Else
 	  HotKeySet("{F5}", HotKeyPressed) ; Keep Online

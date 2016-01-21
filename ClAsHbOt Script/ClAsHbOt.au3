@@ -9,6 +9,14 @@ Dec 10 Update To Do
   - Gold: 10.75, 12.25, 12.50
   - Elix: 12.00, 12.25, 12.75, 12.90
 - Test BAM and loonion strategies
+
+Massive rework todo
+- Camp images: warden
+- Raid Slot images: warden
+- Battle end bonus char maps
+- $rRoyaltyHealthGreenColor
+- $rAttackingDisabledPoint1Color, 2, 3
+
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -23,15 +31,18 @@ Opt("GUIOnEventMode", 1)
 #include <WinAPI.au3>
 #include <File.au3>
 #include <WindowsConstants.au3>
+#include <SendMessage.au3>
 
 ; CoC Bot Includes
 #include <Globals.au3>
 #include <FileNames.au3>
 #include <Version.au3>
+#include <CharMaps.au3>
+#include <RegionDefs.au3>
 #include <GUI.au3>
 #include <Settings.au3>
 #include <Scraper.au3>
-#include <TownHall.au3>
+#include <Buildings.au3>
 #include <ArmyManager.au3>
 #include <KeepOnline.au3>
 #include <CollectLoot.au3>
@@ -50,7 +61,6 @@ Opt("GUIOnEventMode", 1)
 #include <Test.au3>
 #include <DefenseFarm.au3>
 
-
 Main()
 
 Func Main()
@@ -61,18 +71,20 @@ Func Main()
    ReadSettings()
 
 ;DebugWrite("WhereAmI: " & WhereAmI())
-;ZoomOut(False)
+;ZoomOut2()
 ;$gScraperDebug = True
 ;TestMyStuff()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
 ;TestBarracksStatus()
+;TestBuiltTroops()
 ;TestEndBattleLoot()
 ;TestEndBattleBonus()
 ;TestDeployBoxCalcs()
 ;TestDonate()
 ;TestTownHall()
 ;TestCollectors()
+;TestStorage()
 ;Exit
 
    InitGUI()
@@ -143,7 +155,7 @@ Func MainApplicationLoop()
 			$gCollectLootClicked = False
 
 			If WhereAmI() = $eScreenMain Then
-			   ZoomOut(True)
+			   ZoomOut2()
 			Else
 			   ResetToCoCMainScreen()
 			EndIf
@@ -162,7 +174,7 @@ Func MainApplicationLoop()
 		 $gFindMatchClicked = False
 
 		 If WhereAmI() = $eScreenMain Then
-			ZoomOut(True)
+			ZoomOut2()
 		 Else
 			ResetToCoCMainScreen()
 		 EndIf
@@ -340,10 +352,10 @@ Func GetMyLootNumbers()
 	  ; Only search for my town hall level if we don't already know it
 	  Local $GUIMyTownHall = GUICtrlRead($GUI_MyTownHall)
 	  If $GUIMyTownHall = 0 Then
-		 ZoomOut(False)
+		 ZoomOut2()
 
-		 Local $location, $top, $left
-		 Local $MyTownHall = GetTownHallLevel(False, $location, $left, $top)
+		 Local $top, $left
+		 Local $MyTownHall = GetTownHallLevel($left, $top)
 
 		 If $MyTownHall = -1 Then
 			   DebugWrite("Could not detect Town Hall level")

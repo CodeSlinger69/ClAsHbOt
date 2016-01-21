@@ -56,10 +56,9 @@ Func AutoPush(ByRef $timer, ByRef $THCorner)
    ; Stage Execute TH Snipe to Push
    Case $eAutoExecuteSnipe
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Snipe")
-	  If THSnipeExecute($THCorner) Then
-		 $gAutoStage = $eAutoQueueTraining
-		 UpdateWinnings()
-	  EndIf
+	  THSnipeExecute($THCorner)
+	  $gAutoStage = $eAutoQueueTraining
+	  UpdateWinnings()
 
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Snipe Complete")
 
@@ -147,20 +146,13 @@ Func THSnipeFindMatch(ByRef $THCorner)
 	  ; Update my loot status on GUI
 	  GetMyLootNumbers()
 
-	  Local $snipable = False
-
-	  ; Check dead base settings
-	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
-	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
-		 DebugWrite("Not dead base, skipping.")
-
-	  Else
-		 $snipable = CheckForSnipableTH($THCorner)
-
-	  EndIf
-
 	  ; If snipable, then go do it
-	  If $snipable=True Then Return $snipable
+	  Local $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadBase
+	  AutoRaidGetDisplayedLoot($thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
+
+	  If CheckForSnipableTH($THCorner, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase) Then
+		 Return True
+	  EndIf
 
 	  ; Not snipable - click Next
 	  Sleep($gPauseBetweenNexts)
@@ -218,47 +210,41 @@ Func THSnipeFindMatch(ByRef $THCorner)
 
 EndFunc
 
-Func CheckForSnipableTH(ByRef $THCorner)
-   ; See if we can find the Town Hall location
-   Local $location, $left, $top
-   Local $level = GetTownHallLevel(True, $location, $left, $top)
+Func CheckForSnipableTH(ByRef $THCorner, Const $thLevel, Const $thLeft, Const $thTop, _
+						Const $gold, Const $elix, Const $dark, Const $cups, Const $deadbase)
 
    ; Town Hall images are 22x24
-   Local $x = $left+11
-   Local $y = $top+12
+   Local $x = $thLeft+11
+   Local $y = $thTop+12
 
-   If $level = -1 Then
+   If $thLevel = -1 Then
 	  DebugWrite("Could not find Town Hall.  Obscured?")
 	  Return False
    EndIf
 
-   If $location = "Top" Then
-	  If DistBetweenTwoPoints($x, $y, $gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on North corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
-		 $THCorner = "North"
-		 Return $eAutoExecuteSnipe
-	  ElseIf DistBetweenTwoPoints($x, $y, $gEastPointDraggedDown[0], $gEastPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on East corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
-		 $THCorner = "East"
-		 Return $eAutoExecuteSnipe
-	  ElseIf DistBetweenTwoPoints($x, $y, $gWestPointDraggedDown[0], $gWestPointDraggedDown[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on West corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
-		 $THCorner = "West"
-		 Return $eAutoExecuteSnipe
-	  EndIf
-   Else
-	  If DistBetweenTwoPoints($x, $y, $gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1]) <= $gTHSnipeMaxDistFromCorner Then
-		 DebugWrite("Town Hall level " & $level & " found on South corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
-		 $THCorner = "South"
-		 Return $eAutoExecuteSnipe
-	  EndIf
+   If DistBetweenTwoPoints($x, $y, $gNorthPoint[0], $gNorthPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
+	  DebugWrite("Town Hall level " & $thLevel & " found on North corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  $THCorner = "North"
+	  Return $eAutoExecuteSnipe
+   ElseIf DistBetweenTwoPoints($x, $y, $gEastPoint[0], $gEastPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
+	  DebugWrite("Town Hall level " & $thLevel & " found on East corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  $THCorner = "East"
+	  Return $eAutoExecuteSnipe
+   ElseIf DistBetweenTwoPoints($x, $y, $gWestPoint[0], $gWestPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
+	  DebugWrite("Town Hall level " & $thLevel & " found on West corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  $THCorner = "West"
+	  Return $eAutoExecuteSnipe
+   ElseIf DistBetweenTwoPoints($x, $y, $gSouthPoint[0], $gSouthPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
+	  DebugWrite("Town Hall level " & $thLevel & " found on South corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  $THCorner = "South"
+	  Return $eAutoExecuteSnipe
    EndIf
 
-   DebugWrite("Town Hall level " & $level & " found on " & $location & " at " & $x & ", " & $y & ". Not snipable. Dist:" & _
-	  " North, " & Int(DistBetweenTwoPoints($x, $y, $gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1])) & _
-	  " East, " & Int(DistBetweenTwoPoints($x, $y, $gEastPointDraggedDown[0], $gEastPointDraggedDown[1])) & _
-	  " West, " & Int(DistBetweenTwoPoints($x, $y, $gWestPointDraggedDown[0], $gWestPointDraggedDown[1])) & _
-	  " South, " & Int(DistBetweenTwoPoints($x, $y, $gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1])))
+   DebugWrite("Town Hall level " & $thLevel & " found at " & $x & ", " & $y & ". Not snipable. Dist:" & _
+	  " North, " & Int(DistBetweenTwoPoints($x, $y, $gNorthPoint[0], $gNorthPoint[1])) & _
+	  " East, " & Int(DistBetweenTwoPoints($x, $y, $gEastPoint[0], $gEastPoint[1])) & _
+	  " West, " & Int(DistBetweenTwoPoints($x, $y, $gWestPoint[0], $gWestPoint[1])) & _
+	  " South, " & Int(DistBetweenTwoPoints($x, $y, $gSouthPoint[0], $gSouthPoint[1])))
 
    Return False
 EndFunc
@@ -507,13 +493,13 @@ EndFunc
 
 Func THSnipeClickCorner(Const $THCorner)
    If $THCorner = "North" Then
-	  _MouseClickFast($gNorthPointDraggedDown[0], $gNorthPointDraggedDown[1])
+	  RandomWeightedClick($rTHSnipeNorthDeployBox)
    ElseIf $THCorner = "East" Then
-	  _MouseClickFast($gEastPointDraggedDown[0], $gEastPointDraggedDown[1])
+	  RandomWeightedClick($rTHSnipeEastDeployBox)
    ElseIf $THCorner = "West" Then
-	  _MouseClickFast($gWestPointDraggedDown[0], $gWestPointDraggedDown[1])
+	  RandomWeightedClick($rTHSnipeWestDeployBox)
    ElseIf $THCorner = "South" Then
-	  _MouseClickFast($gSouthPointDraggedUp[0], $gSouthPointDraggedUp[1])
+	  RandomWeightedClick($rTHSnipeSouthDeployBox)
    EndIf
 
    Sleep($gDeployTroopClickDelay)

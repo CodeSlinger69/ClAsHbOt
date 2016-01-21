@@ -37,7 +37,7 @@ Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $builtTroopCounts
 	  EndIf
 
 	  ; Find the slots for the troops
-	  Local $troopSlots[$eTroopCount][4]
+	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
 	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Specified balloons in each barracks on initial fill
@@ -73,7 +73,6 @@ Func AutoRaidExecuteRaidStrategy3()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy3GetDirection()
-   If $direction = "Bot" Then DragScreenUp()
 
    ;
    ; Deploy troops
@@ -116,14 +115,14 @@ Func AutoRaidStrategy3GetDirection()
    Local $matchX[1], $matchY[1], $matchCount
 
    ; Grab frame
-   GrabFrameToFile("LocateCollectorsFrame.bmp")
+   GrabFrameToFile2("LocateCollectorsFrame.bmp")
 
    $matchCount = LocateBuildings("All collectors", "LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To $matchCount-1
 	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
-	  If $matchY[$i]+21 < $gScreenCenterDraggedDown[1] Then
+	  If $matchY[$i]+21 < $gScreenCenter[1] Then
 		 $collectorsOnTop += 1
 	  Else
 		 $collectorsOnBot += 1

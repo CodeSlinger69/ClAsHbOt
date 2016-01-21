@@ -1,9 +1,3 @@
-#include <CharMaps.au3>
-#include <RegionDefs.au3>
-
-; Scraper Globals
-Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
-
 Func InitScraper()
    _GDIPlus_Startup()
 EndFunc
@@ -12,67 +6,16 @@ Func ExitScraper()
    _GDIPlus_Shutdown()
 EndFunc
 
-Func LocateBuildings(Const $type, Const $frame, Const ByRef $buildingBMPs, Const $buildingConfidence, ByRef $matchX, ByRef $matchY)
-   DebugWrite("LocateBuildings() " & $type)
-
-   ; Find all the buildings of the specified type
-   Local $matchCount = 0
-
-   For $i = 0 To UBound($buildingBMPs)-1
-	  ; Get matches for this resource
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", $frame, _
-			   "str", "Images\"&$buildingBMPs[$i], "int", 3, "int", 6, "double", $buildingConfidence)
-	  Local $split = StringSplit($res[0], "|", 2)
-	  ;DebugWrite("Num matches " & $buildingBMPs[$i] & ": " & $split[0])
-
-	  For $j = 0 To $split[0]-1
-		 ; Loop through all captured points so far, if this one is within 8 pix of an existing one,
-		 ; then skip it.
-		 Local $alreadyFound = False
-		 For $k = 0 To $matchCount-1
-			If DistBetweenTwoPoints($split[$j*3+1], $split[$j*3+2], $matchX[$k], $matchY[$k]) < 8 Then
-			   $alreadyFound = True
-			   ;DebugWrite("    Already found " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
-			   ExitLoop
-			EndIf
-		 Next
-
-		 ; Otherwise add it to the growing list of matches, if it is $buildingConfidence % or greater confidence
-		 If $alreadyFound = False Then
-			If $split[$j*3+3] > $buildingConfidence Then
-			   ;DebugWrite("    Adding " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
-			   $matchCount += 1
-			   ReDim $matchX[$matchCount]
-			   ReDim $matchY[$matchCount]
-			   $matchX[$matchCount-1] = $split[$j*3+1]
-			   $matchY[$matchCount-1] = $split[$j*3+2]
-			EndIf
-		 EndIf
-	  Next
-   Next
-
-   Return $matchCount
-EndFunc
-
-Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox, Const $maxCharSize, Const $keepSpaces)
-   ; Grab frame
-   Local $cPos = GetClientPos()
-   Local $hBitmap = _ScreenCapture_Capture("", $cPos[0], $cPos[1], $cPos[2], $cPos[3], False)
-   Local $frame = _GDIPlus_BitmapCreateFromHBITMAP($hBitmap)
-
-
-   ; Figure out dimensions of text box
-   Local $w = $textBox[2] - $textBox[0] + 1
-   Local $h = $textBox[3] - $textBox[1] + 1
-
-   ; Get map of foreground pixels
+Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
+   Local $w = $box[2] - $box[0] + 1
+   Local $h = $box[3] - $box[1] + 1
    Local $pix[$w][$h]
    Local $pY
-   GetForegroundPixels($frame, $textBox, $pix, $pY)
 
-   ; Clean up GDI and WinAPI objects
+   ; Get map of foreground pixels
+   Local $frame = CaptureFrame($box[0], $box[1], $box[2], $box[3])
+   GetForegroundPixels($frame, $box, $pix, $pY)
    _GDIPlus_BitmapDispose($frame)
-   _WinAPI_DeleteObject($hBitmap)
 
    ; Scan left to right through foreground pixel map to identify individual characters
    Local $textString = ""
@@ -166,7 +109,7 @@ Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox, Const $max
 			Local $weight
 			Local $bestMatchIndex = FindFuzzyCharInArray($charMapArray, $colValues, $testWidth, $weight)
 
-			If $gScraperDebug Then ConsoleWrite("width=" & $testWidth & " index=" & $bestMatchIndex & " weight=" & $weight & "(bestweight=" & $bestWeight & ")" & @CRLF)
+			If $gScraperDebug Then ConsoleWrite("width=" & $testWidth & " index=" & $bestMatchIndex & " weight=" & Round($weight, 2) & "(bestweight=" & $bestWeight & ")" & @CRLF)
 			If $bestMatchIndex<>-1 And $weight<1 And $weight<$bestWeight Then
 			   $largestMatchIndex = $bestMatchIndex
 			   $bestWidth = $testWidth
@@ -196,19 +139,7 @@ Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox, Const $max
 
    ; Debug
    If $gScraperDebug Then
-	  ConsoleWrite($textString & @CRLF)
-	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
-	  For $y = 0 To $pY-1
-		ConsoleWrite("|")
-		 For $x = 0 To $w-1
-			If $pix[$x][$y] = 1 Then
-			   ConsoleWrite("x")
-			Else
-			   ConsoleWrite(" ")
-			EndIf
-		 Next
-		 ConsoleWrite("|" & @CRLF)
-	  Next
+	  ConsoleWrite("RESULT: " & $textString & @CRLF)
 	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
    EndIf
 
@@ -216,24 +147,16 @@ Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $textBox, Const $max
 EndFunc
 
 ; Non fuzzy character matching - only good for chat box right now
-Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $textBox, Const $maxCharSize, Const $keepSpaces)
-   ; Grab frame
-   Local $cPos = GetClientPos()
-   Local $hBitmap = _ScreenCapture_Capture("", $cPos[0], $cPos[1], $cPos[2], $cPos[3], False)
-   Local $frame = _GDIPlus_BitmapCreateFromHBITMAP($hBitmap)
-
-   ; Figure out dimensions of text box
-   Local $w = $textBox[2] - $textBox[0] + 1
-   Local $h = $textBox[3] - $textBox[1] + 1
-
-   ; Get map of foreground pixels
+Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
+   Local $w = $box[2] - $box[0] + 1
+   Local $h = $box[3] - $box[1] + 1
    Local $pix[$w][$h]
    Local $pY
-   GetForegroundPixels($frame, $textBox, $pix, $pY)
 
-   ; Clean up GDI and WinAPI objects
+   ; Get map of foreground pixels
+   Local $frame = CaptureFrame($box[0], $box[1], $box[2], $box[3])
+   GetForegroundPixels($frame, $box, $pix, $pY)
    _GDIPlus_BitmapDispose($frame)
-   _WinAPI_DeleteObject($hBitmap)
 
    ; Scan left to right through foreground pixel map to identify individual characters
    Local $textString = ""
@@ -328,58 +251,57 @@ Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $textBox, Const $max
 
    ; Debug
    If $gScraperDebug Then
-	  ConsoleWrite($textString & @CRLF)
-	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
-	  For $y = 0 To $pY-1
-		ConsoleWrite("|")
-		 For $x = 0 To $w-1
-			If $pix[$x][$y] = 1 Then
-			   ConsoleWrite("x")
-			Else
-			   ConsoleWrite(" ")
-			EndIf
-		 Next
-		 ConsoleWrite("|" & @CRLF)
-	  Next
+	  ConsoleWrite("RESULT: " & $textString & @CRLF)
 	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
    EndIf
 
    Return $textString
 EndFunc
 
-Func GetForegroundPixels(Const $frame, Const ByRef $textBox, ByRef $pix, ByRef $rows)
-
+Func GetForegroundPixels(Const $frame, Const ByRef $box, ByRef $pix, ByRef $rows)
    $rows = 0
 
-   Local $y
-   For $y = $textBox[1] To $textBox[3]
+   If $gScraperDebug Then ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
+
+   For $y = 0 To $box[3]-$box[1]
 
 	  ; See if this line contains valid pixels
 	  Local $BlankLine = True
-	  Local $x
-	  For $x = $textBox[0] To $textBox[2]
+	  For $x = 0 To $box[2]-$box[0]
 		 Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $x, $y)
-
-		 If InColorSphere($pixelColor, $textBox[4], $textBox[5]) = True Then
+		 If InColorSphere($pixelColor, $box[4], $box[5]) = True Then
 			$BlankLine = False
 			ExitLoop
 		 EndIf
 	  Next
 
 	  If $BlankLine = False Then
-		 Local $x
-		 For $x = $textBox[0] To $textBox[2]
+		 For $x = 0 To $box[2]-$box[0]
 			Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $x, $y)
 
-			If InColorSphere($pixelColor, $textBox[4], $textBox[5]) = True Then
-			   $pix[$x-$textBox[0]][$rows] = 1
+			If InColorSphere($pixelColor, $box[4], $box[5]) = True Then
+			   $pix[$x][$rows] = 1
 			Else
-			   $pix[$x-$textBox[0]][$rows] = 0
+			   $pix[$x][$rows] = 0
 			EndIf
 		 Next
+
+		 If $gScraperDebug Then
+			For $x = 0 To $box[2]-$box[0]
+			   If $pix[$x][$rows] = 1 Then
+				  ConsoleWrite("x")
+			   Else
+				  ConsoleWrite(" ")
+			   EndIf
+			Next
+			ConsoleWrite(@CRLF)
+		 EndIf
+
 		 $rows+=1
 	  EndIf
    Next
+
+   If $gScraperDebug Then ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
 EndFunc
 
 Func FindFuzzyCharInArray(Const ByRef $charMapArray, Const ByRef $nums, Const $width, ByRef $bestWeightedHD)
@@ -462,22 +384,25 @@ Func BitCount($n)
 EndFunc
 
 Func IsTextBoxPresent(Const ByRef $textBox)
-   Local $cPos = GetClientPos()
-   Local $pixelColor = PixelGetColor($cPos[0]+$textBox[6], $cPos[1]+$textBox[7])
+   Local $frame = CaptureFrame($textBox[6], $textBox[7], $textBox[6], $textBox[7])
+   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, 0, 0)
+   _GDIPlus_BitmapDispose($frame)
 
    Return InColorSphere($pixelColor, $textBox[8], $textBox[9])
 EndFunc
 
 Func IsButtonPresent(Const ByRef $buttonBox)
-   Local $cPos = GetClientPos()
-   Local $pixelColor = PixelGetColor($cPos[0]+$buttonBox[4], $cPos[1]+$buttonBox[5])
+   Local $frame = CaptureFrame($buttonBox[4], $buttonBox[5], $buttonBox[4], $buttonBox[5])
+   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, 0, 0)
+   _GDIPlus_BitmapDispose($frame)
 
    Return InColorSphere($pixelColor, $buttonBox[6], $buttonBox[7])
 EndFunc
 
 Func IsColorPresent(Const ByRef $colorLocation)
-   Local $cPos = GetClientPos()
-   Local $pixelColor = PixelGetColor($cPos[0]+$colorLocation[0], $cPos[1]+$colorLocation[1])
+   Local $frame = CaptureFrame($colorLocation[0], $colorLocation[1], $colorLocation[0], $colorLocation[1])
+   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, 0, 0)
+   _GDIPlus_BitmapDispose($frame)
 
    Return InColorSphere($pixelColor, $colorLocation[2], $colorLocation[3])
 EndFunc
@@ -544,18 +469,36 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
-Func GrabFrameToFile(Const $filename, $x1=-1, $y1=-1, $x2=-1, $y2=-1)
-   Local $cPos = GetClientPos()
-   Local $hBitmap
-
+Func CaptureFrame($x1=-1, $y1=-1, $x2=-1, $y2=-1)
    If $x1 = -1 Then
-	  $hBitmap = _ScreenCapture_Capture("", $cPos[0], $cPos[1], $cPos[2], $cPos[3], False)
-   Else
-	  $hBitmap = _ScreenCapture_Capture("", $cPos[0]+$x1, $cPos[1]+$y1, $cPos[0]+$x2, $cPos[1]+$y2, False)
+	  $x1 = 0
+	  $y1 = 0
+	  $x2 = $gBlueStacksWidth
+	  $y2 = $gBlueStacksHeight
    EndIf
 
-   Local $frame = _GDIPlus_BitmapCreateFromHBITMAP($hBitmap)
-   _GDIPlus_ImageSaveToFile($frame, $filename)
-   _GDIPlus_BitmapDispose($frame)
-   _WinAPI_DeleteObject($hBitmap)
+   Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
+   Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
+   Local $memBmp = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1+1, $y2-$y1+1)
+   Local $bmpOriginal  = _WinAPI_SelectObject($memDC, $memBmp)
+
+   DllCall("user32.dll", "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $memDC, "int", 0)
+
+   _WinAPI_BitBlt($memDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $hDC, $x1, $y1, $SRCCOPY)
+
+   Local $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($memBmp)
+
+   _WinAPI_DeleteObject($memBmp)
+   _WinAPI_SelectObject($memDC, $bmpOriginal)
+   _WinAPI_DeleteDC($memDC)
+   _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $hDC)
+
+   Return $hBitmap
+EndFunc
+
+Func GrabFrameToFile2(Const $filename, $x1=-1, $y1=-1, $x2=-1, $y2=-1)
+   Local $hBitmap = CaptureFrame($x1, $y1, $x2, $y2)
+   Local $res = _GDIPlus_ImageSaveToFile($hBitmap, $filename)
+   _GDIPlus_BitmapDispose($hBitmap)
+   Return $res
 EndFunc

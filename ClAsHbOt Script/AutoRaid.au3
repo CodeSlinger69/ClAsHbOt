@@ -43,36 +43,25 @@ Func AutoRaid(ByRef $timer, ByRef $THCorner)
 
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
-		 If AutoRaidExecuteRaidStrategy0() Then  ; BARCH
-			$gAutoStage = $eAutoQueueTraining
-			UpdateWinnings()
-		 EndIf
+		 AutoRaidExecuteRaidStrategy0()  ; BARCH
 	  Case 1
-		 If AutoRaidExecuteRaidStrategy1() Then  ; GiBarch
-			$gAutoStage = $eAutoQueueTraining
-			UpdateWinnings()
-		 EndIf
+		 AutoRaidExecuteRaidStrategy1()  ; GiBarch
 	  Case 2
-		 If AutoRaidExecuteRaidStrategy2() Then  ; BAM
-			$gAutoStage = $eAutoQueueTraining
-			UpdateWinnings()
-		 EndIf
+		 AutoRaidExecuteRaidStrategy2()  ; BAM
 	  Case 3
-		 If AutoRaidExecuteRaidStrategy3() Then  ; Loonian
-			$gAutoStage = $eAutoQueueTraining
-			UpdateWinnings()
-		 EndIf
+		 AutoRaidExecuteRaidStrategy3()  ; Loonian
 	  EndSwitch
 
+	  $gAutoStage = $eAutoQueueTraining
+	  UpdateWinnings()
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Raid Complete")
 
    Case $eAutoExecuteSnipe
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute TH Snipe")
 
-	  If THSnipeExecute($THCorner) Then
-		 $gAutoStage = $eAutoQueueTraining
-		 UpdateWinnings()
-	  EndIf
+	  THSnipeExecute($THCorner)
+	  $gAutoStage = $eAutoQueueTraining
+	  UpdateWinnings()
 
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: TH Snipe Complete")
 
@@ -165,32 +154,21 @@ Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THCorner)
 	  ; Update my loot status on GUI
 	  GetMyLootNumbers()
 
-	  Local $raidable = False, $snipable = False
+	  ; Get this bases loot
+	  Local $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadBase
+	  AutoRaidGetDisplayedLoot($thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
 
-	  ; Check dead base settings
-	  Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
-	  If $GUIDeadBasesOnly And IsColorPresent($rDeadBaseIndicatorColor)=False Then
-		 DebugWrite("Not dead base, skipping.")
-		 SetAutoRaidResults("-", "-", "-", "-", "-", False)
-
-	  Else
-		 $raidable = CheckForRaidableBase()
-
-	  EndIf
-
-	  ; If raidable or snipable, then go do it
+	  ; If raidable, then go do it
+	  Local $raidable = CheckForRaidableBase($thLevel, $gold, $elix, $dark, $cups, $deadbase)
 	  If $raidable<>False Then
 		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
 		 Return $raidable
 	  EndIf
 
 	  ; If not raidable, see if it is snipable
-	  If $raidable=False And _GUICtrlButton_GetCheck($GUI_AutoRaidSnipeExposedTH)=$BST_CHECKED Then
-		 Local $gold, $elix, $dark, $cups, $deadBase
-		 AutoRaidGetDisplayedLoot($gold, $elix, $dark, $cups, $deadbase)
-
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidSnipeExposedTH)=$BST_CHECKED Then
 		 If $gold>=GUICtrlRead($GUI_GoldEdit) And $elix>=GUICtrlRead($GUI_ElixEdit) And $dark>=GUICtrlRead($GUI_DarkEdit) Then
-			$snipable = CheckForSnipableTH($THCorner)
+			Local $snipable = CheckForSnipableTH($THCorner, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
 			If $snipable<>False Then
 			   If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
 			   Return $snipable
@@ -284,79 +262,49 @@ Func ShowFindMatchPopup()
    MsgBox($MB_OK, "Match!", "Click OK after completing raid," & @CRLF & "or deciding to skip this raid.")
 EndFunc
 
-Func CheckForRaidableBase()
-   Local $townHall = -1
-   Local $gold, $elix, $dark, $cups, $deadBase
-   AutoRaidGetDisplayedLoot($gold, $elix, $dark, $cups, $deadbase)
-
+Func CheckForRaidableBase(Const $townHall, Const $gold, Const $elix, Const $dark, Const $cups, Const $deadbase)
    ; Grab settings from the GUI
    Local $GUIGold = GUICtrlRead($GUI_GoldEdit)
    Local $GUIElix = GUICtrlRead($GUI_ElixEdit)
    Local $GUIDark = GUICtrlRead($GUI_DarkEdit)
    Local $GUITownHall = GUICtrlRead($GUI_TownHallEdit)
    Local $GUIIgnoreStorages = (_GUICtrlButton_GetCheck($GUI_AutoRaidIgnoreStorages) = $BST_CHECKED)
+   Local $GUIDeadBasesOnly = (_GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED)
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
+
+   ; Dead base check
+   If $GUIDeadBasesOnly And $deadbase=False Then
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  Return False
+   EndIf
+
+   ; Town Hall match?
+   If $townHall=-1 Or $townHall>$GUITownHall Then
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  Return False
+   EndIf
 
    ; Adjust available loot to exclude storages
    Local $adjGold=$gold, $adjElix=$elix, $adjDark=$dark
-   If $GUIIgnoreStorages Then
-	  If $gold>=$GUIGold And $elix>=$GUIElix And $dark>=$GUIDark Then
-		 ; Get Town Hall level
-		 Local $location, $top, $left
-		 $townHall = GetTownHallLevel(False, $location, $left, $top)
-		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-
-		 If $townHall = -1 Or $townHall>$GUITownHall Then
-			DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
-			Return False
-		 EndIf
-
-		 ; Figure the adjustment
-		 AutoRaidAdjustLootForStorages($townHall, $gold, $elix, $adjGold, $adjElix)
-	  Else
-		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
-		 Return False
-	  EndIf
+   If $GUIIgnoreStorages And ($myTHLevel-$townHall<2 Or $myTHLevel>=11) Then ; "ignore storages" only valid if target TH<2 levels from my TH level. or my TH level>=11
+	  AutoRaidAdjustLootForStorages($townHall, $gold, $elix, $adjGold, $adjElix)
    EndIf
-
-   SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
 
    ; Do we have a gold/elix/dark/townhall/dead match?
-   If $GUIIgnoreStorages And ($myTHLevel-$townHall<2 Or $myTHLevel>=11) Then ; "ignore storages" only valid if target TH<2 levels from my TH level. or my TH level>=11
-	  If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
-		 DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
-					" (Adj: " & $adjGold & " / " & $adjElix & ")" & @CRLF)
-		 Return $eAutoExecuteRaid
-	  Else
-		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
-					" (Adj: " & $adjGold & " / " & $adjElix & ")" )
-		 Return False
-	  EndIf
-
+   If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
+	  DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
+				 " (Adj: " & $adjGold & " / " & $adjElix & ")" & @CRLF)
+	  Return $eAutoExecuteRaid
    Else
-	  If $gold >= $GUIGold And $elix >= $GUIElix And $dark >= $GUIDark Then
-		 ; Get Town Hall level
-		 Local $location, $top, $left
-		 $townHall = GetTownHallLevel(False, $location, $left, $top)
-		 SetAutoRaidResults($gold, $elix, $dark, $cups, $townHall, $deadBase)
-
-		 If $townHall = -1 Or $townHall>$GUITownHall Then
-			DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
-			Return False
-		 Else
-			DebugWrite("Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & @CRLF)
-			Return $eAutoExecuteRaid
-		 EndIf
-	  Else
-		 DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
-		 Return False
-	  EndIf
+	  DebugWrite("No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
+				 " (Adj: " & $adjGold & " / " & $adjElix & ")" )
+	  Return False
    EndIf
-
 EndFunc
 
-Func AutoRaidGetDisplayedLoot(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $deadbase)
+Func AutoRaidGetDisplayedLoot(ByRef $thLevel, ByRef $thLeft, ByRef $thTop, _
+						      ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $deadbase)
+
    $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 
@@ -368,12 +316,17 @@ Func AutoRaidGetDisplayedLoot(ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups
    EndIf
 
    $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
+
+   ; Get Town Hall level
+   $thLevel = GetTownHallLevel($thLeft, $thTop)
+
+   SetAutoRaidResults($gold, $elix, $dark, $cups, $thLevel, $deadBase)
 EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
 Func AutoRaidAdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   GrabFrameToFile("StorageUsageFrame.bmp", $gScreenCenterDraggedDown[0]-200, $gScreenCenterDraggedDown[1]-200, _
-										    $gScreenCenterDraggedDown[0]+200, $gScreenCenterDraggedDown[1]+180)
+   GrabFrameToFile2("StorageUsageFrame.bmp", $gScreenCenter[0]-200, $gScreenCenter[1]-200, _
+										    $gScreenCenter[0]+200, $gScreenCenter[1]+180)
    Local $x, $y, $conf, $matchIndex, $saveFrame = False
    Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
@@ -513,7 +466,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
    If $howMany=$eAutoRaidDeployOneTroop Then
 	  RandomWeightedClick($troopButton)
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
-	  _MouseClickFast($xClick, $yClick)
+	  _ControlClick($xClick, $yClick)
 	  Return
    EndIf
 
@@ -539,7 +492,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
    Sleep(200)
 
    For $i = 0 To $troopsToDeploy-1
-	  _MouseClickFast($clickPoints1[$i][0], $clickPoints1[$i][1])
+	  _ControlClick($clickPoints1[$i][0], $clickPoints1[$i][1])
 	  Sleep($gDeployTroopClickDelay)
    Next
 
@@ -561,7 +514,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
 	  Sleep(200)
 
 	  For $i = 0 To $troopsAvailable-1
-		 _MouseClickFast($clickPoints2[$i][0], $clickPoints2[$i][1])
+		 _ControlClick($clickPoints2[$i][0], $clickPoints2[$i][1])
 		 Sleep($gDeployTroopClickDelay)
 	  Next
    EndIf
@@ -589,7 +542,7 @@ Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
 
    For $i = 1 To $troopsAvailable
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
-	  _MouseClickFast($xClick, $yClick)
+	  _ControlClick($xClick, $yClick)
 	  Sleep($gDeployTroopClickDelay)
 	  $count+=1
    Next
@@ -605,7 +558,7 @@ Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
 
    For $i = 1 To $troopsAvailable
    	  RandomWeightedCoords( ($dir = "Top" ? $NESafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
-	  _MouseClickFast($xClick, $yClick)
+	  _ControlClick($xClick, $yClick)
 	  Sleep($gDeployTroopClickDelay)
 	  $count+=1
    Next
@@ -696,7 +649,7 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed, Const $wardenDe
    Sleep(2000)
 
    If WhereAmI() = $eScreenEndBattle Then
-	  GrabFrameToFile("EndBattleFrame.bmp")
+	  GrabFrameToFile2("EndBattleFrame.bmp")
 	  Local $goldWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
 	  Local $elixWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
 	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
@@ -752,7 +705,7 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
 
-   GrabFrameToFile("AvailableRaidTroopsFrame2.bmp", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
+   GrabFrameToFile2("AvailableRaidTroopsFrame2.bmp", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
@@ -772,7 +725,7 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
 
-   GrabFrameToFile("AvailableRaidTroopsFrame1.bmp", $rRaidTroopBox1[0], $rRaidTroopBox1[1], $rRaidTroopBox1[2], $rRaidTroopBox1[3])
+   GrabFrameToFile2("AvailableRaidTroopsFrame1.bmp", $rRaidTroopBox1[0], $rRaidTroopBox1[1], $rRaidTroopBox1[2], $rRaidTroopBox1[3])
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
@@ -797,7 +750,9 @@ Func UpdateRaidTroopCounts(ByRef $index)
 		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
 			$index[$i][4] = 1
 		 Else
-			Local $loc[4] = [ $index[$i][0]+30, $index[$i][3], $rRaidTroopSelectedColor[2], $rRaidTroopSelectedColor[3] ]
+			Local $loc[4] = [ $index[$i][0]+31, $rRaidTroopBox1[3], $rRaidTroopSelectedColor[2], $rRaidTroopSelectedColor[3] ]
+			;DebugWrite("GetAvailableTroops() loc = " & $loc[0] & " " & $loc[1] & " " & Hex($loc[2]) & " " & $loc[3])
+
 			If IsColorPresent($loc) Then
 			   ; Troop is "selected"
 			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1]-4, $index[$i][2]-5, $index[$i][1]+10, _
@@ -806,7 +761,7 @@ Func UpdateRaidTroopCounts(ByRef $index)
 			   ;DebugWrite($textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 			   ;	$textBox[5] & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
 			   Local $t = ScrapeFuzzyText($gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
-			   ;DebugWrite("GetAvailableTroops() (selected) = " & $t)
+			  ; DebugWrite("GetAvailableTroops() (selected) = " & $t)
 
 			Else
 			   ; Troop is not "selected"

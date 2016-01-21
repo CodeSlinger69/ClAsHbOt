@@ -68,7 +68,7 @@ EndFunc
 Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
 
    ; Normal troops
-   GrabFrameToFile("BuiltTroopsFrame1.bmp", $rCampTroopBox1[0], $rCampTroopBox1[1], $rCampTroopBox1[2], $rCampTroopBox1[3])
+   GrabFrameToFile2("BuiltTroopsFrame1.bmp", $rCampTroopBox1[0], $rCampTroopBox1[1], $rCampTroopBox1[2], $rCampTroopBox1[3])
 
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BuiltTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
@@ -98,7 +98,7 @@ Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
    Next
 
    ; Heroes
-   GrabFrameToFile("BuiltTroopsFrame2.bmp", $rCampTroopBox2[0], $rCampTroopBox2[1], $rCampTroopBox2[2], $rCampTroopBox2[3])
+   GrabFrameToFile2("BuiltTroopsFrame2.bmp", $rCampTroopBox2[0], $rCampTroopBox2[1], $rCampTroopBox2[2], $rCampTroopBox2[3])
 
    For $i = $eTroopKing To $eTroopWarden
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BuiltTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)

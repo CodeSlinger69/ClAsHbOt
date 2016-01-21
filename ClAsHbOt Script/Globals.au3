@@ -6,6 +6,9 @@ Global $gAutoItVersionRequired = "3.3.14.2"
 Global $gScraperDebug = False
 Global $gDebug = True
 
+; Scraper Globals
+Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
+
 ; Raiding variables
 Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)
 
@@ -15,14 +18,18 @@ Global $gLastPossibleKickTime = TimerInit()
 
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
+Global $gAppPaneName = "_ctl.Window"
+Global $gAppClassInstance = "[CLASS:BlueStacksApp; INSTANCE:1]"
+GLobal $gBlueStacksPID = 0
+Global $gBlueStacksHwnd = 0
+Global $gBlueStacksControlHwnd = 0
 Global $gBlueStacksWidth = 860
-Global $gBlueStacksHeight = 672
-Global $gScreenCenterDraggedDown[2] = [429, 334]
-Global $gScreenCenterDraggedUp[2] = [429, 232]
-Global $gNorthPointDraggedDown[2] = [429, 66]
-Global $gEastPointDraggedDown[2] = [72, 334]
-Global $gWestPointDraggedDown[2] = [786, 334]
-Global $gSouthPointDraggedUp[2] = [429, 500]
+Global $gBlueStacksHeight = 780
+Global $gScreenCenter[2] = [429, 337]
+Global $gNorthPoint[2] = [429, 69]
+Global $gEastPoint[2] = [71, 337]
+Global $gWestPoint[2] = [787, 337]
+Global $gSouthPoint[2] = [429, 605]
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"
@@ -73,7 +80,7 @@ Global $gConfidenceBarracks = IniRead($gIniFile, "Confidence", "Barracks", 0.95)
 Global $gConfidenceCollector =IniRead($gIniFile, "Confidence", "Collector",  0.92)
 Global $gConfidenceDEStorage = IniRead($gIniFile, "Confidence", "Dark Elixir Storage", 0.95)
 Global $gConfidenceRaidTroopSlot = IniRead($gIniFile, "Confidence", "Raid Troop Slot", 0.98)
-Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.99)
+Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.98)
 Global $gConfidenceBarracksTroopSlot = IniRead($gIniFile, "Confidence", "Barracks Troop Slot", 0.99)
 Global $gConfidenceCampTroopSlot = IniRead($gIniFile, "Confidence", "Camp Troop Slot", 0.99)
 Global $gConfidenceTrainTroopsButton = IniRead($gIniFile, "Confidence", "Train Troops Button", 0.99)
@@ -83,7 +90,7 @@ Global $gConfidenceStorages = IniRead($gIniFile, "Confidence", "Storages", 0.94)
 Global $gMaxDeployBoxes = 19
 
 Global $NWDeployBoxes[$gMaxDeployBoxes][4]
-Local $y = $gScreenCenterDraggedDown[1]-20
+Local $y = $gScreenCenter[1]-20
 Local $i = 0
 For $x = 45 To 405 Step 20
    $NWDeployBoxes[$i][0] = $x
@@ -95,7 +102,7 @@ For $x = 45 To 405 Step 20
 Next
 
 Global $NEDeployBoxes[$gMaxDeployBoxes][4]
-$y = $gScreenCenterDraggedDown[1]-20
+$y = $gScreenCenter[1]-20
 $i=0
 For $x = 820 To 460 Step -20
    $NEDeployBoxes[$i][0] = $x-60
@@ -107,7 +114,7 @@ For $x = 820 To 460 Step -20
 Next
 
 Global $SWDeployBoxes[$gMaxDeployBoxes][4]
-$y = $gScreenCenterDraggedUp[1]-20
+$y = $gScreenCenter[1]-20
 $i=0
 For $x = 45 To 405 Step 20
    $SWDeployBoxes[$i][0] = $x
@@ -119,7 +126,7 @@ For $x = 45 To 405 Step 20
 Next
 
 Global $SEDeployBoxes[$gMaxDeployBoxes][4]
-$y = $gScreenCenterDraggedUp[1]-20
+$y = $gScreenCenter[1]-20
 $i=0
 For $x = 820 To 460 Step -20
    $SEDeployBoxes[$i][0] = $x-60

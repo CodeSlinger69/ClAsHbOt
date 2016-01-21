@@ -31,7 +31,7 @@ Func ResetToCoCMainScreen()
    Case $eScreenAndroidHome
 	  DebugWrite("ResetToCoCMainScreen(), On Android Home Screen - Starting Clash of Clans.")
       Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-	  GrabFrameToFile("WhereAmIFrame.bmp")
+	  GrabFrameToFile2("WhereAmIFrame.bmp")
 	  ScanFrameForBestBMP("WhereAmIFrame.bmp", $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
 	  If $bestMatch <> 99 Then
 		 Local $button[4] = [$bestX, $bestY, $bestX+$rScreenAndroidHomeCoCIconButton[2], $bestY+$rScreenAndroidHomeCoCIconButton[3]]
@@ -43,7 +43,7 @@ Func ResetToCoCMainScreen()
    Case $eScreenPlayStore
 	  DebugWrite("ResetToCoCMainScreen(), On Clash Play Store Screen - Starting Clash of Clans.")
       Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-	  GrabFrameToFile("WhereAmIFrame.bmp")
+	  GrabFrameToFile2("WhereAmIFrame.bmp")
 	  ScanFrameForBestBMP("WhereAmIFrame.bmp", $gPlayStoreOpenButton, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
 	  If $bestMatch <> 99 Then
 		 Local $button[4] = [$bestX, $bestY, $bestX+$rScreenPlayStoreOpenButton[2], $bestY+$rScreenPlayStoreOpenButton[3]]
@@ -115,12 +115,11 @@ Func ResetToCoCMainScreen()
 	  RandomWeightedClick($rWindowVilliageWasAttackedOkayButton)
    EndIf
 
-   ZoomOut(True)
-   DragScreenDown()
+   ZoomOut2()
 EndFunc
 
 Func WhereAmI()
-   GrabFrameToFile("WhereAmIFrame.bmp")
+   GrabFrameToFile2("WhereAmIFrame.bmp")
 
    ; $ScreenAndroidHome
    Local $bestMatch, $bestConfidence, $bestX, $bestY
@@ -145,7 +144,7 @@ Func WhereAmI()
    If IsButtonPresent($rAndroidMessageButton2) Then Return $eScreenAndroidMessageBox
 
    ; $ScreenMain
-   If IsColorPresent($rScreenMainColor) Then Return $eScreenMain
+   If IsButtonPresent($rMainScreenAttackButton) Then Return $eScreenMain
 
    ; $ScreenChatOpen
    If IsButtonPresent($rMainScreenOpenChatButton) Then Return $eScreenChatOpen
@@ -161,7 +160,7 @@ Func WhereAmI()
    If IsButtonPresent($rWaitRaidScreenNextButton) Then Return $eScreenWaitRaid
 
    ; $ScreenLiveRaid (live attack)
-   If IsColorPresent($rScreenLiveRaid1Color) And IsColorPresent($rScreenLiveRaid2Color) Then Return $eScreenLiveRaid
+   If IsButtonPresent($rLiveRaidScreenEndBattleButton) And IsButtonPresent($rWaitRaidScreenNextButton) Then Return $eScreenLiveRaid
 
    ; $ScreenEndBattle
    If IsButtonPresent($rBattleHasEndedScreenReturnHomeButton) Then Return $eScreenEndBattle
@@ -190,56 +189,25 @@ Func WhereAmI()
 
 EndFunc
 
-Func ZoomOut(Const $clearOnSafeSpot)
-   WinActivate($gTitle)
-   WinWaitActive($gTitle)
+Func ZoomOut2()
+   ; Virtual key codes: https://msdn.microsoft.com/en-us/library/dd375731(VS.85).aspx
+   Local $VK_DOWN = 0x28
 
-   Local $s = WhereAmI()
-   If $s=$eScreenMain Or $s=$eScreenWaitRaid Or $s=$eScreenLiveRaid Then
+   ; Zoom out for 5 seconds, or until blar strip appears on top of screen, indicating full zoom out
+   ; If we can't zoom out within 5 seconds, then something is wrong; stop bot and display message box.
+   Local $t = TimerInit()
+   While TimerDiff($t)<5000 And IsColorPresent($rZoomedOutFullColor)=False
+	  _SendMessage($gBlueStacksHwnd, $WM_KEYDOWN, $VK_DOWN, 0)
+	  Sleep(100)
+	  _SendMessage($gBlueStacksHwnd, $WM_KEYUP, $VK_DOWN, 0)
+   WEnd
 
-	  ; Send 4 ctrl-minus keystrokes
-	  For $i = 1 To 4
-		 If $gMouseClickMethod = "MouseClick" Then
-			Send("^-")
-		 Else
-			ControlSend($gTitle, "", "", "^-", 0)
-		 EndIf
-
-		 Sleep(250)
-	  Next
-
-	  If $clearOnSafeSpot Then
-		 RandomWeightedClick($rSafeAreaButton)
-		 Sleep(250)
-	  EndIf
-
+   If IsColorPresent($rZoomedOutFullColor)=False Then
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "Error zooming out", "Error zooming out.  This is a catastropic error, the bot will now halt.")
+	  Exit
    EndIf
-EndFunc
 
-Func DragScreenDown()
-   ; Drag down to set consistent location
-   Local $startX, $startY
-   Local $startBox[4] = [419, 65, 439, 110]
-   RandomWeightedCoords($startBox, $startX, $startY)
-
-   Local $endX, $endY
-   Local $endBox[4] = [419, 240, 439, 285]
-   RandomWeightedCoords($endBox, $endX, $endY)
-
-   _ClickDrag($startX, $startY, $endX, $endY)
-   Sleep(250)
-EndFunc
-
-Func DragScreenUp()
-   ; Drag down to set consistent location
-   Local $startX, $startY
-   Local $startBox[4] = [419, 240, 439, 285]
-   RandomWeightedCoords($startBox, $startX, $startY)
-
-   Local $endX, $endY
-   Local $endBox[4] = [419, 65, 439, 110]
-   RandomWeightedCoords($endBox, $endX, $endY)
-
-   _ClickDrag($startX, $startY, $endX, $endY)
+   ; Clear any inadvertent selections
+   RandomWeightedClick($rSafeAreaButton)
    Sleep(250)
 EndFunc

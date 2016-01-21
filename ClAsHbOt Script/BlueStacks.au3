@@ -1,56 +1,120 @@
-
 Func StartBlueStacks()
-   CheckIfBlueStacksIsRunning()
+   ; Start Process
+   While BlueStacksIsRunning() = False
+	  Local $res = MsgBox(BitOr($MB_OKCANCEL, $MB_ICONQUESTION), "BlueStacks Not Running", _
+	  "Click OK to start BlueStacks, Cancel to quit.")
 
-   Local $clientPos = GetClientPos()
-   If $clientPos[2]-$clientPos[0]+1<>$gBlueStacksWidth Or $clientPos[3]-$clientPos[1]+1<>$gBlueStacksHeight Then
+	  If $res = $IDCANCEL Then Exit
+
+	  If BlueStacksStartLauncher() Then BlueStacksMoveWindow()
+   WEnd
+
+   ; Check size
+   Local $size = ControlGetPos($gTitle, "", $gAppClassInstance)
+
+   While $size[2]<>$gBlueStacksWidth Or $size[3]<>$gBlueStacksHeight
 	  Local $res = MsgBox(BitOr($MB_OKCANCEL, $MB_ICONQUESTION), "BlueStacks Wrong Size", "BlueStacks window is the wrong size." & @CRLF & _
 		 "Click OK to resize, or Cancel to Exit.")
 
-	  If $res = $IDCANCEL Then
-		 Exit
-	  EndIf
+	  If $res = $IDCANCEL Then Exit
 
-	  FixBlueStacksSize()
+	  BlueStacksFixSize()
 
-	  CheckIfBlueStacksIsRunning()
+	  If BlueStacksStartLauncher() Then BlueStacksMoveWindow()
 
-	  $clientPos = GetClientPos()
-	  If $clientPos[2]-$clientPos[0]+1<>$gBlueStacksWidth Or $clientPos[3]-$clientPos[1]+1<>$gBlueStacksHeight Then
-		 MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks Wrong Size", "BlueStacks window is still the wrong size." & @CRLF & _
-			"Please correct manually.")
-		 Exit
-	  EndIf
+	  $size = ControlGetPos($gTitle, "", $gAppClassInstance)
+   WEnd
+
+   ; Get window handle and control handle and save them
+   $gBlueStacksHwnd = WinGetHandle($gTitle, "")
+
+   If Not IsHWnd($gBlueStacksHwnd) Then
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks WIndow Control Handle", "Error getting BlueStacks window Handle: " & @error & @CRLF & _
+		 "Exiting.")
+	  Exit
    EndIf
+   DebugWrite("BlueStacks hWnd: " & Hex($gBlueStacksHwnd))
+
+   Local $t = TimerInit()
+   Do
+	  Sleep(10)
+	  $gBlueStacksControlHwnd = ControlGetHandle($gBlueStacksHwnd, "", $gAppClassInstance)
+   Until IsHWnd($gBlueStacksControlHwnd) Or TimerDiff($t)>5000
+
+   If Not IsHWnd($gBlueStacksControlHwnd) Then
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks Window Control Handle", "Error getting BlueStacks window control Handle: " & @error & @CRLF & _
+		 "Exiting.")
+	  Exit
+   EndIf
+   DebugWrite("BlueStacks Control hWnd: " & Hex($gBlueStacksControlHwnd))
 
 EndFunc
 
-Func CheckIfBlueStacksIsRunning()
+Func BlueStacksIsRunning()
+   Local $hwnd = WinGetHandle($gTitle)
+   If @error Then Return False
+
    ; Restore if minimized/maximized
-   If BitAnd(WinGetState($gTitle), 16) Or BitAnd(WinGetState($gTitle), 32) Then
-	  WinSetState($gTitle, "", @SW_RESTORE)
-   EndIf
+   If BitAnd(WinGetState($hwnd), 16) Or BitAnd(WinGetState($hwnd), 32) Then WinSetState($hwnd, "", @SW_RESTORE)
 
    ; Activate
-   WinActivate($gTitle)
-   Local $isActive = WinWaitActive($gTitle, "", 2)
+   WinActivate($hwnd)
+   Local $isActive = WinWaitActive($hwnd, "", 2)
 
-   If $isActive Then
-	  BlueStacksMoveWindow()
-   Else
-	  Local $res = MsgBox(BitOr($MB_YESNO, $MB_ICONQUESTION), "BlueStacks Not Running", _
-	  "Cannot find or activate BlueStacks window." & @CRLF & @CRLF & _
-	  "Should ClAsHbOt try to start BlueStacks?")
+   If $isActive=0 Then Return False
 
-	  If $res = $IDNO Then
-		 Exit
-	  EndIf
+   $gBlueStacksPID = WinGetProcess($gTitle)
+   DebugWrite("BlueStacksIsRunning() pid=" & $gBlueStacksPID)
 
-	  BlueStacksStartLauncher()
-   EndIf
+   Return True
 EndFunc
 
-Func FixBlueStacksSize()
+Func BlueStacksStartLauncher()
+   ; Locate BS Launcher
+   Local $hdLaunch = """" & RegRead("HKLM\SOFTWARE\BlueStacks", "InstallDir") & "HD-StartLauncher.exe" & """"
+   DebugWrite("BlueStacksStartLauncher() BlueStacks HD Launch Path: " & $hdLaunch)
+
+   ; Start it up
+   If Run($hdLaunch) = 0 Then
+	  DebugWrite("BlueStacksStartLauncher() Error launching BlueStacks, @error=" & @error)
+	  Local $res = MsgBox($MB_OK, "BlueStacks Launch Error", "Error starting BlueStacks" & @CRLF & _
+		 "Please manually start BlueStacks, then restart ClAsHbOt.")
+	  Exit
+   EndIf
+
+   DebugWrite("BlueStacksStartLauncher(), Launched BlueStacks")
+
+   ; Wait 10 seconds for BlueStacks window
+   Local $hwnd = WinWait($gTitle, "", 10)
+
+   If $hwnd = 0 Then
+	  DebugWrite("BlueStacksStartLauncher() Time out launching BlueStacks, hWnd")
+	  MsgBox($MB_OK, "BlueStacks Launch Error", "Time out starting BlueStacks" & @CRLF & @CRLF & _
+		 "Please manually start BlueStacks, then restart ClAsHbOt.")
+	  Exit
+   EndIf
+
+   ; Wait for Control
+   Local $c
+   Local $t = TimerInit()
+   Do
+	  Sleep(10)
+	  $c = ControlGetHandle($hwnd, "", $gAppClassInstance)
+   Until IsHWnd($c) Or TimerDiff($t)>5000
+
+   If Not IsHWnd($c) Then
+	  DebugWrite("BlueStacksStartLauncher() Time out launching BlueStacks, control hWnd")
+	  MsgBox($MB_OK, "BlueStacks Launch Error", "Time out starting BlueStacks, waiting for Window control." & @CRLF & @CRLF & _
+		 "Please manually start BlueStacks, then restart ClAsHbOt.")
+	  Exit
+   EndIf
+
+   DebugWrite("BlueStacksStartLauncher(), BlueStacks started successfully.")
+
+   Return True
+EndFunc
+
+Func BlueStacksFixSize()
    Local $res
 
    Local $hdQuit = """" & RegRead("HKLM\SOFTWARE\BlueStacks", "InstallDir") & "HD-Quit.exe" & """"
@@ -86,39 +150,6 @@ Func FixBlueStacksSize()
 		 "Please correct manually.")
 	  Exit
    EndIf
-
-   BlueStacksStartLauncher()
-EndFunc
-
-Func BlueStacksStartLauncher()
-   ; Locate BS Launcher
-   Local $hdLaunch = """" & RegRead("HKLM\SOFTWARE\BlueStacks", "InstallDir") & "HD-StartLauncher.exe" & """"
-   DebugWrite("BlueStacksStartLauncher(), BlueStacks HD Launch Path: " & $hdLaunch)
-
-   ; Start it up
-   Local $blueStacksPID = Run($hdLaunch)
-   If $blueStacksPID = 0 Then
-	  DebugWrite("BlueStacksStartLauncher(), Error launching BlueStacks, @error=" & @error)
-	  MsgBox($MB_OK, "BlueStacks Launch Error", "Error starting BlueStacks" & @CRLF & _
-		 "Please manually start BlueStacks, then click OK.")
-	  Return
-   Else
-	  DebugWrite("BlueStacksStartLauncher(), Launched BlueStacks, pid=" & $blueStacksPID)
-   EndIf
-
-   ; Wait 10 seconds for BlueStacks window
-   Local $res = WinWait($gTitle, "", 10)
-
-   If $res = 0 Then
-	  DebugWrite("Time out launching BlueStacks")
-	  MsgBox($MB_OK, "BlueStacks Launch Error", "Time out starting BlueStacks" & @CRLF & @CRLF & _
-		 "Please manually start BlueStacks, then click OK.")
-	  Return
-   EndIf
-
-   DebugWrite("BlueStacksStartLauncher(), BlueStacks started successfully.")
-
-   BlueStacksMoveWindow()
 EndFunc
 
 Func BlueStacksMoveWindow()
@@ -128,4 +159,3 @@ Func BlueStacksMoveWindow()
 	  WinMove($gTitle, "", 4, 4)
    EndIf
 EndFunc
-

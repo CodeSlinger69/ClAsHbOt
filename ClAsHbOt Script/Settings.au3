@@ -17,9 +17,6 @@ Func ReadSettings()
    $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
 
    ; Mouse
-   ; Clicking method; use "MouseClick" for old way, or "ControlClick" for new way
-   Global $gMouseClickMethod = IniRead($gIniFile, "Mouse", "Click Method", "MouseClick")
-   DebugWrite("Setting Mouse Click Method = " & $gMouseClickMethod)
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding
    DebugWrite("Setting Mouse Deploy Troop Click Delay = " & $gDeployTroopClickDelay)
    Global $gDonateTroopClickDelay = IniRead($gIniFile, "Mouse", "Donate Troop Click Delay", 250) ; Delay between mouse clicks for donating

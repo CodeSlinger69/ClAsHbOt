@@ -42,7 +42,7 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $builtTroopCounts
 	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True
 
 	  ; Find the slots for the troops
-	  Local $troopSlots[$eTroopCount][4]
+	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
 	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Specified breakers in standard barracks on initial fill
@@ -82,7 +82,6 @@ Func AutoRaidExecuteRaidStrategy2()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy0GetDirection()
-   If $direction = "Bot" Then DragScreenUp()
 
    ;
    ; Deploy troops

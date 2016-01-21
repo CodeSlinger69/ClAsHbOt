@@ -8,7 +8,7 @@ Func CollectLoot()
    DebugWrite("CollectLoot()")
 
    ; Grab frame
-   GrabFrameToFile("CollectLootFrame.bmp")
+   GrabFrameToFile2("CollectLootFrame.bmp")
 
    ; Find all the dark elixir collectors that need clicking in the frame
    $mCount = LocateBuildings("Dark Elixir Collectors", "CollectLootFrame.bmp", $CollectDarkLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
@@ -66,7 +66,7 @@ Func CollectLoot()
 
 		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])
 
-		 Sleep(Random(100, 500, 1))
+		 ;Sleep(Random(100, 500, 1))
 	  Next
    EndIf
 EndFunc

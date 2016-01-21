@@ -36,8 +36,8 @@ Func TestRaidLoot()
    DebugWrite("Cups: " & $cups)
    Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
    DebugWrite("Dead: " & $deadBase)
-   Local $location, $top, $left
-   Local $townHall = GetTownHallLevel(False, $location, $left, $top)
+   Local $top, $left
+   Local $townHall = GetTownHallLevel($left, $top)
    DebugWrite("TH: " & $townHall)
 EndFunc
 
@@ -73,7 +73,7 @@ Func TestEndBattleBonus()
 EndFunc
 
 Func TestStorage()
-   GrabFrameToFile("StorageUsageFrame.bmp", 261, 200, 761, 550)
+   GrabFrameToFile2("StorageUsageFrame.bmp", $gScreenCenter[0]-200, $gScreenCenter[1]-200, $gScreenCenter[0]+200, $gScreenCenter[1]+180)
    Local $x, $y, $conf, $matchIndex
    Local $usageAdj = 10
 
@@ -132,9 +132,18 @@ Func TestBarracksStatus()
    DebugWrite("Barracks queue status: " & $queueStatus)
 EndFunc
 
+Func TestBuiltTroops()
+   Local $builtTroopCounts[$eTroopCount]
+   For $i = $eTroopBarbarian To $eTroopWarden
+	  $builtTroopCounts[$i] = 0
+   Next
+
+   GetBuiltTroops($gArmyCampTroopsBMPs, $builtTroopCounts)
+EndFunc
+
 Func TestDeployBoxCalcs()
    Local $box[19][4]
-   Local $y = $gScreenCenterDraggedDown[1]-20
+   Local $y = $gScreenCenter[1]-20
    Local $i = 0
    For $x = 45 To 405 Step 20
 	  $box[$i][0] = $x
@@ -146,7 +155,7 @@ Func TestDeployBoxCalcs()
 	  $y-=15
    Next
 
-   $y = $gScreenCenterDraggedDown[1]-20
+   $y = $gScreenCenter[1]-20
    $i=0
    For $x = 820 To 460 Step -20
 	  $box[$i][0] = $x-60
@@ -158,7 +167,7 @@ Func TestDeployBoxCalcs()
 	  $y-=15
    Next
 
-   $y = $gScreenCenterDraggedUp[1]-20
+   $y = $gScreenCenter[1]-20
    $i=0
    For $x = 45 To 405 Step 20
 	  $box[$i][0] = $x
@@ -170,7 +179,7 @@ Func TestDeployBoxCalcs()
 	  $y+=15
    Next
 
-   $y = $gScreenCenterDraggedUp[1]-20
+   $y = $gScreenCenter[1]-20
    $i=0
    For $x = 820 To 460 Step -20
 	  $box[$i][0] = $x-60
@@ -189,12 +198,11 @@ Func TestDonate()
    Local $donateButton[4]
    FindDonateButton($donateButton)
 
-   Local $requestText
-   GetRequestText($donateButton, $requestText)
+   Local $requestText = GetRequestText($donateButton)
 
    OpenDonateTroopsWindow($donateButton)
 
-   Local $donateIndex[$eTroopCount][4]
+   Local $donateIndex[$gTroopCountExcludingHeroes][4]
    FindDonateTroopSlots($donateIndex)
 
    Local $indexOfTroopToDonate
@@ -206,7 +214,7 @@ EndFunc
 Func TestTownHall()
    Local $bestMatch, $bestConfidence, $left, $top
 
-   GrabFrameToFile("TownHallTopFrame.bmp")
+   GrabFrameToFile2("TownHallTopFrame.bmp")
    ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
 
    DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
@@ -217,7 +225,7 @@ Func TestCollectors()
    Local $matchX[1], $matchY[1], $matchCount
 
    ; Grab frame
-   GrabFrameToFile("LocateCollectorsFrame.bmp")
+   GrabFrameToFile2("LocateCollectorsFrame.bmp")
 
    $matchCount = LocateBuildings("All collectors", "LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
 

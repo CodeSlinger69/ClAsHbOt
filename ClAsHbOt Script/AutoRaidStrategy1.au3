@@ -38,7 +38,7 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $builtTroopCounts
 	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True
 
 	  ; Find the slots for the troops
-	  Local $troopSlots[$eTroopCount][4]
+	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
 	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Giants and specified breakers in each barracks on initial fill
@@ -90,7 +90,6 @@ Func AutoRaidExecuteRaidStrategy1()
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy1GetDirection()
-   If $direction = "Bot" Then DragScreenUp()
 
    ; Get buttons
    Local $giantButton[4] = [$troopIndex[$eTroopGiant][0], $troopIndex[$eTroopGiant][1], $troopIndex[$eTroopGiant][2], $troopIndex[$eTroopGiant][3]]
@@ -144,7 +143,7 @@ Func AutoRaidExecuteRaidStrategy1()
 		 Local $xClick, $yClick
 		 RandomWeightedCoords( (($i/2=Int($i/2)) ? $westDeployBox : $eastDeployBox), $xClick, $yClick)
 
-		 _MouseClickFast($xClick, $yClick)
+		 _ControlClick($xClick, $yClick)
 		 Sleep($gDeployTroopClickDelay)
 	  Next
    EndIf
@@ -200,7 +199,7 @@ Func AutoRaidStrategy1GetDirection()
    Local $matchX[1], $matchY[1], $matchCount
 
    ; Grab frame
-   GrabFrameToFile("LocateStoragesFrame.bmp")
+   GrabFrameToFile2("LocateStoragesFrame.bmp")
 
    $matchCount = LocateBuildings("Gold Storages", "LocateStoragesFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
    $totalMatches+=$matchCount
@@ -230,7 +229,7 @@ Func AutoRaidStrategy1GetDirection()
    ; Count em
    Local $storagesTopBot = 0
    For $i = 0 To UBound($allMatchY)-1
-	  $storagesTopBot += ($allMatchY[$i]+16 < $gScreenCenterDraggedDown[1] ? -1 : 1)
+	  $storagesTopBot += ($allMatchY[$i]+16 < $gScreenCenter[1] ? -1 : 1)
    Next
 
    ; Attack from top or bottom?
