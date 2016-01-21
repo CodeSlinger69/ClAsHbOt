@@ -217,8 +217,10 @@ Func FillBarracksWithTroops(Const $troop, Const ByRef $troopSlots)
 		 If $troopsToFill>0 Then
 			DebugWrite("FillBarracksWithTroops(), Adding " & $troopsToFill & " " & $gTroopNames[$troop])
 			Local $button[4] = [$troopSlots[$troop][0], $troopSlots[$troop][1], $troopSlots[$troop][2], $troopSlots[$troop][3]]
+
 			Local $xClick, $yClick
 			RandomWeightedCoords($button, $xClick, $yClick)
+
 			_ClickHold($xClick, $yClick, $fillTime)
 			Sleep(500)
 		 EndIf

@@ -11,10 +11,7 @@ Dec 10 Update To Do
 - Test BAM and loonion strategies
 
 Massive rework todo
-- Camp images: warden
-- Raid Slot images: warden
 - Battle end bonus char maps
-- $rRoyaltyHealthGreenColor
 - $rAttackingDisabledPoint1Color, 2, 3
 
 #ce

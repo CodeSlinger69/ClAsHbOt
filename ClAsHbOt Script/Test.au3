@@ -217,7 +217,7 @@ Func TestTownHall()
    GrabFrameToFile2("TownHallTopFrame.bmp")
    ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
 
-   DebugWrite("Likely TH Level " & $bestMatch+7 & " conf: " & $bestConfidence & @CRLF)
+   DebugWrite("Likely TH Level " & ($bestMatch=-1 ? -1 : $bestMatch+6) & " conf: " & $bestConfidence & @CRLF)
 
 EndFunc
 

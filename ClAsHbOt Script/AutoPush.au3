@@ -218,33 +218,33 @@ Func CheckForSnipableTH(ByRef $THCorner, Const $thLevel, Const $thLeft, Const $t
    Local $y = $thTop+12
 
    If $thLevel = -1 Then
-	  DebugWrite("Could not find Town Hall.  Obscured?")
+	  DebugWrite("CheckForSnipableTH() Could not find Town Hall.  Obscured?")
 	  Return False
    EndIf
 
    If DistBetweenTwoPoints($x, $y, $gNorthPoint[0], $gNorthPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
-	  DebugWrite("Town Hall level " & $thLevel & " found on North corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  DebugWrite("CheckForSnipableTH() Town Hall level " & $thLevel & " found on North corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 	  $THCorner = "North"
 	  Return $eAutoExecuteSnipe
    ElseIf DistBetweenTwoPoints($x, $y, $gEastPoint[0], $gEastPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
-	  DebugWrite("Town Hall level " & $thLevel & " found on East corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  DebugWrite("CheckForSnipableTH() Town Hall level " & $thLevel & " found on East corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 	  $THCorner = "East"
 	  Return $eAutoExecuteSnipe
    ElseIf DistBetweenTwoPoints($x, $y, $gWestPoint[0], $gWestPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
-	  DebugWrite("Town Hall level " & $thLevel & " found on West corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  DebugWrite("CheckForSnipableTH() Town Hall level " & $thLevel & " found on West corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 	  $THCorner = "West"
 	  Return $eAutoExecuteSnipe
    ElseIf DistBetweenTwoPoints($x, $y, $gSouthPoint[0], $gSouthPoint[1]) <= $gTHSnipeMaxDistFromCorner Then
-	  DebugWrite("Town Hall level " & $thLevel & " found on South corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
+	  DebugWrite("CheckForSnipableTH() Town Hall level " & $thLevel & " found on South corner at " & $x & ", " & $y & " Snipable!" & @CRLF)
 	  $THCorner = "South"
 	  Return $eAutoExecuteSnipe
    EndIf
 
-   DebugWrite("Town Hall level " & $thLevel & " found at " & $x & ", " & $y & ". Not snipable. Dist:" & _
-	  " North, " & Int(DistBetweenTwoPoints($x, $y, $gNorthPoint[0], $gNorthPoint[1])) & _
-	  " East, " & Int(DistBetweenTwoPoints($x, $y, $gEastPoint[0], $gEastPoint[1])) & _
-	  " West, " & Int(DistBetweenTwoPoints($x, $y, $gWestPoint[0], $gWestPoint[1])) & _
-	  " South, " & Int(DistBetweenTwoPoints($x, $y, $gSouthPoint[0], $gSouthPoint[1])))
+   DebugWrite("CheckForSnipableTH() Town Hall level " & $thLevel & " found at " & $x & ", " & $y & ". Not snipable. Dist:" & _
+	  " North=" & Int(DistBetweenTwoPoints($x, $y, $gNorthPoint[0], $gNorthPoint[1])) & _
+	  ", East=" & Int(DistBetweenTwoPoints($x, $y, $gEastPoint[0], $gEastPoint[1])) & _
+	  ", West=" & Int(DistBetweenTwoPoints($x, $y, $gWestPoint[0], $gWestPoint[1])) & _
+	  ", South=" & Int(DistBetweenTwoPoints($x, $y, $gSouthPoint[0], $gSouthPoint[1])))
 
    Return False
 EndFunc
@@ -270,7 +270,7 @@ Func THSnipeExecute(Const $THCorner)
    EndIf
 
    ; Try deploying heroes first, immediately power them up
-   Local $heroDeployed = False
+   Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
    ; Deploy King
    If $troopIndex[$eTroopKing][4]>0 Then
 	  DebugWrite("THSnipeExecute() Deploying Barbarian King.")
@@ -279,7 +279,7 @@ Func THSnipeExecute(Const $THCorner)
 
 	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
-	  $heroDeployed = True
+	  $kingDeployed = True
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
@@ -292,20 +292,20 @@ Func THSnipeExecute(Const $THCorner)
 
 	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
-	  $heroDeployed = True
+	  $queenDeployed = True
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Deploy Warden
-   If $troopIndex[$eTroopWarden][4] > 0 Then
+   If $troopIndex[$eTroopWarden][4] > 0 And ($kingDeployed Or $queenDeployed) Then
 	  DebugWrite("THSnipeExecute() Deploying Grand Warden.")
 	  RandomWeightedClick($wardenButton)
 	  Sleep(200)
 
 	  THSnipeClickCorner($THCorner)
 	  Sleep(200)
-	  $heroDeployed = True
+	  $wardenDeployed = True
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
@@ -317,19 +317,19 @@ Func THSnipeExecute(Const $THCorner)
    EndIf
 
    ; Power up heroes
-   If $troopIndex[$eTroopKing][4] > 0 Then
+   If $troopIndex[$eTroopKing][4]>0 And $kingDeployed Then
 	  DebugWrite("THSnipeExecute() Powering up Barbarian King.")
 	  RandomWeightedClick($kingButton)
 	  Sleep(200)
    EndIf
 
-   If $troopIndex[$eTroopQueen][4] > 0 Then
+   If $troopIndex[$eTroopQueen][4]>0 And $queenDeployed Then
 	  DebugWrite("THSnipeExecute() Powering up Archer Queen.")
 	  RandomWeightedClick($queenButton)
 	  Sleep(200)
    EndIf
 
-   If $troopIndex[$eTroopWarden][4] > 0 Then
+   If $troopIndex[$eTroopWarden][4]>0 And $wardenDeployed Then
 	  DebugWrite("THSnipeExecute() Powering up Grand Warden.")
 	  RandomWeightedClick($wardenButton)
 	  Sleep(200)
@@ -470,7 +470,7 @@ Func THSnipeExecute(Const $THCorner)
    EndIf
 
    ; End battle
-   If $heroDeployed = True Then
+   If $kingDeployed=True Or $queenDeployed=True Then
 	  ; End battle
 	  RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 

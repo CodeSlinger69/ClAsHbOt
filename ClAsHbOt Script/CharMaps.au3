@@ -101,19 +101,20 @@ Global $gBattleEndWinningsCharacterMaps[12][$gBattleEndWinningsCharMapsMaxWidth+
 
 ; Battle End Bonus
 ; CHECK FOR REWORK
-Global $gBattleEndBonusCharMapsMaxWidth = 11
+Global $gBattleEndBonusCharMapsMaxWidth = 12
 Global $gBattleEndBonusCharacterMaps[11][$gBattleEndBonusCharMapsMaxWidth+2] = [ _
-["0", 1, 1], _
-["1", 1, 1], _
-["2", 1, 1], _
-["3", 1, 1], _
-["4", 1, 1], _
+["0", 11, 508, 2047, 2047, 1795, 1539, 1539, 1539, 2047, 2047, 1022, 252], _
+["1", 4, 512, 1023, 1023, 2047], _
+["2", 8, 1055, 3135, 3135, 3187, 3171, 4067, 4034, 1922], _
+["3", 8, 1025, 3075, 3075, 3171, 3687, 4095, 1982, 798], _
+["4", 10, 56, 248, 1016, 1944, 1560, 1560, 2047, 2047, 2046, 24], _
 ["5", 1, 1], _
-["6", 1, 1], _
+["6", 9, 510, 2046, 2047, 3683, 3171, 3171, 3175, 3198, 62], _
 ["7", 1, 1], _
 ["8", 10, 798, 1950, 2047, 3171, 3171, 3171, 4087, 4095, 1854, 28], _
 ["9", 9, 992, 2019, 4067, 3171, 3171, 3174, 4094, 2046, 508], _
 ["+", 5, 12, 62, 127, 127, 12] ]
+; 74?
 
 ; Chat window
 ; No difference between Upper oh and zero; assuming upper oh

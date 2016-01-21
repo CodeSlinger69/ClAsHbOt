@@ -160,7 +160,7 @@ Func WhereAmI()
    If IsButtonPresent($rWaitRaidScreenNextButton) Then Return $eScreenWaitRaid
 
    ; $ScreenLiveRaid (live attack)
-   If IsButtonPresent($rLiveRaidScreenEndBattleButton) And IsButtonPresent($rWaitRaidScreenNextButton) Then Return $eScreenLiveRaid
+   If IsButtonPresent($rLiveRaidScreenEndBattleButton) And IsButtonPresent($rWaitRaidScreenNextButton)=False Then Return $eScreenLiveRaid
 
    ; $ScreenEndBattle
    If IsButtonPresent($rBattleHasEndedScreenReturnHomeButton) Then Return $eScreenEndBattle

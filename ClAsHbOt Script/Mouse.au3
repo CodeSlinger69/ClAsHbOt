@@ -17,10 +17,10 @@ Func _ClickHold(Const $x, Const $y, Const $duration)
    Local $WM_LBUTTONDOWN  = 0x0201
    Local $WM_LBUTTONUP  = 0x0202
 
-   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksControlHwnd, "int", $WM_LBUTTONDOWN, "int", _
+   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksHwnd, "int", $WM_LBUTTONDOWN, "int", _
 			$MK_LBUTTON, "long", _MakeLong($x, $y))
    Sleep($duration)
-   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksControlHwnd, "int", $WM_LBUTTONUP, "int", _
+   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksHwnd, "int", $WM_LBUTTONUP, "int", _
 			$MK_LBUTTON, "long", _MakeLong($x, $y))
 EndFunc
 

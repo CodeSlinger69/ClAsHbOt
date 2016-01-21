@@ -4,7 +4,7 @@ Func GetTownHallLevel(ByRef $left, ByRef $top, Const $x1 = -1, Const $y1 = -1, C
    ; Method = 0: CV_TM_SQDIFF, 1: CV_TM_SQDIFF_NORMED, 2: CV_TM_CCORR, 3: CV_TM_CCORR_NORMED
    ;          4: CV_TM_CCOEFF, 5: CV_TM_CCOEFF_NORMED
 
-   ; Returns best TH level match, 0 if no good match
+   ; Returns best TH level match, -1 if no good match
    Local $bestMatch, $bestConfidence
 
    ; Grab and scan frame
@@ -14,6 +14,8 @@ Func GetTownHallLevel(ByRef $left, ByRef $top, Const $x1 = -1, Const $y1 = -1, C
    If $bestMatch <> -1 Then
 	  ;DebugWrite("Likely TH Level " & $bestMatch+6 & " conf: " & $bestConfidence)
 	  Return $bestMatch+6
+   Else
+	  Return -1
    EndIf
 EndFunc
 
