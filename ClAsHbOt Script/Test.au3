@@ -73,7 +73,7 @@ Func TestEndBattleBonus()
 EndFunc
 
 Func TestStorage()
-   GrabFrameToFile2("StorageUsageFrame.bmp", $gScreenCenter[0]-200, $gScreenCenter[1]-200, $gScreenCenter[0]+200, $gScreenCenter[1]+180)
+   GrabFrameToFile2("StorageUsageFrame.bmp")
    Local $x, $y, $conf, $matchIndex
    Local $usageAdj = 10
 

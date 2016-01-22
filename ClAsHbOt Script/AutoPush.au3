@@ -338,7 +338,7 @@ Func THSnipeExecute(Const $THCorner)
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Wait for 15 seconds and see if heroes take care of the TH
-   If $troopIndex[$eTroopKing][4]>0 Or $troopIndex[$eTroopQueen][4]>0 Or $troopIndex[$eTroopWarden][4]>0 Then
+   If $kingDeployed Or $queenDeployed Or $wardenDeployed Then
 	  Local $t = TimerInit()
 	  Local $ctdn = 0
 	  While 1
@@ -425,6 +425,7 @@ Func THSnipeExecute(Const $THCorner)
 			THSnipeClickCorner($THCorner)
 		 Next
 	  EndIf
+	  Sleep(500)
 
 	  If IsColorPresent($rFirstStarColor) = True Then ExitLoop
 
@@ -443,6 +444,7 @@ Func THSnipeExecute(Const $THCorner)
 			THSnipeClickCorner($THCorner)
 		 Next
 	  EndIf
+	  Sleep(500)
 
 	  If IsColorPresent($rFirstStarColor) = True Then ExitLoop
 

@@ -1,4 +1,4 @@
-Global $gVersion = "20161118"
+Global $gVersion = "20161118+WIP"
 Global $gAutoItVersionRequired = "3.3.14.2"
 
 ; Debug - these are overwritten once ReadSettings() in Settings.au3 is called, however these need to be defined here, as there can
@@ -18,7 +18,6 @@ Global $gLastPossibleKickTime = TimerInit()
 
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
-Global $gAppPaneName = "_ctl.Window"
 Global $gAppClassInstance = "[CLASS:BlueStacksApp; INSTANCE:1]"
 GLobal $gBlueStacksPID = 0
 Global $gBlueStacksHwnd = 0

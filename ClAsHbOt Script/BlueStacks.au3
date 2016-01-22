@@ -6,7 +6,7 @@ Func StartBlueStacks()
 
 	  If $res = $IDCANCEL Then Exit
 
-	  If BlueStacksStartLauncher() Then BlueStacksMoveWindow()
+	  BlueStacksStartLauncher()
    WEnd
 
    ; Check size
@@ -24,6 +24,9 @@ Func StartBlueStacks()
 
 	  $size = ControlGetPos($gTitle, "", $gAppClassInstance)
    WEnd
+
+   ; Arrange windows
+   BlueStacksMoveWindow()
 
    ; Get window handle and control handle and save them
    $gBlueStacksHwnd = WinGetHandle($gTitle, "")
@@ -64,7 +67,7 @@ Func BlueStacksIsRunning()
    If $isActive=0 Then Return False
 
    $gBlueStacksPID = WinGetProcess($gTitle)
-   DebugWrite("BlueStacksIsRunning() pid=" & $gBlueStacksPID)
+   DebugWrite("BlueStacks pid=" & $gBlueStacksPID)
 
    Return True
 EndFunc

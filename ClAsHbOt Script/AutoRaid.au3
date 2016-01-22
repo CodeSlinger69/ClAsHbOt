@@ -330,9 +330,8 @@ EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
 Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   GrabFrameToFile2("StorageUsageFrame.bmp", $gScreenCenter[0]-200, $gScreenCenter[1]-200, _
-										    $gScreenCenter[0]+200, $gScreenCenter[1]+180)
-   Local $x, $y, $conf, $matchIndex, $saveFrame = False
+   GrabFrameToFile2("StorageUsageFrame.bmp")
+   Local $x, $y, $conf, $matchIndex
    Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
@@ -340,7 +339,6 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
 
    If $matchIndex = -1 Then
-	  $saveFrame = True
 	  DebugWrite("AdjustLootForStorages() Could not find gold storage match.")
 	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameGold" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
@@ -357,7 +355,6 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
 
    If $matchIndex = -1 Then
-	  $saveFrame = True
 	  DebugWrite("AdjustLootForStorages() Could not find elixir storage match.")
 	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameElix" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
@@ -369,6 +366,13 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
 	  $adjElix = $elix - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
 	  $adjElix = ($adjElix<0 ? 0 : Round($adjElix))
    EndIf
+
+   ; Dark - Just temporarily, to fill out saved bitmaps
+   ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   If $matchIndex = -1 Then
+	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameDark" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
+   EndIf
+
 EndFunc
 
 Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level, Const $usage)

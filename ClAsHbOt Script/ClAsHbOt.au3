@@ -5,9 +5,9 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 
 Dec 10 Update To Do
 - Finish collecting storage images
-  - Dark: 5.50, 4.50
+  - Dark: 5.50
   - Gold: 10.75, 12.25, 12.50
-  - Elix: 12.00, 12.25, 12.75, 12.90
+  - Elix: 12.00, 12.75
 - Test BAM and loonion strategies
 
 Massive rework todo
