@@ -8,7 +8,7 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
    DebugWrite("FillBarracksStrategy1(), " & ($initialFillFlag ? "initial fill." : "top up.") )
    Local $giantsNeededInStrategy = 8
 
@@ -27,25 +27,28 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $builtTroopCounts
    ; Loop through each standard barracks window and queue troops
    Local $barracksCount = 1
 
-   While $barracksCount <= 4
-
+   While $barracksCount<=4 And (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 	  ; Click nextstandard barracks button on Army Manager Window, if unsuccessful, then we are done
-	  If OpenNextAvailableStandardBarracks() = False Then
+	  If OpenNextAvailableStandardBarracks($f) = False Then
 		 ExitLoop
 	  EndIf
 
 	  ; See if we are full up
-	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True
+	  If IsColorPresent($f, $rArmyCampsFullColor) Then
+		 $armyCampsFull = True
+ 		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
+	  EndIf
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+	  FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Giants and specified breakers in each barracks on initial fill
 	  If $initialFillFlag And ($breakersToQueue>0 Or $giantsToQueue>0) Then
 		 ; Dequeue troops
-		 DequeueTroops()
-		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+		 DequeueTroops($f)
+
+		 FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
 
 		 ; Giants
 		 If $giantsToQueue>0 Then QueueTroopsEvenly($eTroopGiant, $troopSlots, $giantsToQueue)
@@ -60,12 +63,17 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $builtTroopCounts
 	  Local $troopsToFill
 	  Do
 		 If $barracksCount=1 Or $barracksCount=3 Then
-			$troopsToFill = FillBarracksWithTroops($eTroopArcher, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($f, $eTroopArcher, $troopSlots)
 		 Else
-			$troopsToFill = FillBarracksWithTroops($eTroopBarbarian, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($f, $eTroopBarbarian, $troopSlots)
 		 EndIf
 
 		 $fillTries+=1
+		 If $troopsToFill>0 And $fillTries<6 Then
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("FillBarracksStrategy1")
+		 EndIf
+
 	  Until $troopsToFill=0 Or $fillTries>=6 Or _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED)
 
@@ -74,13 +82,13 @@ Func FillBarracksStrategy1(Const $initialFillFlag, Const ByRef $builtTroopCounts
 EndFunc
 
 
-Func AutoRaidExecuteRaidStrategy1()
+Func AutoRaidExecuteRaidStrategy1(ByRef $f)
    DebugWrite("AutoRaidExecuteRaidStrategy1()")
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidTroopCounts($f, $troopIndex)
 
    DebugWrite("Available Barbarians: " & $troopIndex[$eTroopBarbarian][4])
    DebugWrite("Avaliable Archers: " & $troopIndex[$eTroopArcher][4])
@@ -89,7 +97,7 @@ Func AutoRaidExecuteRaidStrategy1()
 	  DebugWrite("Avaliable Breakers: " & $troopIndex[$eTroopWallBreaker][4])
 
    ; Determine attack direction
-   Local $direction = AutoRaidStrategy1GetDirection()
+   Local $direction = AutoRaidStrategy1GetDirection($f)
 
    ; Get buttons
    Local $giantButton[4] = [$troopIndex[$eTroopGiant][0], $troopIndex[$eTroopGiant][1], $troopIndex[$eTroopGiant][2], $troopIndex[$eTroopGiant][3]]
@@ -103,7 +111,7 @@ Func AutoRaidExecuteRaidStrategy1()
    ; Deploy giants
    If $giantButton[0] <> -1 Then
 	  Local $numGiantBoxesPerSide = 5
-	  DeployTroopsToSides($eTroopGiant, $troopIndex, $eAutoRaidDeployRemaining, $direction, $numGiantBoxesPerSide)
+	  DeployTroopsToSides($f, $eTroopGiant, $troopIndex, $eAutoRaidDeployRemaining, $direction, $numGiantBoxesPerSide)
    EndIf
 
    Sleep(3000)
@@ -149,59 +157,56 @@ Func AutoRaidExecuteRaidStrategy1()
    EndIf
 
    ; 1st wave
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidTroopCounts($f, $troopIndex)
 
    ; Deploy 50% of barbs
    Local $archBarbNumDeployBoxesPerSide = 10 ; focus on the top or bottom corner to follow the giants
    If $troopIndex[$eTroopBarbarian][4] > 0 Then
 	  DebugWrite("Deploying 50% of Barbarians (" & Int($troopIndex[$eTroopBarbarian][4]*0.5) & ")")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($f, $eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy 50% of archers
    If $troopIndex[$eTroopArcher][4] > 0 Then
 	  DebugWrite("Deploying 50% of Archers (" & Int($troopIndex[$eTroopArcher][4]*0.5) & ")")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($f, $eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    Sleep(3000)
 
    ; 2nd wave
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidTroopCounts($f, $troopIndex)
 
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][4] > 0 Then
 	  DebugWrite("Deploying remaining Barbarians (" & $troopIndex[$eTroopBarbarian][4] & ")")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($f, $eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy rest of archers
    If $troopIndex[$eTroopArcher][4] > 0 Then
 	  DebugWrite("Deploying remaining Archers (" & $troopIndex[$eTroopArcher][4] & ")")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($f, $eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy and monitor heroes
    Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
-   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 18, $kingDeployed, $queenDeployed, $wardenDeployed)
+   DeployAndMonitorHeroes($f, $troopIndex, $deployStart, $direction, 18, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($kingDeployed, $queenDeployed, $wardenDeployed)
+   WaitForBattleEnd($f, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc
 
-Func AutoRaidStrategy1GetDirection()
+Func AutoRaidStrategy1GetDirection(Const $f)
    DebugWrite("AutoRaidStrategy1GetDirection()")
 
    ; Count the storages, by top/bottom half
    Local $allMatchY[1], $totalMatches=0
    Local $matchX[1], $matchY[1], $matchCount
 
-   ; Grab frame
-   GrabFrameToFile2("LocateStoragesFrame.bmp")
-
-   $matchCount = LocateBuildings("Gold Storages", "LocateStoragesFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
+   $matchCount = LocateBuildings("Gold Storages", $f, $GoldStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
    $totalMatches+=$matchCount
    DebugWrite("Found " & $matchCount & " gold storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -209,7 +214,7 @@ Func AutoRaidStrategy1GetDirection()
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   $matchCount = LocateBuildings("Elixir Storages", "LocateStoragesFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
+   $matchCount = LocateBuildings("Elixir Storages", $f, $ElixStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
    $totalMatches+=$matchCount
    DebugWrite("Found " & $matchCount & " elix storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -217,8 +222,7 @@ Func AutoRaidStrategy1GetDirection()
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   $matchCount = LocateBuildings("Dark Elixir Storages", "LocateStoragesFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
-   If $matchCount=0 Then FileCopy("LocateStoragesFrame.bmp", "LocateStoragesFrameDark" & FileGetTime("LocateStoragesFrame.bmp", 0, $FT_STRING) & ".bmp")
+   $matchCount = LocateBuildings("Dark Elixir Storages", $f, $DarkStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
    $totalMatches+=$matchCount
    DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]

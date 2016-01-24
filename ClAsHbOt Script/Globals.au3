@@ -5,6 +5,10 @@ Global $gAutoItVersionRequired = "3.3.14.2"
 ;   be a need to write debug statements prior to ReadSettings() being called.
 Global $gScraperDebug = False
 Global $gDebug = True
+Global $gDebugSaveScreenCaptures = False
+
+; Dll
+Global $gDllHandle = 0
 
 ; Scraper Globals
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
@@ -19,6 +23,7 @@ Global $gLastPossibleKickTime = TimerInit()
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
 Global $gAppClassInstance = "[CLASS:BlueStacksApp; INSTANCE:1]"
+Global $gBackgroundScraping = True
 GLobal $gBlueStacksPID = 0
 Global $gBlueStacksHwnd = 0
 Global $gBlueStacksControlHwnd = 0
@@ -57,11 +62,15 @@ Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freez
 ; Known screen/window types
 Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMatch, _
    $eScreenWaitRaid, $eScreenLiveRaid, $eScreenEndBattle, _
-   $eScreenLiveReplayEndBattle, $eScreenVilliageWasAttacked, $eScreenChatDimmed, _
-   $eWindowArmyManager, $eScreenPlayStore, $eScreenAndroidMessageBox, $eScreenUnknown
+   $eScreenLiveReplayEndBattle, $eScreenVillageWasAttacked, $eScreenChatDimmed, _
+   $eWindowArmyManager, $eScreenPlayStore, $eScreenAndroidMessageBox, _
+   $eShopOrLayout, $eProfile, $eAchievements, $eSettings, $eScreenUnknown
+
+; Error conditions
+Global Enum $eErrorAndroidMessageBox=1, $eErrorAttackingDisabled
 
 ; Auto Raid/Push Stages
-Global Enum $eAutoNotStarted, $eAutoQueueTraining, $eAutoWaitForTrainingToComplete, $eAutoFindMatch, $eAutoExecuteRaid, $eAutoExecuteSnipe
+Global Enum $eAutoNotStarted, $eAutoQueueTraining, $eAutoWaitForTrainingToComplete, $eAutoFindMatch, $eAutoManualRaid, $eAutoExecuteRaid, $eAutoExecuteSnipe
 Global $gAutoStage = $eAutoNotStarted
 
 ; Auto Raid troop deployment
@@ -72,14 +81,14 @@ Global $gMyMaxSpells = 999
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 
 ; Confidence Levels
-Global $gConfidenceTownHall = IniRead($gIniFile, "Confidence", "Town Hall", 0.95)
+Global $gConfidenceTownHall = IniRead($gIniFile, "Confidence", "Town Hall", 0.94)
 Global $gConfidenceCollectLoot = IniRead($gIniFile, "Confidence", "Collect Loot", 0.95)
 Global $gConfidenceArmyCamp = IniRead($gIniFile, "Confidence", "Army Camp", 0.94)
 Global $gConfidenceBarracks = IniRead($gIniFile, "Confidence", "Barracks", 0.95)
 Global $gConfidenceCollector =IniRead($gIniFile, "Confidence", "Collector",  0.92)
 Global $gConfidenceDEStorage = IniRead($gIniFile, "Confidence", "Dark Elixir Storage", 0.95)
 Global $gConfidenceRaidTroopSlot = IniRead($gIniFile, "Confidence", "Raid Troop Slot", 0.98)
-Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.98)
+Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.985)
 Global $gConfidenceBarracksTroopSlot = IniRead($gIniFile, "Confidence", "Barracks Troop Slot", 0.99)
 Global $gConfidenceCampTroopSlot = IniRead($gIniFile, "Confidence", "Camp Troop Slot", 0.99)
 Global $gConfidenceTrainTroopsButton = IniRead($gIniFile, "Confidence", "Train Troops Button", 0.99)

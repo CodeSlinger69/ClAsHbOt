@@ -8,7 +8,7 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy2(ByRef $f, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
    DebugWrite("FillBarracksStrategy2(), " & ($initialFillFlag ? "initial fill." : "top up.") )
 
    ; How many breakers are needed?
@@ -22,34 +22,37 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $builtTroopCounts
    ; Loop through each standard and dark barracks window and queue troops
    Local $barracksCount = 1
 
-   While $barracksCount <= 6
-
+   While $barracksCount<=6 And (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then try clicking dark
 	  If $barracksCount<=4 Then
-		 If OpenNextAvailableStandardBarracks() = False Then
+		 If OpenNextAvailableStandardBarracks($f) = False Then
 			$barracksCount = 5
 		 EndIf
 	  EndIf
 
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then we are done
 	  If $barracksCount>=5 Then
-		 If OpenNextAvailableDarkBarracks() = False Then
+		 If OpenNextAvailableDarkBarracks($f) = False Then
 			ExitLoop
 		 EndIf
 	  EndIf
 
 	  ; See if we are full up
-	  If IsColorPresent($rArmyCampsFullColor) Then $armyCampsFull = True
+	  If IsColorPresent($f, $rArmyCampsFullColor) Then
+		 $armyCampsFull = True
+		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
+	  EndIf
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+	  FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Specified breakers in standard barracks on initial fill
 	  If $initialFillFlag And $breakersToQueue>0 And $barracksCount<=4 Then
 		 ; Dequeue troops
-		 DequeueTroops()
-		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+		 DequeueTroops($f)
+
+		 FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
 
 		 ; If breakers are included then queue up breakers in each barracks
 		 If $breakersToQueue>0 Then QueueTroopsEvenly($eTroopWallBreaker, $troopSlots, $breakersToQueue)
@@ -60,14 +63,19 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $builtTroopCounts
 	  Local $troopsToFill
 	  Do
 		 If $barracksCount=1 Or $barracksCount=3 Then
-			$troopsToFill = FillBarracksWithTroops($eTroopArcher, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($f, $eTroopArcher, $troopSlots)
 		 ElseIf $barracksCount=2 Or $barracksCount=4 Then
-			$troopsToFill = FillBarracksWithTroops($eTroopBarbarian, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($f, $eTroopBarbarian, $troopSlots)
 		 Else
-			$troopsToFill = FillBarracksWithTroops($eTroopMinion, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($f, $eTroopMinion, $troopSlots)
 		 EndIf
 
 		 $fillTries+=1
+
+		 If $troopsToFill>0 And $fillTries<6 Then
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("FillBarracksStrategy2")
+		 EndIf
 	  Until $troopsToFill=0 Or $fillTries>=6 Or _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED)
 
@@ -75,13 +83,13 @@ Func FillBarracksStrategy2(Const $initialFillFlag, Const ByRef $builtTroopCounts
    WEnd
 EndFunc
 
-Func AutoRaidExecuteRaidStrategy2()
+Func AutoRaidExecuteRaidStrategy2(ByRef $f)
    DebugWrite("AutoRaidExecuteRaidStrategy2()")
 
    Local $troopIndex[$eTroopCount][5]
 
    ; Determine attack direction
-   Local $direction = AutoRaidStrategy0GetDirection()
+   Local $direction = AutoRaidStrategy0GetDirection($f)
 
    ;
    ; Deploy troops
@@ -90,7 +98,7 @@ Func AutoRaidExecuteRaidStrategy2()
 
    ; 1st wave
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidTroopCounts($f, $troopIndex)
 
    DebugWrite("Available Barbarians: " & $troopIndex[$eTroopBarbarian][4])
    DebugWrite("Avaliable Archers: " & $troopIndex[$eTroopArcher][4])
@@ -101,34 +109,34 @@ Func AutoRaidExecuteRaidStrategy2()
    ; Deploy 60% of barbs
    If $troopIndex[$eTroopBarbarian][4] > 0 Then
 	  DebugWrite("Deploying 60% of Barbarians (" & Int($troopIndex[$eTroopBarbarian][4]*0.6) & ")")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($f, $eTroopBarbarian, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy 60% of archers
    If $troopIndex[$eTroopArcher][4] > 0 Then
 	  DebugWrite("Deploying 60% of Archers (" & Int($troopIndex[$eTroopArcher][4]*0.6) & ")")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($f, $eTroopArcher, $troopIndex, $eAutoRaidDeploySixtyPercent, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy breakers
    If $troopIndex[$eTroopWallBreaker][4] > 0 And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Deploying Breakers")
-	  DeployTroopsToSafeBoxes($eTroopWallBreaker, $troopIndex, $direction)
+	  DeployTroopsToSafeBoxes($f, $eTroopWallBreaker, $troopIndex, $direction)
    EndIf
 
    ; 2nd wave
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidTroopCounts($f, $troopIndex)
 
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][4] > 0 Then
 	  DebugWrite("Deploying remaining Barbarians (" & $troopIndex[$eTroopBarbarian][4] & ")")
-	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($f, $eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy rest of archers
    If $troopIndex[$eTroopArcher][4] > 0 Then
 	  DebugWrite("Deploying remaining Archers (" & $troopIndex[$eTroopArcher][4] & ")")
-	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($f, $eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    Sleep(5000)
@@ -136,15 +144,15 @@ Func AutoRaidExecuteRaidStrategy2()
    ; Deploy minions
    If $troopIndex[$eTroopMinion][4] > 0 Then
 	  DebugWrite("Deploying Minions (" & $troopIndex[$eTroopMinion][4] & ")")
-	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($f, $eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy and monitor heroes
    Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
-   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
+   DeployAndMonitorHeroes($f, $troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($kingDeployed, $queenDeployed, $wardenDeployed)
+   WaitForBattleEnd($f, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc

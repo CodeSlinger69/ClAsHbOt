@@ -413,11 +413,14 @@ Func GUICloseButton()
    SaveSettings()
    ExitGUI()
    ExitScraper()
+   ;DLLUnload()
    Exit
 EndFunc
 
 Func CaptureAutoBeginLoot()
-   GetMyLootNumbers()
+   Local $frame = CaptureFrame("CaptureAutoBeginLoot")
+   GetMyLootNumbers($frame)
+   _GDIPlus_BitmapDispose($frame)
 
    Local $n = GUICtrlRead($GUI_MyGold)
    If $n <> "-" Then $gAutoRaidBeginLoot[0] = $n
@@ -458,8 +461,8 @@ Func SetAutoRaidResults(Const $gold, Const $elix, Const $dark, Const $cups, Cons
 EndFunc
 
 
-Func UpdateWinnings()
-   GetMyLootNumbers()
+Func UpdateWinnings(ByRef $f)
+   GetMyLootNumbers($f)
 
    Local $changeGold = GUICtrlRead($GUI_MyGold) - $gAutoRaidBeginLoot[0]
    Local $changeElix = GUICtrlRead($GUI_MyElix) - $gAutoRaidBeginLoot[1]

@@ -1,4 +1,124 @@
-Func OpenArmyManagerWindow()
+Func AutoQueueTroops(ByRef $f, Const ByRef $initialFill)
+   DebugWrite("AutoQueueTroops()")
+
+   If ResetToCoCMainScreen($f) = False Then
+	  DebugWrite("AutoQueueTroops() Not on main screen, exiting")
+	  Return
+   EndIf
+
+   ; Open Army Manager window
+   If OpenArmyManagerWindow($f) = False Then
+	  DebugWrite("AutoQueueTroops(): Not on army manager screen, resetting")
+	  ResetToCoCMainScreen($f)
+	  Return
+   EndIf
+
+   ; Count how many troops are already built
+   Local $builtTroopCounts[$eTroopCount]
+   For $i = $eTroopBarbarian To $eTroopWarden
+	  $builtTroopCounts[$i] = 0
+   Next
+   GetBuiltTroops($gArmyCampTroopsBMPs, $builtTroopCounts)
+
+   ; Check if we are waiting for heroes
+   Local $heroWait = _GUICtrlComboBox_GetCurSel($GUI_AutoRaidWaitForHeroesCombo)
+   Local $heroCount = $builtTroopCounts[$eTroopKing] + $builtTroopCounts[$eTroopQueen] + $builtTroopCounts[$eTroopWarden]
+   If $heroWait>0 And $heroCount>=$heroWait Then DebugWrite("Heroes ready.")
+
+   ; Fill
+   Local $armyCampsFull = False
+
+   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED Then
+	  FillBarracksStrategy0($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+   Else
+	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
+	  Case 0
+		 FillBarracksStrategy0($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+	  Case 1
+		 FillBarracksStrategy1($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+	  Case 2
+		 FillBarracksStrategy2($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+	  Case 3
+		 FillBarracksStrategy3($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+	  EndSwitch
+   EndIf
+
+   If $armyCampsFull Then DebugWrite("Army Camps full.")
+
+   ; Close army manager window
+   CloseArmyManagerWindow($f)
+
+   ; Set next stage
+   If $armyCampsFull And _
+	  ($heroWait=0 Or $heroCount>=$heroWait) Then
+		 $gAutoStage = $eAutoFindMatch
+		 GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
+
+   Else
+	  If $initialFill Then
+		 $gAutoStage = $eAutoWaitForTrainingToComplete
+		 GUICtrlSetData($GUI_AutoStatus, "Auto: Waiting For Training (0:00)")
+	  EndIf
+
+   EndIf
+EndFunc
+
+Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
+   Local $frame = CaptureFrame("GetBuiltTroops1", $rCampTroopBox1[0], $rCampTroopBox1[1], $rCampTroopBox1[2], $rCampTroopBox1[3])
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "BuiltTroopsFrame1.bmp")
+
+   For $i = $eTroopBarbarian To $eTroopLavaHound
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BuiltTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
+	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+	  ;DebugWrite("GetBuiltTroops " & $gTroopNames[$i] & " found at " & $split[0] & ", " & $split[1] & _
+		; 		 " confidence " & Round($split[2]*100, 2) & "%")
+
+	  If $split[2] > $gConfidenceCampTroopSlot Then
+		 Local $textBox[10] = [ _
+			$split[0]+$rCampSlotTroopCountTextBox[0], _
+			$split[1]+$rCampSlotTroopCountTextBox[1], _
+			$split[0]+$rCampSlotTroopCountTextBox[2], _
+			$split[1]+$rCampSlotTroopCountTextBox[3], _
+			$rCampSlotTroopCountTextBox[4], _
+			$rCampSlotTroopCountTextBox[5], _
+			$rCampSlotTroopCountTextBox[6], _
+			$rCampSlotTroopCountTextBox[7], _
+			$rCampSlotTroopCountTextBox[8], _
+			$rCampSlotTroopCountTextBox[9] ]
+
+		 ;DebugWrite("box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3])
+
+		 Local $t = ScrapeFuzzyText($frame, $gBarracksCharacterMaps, $textBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
+		 ;DebugWrite("text: " & $gTroopNames[$i] & " " & $t)
+
+		 $index[$i] = Number(StringMid($t, 2))
+		 DebugWrite("GetBuiltTroops() " & $gTroopNames[$i] & " " & $index[$i])
+	  EndIf
+   Next
+
+   _GDIPlus_BitmapDispose($frame)
+
+
+   $frame = CaptureFrame("GetBuiltTroops2", $rCampTroopBox2[0], $rCampTroopBox2[1], $rCampTroopBox2[2], $rCampTroopBox2[3])
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "BuiltTroopsFrame2.bmp")
+
+   For $i = $eTroopKing To $eTroopWarden
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BuiltTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
+	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+	  ;DebugWrite("GetBuiltTroops " & $gTroopNames[$i] & " found at " & $split[0] & ", " & $split[1] & _
+		; 		 " confidence " & Round($split[2]*100, 2) & "%")
+
+	  If $split[2] > $gConfidenceCampTroopSlot Then
+		 $index[$i] = 1
+		 DebugWrite("GetBuiltTroops() " & $gTroopNames[$i] & " " & $index[$i])
+	  EndIf
+   Next
+
+   _GDIPlus_BitmapDispose($frame)
+
+EndFunc
+
+Func OpenArmyManagerWindow(ByRef $f)
    DebugWrite("OpenArmyManagerWindow()")
 
    ; Click the Army Manager button
@@ -6,33 +126,30 @@ Func OpenArmyManagerWindow()
    Sleep(250)
 
    ; Wait for Army Manager window to appear
-   Local $failCount = 5
-
-   While $failCount > 0
-	  If WhereAmI() = $eWindowArmyManager Then ExitLoop
-	  Sleep(200)
-	  $failCount -= 1
-   WEnd
-
-   If $failCount <= 0 Then
-	  DebugWrite("OpenArmyManagerWindow failed - timeout opening Army Manager Window.")
-	  ResetToCoCMainScreen()
+   If WaitForScreen($f, 5000, $eWindowArmyManager) = False Then
+	  DebugWrite("OpenArmyManagerWindow() Failed - timeout opening Army Manager Window")
 	  Return False
    EndIf
 
    Return True
 EndFunc
 
-Func CloseArmyManagerWindow()
+Func CloseArmyManagerWindow(ByRef $f)
    DebugWrite("CloseArmyManagerWindow()")
-   ; Close Army Overview window
    RandomWeightedClick($rArmyManagerWindowCloseButton)
    Sleep(500)
 
+   ; Wait for main screen to appear
+   If WaitForScreen($f, 5000, $eScreenMain) = False Then
+	  DebugWrite("CloseArmyManagerWindow() Failed - timeout waiting for min screen")
+	  Return False
+   EndIf
+
+   Return True
 EndFunc
 
 ; Returns true if next standard barracks was selected, false otherwise
-Func OpenNextAvailableStandardBarracks()
+Func OpenNextAvailableStandardBarracks(ByRef $f)
    ; First see which one is open
    Local $c1[4] = [$rArmyManagerWindowStandard1Button[4], $rArmyManagerWindowStandard1Button[5], $rArmyManagerSelectedColor[2]]
    Local $c2[4] = [$rArmyManagerWindowStandard2Button[4], $rArmyManagerWindowStandard2Button[5], $rArmyManagerSelectedColor[2]]
@@ -40,13 +157,13 @@ Func OpenNextAvailableStandardBarracks()
    Local $c4[4] = [$rArmyManagerWindowStandard4Button[4], $rArmyManagerWindowStandard4Button[5], $rArmyManagerSelectedColor[2]]
 
    Local $selectedBarracks = 0
-   If IsColorPresent($c1) Then
+   If IsColorPresent($f, $c1) Then
 	  $selectedBarracks = 1
-   ElseIf IsColorPresent($c2) Then
+   ElseIf IsColorPresent($f, $c2) Then
 	  $selectedBarracks = 2
-   ElseIf IsColorPresent($c3) Then
+   ElseIf IsColorPresent($f, $c3) Then
 	  $selectedBarracks = 3
-   ElseIf IsColorPresent($c4) Then
+   ElseIf IsColorPresent($f, $c4) Then
 	  $selectedBarracks = 4
    EndIf
    ;DebugWrite("Current standard barracks selection: " & $selectedBarracks)
@@ -57,27 +174,35 @@ Func OpenNextAvailableStandardBarracks()
    ; Scan for the next available standard barracks, and click it
    For $i = $selectedBarracks+1 To 4
 	  If $i = 1 Then
-		 If IsButtonPresent($rArmyManagerWindowStandard1Button) Then
+		 If IsButtonPresent($f, $rArmyManagerWindowStandard1Button) Then
 			RandomWeightedClick($rArmyManagerWindowStandard1Button)
 			Sleep(500)
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("OpenNextAvailableStandardBarracks")
 			Return True
 		 EndIf
 	  ElseIf $i = 2 Then
-		 If IsButtonPresent($rArmyManagerWindowStandard2Button) Then
+		 If IsButtonPresent($f, $rArmyManagerWindowStandard2Button) Then
 			RandomWeightedClick($rArmyManagerWindowStandard2Button)
 			Sleep(500)
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("OpenNextAvailableStandardBarracks")
 			Return True
 		 EndIf
 	  ElseIf $i = 3 Then
-		 If IsButtonPresent($rArmyManagerWindowStandard3Button) Then
+		 If IsButtonPresent($f, $rArmyManagerWindowStandard3Button) Then
 			RandomWeightedClick($rArmyManagerWindowStandard3Button)
 			Sleep(500)
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("OpenNextAvailableStandardBarracks")
 			Return True
 		 EndIf
 	  ElseIf $i = 4 Then
-		 If IsButtonPresent($rArmyManagerWindowStandard4Button) Then
+		 If IsButtonPresent($f, $rArmyManagerWindowStandard4Button) Then
 			RandomWeightedClick($rArmyManagerWindowStandard4Button)
 			Sleep(500)
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("OpenNextAvailableStandardBarracks")
 			Return True
 		 EndIf
 	  EndIf
@@ -88,15 +213,15 @@ Func OpenNextAvailableStandardBarracks()
 EndFunc
 
 ; Returns true if next dark barracks was selected, false otherwise
-Func OpenNextAvailableDarkBarracks()
+Func OpenNextAvailableDarkBarracks(ByRef $f)
    ; First see which one is open
    Local $c1[4] = [$rArmyManagerWindowDark1Button[4], $rArmyManagerWindowDark1Button[5], $rArmyManagerSelectedColor[2]]
    Local $c2[4] = [$rArmyManagerWindowDark2Button[4], $rArmyManagerWindowDark2Button[5], $rArmyManagerSelectedColor[2]]
 
    Local $selectedBarracks = 0
-   If IsColorPresent($c1) Then
+   If IsColorPresent($f, $c1) Then
 	  $selectedBarracks = 1
-   ElseIf IsColorPresent($c2) Then
+   ElseIf IsColorPresent($f, $c2) Then
 	  $selectedBarracks = 2
    EndIf
    ;DebugWrite("Current dark barracks selection: " & $selectedBarracks)
@@ -107,15 +232,19 @@ Func OpenNextAvailableDarkBarracks()
    ; Scan for the next available dark barracks, and click it
    For $i = $selectedBarracks+1 To 2
 	  If $i = 1 Then
-		 If IsButtonPresent($rArmyManagerWindowDark1Button) Then
+		 If IsButtonPresent($f, $rArmyManagerWindowDark1Button) Then
 			RandomWeightedClick($rArmyManagerWindowDark1Button)
 			Sleep(500)
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("OpenNextAvailableDarkBarracks")
 			Return True
 		 EndIf
 	  ElseIf $i = 2 Then
-		 If IsButtonPresent($rArmyManagerWindowDark2Button) Then
+		 If IsButtonPresent($f, $rArmyManagerWindowDark2Button) Then
 			RandomWeightedClick($rArmyManagerWindowDark2Button)
 			Sleep(500)
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("OpenNextAvailableDarkBarracks")
 			Return True
 		 EndIf
 	  EndIf
@@ -125,9 +254,9 @@ Func OpenNextAvailableDarkBarracks()
    Return False
 EndFunc
 
-Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
+Func FindBarracksTroopSlots(Const $f, Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
-   GrabFrameToFile2("BarracksFrame.bmp", $rBarracksTroopBox[0], $rBarracksTroopBox[1], $rBarracksTroopBox[2], $rBarracksTroopBox[3])
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "BarracksFrame.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
@@ -135,10 +264,10 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
 	  ;DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
 
 	  If $split[2] > $gConfidenceBarracksTroopSlot Then
-		 $index[$i][0] = $split[0]+$rBarracksTroopBox[0]+$rBarracksButtonOffset[0]
-		 $index[$i][1] = $split[1]+$rBarracksTroopBox[1]+$rBarracksButtonOffset[1]
-		 $index[$i][2] = $split[0]+$rBarracksTroopBox[0]+$rBarracksButtonOffset[2]
-		 $index[$i][3] = $split[1]+$rBarracksTroopBox[1]+$rBarracksButtonOffset[3]
+		 $index[$i][0] = $split[0]+$rBarracksButtonOffset[0]
+		 $index[$i][1] = $split[1]+$rBarracksButtonOffset[1]
+		 $index[$i][2] = $split[0]+$rBarracksButtonOffset[2]
+		 $index[$i][3] = $split[1]+$rBarracksButtonOffset[3]
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1
@@ -148,9 +277,10 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
    Next
 EndFunc
 
-Func DequeueTroops()
+Func DequeueTroops(ByRef $f)
    Local $dequeueTries = 6
-   While IsButtonPresent($rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
+
+   While IsButtonPresent($f, $rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
 		  _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 
@@ -160,6 +290,9 @@ Func DequeueTroops()
 	  _ClickHold($xClick, $yClick, 4000)
 	  $dequeueTries-=1
 	  Sleep(500)
+
+	  _GDIPlus_BitmapDispose($f)
+	  $f = CaptureFrame("DequeueTroops")
    WEnd
 EndFunc
 
@@ -182,12 +315,11 @@ Func QueueTroopsEvenly(Const $troop, Const ByRef $troopSlots, Const $troopsToQue
    EndIf
 EndFunc
 
-
-Func FillBarracksWithTroops(Const $troop, Const ByRef $troopSlots)
+Func FillBarracksWithTroops(Const $frame, Const $troop, Const ByRef $troopSlots)
    Local $troopsToFill = 999
 
    ; Get number of troops already queued in this barracks
-   Local $queueStatus = ScrapeFuzzyText($gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $queueStatus = ScrapeFuzzyText($frame, $gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
    ;DebugWrite("Barracks queue status: " & $queueStatus)
 
    Local $stringLoc = StringInStr($queueStatus, "troops")

@@ -67,12 +67,14 @@ Global $gSpellSlotBMPs[$eSpellCount] = [ _
 
 Global $DonateButtonBMPs[1] = ["Donate\DonateButton.bmp"]
 
-Global $gDonateSlotBMPs[16] = [ _
+Global $gDonateTroopSlotBMPs[16] = [ _
   "Donate\DonateBarbarian.bmp", "Donate\DonateArcher.bmp", "Donate\DonateGiant.bmp", "Donate\DonateGoblin.bmp", _
   "Donate\DonateWallBreaker.bmp", "Donate\DonateBalloon.bmp", "Donate\DonateWizard.bmp", "Donate\DonateHealer.bmp", _
   "Donate\DonateDragon.bmp", "Donate\DonatePekka.bmp", _
   "Donate\DonateMinion.bmp", "Donate\DonateHogRider.bmp", "Donate\DonateValkyrie.bmp", "Donate\DonateGolem.bmp", _
   "Donate\DonateWitch.bmp", "Donate\DonateLavaHound.bmp"]
+
+Global $gDonateSpellSlotBMPs[3] = [ ]
 
 Global $gBarracksTroopSlotBMPs [$gTroopCountExcludingHeroes] = [ _
   "Barracks\BarracksBarbarian.bmp", "Barracks\BarracksArcher.bmp", "Barracks\BarracksGiant.bmp", "Barracks\BarracksGoblin.bmp", _

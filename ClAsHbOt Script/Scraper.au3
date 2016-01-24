@@ -1,21 +1,32 @@
 Func InitScraper()
    _GDIPlus_Startup()
+
+   If TestBackGroundScrape() = False Then
+	  $gBackgroundScraping = False
+
+	  DebugWrite("InitScraper() Background scraping disabled")
+	  Local $res = MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Background scraping disabled", _
+		 "Background scraping has been disabled, as it appears to not be working." & @CRLF & @CRLF & _
+		 "If you are running BlueStacks inside of another virtual machine, this may be the cause. " & _
+		 "For ClAsHbOt to work correctly in this situation, the BlueStacks window must be visible " & _
+		 "and not obscured at any time.")
+   Else
+	  DebugWrite("InitScraper() Background scraping enabled")
+   EndIf
 EndFunc
 
 Func ExitScraper()
    _GDIPlus_Shutdown()
 EndFunc
 
-Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
+Func ScrapeFuzzyText(Const $frame, Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
    Local $w = $box[2] - $box[0] + 1
    Local $h = $box[3] - $box[1] + 1
    Local $pix[$w][$h]
    Local $pY
 
    ; Get map of foreground pixels
-   Local $frame = CaptureFrame($box[0], $box[1], $box[2], $box[3])
    GetForegroundPixels($frame, $box, $pix, $pY)
-   _GDIPlus_BitmapDispose($frame)
 
    ; Scan left to right through foreground pixel map to identify individual characters
    Local $textString = ""
@@ -147,16 +158,14 @@ Func ScrapeFuzzyText(Const ByRef $charMapArray, Const ByRef $box, Const $maxChar
 EndFunc
 
 ; Non fuzzy character matching - only good for chat box right now
-Func ScrapeExactText(Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
+Func ScrapeExactText(Const $frame, Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
    Local $w = $box[2] - $box[0] + 1
    Local $h = $box[3] - $box[1] + 1
    Local $pix[$w][$h]
    Local $pY
 
    ; Get map of foreground pixels
-   Local $frame = CaptureFrame($box[0], $box[1], $box[2], $box[3])
    GetForegroundPixels($frame, $box, $pix, $pY)
-   _GDIPlus_BitmapDispose($frame)
 
    ; Scan left to right through foreground pixel map to identify individual characters
    Local $textString = ""
@@ -263,11 +272,11 @@ Func GetForegroundPixels(Const $frame, Const ByRef $box, ByRef $pix, ByRef $rows
 
    If $gScraperDebug Then ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
 
-   For $y = 0 To $box[3]-$box[1]
+   For $y = $box[1] To $box[3]
 
 	  ; See if this line contains valid pixels
 	  Local $BlankLine = True
-	  For $x = 0 To $box[2]-$box[0]
+	  For $x = $box[0] To $box[2]
 		 Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $x, $y)
 		 If InColorSphere($pixelColor, $box[4], $box[5]) = True Then
 			$BlankLine = False
@@ -276,19 +285,19 @@ Func GetForegroundPixels(Const $frame, Const ByRef $box, ByRef $pix, ByRef $rows
 	  Next
 
 	  If $BlankLine = False Then
-		 For $x = 0 To $box[2]-$box[0]
+		 For $x = $box[0] To $box[2]
 			Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $x, $y)
 
 			If InColorSphere($pixelColor, $box[4], $box[5]) = True Then
-			   $pix[$x][$rows] = 1
+			   $pix[$x-$box[0]][$rows] = 1
 			Else
-			   $pix[$x][$rows] = 0
+			   $pix[$x-$box[0]][$rows] = 0
 			EndIf
 		 Next
 
 		 If $gScraperDebug Then
-			For $x = 0 To $box[2]-$box[0]
-			   If $pix[$x][$rows] = 1 Then
+			For $x = $box[0] To $box[2]
+			   If $pix[$x-$box[0]][$rows] = 1 Then
 				  ConsoleWrite("x")
 			   Else
 				  ConsoleWrite(" ")
@@ -383,38 +392,129 @@ Func BitCount($n)
    Return $c
 EndFunc
 
-Func IsTextBoxPresent(Const ByRef $textBox)
-   Local $frame = CaptureFrame($textBox[6], $textBox[7], $textBox[6], $textBox[7])
-   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, 0, 0)
-   _GDIPlus_BitmapDispose($frame)
-
+Func IsTextBoxPresent(Const $frame, Const ByRef $textBox)
+   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $textBox[6], $textBox[7])
    Return InColorSphere($pixelColor, $textBox[8], $textBox[9])
 EndFunc
 
-Func IsButtonPresent(Const ByRef $buttonBox)
-   Local $frame = CaptureFrame($buttonBox[4], $buttonBox[5], $buttonBox[4], $buttonBox[5])
-   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, 0, 0)
-   _GDIPlus_BitmapDispose($frame)
-
+Func IsButtonPresent(Const $frame, Const ByRef $buttonBox)
+   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $buttonBox[4], $buttonBox[5])
    Return InColorSphere($pixelColor, $buttonBox[6], $buttonBox[7])
 EndFunc
 
-Func IsColorPresent(Const ByRef $colorLocation)
-   Local $frame = CaptureFrame($colorLocation[0], $colorLocation[1], $colorLocation[0], $colorLocation[1])
-   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, 0, 0)
-   _GDIPlus_BitmapDispose($frame)
-
+Func IsColorPresent(Const $frame, Const ByRef $colorLocation)
+   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $colorLocation[0], $colorLocation[1])
    Return InColorSphere($pixelColor, $colorLocation[2], $colorLocation[3])
 EndFunc
 
-Func ScanFrameForBestBMP(Const $filename, Const ByRef $bmpArray, Const $threshold, ByRef $bestMatch, ByRef $bestConfidence, ByRef $bestX, ByRef $bestY)
+Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
+   Local $t = TimerInit()
+   Local $p1 = IsButtonPresent($f, $b1)
+   Local $p2 = $b2=0 ? False : IsButtonPresent($f, $b2)
+   Local $p3 = $b3=0 ? False : IsButtonPresent($f, $b3)
+   Local $lastTimeRem = Round($wait/1000)
+   _GDIPlus_BitmapDispose($f)
+   $f = CaptureFrame("WaitForButton " & $lastTimeRem)
+
+   While TimerDiff($t)<$wait And $p1=False And $p2=False And $p3=False
+	  If IsButtonPresent($f, $rAndroidMessageButton1) Or IsButtonPresent($f, $rAndroidMessageButton2) Then
+		 Return SetError($eErrorAndroidMessageBox, 0, False)
+	  EndIf
+
+	  If AttackingIsDisabled($f) Then
+		 Return SetError($eErrorAttackingDisabled, 0, False)
+	  EndIf
+
+	  Local $timeRem = Round(($wait-TimerDiff($t))/1000)
+	  If $timeRem<>$lastTimeRem Then
+		 $lastTimeRem = $timeRem
+		 _GDIPlus_BitmapDispose($f)
+		 $f = CaptureFrame("WaitForButton " & $timeRem)
+		 $p1 = IsButtonPresent($f, $b1)
+		 $p2 = $b2=0 ? False : IsButtonPresent($f, $b2)
+		 $p3 = $b3=0 ? False : IsButtonPresent($f, $b3)
+	  EndIf
+
+	  Sleep(100)
+   WEnd
+
+   If $p1=False And $p2=False And $p3=False Then
+	  Return False
+   Else
+	  Return True
+   EndIf
+EndFunc
+
+Func WaitForColor(ByRef $f, Const $wait, Const $c1, Const $c2=0, Const $c3=0)
+   Local $t = TimerInit()
+   Local $p1 = IsColorPresent($f, $c1)
+   Local $p2 = $c2=0 ? False : IsColorPresent($f, $c2)
+   Local $p3 = $c3=0 ? False : IsColorPresent($f, $c3)
+   Local $lastTimeRem = Round($wait/1000)
+   _GDIPlus_BitmapDispose($f)
+   $f = CaptureFrame("WaitForColor " & $lastTimeRem)
+
+   While TimerDiff($t)<$wait And $p1=False And $p2=False And $p3=False
+	  If IsButtonPresent($f, $rAndroidMessageButton1) Or IsButtonPresent($f, $rAndroidMessageButton2) Then
+		 Return SetError($eErrorAndroidMessageBox, 0, False)
+	  EndIf
+
+	  If AttackingIsDisabled($f) Then
+		 Return SetError($eErrorAttackingDisabled, 0, False)
+	  EndIf
+
+	  Local $timeRem = Round(($wait-TimerDiff($t))/1000)
+	  If $timeRem<>$lastTimeRem Then
+		 $lastTimeRem = $timeRem
+		 _GDIPlus_BitmapDispose($f)
+		 $f = CaptureFrame("WaitForColor " & $timeRem)
+		 $p1 = IsColorPresent($f, $c1)
+		 $p2 = $c2=0 ? False : IsColorPresent($f, $c2)
+		 $p3 = $c3=0 ? False : IsColorPresent($f, $c3)
+	  EndIf
+
+	  Sleep(100)
+   WEnd
+
+   If $p1=False And $p2=False And $p3=False Then
+	  Return False
+   Else
+	  Return True
+   EndIf
+EndFunc
+
+Func AttackingIsDisabled(Const $f)
+   If IsColorPresent($f, $rAttackingDisabledPoint1Color) And _
+	  IsColorPresent($f, $rAttackingDisabledPoint2Color) And _
+	  IsColorPresent($f, $rAttackingDisabledPoint3Color) Then Return True
+
+   If IsColorPresent($f, $rWaitForPersonalBreakPoint1Color) And _
+	  IsColorPresent($f, $rWaitForPersonalBreakPoint2Color) And _
+	  IsColorPresent($f, $rWaitForPersonalBreakPoint3Color) Then Return True
+
+   Return False
+EndFunc
+
+Func ScanFrameForBestBMP(Const $f, Const ByRef $bmpArray, Const $threshold, ByRef $bestMatch, ByRef $bestConfidence, ByRef $bestX, ByRef $bestY)
    $bestMatch = -1
    $bestConfidence = 0
    $bestX = -1
    $bestY = -1
 
+; temporary
+_GDIPlus_ImageSaveToFile($f, "temp.bmp")
+
    For $i = 0 to UBound($bmpArray)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", $filename, "str", "Images\"&$bmpArray[$i], "int", 3)
+	  ;DebugWrite("Frame handle: " & Hex($f))
+	  ;Local $res = DllCall("ClAsHbOtDlL.dll", "str", "FindMatch", "ptr", $f, "str", "Images\"&$bmpArray[$i], "int", 3)
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "temp.bmp", "str", "Images\"&$bmpArray[$i], "int", 3)
+
+	  If @error Then
+		 DebugWrite("ScanFrameForBestBMP() DLL error " & @error)
+		  Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+			"This is catastrophic, exiting.")
+		 Exit
+	  EndIf
 
 	  ;DebugWrite($bmpArray[$i] & ": " & $res[0])
 
@@ -426,6 +526,10 @@ Func ScanFrameForBestBMP(Const $filename, Const ByRef $bmpArray, Const $threshol
 		 $bestMatch = $i
 	  EndIf
    Next
+
+; temporary
+FileDelete("temp.bmp")
+
 EndFunc
 
 Func InColorSphere(Const $color, Const $center, Const $radius)
@@ -469,36 +573,60 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
-Func CaptureFrame($x1=-1, $y1=-1, $x2=-1, $y2=-1)
-   If $x1 = -1 Then
-	  $x1 = 0
-	  $y1 = 0
-	  $x2 = $gBlueStacksWidth
-	  $y2 = $gBlueStacksHeight
+Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
+   DebugWrite("CaptureFrame() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+
+   If $gBackgroundScraping Then
+	  Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
+	  Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
+	  Local $hHBITMAP = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1, $y2-$y1)
+	  Local $bmpOriginal  = _WinAPI_SelectObject($memDC, $hHBITMAP)
+
+	  DllCall("user32.dll", "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $memDC, "int", 0)
+	  _WinAPI_SelectObject($memDC, $hHBITMAP)
+	  _WinAPI_BitBlt($memDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $hDC, $x1, $y1, $SRCCOPY)
+
+	  Local $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+
+	  _WinAPI_DeleteObject($hHBITMAP)
+	  _WinAPI_SelectObject($memDC, $bmpOriginal)
+	  _WinAPI_DeleteDC($memDC)
+	  _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $hDC)
+
+   Else
+	  Local $cPos = GetClientPos()
+	  Local $hHBITMAP = _ScreenCapture_Capture("", $cPos[0]+$x1, $cPos[1]+$y1, $cPos[0]+$x2, $cPos[1]+$y2)
+	  Local $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+	  _WinAPI_DeleteObject($hHBITMAP)
+
    EndIf
 
-   Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
-   Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
-   Local $memBmp = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1+1, $y2-$y1+1)
-   Local $bmpOriginal  = _WinAPI_SelectObject($memDC, $memBmp)
-
-   DllCall("user32.dll", "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $memDC, "int", 0)
-
-   _WinAPI_BitBlt($memDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $hDC, $x1, $y1, $SRCCOPY)
-
-   Local $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($memBmp)
-
-   _WinAPI_DeleteObject($memBmp)
-   _WinAPI_SelectObject($memDC, $bmpOriginal)
-   _WinAPI_DeleteDC($memDC)
-   _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $hDC)
-
-   Return $hBitmap
+   Return $hGdipBitmap
 EndFunc
 
-Func GrabFrameToFile2(Const $filename, $x1=-1, $y1=-1, $x2=-1, $y2=-1)
-   Local $hBitmap = CaptureFrame($x1, $y1, $x2, $y2)
-   Local $res = _GDIPlus_ImageSaveToFile($hBitmap, $filename)
-   _GDIPlus_BitmapDispose($hBitmap)
-   Return $res
+Func SaveDebugImage(Const $hGdipBitmap, Const $filename)
+   ;Local $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+   _GDIPlus_ImageSaveToFile($hGdipBitmap, $filename)
+   ;_GDIPlus_BitmapDispose($hHBITMAP)
 EndFunc
+
+Func TestBackGroundScrape()
+   Local $frame = CaptureFrame("TestBackGroundScrape")
+   Local $w = _GDIPlus_ImageGetWidth($frame)
+   Local $h = _GDIPlus_ImageGetHeight($frame)
+
+   Local $notBlackPixel = False
+   For $i = 1 To 100
+	  Local $pix = _GDIPlus_BitmapGetPixel($frame, Random(0, $w-1, 1), Random(0, $h-1, 1))
+	  DebugWrite($i & " 0x" & Hex(BitAND($pix, 0xffffff)))
+	  If  BitAND($pix, 0xffffff) <> 0x000000 Then
+		 $notBlackPixel = True
+		 ExitLoop
+	  EndIf
+   Next
+
+   _GDIPlus_BitmapDispose($frame)
+
+   Return $notBlackPixel
+EndFunc
+

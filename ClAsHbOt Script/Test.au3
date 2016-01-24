@@ -1,83 +1,75 @@
 Func TestMyStuff()
-   Local $MyGold = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $frame = CaptureFrame("TestMyStuff")
+   Local $MyGold = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
    DebugWrite("My Gold: " & $MyGold)
-   Local $MyElix = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $MyElix = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
    DebugWrite("My Elix: " & $MyElix)
    Local $MyDark = 0
-   If IsTextBoxPresent($rMyGemsTextBoxWithDE) = True Then
-      $MyDark = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   If IsTextBoxPresent($frame, $rMyGemsTextBoxWithDE) = True Then
+      $MyDark = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
    EndIf
    DebugWrite("My Dark: " & $MyDark)
    Local $MyGems = 0
-   If IsTextBoxPresent($rMyGemsTextBoxNoDE) = True Then
-      $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBoxNoDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   If IsTextBoxPresent($frame, $rMyGemsTextBoxNoDE) = True Then
+      $MyGems = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGemsTextBoxNoDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
    Else
-      $MyGems = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyGemsTextBoxWithDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+      $MyGems = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGemsTextBoxWithDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
    EndIf
    DebugWrite("My Gems: " & $MyGems)
-   Local $MyCups = Number(ScrapeFuzzyText($gSmallCharacterMaps, $rMyCupsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+   Local $MyCups = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyCupsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
    DebugWrite("My Cups: " & $MyCups)
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestRaidLoot()
-   Local $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   DebugWrite("Gold: " & $gold)
-   Local $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   DebugWrite("Elix: " & $elix)
-   Local $dark = 0
-   Local $cups = 0
-   If IsTextBoxPresent($rDarkTextBox)=False Then
-      $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   Else
-      $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-      $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxWithDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   EndIf
-   DebugWrite("Dark: " & $dark)
-   DebugWrite("Cups: " & $cups)
-   Local $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
-   DebugWrite("Dead: " & $deadBase)
-   Local $top, $left
-   Local $townHall = GetTownHallLevel($left, $top)
-   DebugWrite("TH: " & $townHall)
+   Local $frame = CaptureFrame("TestRaidLoot")
+   Local $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadBase
+   AutoRaidGetDisplayedLoot($frame, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
+   DebugWrite("TestRaidLoot() " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $thLevel & " / " & $deadBase)
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestEndBattleLoot()
-   Local $goldWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-   Local $elixWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-   Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
-   Local $cupsWin = IsTextBoxPresent($rEndBattleCupsWithDETextBox) ? _
-					ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleCupsWithDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : _
-					ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleCupsNoDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $frame = CaptureFrame("TestEndBattleLoot")
+   Local $goldWin = ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $elixWin = ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $darkWin = IsTextBoxPresent($frame, $rEndBattleDarkTextBox) ? ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
+   Local $cupsWin = IsTextBoxPresent($frame, $rEndBattleCupsWithDETextBox) ? _
+					ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsWithDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : _
+					ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsNoDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
    DebugWrite("Gold: " & $goldWin)
    DebugWrite("Elix: " & $elixWin)
    DebugWrite("Dark: " & $darkWin)
    DebugWrite("Cups: " & $cupsWin)
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestEndBattleBonus()
+   Local $frame = CaptureFrame("TestEndBattleLoot")
    Local $goldBonus = 0
    Local $elixBonus = 0
    Local $darkBonus = 0
-   If IsTextBoxPresent($rEndBattleBonusGoldTextBox) Or _
-	  IsTextBoxPresent($rEndBattleBonusElixTextBox) Or _
-	  IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
+   If IsTextBoxPresent($frame, $rEndBattleBonusGoldTextBox) Or _
+	  IsTextBoxPresent($frame, $rEndBattleBonusElixTextBox) Or _
+	  IsTextBoxPresent($frame, $rEndBattleBonusDarkTextBox) Then
 
-	  $goldBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusGoldTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
+	  $goldBonus = ScrapeFuzzyText($frame, $gBattleEndBonusCharacterMaps, $rEndBattleBonusGoldTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 	  $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
-	  $elixBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusElixTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
+	  $elixBonus = ScrapeFuzzyText($frame, $gBattleEndBonusCharacterMaps, $rEndBattleBonusElixTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 	  $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
-	  $darkBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusDarkTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
+	  $darkBonus = ScrapeFuzzyText($frame, $gBattleEndBonusCharacterMaps, $rEndBattleBonusDarkTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 	  $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
 	  DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
    EndIf
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestStorage()
-   GrabFrameToFile2("StorageUsageFrame.bmp")
+   Local $frame = CaptureFrame("TestEndBattleLoot")
    Local $x, $y, $conf, $matchIndex
    Local $usageAdj = 10
 
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP($frame, $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
    DebugWrite("Gold Match Index: " & $matchIndex)
    If $matchIndex <> -1 Then
 	  Local $s = $GoldStorageBMPs[$matchIndex]
@@ -87,7 +79,7 @@ Func TestStorage()
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP($frame, $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
    DebugWrite("Elix Match Index: " & $matchIndex)
    If $matchIndex <> -1 Then
 	  Local $s = $ElixStorageBMPs[$matchIndex]
@@ -97,7 +89,7 @@ Func TestStorage()
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP($frame, $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
    DebugWrite("Dark Match Index: " & $matchIndex)
    If $matchIndex <> -1 Then
 	  Local $s = $DarkStorageBMPs[$matchIndex]
@@ -109,9 +101,11 @@ Func TestStorage()
 EndFunc
 
 Func TestRaidTroopsCount()
+   Local $frame = CaptureFrame("TestRaidTroopsCount")
+
    Local $troopIndex[$eTroopCount][5]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidTroopCounts($frame, $troopIndex)
 
    For $i=0 To $eTroopCount-1
 	  If $troopIndex[$i][4]>0 Then DebugWrite("Available " & $gTroopNames[$i] & ": " & $troopIndex[$i][4])
@@ -119,17 +113,20 @@ Func TestRaidTroopsCount()
 
    Local $spellIndex[$eSpellCount][5]
    FindRaidTroopSlots($gSpellSlotBMPs, $spellIndex)
-   UpdateRaidTroopCounts($spellIndex)
+   UpdateRaidTroopCounts($frame, $spellIndex)
 
    For $i=0 To $eSpellCount-1
 	  If $spellIndex[$i][4]>0 Then DebugWrite("Available " & $gSpellNames[$i] & ": " & $spellIndex[$i][4])
    Next
 
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestBarracksStatus()
-   Local $queueStatus = ScrapeFuzzyText($gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $frame = CaptureFrame("TestEndBattleLoot")
+   Local $queueStatus = ScrapeFuzzyText($frame, $gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
    DebugWrite("Barracks queue status: " & $queueStatus)
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestBuiltTroops()
@@ -193,44 +190,51 @@ Func TestDeployBoxCalcs()
 EndFunc
 
 Func TestDonate()
-   If IsButtonPresent($rMainScreenOpenChatButton)=False Then OpenChatWindow()
+   Local $frame = CaptureFrame("TestDonate")
+   If IsButtonPresent($frame, $rMainScreenOpenChatButton)=False Then OpenChatWindow($frame)
 
-   Local $donateButton[4]
-   FindDonateButton($donateButton)
+   Local $donateButton[8]
+   FindDonateButton($frame, $donateButton)
 
-   Local $requestText = GetRequestText($donateButton)
+   Local $requestText = GetRequestText($frame, $donateButton)
 
-   OpenDonateTroopsWindow($donateButton)
+   OpenDonateTroopsWindow($frame, $donateButton)
 
    Local $donateIndex[$gTroopCountExcludingHeroes][4]
-   FindDonateTroopSlots($donateIndex)
+   FindDonateTroopSlots($frame, $donateIndex)
 
    Local $indexOfTroopToDonate
-   ParseRequestText($requestText, $donateIndex, $indexOfTroopToDonate)
+   ParseRequestTextTroops($requestText, $donateIndex, $indexOfTroopToDonate)
 
    DebugWrite("Donate index: " & $indexOfTroopToDonate)
+
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestTownHall()
+   Local $frame = CaptureFrame("TestTownHall")
+   SaveDebugImage($frame, "TestTownHall.bmp")
+
    Local $bestMatch, $bestConfidence, $left, $top
 
-   GrabFrameToFile2("TownHallTopFrame.bmp")
-   ScanFrameForBestBMP("TownHallTopFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
+   ScanFrameForBestBMP($frame, $TownHallBMPs, 0, $bestMatch, $bestConfidence, $left, $top)
 
-   DebugWrite("Likely TH Level " & ($bestMatch=-1 ? -1 : $bestMatch+6) & " conf: " & $bestConfidence & @CRLF)
+   DebugWrite("Likely TH Level " & ($bestMatch=-1 ? -1 : $bestMatch+6) & " conf: " & $bestConfidence)
 
+   _WinAPI_DeleteObject($frame)
 EndFunc
 
 Func TestCollectors()
    Local $matchX[1], $matchY[1], $matchCount
 
    ; Grab frame
-   GrabFrameToFile2("LocateCollectorsFrame.bmp")
+   Local $frame = CaptureFrame("TestCollectors")
 
-   $matchCount = LocateBuildings("All collectors", "LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
+   $matchCount = LocateBuildings("All collectors", $frame, $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
 
    For $i = 0 To $matchCount-1
 	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
    Next
 
+   _GDIPlus_BitmapDispose($frame)
 EndFunc

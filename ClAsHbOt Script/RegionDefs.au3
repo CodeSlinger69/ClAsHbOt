@@ -52,7 +52,7 @@ Global $rMainScreenClosedChatButton[8] = [7, 353, 31, 408, 16, 406, 0xD44B16, 6]
 Global $rChatWindowDonateButton[8] = [0, 0, 105, 40, 0, 0, 0, 0]
 Global $rBattleHasEndedScreenReturnHomeButton[8] = [360, 549, 498, 604, 428, 599, 0x60B010, 6]
 Global $rLiveReplayEndScreenReturnHomeButton[8] = [15, 625, 108, 714, 72, 652, 0x103F7E, 6]
-Global $rWindowVilliageWasAttackedOkayButton[8] = [360, 494, 500, 549, 429, 539, 0x5FAC10, 6]
+Global $rWindowVillageWasAttackedOkayButton[8] = [360, 494, 500, 549, 429, 539, 0x5FAC10, 6]
 Global $rSafeAreaButton[8] = [780, 0, 859, 35, 0, 0, 0, 0]
 Global $rCollectorButton[8] = [0, 0, 14, 28, 0, 0, 0, 0]
 Global $rTrainTroopsWindowDequeueButton[8] = [559, 201, 577, 216, 568, 213, 0xD00000, 0]
@@ -68,9 +68,13 @@ Global $rArmyManagerWindowSpells1Button[8] =   [634, 555, 689, 605, 641, 563, 0x
 Global $rArmyManagerWindowSpells2Button[8] =   [695, 555, 751, 605, 702, 563, 0x888070, 0]
 Global $rRaidSlotsButton1[4] = [37, 639, 101, 725]
 Global $rRaidSlotsButton2[4] = [109, 639, 174, 725]
-Global $rVilliageGuardActiveInfoButton[8] = [459, 7, 475, 23, 448, 40, 0x4C2088, 6]
-Global $rVilliageGuardRemoveButton[8] = [476, 251, 583, 284, 526, 279, 0xC00000, 0]
-Global $rVilliageGuardRemoveConfirmationButton[8] = [444, 400, 582, 456, 512, 450, 0x60AE10, 0]
+Global $rVillageGuardActiveInfoButton[8] = [459, 7, 475, 23, 448, 40, 0x4C2088, 6]
+Global $rVillageGuardRemoveButton[8] = [476, 251, 583, 284, 526, 279, 0xC00000, 0]
+Global $rVillageGuardRemoveConfirmationButton[8] = [444, 400, 582, 456, 512, 450, 0x60AE10, 0]
+Global $rShopOrLayoutWindowsCloseButton[8] = [797, 22, 838, 59, 817, 56, 0xC0080C, 0]
+Global $rProfileWindowCloseButton[8] = [809, 55, 848, 92, 828, 87, 0xC00408, 0]
+Global $rAchievementsWindowCloseButton[8] = [663, 159, 698, 193, 681, 188, 0xC40508, 0]
+Global $rSettingsWindowCloseButton[8] = [744, 101, 779, 134, 762, 130, 0xD80407, 0]
 
 ; Pixel color regions
 ; x, y, color, radius
@@ -100,9 +104,8 @@ Global $rRaidTroopBox1[4] = [37, 639, 101, 723] ; first button only
 Global $rRaidTroopBox2[4] = [109, 639, 826, 723] ; buttons 2-11
 Global $rRaidButtonOffset[4] = [0, -17, 60, 63]
 Global $rCampTroopBox1[4] = [126, 197, 740, 275] ; main troops
-Global $rCampTroopBox2[4] = [421, 444, 608, 521] ; heroes
+Global $rCampTroopBox2[4] = [421, 444, 611, 521] ; heroes
 Global $rChatBox[4] = [0, 0, 309, 731]
-Global $rDonateWindow[4] = [328, 0, 836, 731]
 Global $rDonateButtonOffset[4] = [0, -19, 58, 58]
 Global $rTHSnipeNorthDeployBox[4] = [$gScreenCenter[0]-20, $gNorthPoint[1]-20, $gScreenCenter[0]+20, $gNorthPoint[1]]
 Global $rTHSnipeSouthDeployBox[4] = [$gScreenCenter[0]-20, $gSouthPoint[1], $gScreenCenter[0]+20, $gSouthPoint[1]+20]

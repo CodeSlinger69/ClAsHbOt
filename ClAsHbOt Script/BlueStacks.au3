@@ -32,7 +32,7 @@ Func StartBlueStacks()
    $gBlueStacksHwnd = WinGetHandle($gTitle, "")
 
    If Not IsHWnd($gBlueStacksHwnd) Then
-	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks WIndow Control Handle", "Error getting BlueStacks window Handle: " & @error & @CRLF & _
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks Window Control Handle", "Error getting BlueStacks window Handle: " & @error & @CRLF & _
 		 "Exiting.")
 	  Exit
    EndIf
@@ -80,7 +80,7 @@ Func BlueStacksStartLauncher()
    ; Start it up
    If Run($hdLaunch) = 0 Then
 	  DebugWrite("BlueStacksStartLauncher() Error launching BlueStacks, @error=" & @error)
-	  Local $res = MsgBox($MB_OK, "BlueStacks Launch Error", "Error starting BlueStacks" & @CRLF & _
+	  Local $res = MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks Launch Error", "Error starting BlueStacks" & @CRLF & _
 		 "Please manually start BlueStacks, then restart ClAsHbOt.")
 	  Exit
    EndIf
@@ -92,7 +92,7 @@ Func BlueStacksStartLauncher()
 
    If $hwnd = 0 Then
 	  DebugWrite("BlueStacksStartLauncher() Time out launching BlueStacks, hWnd")
-	  MsgBox($MB_OK, "BlueStacks Launch Error", "Time out starting BlueStacks" & @CRLF & @CRLF & _
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks Launch Error", "Time out starting BlueStacks" & @CRLF & @CRLF & _
 		 "Please manually start BlueStacks, then restart ClAsHbOt.")
 	  Exit
    EndIf
@@ -107,7 +107,7 @@ Func BlueStacksStartLauncher()
 
    If Not IsHWnd($c) Then
 	  DebugWrite("BlueStacksStartLauncher() Time out launching BlueStacks, control hWnd")
-	  MsgBox($MB_OK, "BlueStacks Launch Error", "Time out starting BlueStacks, waiting for Window control." & @CRLF & @CRLF & _
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "BlueStacks Launch Error", "Time out starting BlueStacks, waiting for Window control." & @CRLF & @CRLF & _
 		 "Please manually start BlueStacks, then restart ClAsHbOt.")
 	  Exit
    EndIf

@@ -1,5 +1,4 @@
-
-Func CollectLoot()
+Func CollectLoot(Const $frame)
    ; Method = 0: CV_TM_SQDIFF, 1: CV_TM_SQDIFF_NORMED 2: CV_TM_CCORR 3: CV_TM_CCORR_NORMED 4: CV_TM_CCOEFF 5: CV_TM_CCOEFF_NORMED
    Local $totalMatches = 0, $currIndex = 0
    Local $matchX[1], $matchY[1]
@@ -7,11 +6,8 @@ Func CollectLoot()
 
    DebugWrite("CollectLoot()")
 
-   ; Grab frame
-   GrabFrameToFile2("CollectLootFrame.bmp")
-
    ; Find all the dark elixir collectors that need clicking in the frame
-   $mCount = LocateBuildings("Dark Elixir Collectors", "CollectLootFrame.bmp", $CollectDarkLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
+   $mCount = LocateBuildings("Dark Elixir Collectors", $frame, $CollectDarkLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
 
    For $i = 0 To $mCount-1
 	  ;DebugWrite("Dark Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
@@ -24,7 +20,7 @@ Func CollectLoot()
    Next
 
    ; Find all the gold collectors that need clicking in the frame
-   $mCount = LocateBuildings("Gold Collectors", "CollectLootFrame.bmp", $CollectGoldLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
+   $mCount = LocateBuildings("Gold Collectors", $frame, $CollectGoldLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
 
    For $i = 0 To $mCount-1
 	  ;DebugWrite("Gold Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
@@ -37,7 +33,7 @@ Func CollectLoot()
    Next
 
    ; Find all the elixir collectors that need clicking in the frame
-   $mCount = LocateBuildings("Elixir Collectors", "CollectLootFrame.bmp", $CollectElixLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
+   $mCount = LocateBuildings("Elixir Collectors", $frame, $CollectElixLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
 
    For $i = 0 To $mCount-1
 	  ;DebugWrite("Elix Match " & $i & ": " & $mX[$i] & "," & $mY[$i])

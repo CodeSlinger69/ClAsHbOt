@@ -1,4 +1,4 @@
-Func AutoRaid(ByRef $timer, ByRef $THCorner)
+Func AutoRaid(ByRef $f, ByRef $timer, ByRef $THCorner)
    ;DebugWrite("AutoRaid()")
 
    Switch $gAutoStage
@@ -7,17 +7,17 @@ Func AutoRaid(ByRef $timer, ByRef $THCorner)
    Case $eAutoQueueTraining
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Queue Training")
 
-	  ResetToCoCMainScreen()
+	  ResetToCoCMainScreen($f)
 
-	  AutoQueueTroops(True)
+	  AutoQueueTroops($f, True)
 	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
    Case $eAutoWaitForTrainingToComplete
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
-		 ResetToCoCMainScreen()
-		 AutoQueueTroops(False)
+		 ResetToCoCMainScreen($f)
+		 AutoQueueTroops($f, False)
 		 $timer = TimerInit()
 	  EndIf
 
@@ -25,13 +25,17 @@ Func AutoRaid(ByRef $timer, ByRef $THCorner)
    Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
 
-	  ResetToCoCMainScreen()
+	  ResetToCoCMainScreen($f)
 
-	  Local $findResults = AutoRaidFindMatch(False, $THCorner)
+	  Local $findResults = AutoRaidFindMatch($f, False, $THCorner)
 	  If $findResults = False Then
 		 ; Reset if there was an error
-		 DebugWrite("Auto: Error finding match, resetting.")
-		 ResetToCoCMainScreen()
+		 DebugWrite("AutoRaid() Error finding match, resetting")
+		 ResetToCoCMainScreen($f)
+		 $gAutoStage = $eAutoQueueTraining
+	  ElseIf $findResults = $eAutoManualRaid Then
+		 DebugWrite("AutoRaid() Manual raid notified")
+		 ResetToCoCMainScreen($f)
 		 $gAutoStage = $eAutoQueueTraining
 	  Else
 		 $gAutoStage = $findResults
@@ -43,125 +47,98 @@ Func AutoRaid(ByRef $timer, ByRef $THCorner)
 
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
-		 AutoRaidExecuteRaidStrategy0()  ; BARCH
+		 AutoRaidExecuteRaidStrategy0($f)  ; BARCH
 	  Case 1
-		 AutoRaidExecuteRaidStrategy1()  ; GiBarch
+		 AutoRaidExecuteRaidStrategy1($f)  ; GiBarch
 	  Case 2
-		 AutoRaidExecuteRaidStrategy2()  ; BAM
+		 AutoRaidExecuteRaidStrategy2($f)  ; BAM
 	  Case 3
-		 AutoRaidExecuteRaidStrategy3()  ; Loonian
+		 AutoRaidExecuteRaidStrategy3($f)  ; Loonian
 	  EndSwitch
 
 	  $gAutoStage = $eAutoQueueTraining
-	  UpdateWinnings()
+	  UpdateWinnings($f)
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Raid Complete")
 
    Case $eAutoExecuteSnipe
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute TH Snipe")
 
-	  THSnipeExecute($THCorner)
+	  THSnipeExecute($f, $THCorner)
 	  $gAutoStage = $eAutoQueueTraining
-	  UpdateWinnings()
+	  UpdateWinnings($f)
 
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: TH Snipe Complete")
 
    EndSwitch
 EndFunc
 
-Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THCorner)
-   DebugWrite("FindAValidMatch()")
-
-   ; Make sure we are on the main screen
-   If WhereAmI() <> $eScreenMain Then
-	  DebugWrite("Find Match failed - not on main screen")
-	  Return False
-   EndIf
-
+Func AutoRaidFindMatch(ByRef $f, Const $returnFirstMatch, ByRef $THCorner)
    ; Click Attack
+   DebugWrite("AutoRaidFindMatch() Click Attack button")
    RandomWeightedClick($rMainScreenAttackButton)
 
    ; Wait for Find a Match button
-   Local $failCount = 10
-   While IsButtonPresent($rFindMatchScreenFindAMatchNoShieldButton)=False And _
-	  IsButtonPresent($rFindMatchScreenFindAMatchWithShieldButton)=False And _
-	  $failCount>0
-
-	  Sleep(1000)
-	  $failCount -= 1
-   WEnd
-
-   If $failCount = 0 Then
-	  DebugWrite("Find Match failed - timeout waiting for Find a Match button")
-	  ResetToCoCMainScreen()
+   If WaitForButton($f, 10000, $rFindMatchScreenFindAMatchNoShieldButton, $rFindMatchScreenFindAMatchWithShieldButton) = False Then
+	  DebugWrite("AutoRaidFindMatch() Find Match failed - timeout waiting for Find a Match button")
 	  Return False
    EndIf
 
    ; Click Find a Match
-   If IsButtonPresent($rFindMatchScreenFindAMatchNoShieldButton) Then
+   DebugWrite("AutoRaidFindMatch() Click Find a Match button")
+   If IsButtonPresent($f, $rFindMatchScreenFindAMatchNoShieldButton) Then
 	  RandomWeightedClick($rFindMatchScreenFindAMatchNoShieldButton)
-   Else
+   ElseIf IsButtonPresent($f, $rFindMatchScreenFindAMatchWithShieldButton) Then
 	  RandomWeightedClick($rFindMatchScreenFindAMatchWithShieldButton)
    EndIf
-
-   ; Wait for Next button
-   $failCount = 30
-   While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
-	  IsButtonPresent($rAndroidMessageButton1) = False And _
-	  IsButtonPresent($rAndroidMessageButton2) = False And _
-	  AttackingIsDisabled() = False And _
-	  $failCount>0
-
-	  Sleep(1000)
-	  $failCount -= 1
-   WEnd
-
-   If AttackingIsDisabled() Then
-	  DebugWrite("Find Match failed (AR1) - Attacking is Disabled")
-	  ResetToCoCMainScreen()
-
-	  $gPossibleKick = 2
-	  $gLastPossibleKickTime = TimerInit()
-
-	  Return False
-   EndIf
-
-   If $failCount = 0 Then
-	  DebugWrite("Find Match failed (AR1) - timeout waiting for Wait Raid screen")
-	  ResetToCoCMainScreen()
-
-	  If $gPossibleKick < 2 Then
-		 $gPossibleKick+=1
-		 DebugWrite("Possible kick detected, count = " & $gPossibleKick)
-	  EndIf
-
-	  If $gPossibleKick = 2 Then
-		 $gLastPossibleKickTime = TimerInit()
-	  EndIf
-
-	  Return False
-   EndIf
+   Sleep(1000)
 
    ; Return now, if we are calling this function to dump cups
-   If $returnFirstMatch Then Return True
+   If $returnFirstMatch Then
+	  If AutoWaitForNextButton($f) = False Then
+		 DebugWrite("AutoRaidFindMatch() Error returning on first match, waiting for Next button")
+		 Return False
+	  Else
+		 DebugWrite("AutoRaidFindMatch() Returning on first match")
+		 Sleep(2000)
+
+		 _GDIPlus_BitmapDispose($f)
+		 $f = CaptureFrame("AutoRaidFindMatch")
+		 Return True
+	  EndIf
+   EndIf
+
 
    ; Loop with Next until we get a match
    While 1
-	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _
-		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
+	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
 		 Return False
 	  EndIf
 
+	  ; Wait for Next button
+	  If AutoWaitForNextButton($f) = False Then
+		 Return False
+	  EndIf
+	  Sleep(2000)
+
+	  ; Grab new frame
+	  _GDIPlus_BitmapDispose($f)
+	  $f = CaptureFrame("AutoRaidFindMatch")
+
 	  ; Update my loot status on GUI
-	  GetMyLootNumbers()
+	  GetMyLootNumbers($f)
 
 	  ; Get this bases loot
 	  Local $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadBase
-	  AutoRaidGetDisplayedLoot($thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
+	  AutoRaidGetDisplayedLoot($f, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
 
 	  ; If raidable, then go do it
-	  Local $raidable = CheckForRaidableBase($thLevel, $gold, $elix, $dark, $cups, $deadbase)
+	  Local $raidable = CheckForRaidableBase($f, $thLevel, $gold, $elix, $dark, $cups, $deadbase)
 	  If $raidable<>False Then
-		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
+		 If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then
+			ShowFindMatchPopup()
+			$raidable = $eAutoManualRaid
+		 EndIf
+
 		 Return $raidable
 	  EndIf
 
@@ -170,7 +147,11 @@ Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THCorner)
 		 If $gold>=GUICtrlRead($GUI_GoldEdit) And $elix>=GUICtrlRead($GUI_ElixEdit) And $dark>=GUICtrlRead($GUI_DarkEdit) Then
 			Local $snipable = CheckForSnipableTH($THCorner, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
 			If $snipable<>False Then
-			   If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then ShowFindMatchPopup()
+			   If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED Then
+				  ShowFindMatchPopup()
+				  $snipable = $eAutoManualRaid
+			   EndIf
+
 			   Return $snipable
 			EndIf
 		 EndIf
@@ -178,78 +159,56 @@ Func AutoRaidFindMatch(Const $returnFirstMatch, ByRef $THCorner)
 
 	  ; Not raidable or snipable - click Next
 	  Sleep($gPauseBetweenNexts)
-	  If IsButtonPresent($rWaitRaidScreenNextButton) Then
+
+	  If IsButtonPresent($f, $rWaitRaidScreenNextButton) Then
+		 DebugWrite("AutoRaidFindMatch() Click Next button")
 		 RandomWeightedClick($rWaitRaidScreenNextButton)
-		 Sleep(500)
+		 Sleep(1000)
+
 	  Else
-		 DebugWrite("Next Button disappeared, resetting.")
+		 DebugWrite("AutoRaidFindMatch() Next Button disappeared, resetting.")
 
-		 If IsButtonPresent($rLiveRaidScreenEndBattleButton) Then
+		 If IsButtonPresent($f, $rLiveRaidScreenEndBattleButton) Then
 			RandomWeightedClick($rLiveRaidScreenEndBattleButton)
-			Sleep(1000)
 
-			If IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton) Then
+			If WaitForButton($f, 5000, $rLiveRaidScreenEndBattleConfirmButton) = False Then
+			   DebugWrite("AutoRaidFindMatch() Timeout waiting for End Battle Confirm button")
+			Else
 			   RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
 			   Sleep(1000)
 			EndIf
-
-		 Else
-			ResetToCoCMainScreen()
-
 		 EndIf
 
 		 Return False
 	  EndIf
+   WEnd
+EndFunc
 
-	  ; Sleep and wait for Next button to reappear
-	  $failCount = 30
-	  While IsButtonPresent($rWaitRaidScreenNextButton) = False And _
-			IsButtonPresent($rAndroidMessageButton1) = False And _
-			IsButtonPresent($rAndroidMessageButton2) = False And _
-			AttackingIsDisabled() = False And _
-			$failCount>0
-
-		 Sleep(1000)
-		 $failCount -= 1
-	  WEnd
-
-	  If AttackingIsDisabled() Then
-		 DebugWrite("Find Match failed (AR2) - Attacking is Disabled")
-		 If WhereAmI() = $eScreenWaitRaid Then
-			RandomWeightedClick($rLiveRaidScreenEndBattleButton)
-			Sleep(500)
-		 Else
-			ResetToCoCMainScreen()
-		 EndIf
-
+Func AutoWaitForNextButton(ByRef $f)
+   If WaitForButton($f, 30000, $rWaitRaidScreenNextButton) = False Then
+	  If @error = $eErrorAttackingDisabled Then
+		 DebugWrite("Find Match failed - Attacking is Disabled")
 		 $gPossibleKick = 2
 		 $gLastPossibleKickTime = TimerInit()
 
-		 Return False
-	  EndIf
-
-	  If $failCount = 0 Or IsButtonPresent($rAndroidMessageButton1) Or IsButtonPresent($rAndroidMessageButton2) Then
-		 If $failCount = 0 Then
-			DebugWrite("Find Match failed (AR2) - timeout waiting for Wait Raid screen")
-		 Else
-			DebugWrite("Find Match failed (AR2) - Android message box popup")
-		 EndIf
+	  Else
+		 DebugWrite("Find Match failed - timeout waiting for Wait Raid screen")
 
 		 If $gPossibleKick < 2 Then
 			$gPossibleKick+=1
 			DebugWrite("Possible kick detected, count = " & $gPossibleKick)
 		 EndIf
 
-		 If $gPossibleKick > 0 Then
+		 If $gPossibleKick = 2 Then
 			$gLastPossibleKickTime = TimerInit()
 		 EndIf
 
-		 ResetToCoCMainScreen()
-
-		 Return False
 	  EndIf
-   WEnd
 
+	  Return False
+   EndIf
+
+   Return True
 EndFunc
 
 Func ShowFindMatchPopup()
@@ -259,10 +218,10 @@ Func ShowFindMatchPopup()
 	  Sleep(100)
    Next
 
-   MsgBox($MB_OK, "Match!", "Click OK after completing raid," & @CRLF & "or deciding to skip this raid.")
+   MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Match!", "Click OK after completing raid," & @CRLF & "or deciding to skip this raid.")
 EndFunc
 
-Func CheckForRaidableBase(Const $townHall, Const $gold, Const $elix, Const $dark, Const $cups, Const $deadbase)
+Func CheckForRaidableBase(Const $frame, Const $townHall, Const $gold, Const $elix, Const $dark, Const $cups, Const $deadbase)
    ; Grab settings from the GUI
    Local $GUIGold = GUICtrlRead($GUI_GoldEdit)
    Local $GUIElix = GUICtrlRead($GUI_ElixEdit)
@@ -274,73 +233,87 @@ Func CheckForRaidableBase(Const $townHall, Const $gold, Const $elix, Const $dark
 
    ; Dead base check
    If $GUIDeadBasesOnly And $deadbase=False Then
-	  DebugWrite("CheckForRaidableBase() No match (deadbase):  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  DebugWrite("CheckForRaidableBase() No match (deadbase)")
 	  Return False
    EndIf
 
    ; Town Hall match?
    If $townHall=-1 Then
-	  DebugWrite("CheckForRaidableBase() No match, could not find Town Hall.  Obscured? " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  DebugWrite("CheckForRaidableBase() No match, (obscured Town Hall?)")
 	  Return False
    EndIf
 
    If $townHall>$GUITownHall Then
-	  DebugWrite("CheckForRaidableBase() No match (town hall):  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase)
+	  DebugWrite("CheckForRaidableBase() No match (town hall)")
 	  Return False
    EndIf
 
-   ; Adjust available loot to exclude storages
-   Local $adjGold=$gold, $adjElix=$elix, $adjDark=$dark
+   ; Adjust available loot to exclude storages?
    If $GUIIgnoreStorages And ($myTHLevel-$townHall<2 Or $myTHLevel>=11) Then ; "ignore storages" only valid if target TH<2 levels from my TH level. or my TH level>=11
-	  AdjustLootForStorages($townHall, $gold, $elix, $adjGold, $adjElix)
+	  ; Check unadjusted first to possibly skip adjustment scan
+	  If $gold<$GUIGold Or $elix<$GUIElix Or $dark<$GUIDark Then
+		 DebugWrite("CheckForRaidableBase() No match (loot)")
+		 Return False
+	  EndIf
+
+	  Local $adjGold=$gold, $adjElix=$elix
+	  AdjustLootForStorages($frame, $townHall, $gold, $elix, $adjGold, $adjElix)
+
+	  If $adjGold<$GUIGold Or $adjElix<$GUIElix Or $dark<$GUIDark Then
+		 DebugWrite("CheckForRaidableBase() No match (adj loot) (Adj: " & $adjGold & " / " & $adjElix & ")" )
+		 Return False
+	  Else
+		 DebugWrite("CheckForRaidableBase() Match!" & @CRLF)
+		 Return $eAutoExecuteRaid
+	  EndIf
    EndIf
 
-   ; Do we have a gold/elix/dark/townhall/dead match?
-   If $adjGold>=$GUIGold And $adjElix>=$GUIElix And $adjDark>=$GUIDark Then
-	  DebugWrite("CheckForRaidableBase() Found Match: " & $gold & " / " & $elix & " / " & $dark & " / " & $townHall & " / " & $deadBase & _
-				 " (Adj: " & $adjGold & " / " & $adjElix & ")" & @CRLF)
-	  Return $eAutoExecuteRaid
-   Else
-	  DebugWrite("CheckForRaidableBase() No match:  " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $townHall & " / " & $deadBase & _
-				 " (Adj: " & $adjGold & " / " & $adjElix & ")" )
+   ; Unadjusted loot match?
+   If $gold<$GUIGold Or $elix<$GUIElix Or $dark<$GUIDark Then
+	  DebugWrite("CheckForRaidableBase() No match (loot)")
 	  Return False
+   Else
+	  DebugWrite("CheckForRaidableBase() Match!" & @CRLF)
+	  Return $eAutoExecuteRaid
    EndIf
 EndFunc
 
-Func AutoRaidGetDisplayedLoot(ByRef $thLevel, ByRef $thLeft, ByRef $thTop, _
+Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef $thTop, _
 						      ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $deadbase)
 
-   $gold = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   $elix = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $gold = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $elix = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 
-   If IsTextBoxPresent($rDarkTextBox)=False Then
-	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   If IsTextBoxPresent($frame, $rDarkTextBox)=False Then
+	  $cups = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    Else
-	  $dark = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  $cups = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rCupsTextBoxWithDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  $dark = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  $cups = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rCupsTextBoxWithDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    EndIf
 
-   $deadBase = IsColorPresent($rDeadBaseIndicatorColor)
+   $deadBase = IsColorPresent($frame, $rDeadBaseIndicatorColor)
 
    ; Get Town Hall level
-   $thLevel = GetTownHallLevel($thLeft, $thTop)
+   $thLevel = GetTownHallLevel($frame, $thLeft, $thTop)
 
    SetAutoRaidResults($gold, $elix, $dark, $cups, $thLevel, $deadBase)
+
+   DebugWrite("AutoRaidGetDisplayedLoot() " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $thLevel & " / " & $deadBase)
+
 EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
-Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   GrabFrameToFile2("StorageUsageFrame.bmp")
+Func AdjustLootForStorages(Const $frame, Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
    Local $x, $y, $conf, $matchIndex
    Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP($frame, $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
 
    If $matchIndex = -1 Then
 	  DebugWrite("AdjustLootForStorages() Could not find gold storage match.")
-	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameGold" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
+	  _GDIPlus_ImageSaveToFile($frame, "StorageUsageFrameGold" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
 	  Local $s = $GoldStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
@@ -352,11 +325,11 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Elixir
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP($frame, $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
 
    If $matchIndex = -1 Then
 	  DebugWrite("AdjustLootForStorages() Could not find elixir storage match.")
-	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameElix" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
+	  _GDIPlus_ImageSaveToFile($frame, "StorageUsageFrameElix" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
 	  Local $s = $ElixStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
@@ -368,9 +341,9 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Dark - Just temporarily, to fill out saved bitmaps
-   ScanFrameForBestBMP("StorageUsageFrame.bmp", $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   ScanFrameForBestBMP($frame, $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
    If $matchIndex = -1 Then
-	  FileCopy("StorageUsageFrame.bmp", "StorageUsageFrameDark" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
+	  _GDIPlus_ImageSaveToFile($frame, "StorageUsageFrameDark" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    EndIf
 
 EndFunc
@@ -469,7 +442,7 @@ Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level
 EndFunc
 
 ; howMany: $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
-Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
+Func DeployTroopsToSides(ByRef $f, Const $troop, ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
    DebugWrite("DeployTroopsToSides()")
    Local $xClick, $yClick
    Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
@@ -512,7 +485,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
    If $howMany=$eAutoRaidDeploySixtyPercent Or $howMany=$eAutoRaidDeployFiftyPercent Then Return
 
    ; If we are deploying all, then check remaining and continue to deploy to make sure they all get out there
-   UpdateRaidTroopCounts($index)
+   UpdateRaidTroopCounts($f, $index)
 
    $troopsAvailable = $index[$troop][4]
 
@@ -531,16 +504,16 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
 	  Next
    EndIf
 
-   UpdateRaidTroopCounts($index)
+   UpdateRaidTroopCounts($f, $index)
    $troopsAvailable = $index[$troop][4]
 
    If $troopsAvailable>0 Then
 	  DebugWrite("Finishing to safe boxes: " & $troopsAvailable & " troops available.")
-	  DeployTroopsToSafeBoxes($troop, $index, $dir)
+	  DeployTroopsToSafeBoxes($f, $troop, $index, $dir)
    EndIf
 EndFunc
 
-Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
+Func DeployTroopsToSafeBoxes(ByRef $f, Const $troop, ByRef $index, Const $dir)
    DebugWrite("DeployTroopsToSafeBoxes()")
    Local $xClick, $yClick, $count
    Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
@@ -560,7 +533,7 @@ Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
    Next
 
    ; Deploy half to right
-   UpdateRaidTroopCounts($index)
+   UpdateRaidTroopCounts($f, $index)
    $troopsAvailable = $index[$troop][4]
 
    DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
@@ -603,20 +576,37 @@ Func GetAutoRaidClickPoints(Const $order, Const $topBotDirection, Const $numberP
    _ArraySort($points, $order)
 EndFunc
 
-Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed, Const $wardenDeployed)
-   DebugWrite("WaitForBattleEnd()")
-   ; Wait for battle end screen
+Func AutoRaidEndBattle(ByRef $f)
+   DebugWrite("AutoRaidEndBattle() Clicking End Battle button")
+   RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 
+   ; Wait for confirmation button
+   WaitForButton($f, 5000, $rLiveRaidScreenEndBattleConfirmButton)
+
+   ; Click confirmation button
+   DebugWrite("AutoRaidEndBattle() Clicking End Battle confirmation button")
+   RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
+
+   ; Wait for main screen
+   If WaitForScreen($f, 5000, $eScreenMain, $eScreenEndBattle) = False Then
+	  DebugWrite("AutoRaidEndBattle() Error waiting for main screen")
+   EndIf
+EndFunc
+
+Func WaitForBattleEnd(ByRef $f, Const $kingDeployed, Const $queenDeployed, Const $wardenDeployed)
    Local $lastGold = 0, $lastElix = 0, $lastDark = 0
    Local $activeTimer = TimerInit()
+   Local $maxTimer = TimerInit()
 
-   For $i = 1 To 180  ; 3 minutes max until battle end screen appears
-	  If WhereAmI() = $eScreenEndBattle Then ExitLoop
+   While TimerDiff($maxTimer)<$gMaxRaidDuration
+	  If WhereAmI($f) = $eScreenEndBattle Then
+		 ExitLoop
+	  EndIf
 
 	  ; Get available loot remaining
-	  Local $goldRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  Local $elixRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  Local $darkRemaining = Number(ScrapeFuzzyText($gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $goldRemaining = Number(ScrapeFuzzyText($f, $gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $elixRemaining = Number(ScrapeFuzzyText($f, $gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $darkRemaining = Number(ScrapeFuzzyText($f, $gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 
 	  ; If loot has changed, then reset timer
 	  If $goldRemaining<>$lastGold Or $elixRemaining<>$lastElix Or $darkRemaining<>$lastDark Then
@@ -628,77 +618,60 @@ Func WaitForBattleEnd(Const $kingDeployed, Const $queenDeployed, Const $wardenDe
 
 	  ; End early?
 	  ; If $gAutoRaidEndDelay=0, the use the legacy logic: If 30 seconds have passed with no change in available loot, then
-	  ;   exit battle, but only if we have not deployed a king or queen.  If BK or AQ deployed, then do not end early.
+	  ;   exit battle, but only if we have not deployed a hero.  If a hero has been deployed, then do not end early.
 	  ; Otherwise end after $gAutoRaidEndDelay number of seconds.
 	  If ($gAutoRaidEndDelay=0 And TimerDiff($activeTimer)>30000 And $kingDeployed=False And $queenDeployed=False And $wardenDeployed=False) Or _
 		 ($gAutoRaidEndDelay<>0 And TimerDiff($activeTimer)>$gAutoRaidEndDelay*1000) Then
 
 		 If $gAutoRaidEndDelay=0 Then
-			DebugWrite("No change in available loot for 30 seconds, ending battle.")
+			DebugWrite("WaitForBattleEnd() No change in available loot for 30 seconds, ending battle.")
 		 Else
-			DebugWrite("No change in available loot for " & $gAutoRaidEndDelay & " seconds, ending battle.")
+			DebugWrite("WaitForBattleEnd() No change in available loot for " & $gAutoRaidEndDelay & " seconds, ending battle.")
 		 EndIf
 
-		 ; Click End Battle button
-		 RandomWeightedClick($rLiveRaidScreenEndBattleButton)
-
-		 ; Wait for confirmation button
-		 Local $failCount=20
-		 While IsButtonPresent($rLiveRaidScreenEndBattleConfirmButton)=False And $failCount>0
-			Sleep(100)
-			$failCount-=1
-		 WEnd
-
-		 If $failCount>0 Then
-			RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
-			Sleep(500)
-		 EndIf
+		 AutoRaidEndBattle($f)
+		 ExitLoop
 	  EndIf
 
+	  _GDIPlus_BitmapDispose($f)
+	  $f = CaptureFrame("WaitForBattleEnd1")
 	  Sleep(1000)
-   Next
+   WEnd
 
-   Sleep(2000)
-
-   If WhereAmI() = $eScreenEndBattle Then
-	  GrabFrameToFile2("EndBattleFrame.bmp")
-	  Local $goldWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $elixWin = ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $darkWin = IsTextBoxPresent($rEndBattleDarkTextBox) ? ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
-	  Local $cupsWin = IsTextBoxPresent($rEndBattleCupsWithDETextBox) ? _
-					   ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleCupsWithDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : _
-					   ScrapeFuzzyText($gBattleEndWinningsCharacterMaps, $rEndBattleCupsNoDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+   If WaitForScreen($f, 5000, $eScreenEndBattle) Then
+	  Local $goldWin = ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $elixWin = ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+	  Local $darkWin = IsTextBoxPresent($f, $rEndBattleDarkTextBox) ? ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
+	  Local $cupsWin = IsTextBoxPresent($f, $rEndBattleCupsWithDETextBox) ? _
+					   ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsWithDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : _
+					   ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsNoDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
 
 	  Local $goldBonus = 0
 	  Local $elixBonus = 0
 	  Local $darkBonus = 0
-	  If IsTextBoxPresent($rEndBattleBonusGoldTextBox) Or _
-		 IsTextBoxPresent($rEndBattleBonusElixTextBox) Or _
-		 IsTextBoxPresent($rEndBattleBonusDarkTextBox) Then
+	  If IsTextBoxPresent($f, $rEndBattleBonusGoldTextBox) Or _
+		 IsTextBoxPresent($f, $rEndBattleBonusElixTextBox) Or _
+		 IsTextBoxPresent($f, $rEndBattleBonusDarkTextBox) Then
 
-		 $goldBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusGoldTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $goldBonus = ScrapeFuzzyText($f, $gBattleEndBonusCharacterMaps, $rEndBattleBonusGoldTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
-		 $elixBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusElixTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
-		 $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
-		 $darkBonus = ScrapeFuzzyText($gBattleEndBonusCharacterMaps, $rEndBattleBonusDarkTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $elixBonus = ScrapeFuzzyText($f, $gBattleEndBonusCharacterMaps, $rEndBattleBonusElixTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
+		 $elixBonus = StringLeft($f, 1) = "+" ? StringMid($elixBonus, 2) : 0
+		 $darkBonus = ScrapeFuzzyText($f, $gBattleEndBonusCharacterMaps, $rEndBattleBonusDarkTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
 		 $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
 	  EndIf
 
-	  DebugWrite("Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
-	  DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
+	  DebugWrite("WaitForBattleEnd() Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
+	  DebugWrite("WaitForBattleEnd() Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
 
 	  ; Close battle end screen
+	  DebugWrite("WaitForBattleEnd() Clicking Return Home button")
+	  Sleep(500)
 	  RandomWeightedClick($rBattleHasEndedScreenReturnHomeButton)
 
 	  ; Wait for main screen
-	  Local $failCount=10
-	  While WhereAmI()<>$eScreenMain And $failCount>0
-		 Sleep(1000)
-		 $failCount-=1
-	  WEnd
-
-	  If $failCount=0 Then
-		 DebugWrite("Battle end - error waiting for main screen")
+	  If WaitForScreen($f, 10000, $eScreenMain) = False Then
+		 DebugWrite("WaitForBattleEnd() Error waiting for main screen")
 	  EndIf
    EndIf
 EndFunc
@@ -713,14 +686,17 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 	  $index[$i][4] = 0
    Next
 
+   ;
    ; Check buttons 2-11
+   ;
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
 
-   GrabFrameToFile2("AvailableRaidTroopsFrame2.bmp", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
+   Local $frame = CaptureFrame("FindRaidTroopSlots2to11", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableRaidTroopsFrame2to11.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2to11.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
 	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
 
 	  If $split[2] > $gConfidenceRaidTroopSlot Then
@@ -733,11 +709,16 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 	  EndIf
    Next
 
+   _GDIPlus_BitmapDispose($frame)
+
+   ;
    ; Check first button
+   ;
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
 
-   GrabFrameToFile2("AvailableRaidTroopsFrame1.bmp", $rRaidTroopBox1[0], $rRaidTroopBox1[1], $rRaidTroopBox1[2], $rRaidTroopBox1[3])
+   Local $frame = CaptureFrame("FindRaidTroopSlots1", $rRaidTroopBox1[0], $rRaidTroopBox1[1], $rRaidTroopBox1[2], $rRaidTroopBox1[3])
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableRaidTroopsFrame1.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
@@ -753,9 +734,14 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 ExitLoop ; only one possible button in this pass
 	  EndIf
    Next
+
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
-Func UpdateRaidTroopCounts(ByRef $index)
+Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
+   _GDIPlus_BitmapDispose($f)
+   $f = CaptureFrame("UpdateRaidTroopCounts")
+
    For $i = 0 To UBound($index) - 1
 	  If $index[$i][0] <> -1 Then
 
@@ -765,14 +751,14 @@ Func UpdateRaidTroopCounts(ByRef $index)
 			Local $loc[4] = [ $index[$i][0]+31, $rRaidTroopBox1[3], $rRaidTroopSelectedColor[2], $rRaidTroopSelectedColor[3] ]
 			;DebugWrite("GetAvailableTroops() loc = " & $loc[0] & " " & $loc[1] & " " & Hex($loc[2]) & " " & $loc[3])
 
-			If IsColorPresent($loc) Then
+			If IsColorPresent($f, $loc) Then
 			   ; Troop is "selected"
 			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1]-4, $index[$i][2]-5, $index[$i][1]+10, _
 									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
 									 0, 0, 0, 0]
 			   ;DebugWrite($textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 			   ;	$textBox[5] & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
-			   Local $t = ScrapeFuzzyText($gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
+			   Local $t = ScrapeFuzzyText($f, $gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
 			  ; DebugWrite("GetAvailableTroops() (selected) = " & $t)
 
 			Else
@@ -780,7 +766,7 @@ Func UpdateRaidTroopCounts(ByRef $index)
 			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
 									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
 									 0, 0, 0, 0]
-			   Local $t = ScrapeFuzzyText($gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
+			   Local $t = ScrapeFuzzyText($f, $gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
 			   ;DebugWrite("GetAvailableTroops() (not selected) = " & $t)
 
 			EndIf
@@ -791,7 +777,7 @@ Func UpdateRaidTroopCounts(ByRef $index)
    Next
 EndFunc
 
-Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $direction, Const $boxIndex, _
+Func DeployAndMonitorHeroes(ByRef $f, Const ByRef $troopIndex, Const $deployStart, Const $direction, Const $boxIndex, _
 						    ByRef $kingDeployed, ByRef $queenDeployed, ByRef $wardenDeployed)
 
    Local $kingButton[4] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], $troopIndex[$eTroopKing][3]]
@@ -840,6 +826,10 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 	      ($wardenPoweredUp=False And $troopIndex[$eTroopWarden][0]<>-1)) And _
 		 TimerDiff($deployStart) < $gMaxRaidDuration
 
+	  ; Get frame
+	  _GDIPlus_BitmapDispose($f)
+	  $f = CaptureFrame("DeployAndMonitorHeroes")
+
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then
 		 Local $kingColor[4] = [ _
@@ -848,7 +838,7 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 			$rKingQueenHealthGreenColor[2], _
 			$rKingQueenHealthGreenColor[3]]
 
-		 If IsColorPresent($kingColor) = False Then
+		 If IsColorPresent($f, $kingColor) = False Then
 			;GrabFrameToFile("PreKingPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up King")
 			RandomWeightedClick($kingButton)
@@ -864,7 +854,7 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 			$rKingQueenHealthGreenColor[2], _
 			$rKingQueenHealthGreenColor[3]]
 
-		 If IsColorPresent($queenColor) = False Then
+		 If IsColorPresent($f, $queenColor) = False Then
 			;GrabFrameToFile("PreQueenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up Queen")
 			RandomWeightedClick($queenButton)
@@ -880,7 +870,7 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 			$rWardenHealthGreenColor[2], _
 			$rWardenHealthGreenColor[3]]
 
-		 If IsColorPresent($wardenColor) = False Then
+		 If IsColorPresent($f, $wardenColor) = False Then
 			;GrabFrameToFile("PreWardenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up Warden")
 			RandomWeightedClick($wardenButton)
@@ -928,6 +918,6 @@ Func DeployAndMonitorHeroes(Const ByRef $troopIndex, Const $deployStart, Const $
 		 $wardenDeployed = True
 	  EndIf
 
-	  Sleep(1000)
+	  Sleep(500)
    WEnd
 EndFunc

@@ -15,6 +15,7 @@ Func ReadSettings()
    ; Debug
    $gScraperDebug = _Boolean(IniRead($gIniFile, "Debug", "Scraper Debug", False))
    $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
+   $gDebugSaveScreenCaptures = _Boolean(IniRead($gIniFile, "Debug", "Save Screen Captures", False))
 
    ; Mouse
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding
@@ -67,6 +68,11 @@ Func ReadSettings()
    $gDonateMatchTroopStrings[$eTroopGolem] = IniRead($gIniFile, "Donate", "Golem Match Strings", "barb")
    $gDonateMatchTroopStrings[$eTroopWitch] = IniRead($gIniFile, "Donate", "Witch Match Strings", "barb")
    $gDonateMatchTroopStrings[$eTroopLavaHound] = IniRead($gIniFile, "Donate", "Lava Hound Match Strings", "barb")
+
+   Global $gDonateMatchSpellStrings[$eSpellCount]
+   $gDonateMatchSpellStrings[$eSpellPoison] = IniRead($gIniFile, "Donate", "Poison Match Strings", "poison")
+   $gDonateMatchSpellStrings[$eSpellEarthquake] = IniRead($gIniFile, "Donate", "Earthquake Match Strings", "quake")
+   $gDonateMatchSpellStrings[$eSpellHaste] = IniRead($gIniFile, "Donate", "Haste Match Strings", "haste")
 
    Global $gDonateMatchNegativeStrings = StringSplit(IniRead($gIniFile, "Donate", "Negative Match Strings", "but|except"), "|")
 

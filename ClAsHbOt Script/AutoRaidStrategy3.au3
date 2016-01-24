@@ -6,7 +6,7 @@
 ;
 ; Note: Train 20 balloons, rest minions
 
-Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy3(ByRef $f, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
    DebugWrite("FillBarracksStrategy3(), " & ($initialFillFlag ? "initial fill." : "top up.") )
 
    Local $numberOfBalloons = 20
@@ -14,37 +14,38 @@ Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $builtTroopCounts
    ; Loop through each standard barracks window and queue troops
    Local $barracksCount = ($initialFillFlag ? 1 : 5)
 
-   While $barracksCount <= 5
+   While $barracksCount<=5 And (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then try clicking dark
 	  If $barracksCount<=4 Then
-		 If OpenNextAvailableStandardBarracks() = False Then
+		 If OpenNextAvailableStandardBarracks($f) = False Then
 			$barracksCount = 5
 		 EndIf
 	  EndIf
 
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then we are done
 	  If $barracksCount>=5 Then
-		 If OpenNextAvailableDarkBarracks() = False Then
+		 If OpenNextAvailableDarkBarracks($f) = False Then
 			ExitLoop
 		 EndIf
 	  EndIf
 
 	  ; See if we are full up
-	  If IsColorPresent($rArmyCampsFullColor) Then
+	  If IsColorPresent($f, $rArmyCampsFullColor) Then
 		 $armyCampsFull = True
 		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
 	  EndIf
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+	  FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Specified balloons in each barracks on initial fill
 	  If $initialFillFlag And $barracksCount>=1 And $barracksCount<=4 Then
 		 ; Dequeue troops
-		 DequeueTroops()
-		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+		 DequeueTroops($f)
+
+		 FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
 
 		 QueueTroopsEvenly($eTroopBalloon, $troopSlots, $numberOfBalloons)
 	  EndIf
@@ -55,10 +56,15 @@ Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $builtTroopCounts
 	  Do
 		 If $barracksCount=5 Then
 			; This is intentionally only filling one dark barracks with minions, so that the balloons have time to train
-			$troopsToFill = FillBarracksWithTroops($eTroopMinion, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($f, $eTroopMinion, $troopSlots)
 		 EndIf
 
 		 $fillTries+=1
+
+		 If $troopsToFill>0 And $fillTries<6 Then
+			_GDIPlus_BitmapDispose($f)
+			$f = CaptureFrame("FillBarracksStrategy0")
+		 EndIf
 	  Until $troopsToFill=0 Or $fillTries>=6 Or _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED)
 
@@ -66,13 +72,13 @@ Func FillBarracksStrategy3(Const $initialFillFlag, Const ByRef $builtTroopCounts
    WEnd
 EndFunc
 
-Func AutoRaidExecuteRaidStrategy3()
+Func AutoRaidExecuteRaidStrategy3(ByRef $f)
    DebugWrite("AutoRaidExecuteRaidStrategy3()")
 
    Local $troopIndex[$eTroopCount][5]
 
    ; Determine attack direction
-   Local $direction = AutoRaidStrategy3GetDirection()
+   Local $direction = AutoRaidStrategy3GetDirection($f)
 
    ;
    ; Deploy troops
@@ -81,7 +87,7 @@ Func AutoRaidExecuteRaidStrategy3()
 
    ; 1st wave (only one wave in this strategy)
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidTroopCounts($f, $troopIndex)
 
    DebugWrite("Available Balloons: " & $troopIndex[$eTroopBalloon][4])
    DebugWrite("Avaliable Minions: " & $troopIndex[$eTroopMinion][4])
@@ -89,35 +95,32 @@ Func AutoRaidExecuteRaidStrategy3()
    ; Deploy all balloons
    If $troopIndex[$eTroopBalloon][4] > 0 Then
 	  DebugWrite("Deploying all balloons (" & $troopIndex[$eTroopBalloon][4] & ")")
-	  DeployTroopsToSides($eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($f, $eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy all minions
    If $troopIndex[$eTroopMinion][4] > 0 Then
 	  DebugWrite("Deploying all minions (" & $troopIndex[$eTroopMinion][4] & ")")
-	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($f, $eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy and monitor heroes
    Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
-   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
+   DeployAndMonitorHeroes($f, $troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($kingDeployed, $queenDeployed, $wardenDeployed)
+   WaitForBattleEnd($f, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc
 
-Func AutoRaidStrategy3GetDirection()
+Func AutoRaidStrategy3GetDirection(Const $f)
    DebugWrite("AutoRaidStrategy3GetDirection()")
 
    ; Count the collectors, by top/bottom half
    Local $matchX[1], $matchY[1], $matchCount
 
-   ; Grab frame
-   GrabFrameToFile2("LocateCollectorsFrame.bmp")
-
-   $matchCount = LocateBuildings("All collectors", "LocateCollectorsFrame.bmp", $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
+   $matchCount = LocateBuildings("All collectors", $f, $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To $matchCount-1

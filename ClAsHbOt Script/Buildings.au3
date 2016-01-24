@@ -1,20 +1,14 @@
-Func GetTownHallLevel(ByRef $left, ByRef $top, Const $x1 = -1, Const $y1 = -1, Const $x2 = -1, Const $y2 = -1)
-   ;DebugWrite("GetTownHallLevel()")
-
-   ; Method = 0: CV_TM_SQDIFF, 1: CV_TM_SQDIFF_NORMED, 2: CV_TM_CCORR, 3: CV_TM_CCORR_NORMED
-   ;          4: CV_TM_CCOEFF, 5: CV_TM_CCOEFF_NORMED
-
+Func GetTownHallLevel(Const $frame, ByRef $left, ByRef $top)
    ; Returns best TH level match, -1 if no good match
    Local $bestMatch, $bestConfidence
 
-   ; Grab and scan frame
-   GrabFrameToFile2("TownHallFrame.bmp", $x1, $y1, $x2, $y2)
-   ScanFrameForBestBMP("TownHallFrame.bmp", $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
+   ScanFrameForBestBMP($frame, $TownHallBMPs, $gConfidenceTownHall, $bestMatch, $bestConfidence, $left, $top)
 
    If $bestMatch <> -1 Then
 	  ;DebugWrite("Likely TH Level " & $bestMatch+6 & " conf: " & $bestConfidence)
 	  Return $bestMatch+6
    Else
+	  If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "TownHallObscured.bmp")
 	  Return -1
    EndIf
 EndFunc
@@ -22,12 +16,14 @@ EndFunc
 Func LocateBuildings(Const $type, Const $frame, Const ByRef $buildingBMPs, Const $buildingConfidence, ByRef $matchX, ByRef $matchY)
    DebugWrite("LocateBuildings() " & $type)
 
+   If $gDebugSaveScreenCaptures Then  _GDIPlus_ImageSaveToFile($frame, "LocateBuildings.bmp")
+
    ; Find all the buildings of the specified type
    Local $matchCount = 0
 
    For $i = 0 To UBound($buildingBMPs)-1
 	  ; Get matches for this resource
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", $frame, _
+	  Local $res = DllCall("ImageMatch.dll", "str", "FindAllMatches", "str", "LocateBuildings.bmp", _
 			   "str", "Images\"&$buildingBMPs[$i], "int", 3, "int", 6, "double", $buildingConfidence)
 	  Local $split = StringSplit($res[0], "|", 2)
 	  ;DebugWrite("Num matches " & $buildingBMPs[$i] & ": " & $split[0])
