@@ -95,7 +95,7 @@ Global $rWaitForPersonalBreakPoint1Color[4] = [164, 194, 0xff1919, 0] ; "You mus
 Global $rWaitForPersonalBreakPoint2Color[4] = [459, 211, 0xff1919, 0]
 Global $rWaitForPersonalBreakPoint3Color[4] = [697, 195, 0xff1919, 0]
 Global $rArmyManagerSelectedColor[4] = [0, 0, 0xE8E8E0, 0]
-Global $rRaidTroopSelectedColor[4] = [32, -7, 0xffffff, 0 ]
+Global $rRaidTroopSelectedColor[4] = [5, -7, 0xffffff, 24]
 Global $rZoomedOutFullColor[4] = [$gScreenCenter[0], 1, 0x000000, 0]
 
 ; Bounding Boxes

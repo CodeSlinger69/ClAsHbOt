@@ -11,7 +11,7 @@ Dec 10 Update To Do
 - Test BAM and loonion strategies
 
 Massive rework todo
-- Battle end bonus char maps
+- Battle end bonus char maps - "74" needed?
 - $rAttackingDisabledPoint1Color, 2, 3
 
 #ce
