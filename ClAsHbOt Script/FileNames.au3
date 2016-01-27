@@ -26,17 +26,17 @@ Global $CollectorBMPs[12] = [ _
   "Collectors\DarkCollectorL6.bmp", "Collectors\DarkCollectorL5.bmp", "Collectors\DarkCollectorL4.bmp", _
   "Collectors\DarkCollectorL3.bmp"]
 
-Global $GoldStorageBMPs[12] = [ _
-  "Storages\GoldStorageL12.00.bmp", _
+Global $GoldStorageBMPs[14] = [ _
+  "Storages\GoldStorageL12.00.bmp", "Storages\GoldStorageL12.25.bmp", "Storages\GoldStorageL12.50.bmp", _
   "Storages\GoldStorageL12.75.bmp", "Storages\GoldStorageL12.90.bmp", _
   "Storages\GoldStorageL11.00.bmp", "Storages\GoldStorageL11.25.bmp", "Storages\GoldStorageL11.50.bmp", _
   "Storages\GoldStorageL11.75.bmp", "Storages\GoldStorageL11.90.bmp", _
   "Storages\GoldStorageL10.00.bmp", "Storages\GoldStorageL10.25.bmp", "Storages\GoldStorageL10.50.bmp", _
   "Storages\GoldStorageL10.90.bmp" ]
 
-Global $ElixStorageBMPs[13] = [ _
-  "Storages\ElixStorageL12.25.bmp", "Storages\ElixStorageL12.50.bmp", _
-  "Storages\ElixStorageL12.90.bmp", _
+Global $ElixStorageBMPs[15] = [ _
+  "Storages\ElixStorageL12.00.bmp", "Storages\ElixStorageL12.25.bmp", "Storages\ElixStorageL12.50.bmp", _
+  "Storages\ElixStorageL12.75.bmp", "Storages\ElixStorageL12.90.bmp", _
   "Storages\ElixStorageL11.00.bmp", "Storages\ElixStorageL11.25.bmp", "Storages\ElixStorageL11.50.bmp", _
   "Storages\ElixStorageL11.75.bmp", "Storages\ElixStorageL11.90.bmp", _
   "Storages\ElixStorageL10.00.bmp", "Storages\ElixStorageL10.25.bmp", "Storages\ElixStorageL10.50.bmp", _

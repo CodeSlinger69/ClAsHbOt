@@ -106,7 +106,7 @@ Func TestRaidTroopsCount()
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
 
    Local $frame = CaptureFrame("TestRaidTroopsCount")
-   ;_GDIPlus_ImageSaveToFile($frame, "TestRaidTroopsCount.bmp")
+   ;SaveDebugImage($frame, "TestRaidTroopsCount.bmp")
    UpdateRaidTroopCounts($frame, $troopIndex)
 
    For $i=0 To $eTroopCount-1

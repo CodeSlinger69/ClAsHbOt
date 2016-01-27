@@ -7,6 +7,7 @@ Func CheckForAndroidMessageBox(ByRef $f)
 	  DebugWrite("CheckForAndroidMessageBox() Clicking short Android Msg Box")
 
 	  RandomWeightedClick($rAndroidMessageButton1)
+	  Sleep(1000)
 
 	  $boxPresent = True
    EndIf
@@ -15,6 +16,7 @@ Func CheckForAndroidMessageBox(ByRef $f)
 	  DebugWrite("CheckForAndroidMessageBox() Clicking long Android Msg Box")
 
 	  RandomWeightedClick($rAndroidMessageButton2)
+	  Sleep(1000)
 
 	  $boxPresent = True
    EndIf
@@ -54,7 +56,7 @@ Func ResetToCoCMainScreen(ByRef $f)
    ; Unknown screen - don't do anything
    Case $eScreenUnknown
 	  DebugWrite("ResetToCoCMainScreen() On Unknown Screen - doing nothing")
-	  _GDIPlus_ImageSaveToFile($f, "UnknownFrame" & Random(0, 100000, 1) & ".bmp")
+	  SaveDebugImage($f, "UnknownFrame" & Random(0, 100000, 1) & ".bmp")
 	  Return False
 
    ; Android Home Screen - start CoC
@@ -186,7 +188,7 @@ Func ResetToCoCMainScreen(ByRef $f)
 EndFunc
 
 Func WhereAmI(Const $f)
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "WhereAmIFrame.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "WhereAmIFrame.bmp")
 
    ; $ScreenAndroidHome
    Local $bestMatch, $bestConfidence, $bestX, $bestY
@@ -294,7 +296,7 @@ Func ZoomOut2(ByRef $f)
 
    If $p=False Then
 	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "Error zooming out", "Error zooming out.  This is a catastropic error, the bot will now halt.")
-	  If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "ZoomOutErrorFrame.bmp")
+	  If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "ZoomOutErrorFrame.bmp")
 	  _GDIPlus_BitmapDispose($f)
 	  Exit
    EndIf

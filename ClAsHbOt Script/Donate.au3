@@ -7,7 +7,7 @@ Func DonateTroops(ByRef $f)
 	  Return False
    EndIf
 
-   If $gDebugSaveScreenCaptures Then  _GDIPlus_ImageSaveToFile($f, "ChatFrame.bmp")
+   If $gDebugSaveScreenCaptures Then  SaveDebugImage($f, "ChatFrame.bmp")
 
    ; Search for donate button
    Local $donateButtons[1][4]
@@ -193,7 +193,7 @@ Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $buttons, Const $index)
 EndFunc
 
 Func FindDonateTroopSlots(Const $f, ByRef $index)
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "AvailableDonateTroopFrame.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "AvailableDonateTroopFrame.bmp")
 
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  Local $conf, $x, $y
@@ -216,7 +216,7 @@ Func FindDonateTroopSlots(Const $f, ByRef $index)
 EndFunc
 
 Func FindDonateSpellSlots(Const $f, ByRef $index)
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "AvailableDonateSpellFrame.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "AvailableDonateSpellFrame.bmp")
 
    For $i = $eSpellPoison To $eSpellHaste
 	  Local $conf, $x, $y

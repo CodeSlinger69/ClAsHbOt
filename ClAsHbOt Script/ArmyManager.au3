@@ -65,7 +65,7 @@ EndFunc
 
 Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
    Local $frame = CaptureFrame("GetBuiltTroops1", $rCampTroopBox1[0], $rCampTroopBox1[1], $rCampTroopBox1[2], $rCampTroopBox1[3])
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "BuiltTroopsFrame1.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BuiltTroopsFrame1.bmp")
 
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  Local $conf, $x, $y
@@ -98,7 +98,7 @@ Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
 
 
    $frame = CaptureFrame("GetBuiltTroops2", $rCampTroopBox2[0], $rCampTroopBox2[1], $rCampTroopBox2[2], $rCampTroopBox2[3])
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "BuiltTroopsFrame2.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BuiltTroopsFrame2.bmp")
 
    For $i = $eTroopKing To $eTroopWarden
 	  Local $conf, $x, $y
@@ -252,7 +252,7 @@ EndFunc
 
 Func FindBarracksTroopSlots(Const $f, Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "BarracksFrame.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "BarracksFrame.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $conf, $x, $y

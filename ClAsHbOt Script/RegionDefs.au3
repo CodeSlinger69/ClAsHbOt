@@ -37,7 +37,7 @@ Global $rChatTextBoxAsOffset[10] = [-75, -49, 190, -35, 0xffffff, 140, 0, 0, 0, 
 Global $rScreenAndroidHomeCoCIconButton[8] = [0, 0, 68, 68, 0, 0, 0, 0]
 Global $rScreenPlayStoreOpenButton[8] = [0, 0, 304, 35, 0, 0, 0, 0]
 Global $rAndroidMessageButton1[8] = [156, 384, 703, 430, 157, 318, 0x33b5e5, 0]
-Global $rAndroidMessageButton2[8] = [156, 417, 703, 463, 175, 332, 0x33b5e5, 0] ; Check for 2016/01/26 update
+Global $rAndroidMessageButton2[8] = [156, 393, 703, 439, 175, 308, 0x33b5e5, 0]
 Global $rAndroidBackButton[8] = [29, 702, 62, 718, 31, 707, 0xEEEEEE, 0]
 Global $rConfirmExitButton[8] = [444, 400, 582, 456, 505, 447, 0x5FAC10, 0]
 Global $rMainScreenAttackNoStarsButton[8] = [16, 625, 108, 680, 73, 664, 0xD56440, 6]
@@ -82,8 +82,8 @@ Global $rStarBonusWindowOkayButton[8] = [355, 469, 498, 526, 427, 513, 0x5FAC10,
 ; Pixel color regions
 ; x, y, color, radius
 Global $rArmyCampsFullColor[4] = [393, 187, 0xE85050, 6]
-Global $rKingQueenHealthGreenColor[4] = [10, -8, 0x66EA09, 90] ; Check for 2016/01/26 update
-Global $rWardenHealthGreenColor[4] = [10, -11, 0x4ED505, 90] ; Check for 2016/01/26 update
+Global $rKingQueenHealthGreenColor[4] = [10, -8, 0x66EA09, 90]
+Global $rWardenHealthGreenColor[4] = [10, -11, 0x4ED505, 90]
 Global $rWindowChatDimmedColor[4] = [177, 22, 0x383628, 6]
 Global $rNewChatMessagesColor[4] = [42, 350, 0xD60818, 6]
 Global $rDeadBaseIndicatorColor[4] = [26, 28, 0x606260, 6]

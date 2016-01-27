@@ -568,7 +568,7 @@ Func GetTownHallLevel(Const $frame, ByRef $left, ByRef $top)
 	  $top = $bestY
 	  Return $bestMatch+6
    Else
-	  ;_GDIPlus_ImageSaveToFile($frame, "ObscuredTH" & Random(0, 100000, 1) & ".bmp")
+	  ;SaveDebugImage($frame, "ObscuredTH" & Random(0, 100000, 1) & ".bmp")
 	  Return -1
    EndIf
 EndFunc

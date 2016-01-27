@@ -295,6 +295,7 @@ Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef
    $elix = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
 
    If IsTextBoxPresent($frame, $rDarkTextBox)=False Then
+	  $dark = 0
 	  $cups = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
    Else
 	  $dark = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
@@ -323,7 +324,7 @@ Func AdjustLootForStorages(Const $frame, Const $townHall, Const $gold, Const $el
 
    If $matchIndex = -1 Then
 	  DebugWrite("AdjustLootForStorages() Could not find gold storage match.")
-	  _GDIPlus_ImageSaveToFile($frame, "StorageUsageFrameGold" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
+	  SaveDebugImage($frame, "StorageUsageFrameGold" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
 	  Local $s = $GoldStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
@@ -339,7 +340,7 @@ Func AdjustLootForStorages(Const $frame, Const $townHall, Const $gold, Const $el
 
    If $matchIndex = -1 Then
 	  DebugWrite("AdjustLootForStorages() Could not find elixir storage match.")
-	  _GDIPlus_ImageSaveToFile($frame, "StorageUsageFrameElix" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
+	  SaveDebugImage($frame, "StorageUsageFrameElix" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
 	  Local $s = $ElixStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
@@ -353,7 +354,7 @@ Func AdjustLootForStorages(Const $frame, Const $townHall, Const $gold, Const $el
    ; Dark - Just temporarily, to fill out saved bitmaps
    ScanFrameForBestBMP($frame, $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
    If $matchIndex = -1 Then
-	  _GDIPlus_ImageSaveToFile($frame, "StorageUsageFrameDark" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
+	  SaveDebugImage($frame, "StorageUsageFrameDark" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    EndIf
 
 EndFunc
@@ -703,7 +704,7 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    Sleep(200)
 
    Local $frame = CaptureFrame("FindRaidTroopSlots2to11", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableRaidTroopsFrame2to11.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "AvailableRaidTroopsFrame2to11.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $conf, $x, $y
@@ -728,7 +729,7 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    Sleep(200)
 
    Local $frame = CaptureFrame("FindRaidTroopSlots1", $rRaidTroopBox1[0], $rRaidTroopBox1[1], $rRaidTroopBox1[2], $rRaidTroopBox1[3])
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableRaidTroopsFrame1.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "AvailableRaidTroopsFrame1.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $conf, $x, $y
@@ -750,7 +751,7 @@ EndFunc
 Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
    _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("UpdateRaidTroopCounts")
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "UpdateRaidTroopCounts.bmp")
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "UpdateRaidTroopCounts.bmp")
 
    For $i = 0 To UBound($index) - 1
 	  If $index[$i][0] <> -1 Then
