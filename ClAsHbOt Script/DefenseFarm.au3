@@ -1,36 +1,45 @@
 Func DefenseFarm(ByRef $f, ByRef $timer)
-
    ; If we are waiting for the timer to expire, then make sure we are offline
    If TimerDiff($timer)<$gDefenseFarmOfflineTime Then
 	  If WhereAmI($f)<>$eScreenAndroidHome Then
-		 ResetToCoCMainScreen($f)
-
-		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED Then
-			DonateTroops($f)
-		 EndIf
-
-		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED Then
-			CollectLoot($f)
-		 EndIf
-
-		 DumpCups($f)
+		 DebugWrite("DefenseFarm() Not on Android Home screen, doing work")
+		 DefenseFarmDoWork($f)
 
 		 If DefenseFarmGoOffline($f) = False Then
 			ResetToCoCMainScreen($f)
+		 Else
+			DebugWrite("DefenseFarm() On Android Home screen, waiting " & Round($gDefenseFarmOfflineTime/1000/60) & " minutes")
+			$timer = TimerInit()
 		 EndIf
-
-		 $timer = TimerInit()
 	  EndIf
-	  Return
-   EndIf
 
-   ; Otherwise, start up the game and dump cups
-   DebugWrite("DefenseFarm() Starting Clash of Clans app and dumping cups")
-   ResetToCoCMainScreen($f)
-   DumpCups($f)
-   $timer = TimerInit()
+   ; Otherwise, start up the game and do work
+   Else
+	  DebugWrite("DefenseFarm() Starting Clash of Clans app and dumping cups")
+	  DefenseFarmDoWork($f)
+	  $timer = TimerInit()
+
+   EndIf
 EndFunc
 
+Func DefenseFarmDoWork(ByRef $f)
+   ResetToCoCMainScreen($f)
+
+   If WhereAmI($f)<>$eScreenMain Then Return
+
+   If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED Then
+	  DebugWrite("DefenseFarmDoWork() Donating troops")
+	  DonateTroops($f)
+   EndIf
+
+   If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED Then
+	  DebugWrite("DefenseFarmDoWork() Collecting loot")
+	  CollectLoot($f)
+   EndIf
+
+	  DebugWrite("DefenseFarmDoWork() Dumping cups")
+   DumpCups($f)
+EndFunc
 
 Func DefenseFarmGoOffline(ByRef $f)
    ; Return to main clash screen

@@ -332,11 +332,11 @@ Func GUIAutoPushCheckBox()
 	  HotKeySet("{F10}", HotKeyPressed) ; Auto Raid
    EndIf
 
-   ; Collect starting loot or report ending loot
+   ; Flag to collect starting loot or report ending loot
    If $gAutoPushClicked Then
-	  CaptureAutoBeginLoot()
+	  $gAutoNeedToCollectStartingLoot = True
    Else
-	  CaptureAutoEndLoot()
+	  $gAutoNeedToCollectEndingLoot = True
    EndIf
 
    ; Set stage
@@ -363,11 +363,11 @@ Func GUIAutoRaidCheckBox()
 	  HotKeySet("{F9}", HotKeyPressed) ; Find Snipable TH
    EndIf
 
-   ; Collect starting loot or report ending loot
+   ; Flag to collect starting loot or report ending loot
    If $gAutoRaidClicked Then
-	  CaptureAutoBeginLoot()
+	  $gAutoNeedToCollectStartingLoot = True
    Else
-	  CaptureAutoEndLoot()
+	  $gAutoNeedToCollectEndingLoot = True
    EndIf
 
    ; Set stage
@@ -413,53 +413,9 @@ Func GUICloseButton()
    SaveSettings()
    ExitGUI()
    ExitScraper()
-   ;DLLUnload()
+   DLLUnload()
    Exit
 EndFunc
-
-Func CaptureAutoBeginLoot()
-   Local $frame = CaptureFrame("CaptureAutoBeginLoot")
-   GetMyLootNumbers($frame)
-   _GDIPlus_BitmapDispose($frame)
-
-   Local $n = GUICtrlRead($GUI_MyGold)
-   If $n <> "-" Then $gAutoRaidBeginLoot[0] = $n
-   $n = GUICtrlRead($GUI_MyElix)
-   If $n <> "-" Then $gAutoRaidBeginLoot[1] = $n
-   $n = GUICtrlRead($GUI_MyDark)
-   If $n <> "-" Then $gAutoRaidBeginLoot[2] = $n
-   $n = GUICtrlRead($GUI_MyCups)
-   If $n <> "-" Then $gAutoRaidBeginLoot[3] = $n
-
-   DebugWrite("Auto Begin: " & _
-	  " Gold:" & $gAutoRaidBeginLoot[0] & _
-	  " Elix:" & $gAutoRaidBeginLoot[1] & _
-	  " Dark:" & $gAutoRaidBeginLoot[2] & _
-	  " Cups:" & $gAutoRaidBeginLoot[3])
-
-   GUICtrlSetData($GUI_Winnings, "Net winnings: 0 / 0 / 0 / 0")
-EndFunc
-
-Func CaptureAutoEndLoot()
-   Local $netGold = GUICtrlRead($GUI_MyGold) - $gAutoRaidBeginLoot[0]
-   Local $netElix = GUICtrlRead($GUI_MyElix) - $gAutoRaidBeginLoot[1]
-   Local $netDark = GUICtrlRead($GUI_MyDark) - $gAutoRaidBeginLoot[2]
-   Local $netCups = GUICtrlRead($GUI_MyCups) - $gAutoRaidBeginLoot[3]
-   DebugWrite("Auto Profit: " & _
-	  " Gold:" & $netGold & _
-	  " Elix:" & $netElix & _
-	  " Dark:" & $netDark & _
-	  " Cups:" & $netCups)
-EndFunc
-
-Func SetAutoRaidResults(Const $gold, Const $elix, Const $dark, Const $cups, Const $townHall, Const $deadBase)
-   Local $townHallIndiator = $townHall<>-1 ? $townHall : "-"
-   Local $deadBaseIndicator = _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED ? ($deadBase=True ? "T" : "F") : "-"
-
-   GUICtrlSetData($GUI_Results, "Last scan: " & $gold & " / " & $elix & " / " & $dark & " / " & _
-				  $cups & " / " & $townHallIndiator & " / " & $deadBaseIndicator )
-EndFunc
-
 
 Func UpdateWinnings(ByRef $f)
    GetMyLootNumbers($f)

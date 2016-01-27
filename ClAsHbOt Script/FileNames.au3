@@ -9,23 +9,22 @@ Global $GUIImages[12] = [ _
   "GUISplash\troop-wizard.png" , "GUISplash\troop-bk.png", "GUISplash\troop-aq.png"]
 
 Global $TownHallBMPs[6] = [ _
-  "TownHall\TH6.bmp", "TownHall\TH7.bmp", "TownHall\TH8.bmp", "TownHall\TH9.bmp", _
-  "TownHall\TH10.bmp", "TownHall\TH11.bmp"]
+  "TownHall\TH6.bmp", "TownHall\TH7.bmp", "TownHall\TH8.bmp", "TownHall\TH9.bmp", "TownHall\TH10.bmp", "TownHall\TH11.bmp"]
 
-Global $CollectGoldLootBMPs[3] = [ _
-  "Loot\FullGoldCollector1.bmp", "Loot\FullGoldCollector2.bmp", "Loot\FullGoldCollector3.bmp"]
+Global $CollectLootBMPs[9] = [ _
+  "Loot\FullGoldCollector1.bmp", "Loot\FullGoldCollector2.bmp", "Loot\FullGoldCollector3.bmp", _
+  "Loot\FullElixCollector1.bmp", "Loot\FullElixCollector2.bmp", "Loot\FullElixCollector3.bmp", _
+  "Loot\FullDarkCollector1.bmp", "Loot\FullDarkCollector2.bmp", "Loot\FullDarkCollector3.bmp" ]
 
-Global $CollectElixLootBMPs[3] = [ _
-  "Loot\FullElixCollector1.bmp", "Loot\FullElixCollector2.bmp", "Loot\FullElixCollector3.bmp"]
+Global $LootCartBMPs[1] = [ "Loot\LootCart1.bmp" ]
 
-Global $CollectDarkLootBMPs[3] = [ _
-  "Loot\FullDarkCollector1.bmp", "Loot\FullDarkCollector2.bmp", "Loot\FullDarkCollector3.bmp"]
-
-Global $CollectorBMPs[8] = [ _
+Global $CollectorBMPs[12] = [ _
   "Collectors\GoldCollectorL12.bmp", "Collectors\GoldCollectorL11.bmp", "Collectors\GoldCollectorL10.bmp", _
   "Collectors\GoldCollectorL9.bmp", _
   "Collectors\ElixCollectorL12.bmp", "Collectors\ElixCollectorL11.bmp", "Collectors\ElixCollectorL10.bmp", _
-  "Collectors\ElixCollectorL9.bmp"]
+  "Collectors\ElixCollectorL9.bmp", _
+  "Collectors\DarkCollectorL6.bmp", "Collectors\DarkCollectorL5.bmp", "Collectors\DarkCollectorL4.bmp", _
+  "Collectors\DarkCollectorL3.bmp"]
 
 Global $GoldStorageBMPs[12] = [ _
   "Storages\GoldStorageL12.00.bmp", _
@@ -74,7 +73,8 @@ Global $gDonateTroopSlotBMPs[16] = [ _
   "Donate\DonateMinion.bmp", "Donate\DonateHogRider.bmp", "Donate\DonateValkyrie.bmp", "Donate\DonateGolem.bmp", _
   "Donate\DonateWitch.bmp", "Donate\DonateLavaHound.bmp"]
 
-Global $gDonateSpellSlotBMPs[3] = [ ]
+Global $gDonateSpellSlotBMPs[8] = [ "", "", "", "", "", _
+  "Donate\DonatePoisonSpell.bmp", "Donate\DonateEarthquakeSpell.bmp", "Donate\DonateHasteSpell.bmp"]
 
 Global $gBarracksTroopSlotBMPs [$gTroopCountExcludingHeroes] = [ _
   "Barracks\BarracksBarbarian.bmp", "Barracks\BarracksArcher.bmp", "Barracks\BarracksGiant.bmp", "Barracks\BarracksGoblin.bmp", _

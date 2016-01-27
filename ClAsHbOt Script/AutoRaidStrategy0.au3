@@ -138,9 +138,9 @@ EndFunc
 
 Func AutoRaidStrategy0GetDirection(Const $f)
    ; Count the collectors, by top/bottom half
-   Local $matchX[1], $matchY[1], $matchCount
+   Local $matchX[1], $matchY[1]
 
-   $matchCount = LocateBuildings("All collectors", $f, $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
+   Local $matchCount = ScanFrameForAllBMPs($f, $CollectorBMPs, $gConfidenceCollector, 14, $matchX, $matchY)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To $matchCount-1

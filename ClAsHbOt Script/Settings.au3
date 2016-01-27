@@ -73,6 +73,7 @@ Func ReadSettings()
    $gDonateMatchSpellStrings[$eSpellPoison] = IniRead($gIniFile, "Donate", "Poison Match Strings", "poison")
    $gDonateMatchSpellStrings[$eSpellEarthquake] = IniRead($gIniFile, "Donate", "Earthquake Match Strings", "quake")
    $gDonateMatchSpellStrings[$eSpellHaste] = IniRead($gIniFile, "Donate", "Haste Match Strings", "haste")
+   Global $gSpellDefaultDonate = IniRead($gIniFile, "Donate", "Spell Default", "poison")
 
    Global $gDonateMatchNegativeStrings = StringSplit(IniRead($gIniFile, "Donate", "Negative Match Strings", "but|except"), "|")
 

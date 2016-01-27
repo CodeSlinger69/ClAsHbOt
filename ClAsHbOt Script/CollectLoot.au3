@@ -1,76 +1,52 @@
-Func CollectLoot(Const $frame)
-   ; Method = 0: CV_TM_SQDIFF, 1: CV_TM_SQDIFF_NORMED 2: CV_TM_CCORR 3: CV_TM_CCORR_NORMED 4: CV_TM_CCOEFF 5: CV_TM_CCOEFF_NORMED
-   Local $totalMatches = 0, $currIndex = 0
-   Local $matchX[1], $matchY[1]
-   Local $mX[1], $mY[1], $mCount
+Func CollectLoot(ByRef $f)
+   ;DebugWrite("CollectLoot()")
 
-   DebugWrite("CollectLoot()")
-
-   ; Find all the dark elixir collectors that need clicking in the frame
-   $mCount = LocateBuildings("Dark Elixir Collectors", $frame, $CollectDarkLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
-
-   For $i = 0 To $mCount-1
-	  ;DebugWrite("Dark Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
-
-	  $totalMatches += 1
-	  ReDim $matchX[$totalMatches]
-	  ReDim $matchY[$totalMatches]
-	  $matchX[$totalMatches-1] = $mX[$i]
-	  $matchY[$totalMatches-1] = $mY[$i]
-   Next
-
-   ; Find all the gold collectors that need clicking in the frame
-   $mCount = LocateBuildings("Gold Collectors", $frame, $CollectGoldLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
-
-   For $i = 0 To $mCount-1
-	  ;DebugWrite("Gold Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
-
-	  $totalMatches += 1
-	  ReDim $matchX[$totalMatches]
-	  ReDim $matchY[$totalMatches]
-	  $matchX[$totalMatches-1] = $mX[$i]
-	  $matchY[$totalMatches-1] = $mY[$i]
-   Next
-
-   ; Find all the elixir collectors that need clicking in the frame
-   $mCount = LocateBuildings("Elixir Collectors", $frame, $CollectElixLootBMPs, $gConfidenceCollectLoot, $mX, $mY)
-
-   For $i = 0 To $mCount-1
-	  ;DebugWrite("Elix Match " & $i & ": " & $mX[$i] & "," & $mY[$i])
-
-	  $totalMatches += 1
-	  ReDim $matchX[$totalMatches]
-	  ReDim $matchY[$totalMatches]
-	  $matchX[$totalMatches-1] = $mX[$i]
-	  $matchY[$totalMatches-1] = $mY[$i]
-   Next
-
-   If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox)<>$BST_CHECKED Then Return
+   ; Find all the collectors that need clicking in the frame
+   Local $mX[1], $mY[1]
+   Local $matchCount = ScanFrameForAllBMPs($f, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY)
 
    ; Do the collecting
-   If $totalMatches > 0 Then
+   If $matchCount > 0 Then
 	  ; Sort the matches
-	  Local $sortedX[$totalMatches], $sortedY[$totalMatches]
-	  SortArrayByClosestNeighbor($totalMatches, $matchX, $matchY, $sortedX, $sortedY)
+	  Local $sortedX[$matchCount], $sortedY[$matchCount]
+	  SortArrayByClosestNeighbor($matchCount, $mX, $mY, $sortedX, $sortedY)
 
-	  ; Collect the gold and elixir loot
-	  For $i = 0 To $totalMatches-1
+	  ; Collect the gold, elixir and dark loot
+	  DebugWrite("CollectLoot() Found " & $matchCount & " collectors, clicking")
+	  For $i = 0 To $matchCount-1
 
 		 Local $button[4] = [$sortedX[$i]+$rCollectorButton[0], $sortedY[$i]+$rCollectorButton[1], _
 						     $sortedX[$i]+$rCollectorButton[2], $sortedY[$i]+$rCollectorButton[3]]
 		 RandomWeightedClick($button)
 
 		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])
-
 		 ;Sleep(Random(100, 500, 1))
 	  Next
+
+	  Sleep(1000)
+   EndIf
+
+   ; Check for loot cart
+   Local $conf, $x, $y
+   ScanFrameForOneBMP($f, "Images\"&$LootCartBMPs[0], $conf, $x, $y)
+
+   If $conf > $gConfidenceLootCart Then
+	  DebugWrite("CollectLoot() Found loot cart, collecting")
+
+	  Local $button[4] = [$x, $y, $x+15, $y+15]
+	  RandomWeightedClick($button)
+
+	  If WaitForButton($f, 5000, $rLootCartCollectButton) = True Then
+		 RandomWeightedClick($rLootCartCollectButton)
+		 Sleep(1000)
+	  EndIf
    EndIf
 EndFunc
 
-Func SortArrayByClosestNeighbor(Const $numElements, Const ByRef $x, Const ByRef $y, ByRef $sortedX, ByRef $sortedY)
+Func SortArrayByClosestNeighbor(Const $matchCount, Const ByRef $x, Const ByRef $y, ByRef $sortedX, ByRef $sortedY)
    ; Find leftmost point
    Local $leftmost = 9999, $leftMatch
-   For $i = 0 To $numElements-1
+   For $i = 0 To $matchCount-1
 	  If $x[$i] < $leftmost Then
 		 $leftMatch = $i
 		 $leftmost = $x[$i]
@@ -81,7 +57,7 @@ Func SortArrayByClosestNeighbor(Const $numElements, Const ByRef $x, Const ByRef 
    $sortedX[0] = $x[$leftMatch]
    $sortedY[0] = $y[$leftMatch]
    Local $sortedCount=1
-   Local $alreadySorted[$numElements]
+   Local $alreadySorted[$matchCount]
    $alreadySorted[$leftMatch] = True
 
    Local $nextClosest
@@ -89,7 +65,7 @@ Func SortArrayByClosestNeighbor(Const $numElements, Const ByRef $x, Const ByRef 
    Do
 	  Local $bestDist=999
 	  $nextClosest=999
-	  For $i = 0 To $numElements-1
+	  For $i = 0 To $matchCount-1
 		 If $alreadySorted[$i]<>True Then
 			Local $dist = Sqrt(($x[$i]-$x[$lastClosest])^2 + ($y[$i]-$y[$lastClosest])^2)
 			If $dist<$bestDist Then

@@ -30,6 +30,9 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
    Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Snipable TH")
 
+	  ResetToCoCMainScreen($f)
+	  ZoomOut2($f)
+
 	  Local $findMatchResults = THSnipeFindMatch($f, $THCorner)
 
 	  ; Reset if there was an error
@@ -83,7 +86,13 @@ Func THSnipeFindMatch(ByRef $f, ByRef $THCorner)
 
    ; Click Attack
    DebugWrite("THSnipeFindMatch() Click Attack button")
-   RandomWeightedClick($rMainScreenAttackButton)
+   If IsButtonPresent($f, $rMainScreenAttackNoStarsButton) Then
+	  RandomWeightedClick($rMainScreenAttackNoStarsButton)
+   ElseIf IsButtonPresent($f, $rMainScreenAttackWithStarsButton) Then
+	  RandomWeightedClick($rMainScreenAttackWithStarsButton)
+   Else
+	  DebugWrite("THSnipeFindMatch() Find Match failed - could not find Attack! button")
+   EndIf
 
    ; Wait for Find a Match button
    If WaitForButton($f, 10000, $rFindMatchScreenFindAMatchNoShieldButton, $rFindMatchScreenFindAMatchWithShieldButton) = False Then

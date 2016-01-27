@@ -10,66 +10,98 @@ Func DonateTroops(ByRef $f)
    If $gDebugSaveScreenCaptures Then  _GDIPlus_ImageSaveToFile($f, "ChatFrame.bmp")
 
    ; Search for donate button
-   Local $donateButton[8]
-   If FindDonateButton($f, $donateButton) = False Then
+   Local $donateButtons[1][4]
+   If FindDonateButtons($f, $donateButtons) = False Then
 	  ResetToCoCMainScreen($f)
 	  Return False
    EndIf
 
-   ; Get the request text
-   Local $requestText = GetRequestText($f, $donateButton)
+   ; Work through each Donate button that was found
+   For $buttonLoop = 0 To UBound($donateButtons)-1
+	  DebugWrite("DonateTroops() Processing donate request number " & $buttonLoop+1)
 
-   ; Open donate troops window
-   If OpenDonateTroopsWindow($f, $donateButton) = False Then
-	  ResetToCoCMainScreen($f)
-	  Return False
-   EndIf
+	  ; Get the request text
+	  Local $requestText = GetRequestText($f, $donateButtons, $buttonLoop)
 
-   ; Loop until donate troops window goes away, no match for request, or loop limit reached
-   Local $loopLimit = 6
-   While IsColorPresent($f, $rWindowChatDimmedColor) And $loopLimit>0
-	  DebugWrite("DonateTroops() Donate loop " & 6-$loopLimit & " of " & 5)
+	  ; Open donate troops window
+	  If OpenDonateTroopsWindow($f, $donateButtons, $buttonLoop) = False Then
+		 ResetToCoCMainScreen($f)
+		 Return False
+	  EndIf
 
-	  ; Locate troops that are available to donate
-	  Local $donateTroopIndex[$gTroopCountExcludingHeroes][4]
-	  FindDonateTroopSlots($f, $donateTroopIndex)
+	  ; Loop until donate troops window goes away, no match for request, or loop limit reached
+	  Local $loopLimit = 6
+	  While IsColorPresent($f, $rWindowChatDimmedColor) And $loopLimit>0
+		 DebugWrite("DonateTroops() Donate loop " & 6-$loopLimit & " of " & 5)
 
-	  For $i=0 To $gTroopCountExcludingHeroes-1
-		 If $donateTroopIndex[$i][0]>0 Then DebugWrite("DonateTroops() " & $gTroopNames[$i] & " available to donate.")
-	  Next
+		 ; Locate troops that are available to donate
+		 Local $donateTroopIndex[$gTroopCountExcludingHeroes][4]
+		 FindDonateTroopSlots($f, $donateTroopIndex)
 
-	  ; Locate spells that are available to donate
-	  ;Local $donateSpellIndex[$eSpellCount][4]
-	  ;FindDonateSpellSlots($f, $donateSpellIndex)
+		 For $i=0 To $gTroopCountExcludingHeroes-1
+			If $donateTroopIndex[$i][0]>0 Then DebugWrite("DonateTroops() " & $gTroopNames[$i] & " available to donate")
+		 Next
 
-	  ;For $i=0 To $eSpellCount-1
-		; If $donateSpellIndex[$i][0]>0 Then DebugWrite("DonateTroops() " & $gSpellNames[$i] & " available to donate.")
-	  ;Next
+		 ; Locate spells that are available to donate
+		 Local $donateSpellIndex[$eSpellCount][4]
+		 FindDonateSpellSlots($f, $donateSpellIndex)
 
-	  ; Parse request text for troops, matching with available troops
-	  Local $indexOfTroopToDonate
-	  If ParseRequestTextTroops($requestText, $donateTroopIndex, $indexOfTroopToDonate) Then
-		 If $donateTroopIndex[$indexOfTroopToDonate][0] <> -1 Then
-			; Click the correct donate troops button
-			ClickDonateTroops($f, $donateTroopIndex, $indexOfTroopToDonate)
+		 For $i=0 To $eSpellCount-1
+		    If $donateSpellIndex[$i][0]>0 Then DebugWrite("DonateTroops() " & $gSpellNames[$i] & " available to donate.")
+		 Next
+
+		 ; Parse request text for troops, matching with available troops
+		 Local $indexOfTroopToDonate
+		 If ParseRequestTextTroops($requestText, $donateTroopIndex, $indexOfTroopToDonate) Then
+			If $donateTroopIndex[$indexOfTroopToDonate][0] <> -1 Then
+			   ; Click the correct donate troops button
+			   ClickDonateTroops($f, $donateTroopIndex, $indexOfTroopToDonate)
+			Else
+			   $loopLimit=0
+			EndIf
 		 Else
 			$loopLimit=0
 		 EndIf
+
+		 ; Parse request text for spells, matching with available spells
+		 Local $indexOfSpellToDonate
+		 If ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate) Then
+			If $donateSpellIndex[$indexOfSpellToDonate][0] <> -1 Then
+			   ; Click the correct donate spell button
+			   ClickDonateSpell($f, $donateSpellIndex, $indexOfSpellToDonate)
+			EndIf
+		 EndIf
+
+		 $loopLimit-=1
+	  WEnd
+
+	  ; If donate troops window is still open, then close it
+	  If IsColorPresent($f, $rWindowChatDimmedColor) Then
+		 RandomWeightedClick($rSafeAreaButton)
+
+		 If WaitForScreen($f, 5000, $eScreenChatOpen) = False Then
+			DebugWrite("DonateTroops() Error waiting for open chat screen")
+		 EndIf
 	  Else
-		 $loopLimit=0
+		 ; Grab new frame
+		 _GDIPlus_BitmapDispose($f)
+		 $f = CaptureFrame("DonateTroops")
 	  EndIf
 
-	  ; Parse request text for spells, matching with available spells
-	  ;Local $indexOfSpellToDonate
-	  ;If ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate) Then
-	;	 If $donateSpellIndex[$indexOfSpellToDonate][0] <> -1 Then
-			; Click the correct donate spell button
-	;		ClickDonateSpell($f, $donateSpellIndex, $indexOfSpellToDonate)
-	;	 EndIf
-	 ; EndIf
+   Next
 
-	  $loopLimit-=1
-   WEnd
+   ; Grab new frame
+   _GDIPlus_BitmapDispose($f)
+   $f = CaptureFrame("DonateTroops")
+
+   ; If chat window is open, then close it
+   If WhereAmI($f) = $eScreenChatOpen Then
+	  RandomWeightedClick($rMainScreenOpenChatButton)
+
+	  If WaitForScreen($f, 5000, $eScreenMain) = False Then
+		 DebugWrite("DonateTroops() Error waiting for main screen")
+	  EndIf
+   EndIf
 
    ; Done!
    ResetToCoCMainScreen($f)
@@ -94,47 +126,59 @@ Func OpenChatWindow(ByRef $f)
    Return True
 EndFunc
 
-Func FindDonateButton(Const $frame, ByRef $button)
-   Local $bestMatch, $bestConfidence, $bestX, $bestY
-   ScanFrameForBestBMP($frame, $DonateButtonBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
+Func FindDonateButtons(Const $f, ByRef $buttons)
+   ;Local $bestMatch, $bestConfidence, $bestX, $bestY
+   ;ScanFrameForBestBMP($frame, $DonateButtonBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
+   Local $mX[1], $mY[1]
+   Local $matchCount = ScanFrameForAllBMPs($f, $DonateButtonBMPs, $gConfidenceDonateButton, 4, $mX, $mY)
 
-   If $bestMatch = -1 Then
+   If $matchCount <= 0 Then
 	  DebugWrite("FindDonateButton() Donate button not found.")
 	  Return False
+
+   Else
+	  ReDim $buttons[$matchCount][8]
+
+	  For $i=0 To $matchCount-1
+		 $buttons[$i][0] = $mX[$i]
+		 $buttons[$i][1] = $mY[$i]
+		 $buttons[$i][2] = $mX[$i]+$rChatWindowDonateButton[2]
+		 $buttons[$i][3] = $mY[$i]+$rChatWindowDonateButton[3]
+		 $buttons[$i][4] = $rChatWindowDonateButton[4]
+		 $buttons[$i][5] = $rChatWindowDonateButton[5]
+		 $buttons[$i][6] = $rChatWindowDonateButton[6]
+		 $buttons[$i][7] = $rChatWindowDonateButton[7]
+
+		 DebugWrite("FindDonateButtons() Donate button " & $i & " found at: " & $buttons[$i][0] & ", " & $buttons[$i][1] & ", " & $buttons[$i][2] & ", " & $buttons[$i][3])
+	  Next
+
+	  Return True
+
    EndIf
-
-   $button[0] = $bestX
-   $button[1] = $bestY
-   $button[2] = $bestX+$rChatWindowDonateButton[2]
-   $button[3] = $bestY+$rChatWindowDonateButton[3]
-   $button[4] = $rChatWindowDonateButton[4]
-   $button[5] = $rChatWindowDonateButton[5]
-   $button[6] = $rChatWindowDonateButton[6]
-   $button[7] = $rChatWindowDonateButton[7]
-
-   DebugWrite("FindDonateButton() Donate button found at: " & $button[0] & ", " & $button[1] & ", " _
-	  & $button[2] & ", " & $button[3])
-
-   Return True
 EndFunc
 
-Func GetRequestText(Const $frame, Const ByRef $button)
+Func GetRequestText(Const $f, Const ByRef $buttons, Const $index)
    ; Grab text of donate request
-   Local $donateTextBox[10] = [$button[0]+$rChatTextBoxAsOffset[0], _
-							   $button[1]+$rChatTextBoxAsOffset[1], _
-							   $button[0]+$rChatTextBoxAsOffset[2], _
-							   $button[1]+$rChatTextBoxAsOffset[3], _
+   Local $donateTextBox[10] = [$buttons[$index][0]+$rChatTextBoxAsOffset[0], _
+							   $buttons[$index][1]+$rChatTextBoxAsOffset[1], _
+							   $buttons[$index][0]+$rChatTextBoxAsOffset[2], _
+							   $buttons[$index][1]+$rChatTextBoxAsOffset[3], _
 							   $rChatTextBoxAsOffset[4], $rChatTextBoxAsOffset[5], $rChatTextBoxAsOffset[6], _
 							   $rChatTextBoxAsOffset[7], $rChatTextBoxAsOffset[8], $rChatTextBoxAsOffset[9]]
 
-   Local $text = ScrapeExactText($frame, $gChatCharacterMaps, $donateTextBox, $gChatCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $text = ScrapeExactText($f, $gChatCharacterMaps, $donateTextBox, $gChatCharMapsMaxWidth, $eScrapeDropSpaces)
    DebugWrite("GetRequestText() Text: '" & $text & "'")
 
    Return $text
 EndFunc
 
-Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $button)
+Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $buttons, Const $index)
    DebugWrite("OpenDonateTroopsWindow() Clicking Donate button")
+
+   Local $button[8]
+   For $i = 0 To 7
+	  $button[$i] = $buttons[$index][$i]
+   Next
    RandomWeightedClick($button)
 
    If WaitForColor($f, 5000, $rWindowChatDimmedColor) = False Then
@@ -142,26 +186,25 @@ Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $button)
 	  Return False
    EndIf
 
-   DebugWrite("OpenDonateTroopsWindow() Donate troops window opened.")
+   DebugWrite("OpenDonateTroopsWindow() Donate troops window opened")
    _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("OpenDonateTroopsWindow")
    Return True
 EndFunc
 
-Func FindDonateTroopSlots(Const $frame, ByRef $index)
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableDonateTroopFrame.bmp")
+Func FindDonateTroopSlots(Const $f, ByRef $index)
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "AvailableDonateTroopFrame.bmp")
 
    For $i = $eTroopBarbarian To $eTroopLavaHound
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableDonateTroopFrame.bmp", "str", "Images\"&$gDonateTroopSlotBMPs[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-	  ;DebugWrite("Troop " & $gTroopNames[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($f, "Images\"&$gDonateTroopSlotBMPs[$i], $conf, $x, $y)
 
-	  If $split[2] > $gConfidenceDonateTroopSlot Then
-		 $index[$i][0] = $split[0]+$rDonateButtonOffset[0]
-		 $index[$i][1] = $split[1]+$rDonateButtonOffset[1]
-		 $index[$i][2] = $split[0]+$rDonateButtonOffset[2]
-		 $index[$i][3] = $split[1]+$rDonateButtonOffset[3]
-		 DebugWrite("Troop " & $gTroopNames[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & Round($split[2]*100, 2) & "%")
+	  If $conf > $gConfidenceDonateTroopSlot Then
+		 $index[$i][0] = $x+$rDonateButtonOffset[0]
+		 $index[$i][1] = $y+$rDonateButtonOffset[1]
+		 $index[$i][2] = $x+$rDonateButtonOffset[2]
+		 $index[$i][3] = $y+$rDonateButtonOffset[3]
+		 DebugWrite("FindDonateTroopSlots() Troop " & $gTroopNames[$i] & " found at " & $x & ", " & $y & " conf: " & Round($conf*100, 2) & "%")
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1
@@ -169,22 +212,22 @@ Func FindDonateTroopSlots(Const $frame, ByRef $index)
 		 $index[$i][3] = -1
 	  EndIf
    Next
+
 EndFunc
 
-Func FindDonateSpellSlots(Const $frame, ByRef $index)
-   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableDonateSpellFrame.bmp")
+Func FindDonateSpellSlots(Const $f, ByRef $index)
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "AvailableDonateSpellFrame.bmp")
 
    For $i = $eSpellPoison To $eSpellHaste
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableDonateSpellFrame.bmp", "str", "Images\"&$gDonateSpellSlotBMPs[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-	  ;DebugWrite("Spell " & $gSpellNames[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($f, "Images\"&$gDonateSpellSlotBMPs[$i], $conf, $x, $y)
 
-	  If $split[2] > $gConfidenceDonateTroopSlot Then
-		 $index[$i][0] = $split[0]+$rDonateButtonOffset[0]
-		 $index[$i][1] = $split[1]+$rDonateButtonOffset[1]
-		 $index[$i][2] = $split[0]+$rDonateButtonOffset[2]
-		 $index[$i][3] = $split[1]+$rDonateButtonOffset[3]
-		 DebugWrite("Spell " & $gSpellNames[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & " conf: " & Round($split[2]*100, 2) & "%")
+	  If $conf > $gConfidenceDonateTroopSlot Then
+		 $index[$i][0] = $x+$rDonateButtonOffset[0]
+		 $index[$i][1] = $y+$rDonateButtonOffset[1]
+		 $index[$i][2] = $x+$rDonateButtonOffset[2]
+		 $index[$i][3] = $y+$rDonateButtonOffset[3]
+		 DebugWrite("FindDonateSpellSlots() Spell " & $gSpellNames[$i] & " found at " & $x & ", " & $y & " conf: " & Round($conf*100, 2) & "%")
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1
@@ -200,7 +243,7 @@ Func ParseRequestTextTroops(Const ByRef $text, Const ByRef $avail, ByRef $index)
    ; Is a negative string present, exit now
    For $i = 1 To $gDonateMatchNegativeStrings[0]
 	  If StringInStr($text, $gDonateMatchNegativeStrings[$i]) Then
-		 DebugWrite("ParseRequestTextTroops() Negative string match, cannot parse negative requests.")
+		 DebugWrite("ParseRequestTextTroops() Negative string match, cannot parse negative requests")
 		 Return False
 	  EndIf
    Next
@@ -212,11 +255,11 @@ Func ParseRequestTextTroops(Const ByRef $text, Const ByRef $avail, ByRef $index)
 	  For $j = 1 To $searchTerms[0]
 		 If StringInStr($text, $searchTerms[$j]) Then
 			If $avail[$i][0]<>-1 Then
-			   DebugWrite("ParseRequestTextTroops() String match for: " & $gTroopNames[$i] & ", troop available.")
+			   DebugWrite("ParseRequestTextTroops() String match for: " & $gTroopNames[$i] & ", troop available")
 			   $index = $i
 			   ExitLoop 2
 			Else
-			   DebugWrite("ParseRequestTextTroops() String match for: " & $gTroopNames[$i] & ", troop NOT available, exiting.")
+			   DebugWrite("ParseRequestTextTroops() String match for: " & $gTroopNames[$i] & ", troop NOT available")
 			   Return False
 			EndIf
 		 EndIf
@@ -231,12 +274,12 @@ Func ParseRequestTextTroops(Const ByRef $text, Const ByRef $avail, ByRef $index)
    If $index = -1 Then $index = FindMatchingTroop($text, $gDonateMatchAnyStrings, $gDonateMatchAnyTroops, $avail, "Any")
 
    If $index < 0 Then
-	  DebugWrite("ParseRequestTextTroops() Could not find a fill for request, exiting.")
+	  DebugWrite("ParseRequestTextTroops() Could not find a fill for request")
 	  Return False
+   Else
+	  DebugWrite("ParseRequestTextTroops() Filling request with " & $gTroopNames[$index])
+	  Return True
    EndIf
-
-   DebugWrite("ParseRequestTextTroops() Filling request with " & $gTroopNames[$index] & ".")
-   Return True
 EndFunc
 
 Func ParseRequestTextSpells(Const ByRef $text, Const ByRef $avail, ByRef $index)
@@ -245,7 +288,7 @@ Func ParseRequestTextSpells(Const ByRef $text, Const ByRef $avail, ByRef $index)
    ; Is a negative string present, exit now
    For $i = 1 To $gDonateMatchNegativeStrings[0]
 	  If StringInStr($text, $gDonateMatchNegativeStrings[$i]) Then
-		 DebugWrite("ParseRequestTextSpells() Negative string match, cannot parse negative requests.")
+		 DebugWrite("ParseRequestTextSpells() Negative string match, cannot parse negative requests")
 		 Return False
 	  EndIf
    Next
@@ -257,24 +300,35 @@ Func ParseRequestTextSpells(Const ByRef $text, Const ByRef $avail, ByRef $index)
 	  For $j = 1 To $searchTerms[0]
 		 If StringInStr($text, $searchTerms[$j]) Then
 			If $avail[$i][0]<>-1 Then
-			   DebugWrite("ParseRequestTextSpells() String match for: " & $gSpellNames[$i] & ", spell available.")
+			   DebugWrite("ParseRequestTextSpells() String match for: " & $gSpellNames[$i] & ", spell available")
 			   $index = $i
 			   ExitLoop 2
 			Else
-			   DebugWrite("ParseRequestTextSpells() String match for: " & $gSpellNames[$i] & ", spell NOT available, exiting.")
+			   DebugWrite("ParseRequestTextSpells() String match for: " & $gSpellNames[$i] & ", spell NOT available")
 			   Return False
 			EndIf
 		 EndIf
 	  Next
    Next
 
+   ; If there is no specific request match, then return default as specified in .ini file
    If $index < 0 Then
-	  DebugWrite("ParseRequestTextSpells() Could not find a fill for request, exiting.")
-	  Return False
+	  For $i = $eSpellPoison To $eSpellHaste
+		 If StringInStr($gSpellNames[$i], $gSpellDefaultDonate) And $avail[$i][0]<>-1 Then
+			DebugWrite("ParseRequestTextSpells() Default spell match for " & $gSpellNames[$i] & ", available")
+			$index = $i
+			ExitLoop
+		 EndIf
+	  Next
    EndIf
 
-   DebugWrite("ParseRequestTextSpells() Filling request with " & $gSpellNames[$index] & ".")
-   Return True
+   If $index < 0 Then
+	  DebugWrite("ParseRequestTextSpells() Could not find a fill for request")
+	  Return False
+   Else
+	  DebugWrite("ParseRequestTextSpells() Filling with " & $gSpellNames[$index])
+	  Return True
+   EndIf
 EndFunc
 
 Func FindMatchingTroop(Const $text, Const ByRef $strings, Const ByRef $troops, Const ByRef $avail, Const $type)
@@ -325,6 +379,8 @@ Func ClickDonateTroops(ByRef $f, Const ByRef $donateIndex, Const $indexOfTroopTo
    If $donateCount>0 Then
 	  DebugWrite("ClickDonateTroops() Donated " & $donateCount & " " & $gTroopNames[$indexOfTroopToDonate])
    EndIf
+
+   Sleep(1000)
 EndFunc
 
 Func ClickDonateSpell(ByRef $f, Const ByRef $donateIndex, Const $indexOfSpellToDonate)
@@ -342,4 +398,6 @@ Func ClickDonateSpell(ByRef $f, Const ByRef $donateIndex, Const $indexOfSpellToD
 
 	  DebugWrite("ClickDonateSpell() Donated 1 " & $gSpellNames[$indexOfSpellToDonate])
    EndIf
+
+   Sleep(1000)
 EndFunc

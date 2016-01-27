@@ -2,8 +2,13 @@ Func DumpCups(ByRef $f)
    ;DebugWrite("DumpCups()")
 
    ; Cups I currently have
+   GetMyLootNumbers($f)
    Local $myCups = Number(GUICtrlRead($GUI_MyCups))
-   If $myCups = 0 Then Return
+   If $myCups = 0 Then
+	  GetMyLootNumbers($f)
+	  $myCups = Number(GUICtrlRead($GUI_MyCups))
+	  If $myCups = 0 Then Return
+   EndIf
 
    ; Max cups I want to have
    Local $cupsThreshold = Number(GUICtrlRead($GUI_AutoRaidDumpCupsThreshold))
@@ -133,7 +138,7 @@ Func DoCupsDump(ByRef $f)
    EndIf
 
    ; Close battle end screen
-   DebugWrite("DoCupsDump() Clicking Return Home button")
+   DebugWrite("DoCupsDump() Clicking Return Home button" & @CRLF)
    RandomWeightedClick($rBattleHasEndedScreenReturnHomeButton)
 
    ; Wait for main screen to reappear

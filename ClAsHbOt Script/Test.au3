@@ -101,10 +101,12 @@ Func TestStorage()
 EndFunc
 
 Func TestRaidTroopsCount()
-   Local $frame = CaptureFrame("TestRaidTroopsCount")
 
    Local $troopIndex[$eTroopCount][5]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+
+   Local $frame = CaptureFrame("TestRaidTroopsCount")
+   ;_GDIPlus_ImageSaveToFile($frame, "TestRaidTroopsCount.bmp")
    UpdateRaidTroopCounts($frame, $troopIndex)
 
    For $i=0 To $eTroopCount-1
@@ -193,44 +195,71 @@ Func TestDonate()
    Local $frame = CaptureFrame("TestDonate")
    If IsButtonPresent($frame, $rMainScreenOpenChatButton)=False Then OpenChatWindow($frame)
 
-   Local $donateButton[8]
-   FindDonateButton($frame, $donateButton)
+   Local $donateButtons[1][4]
+   FindDonateButtons($frame, $donateButtons)
 
-   Local $requestText = GetRequestText($frame, $donateButton)
+   For $i = 0 To UBound($donateButtons)-1
+	  Local $requestText = GetRequestText($frame, $donateButtons, $i)
 
-   OpenDonateTroopsWindow($frame, $donateButton)
+	  OpenDonateTroopsWindow($frame, $donateButtons, $i)
 
-   Local $donateIndex[$gTroopCountExcludingHeroes][4]
-   FindDonateTroopSlots($frame, $donateIndex)
+	  Local $donateIndex[$gTroopCountExcludingHeroes][4]
+	  FindDonateTroopSlots($frame, $donateIndex)
 
-   Local $indexOfTroopToDonate
-   ParseRequestTextTroops($requestText, $donateIndex, $indexOfTroopToDonate)
+	  Local $donateSpellIndex[$eSpellCount][4]
+	  FindDonateSpellSlots($frame, $donateSpellIndex)
 
-   DebugWrite("Donate index: " & $indexOfTroopToDonate)
+	  Local $indexOfTroopToDonate
+	  ParseRequestTextTroops($requestText, $donateIndex, $indexOfTroopToDonate)
+	  DebugWrite("Troop Donate index: " & $indexOfTroopToDonate)
+
+	  Local $indexOfSpellToDonate
+	  ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate)
+	  DebugWrite("Spell Donate index: " & $indexOfSpellToDonate)
+
+	  ; If donate troops window is still open, then close it
+	  If IsColorPresent($frame, $rWindowChatDimmedColor) Then
+		 RandomWeightedClick($rSafeAreaButton)
+
+		 If WaitForScreen($frame, 5000, $eScreenChatOpen) = False Then
+			DebugWrite("DonateTroops() Error waiting for open chat screen")
+		 EndIf
+	  EndIf
+
+   Next
+
+   ; If chat window is open, then close it
+   If WhereAmI($frame) = $eScreenChatOpen Then
+	  RandomWeightedClick($rMainScreenOpenChatButton)
+
+	  If WaitForScreen($frame, 5000, $eScreenMain) = False Then
+		 DebugWrite("DonateTroops() Error waiting for main screen")
+	  EndIf
+   EndIf
 
    _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestTownHall()
    Local $frame = CaptureFrame("TestTownHall")
-   SaveDebugImage($frame, "TestTownHall.bmp")
+   ;Local $frame = _GDIPlus_BitmapCreateFromFile("ObscuredTH23687.bmp")
+   ;SaveDebugImage($frame, "TestTownHall.bmp")
 
-   Local $bestMatch, $bestConfidence, $left, $top
+   Local $left, $top
+   Local $th = GetTownHallLevel($frame, $left, $top)
 
-   ScanFrameForBestBMP($frame, $TownHallBMPs, 0, $bestMatch, $bestConfidence, $left, $top)
-
-   DebugWrite("Likely TH Level " & ($bestMatch=-1 ? -1 : $bestMatch+6) & " conf: " & $bestConfidence)
+   DebugWrite("Likely TH Level " & $th & " @ " & $left & "," & $top)
 
    _WinAPI_DeleteObject($frame)
 EndFunc
 
 Func TestCollectors()
-   Local $matchX[1], $matchY[1], $matchCount
+   Local $matchX[1], $matchY[1]
 
    ; Grab frame
    Local $frame = CaptureFrame("TestCollectors")
 
-   $matchCount = LocateBuildings("All collectors", $frame, $CollectorBMPs, $gConfidenceCollector, $matchX, $matchY)
+   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectorBMPs, $gConfidenceCollector, 14, $matchX, $matchY)
 
    For $i = 0 To $matchCount-1
 	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
@@ -238,3 +267,35 @@ Func TestCollectors()
 
    _GDIPlus_BitmapDispose($frame)
 EndFunc
+
+Func TestCollectMyLoot()
+   Local $frame = CaptureFrame("TestCollectMyLoot")
+
+   Local $mX[1], $mY[1]
+   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY)
+
+   ; Do the collecting
+   If $matchCount > 0 Then
+	  ; Sort the matches
+	  Local $sortedX[$matchCount], $sortedY[$matchCount]
+	  SortArrayByClosestNeighbor($matchCount, $mX, $mY, $sortedX, $sortedY)
+
+	  DebugWrite("CollectLoot() Found " & $matchCount & " collectors")
+	  For $i = 0 To $matchCount-1
+		 DebugWrite("Found collectors " & $i & " " & $sortedX[$i] & "," & $sortedY[$i])
+	  Next
+
+	  Sleep(1000)
+   EndIf
+
+   ; Check for loot cart
+   Local $conf, $x, $y
+   ScanFrameForOneBMP($frame, "Images\"&$LootCartBMPs[0], $conf, $x, $y)
+
+   If $conf > $gConfidenceLootCart Then
+	  DebugWrite("Found loot cart: " & $conf & " " & $x & "," & $y)
+   EndIf
+
+   _GDIPlus_BitmapDispose($frame)
+EndFunc
+

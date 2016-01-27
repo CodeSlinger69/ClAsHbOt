@@ -495,43 +495,6 @@ Func AttackingIsDisabled(Const $f)
    Return False
 EndFunc
 
-Func ScanFrameForBestBMP(Const $f, Const ByRef $bmpArray, Const $threshold, ByRef $bestMatch, ByRef $bestConfidence, ByRef $bestX, ByRef $bestY)
-   $bestMatch = -1
-   $bestConfidence = 0
-   $bestX = -1
-   $bestY = -1
-
-; temporary
-_GDIPlus_ImageSaveToFile($f, "temp.bmp")
-
-   For $i = 0 to UBound($bmpArray)-1
-	  ;DebugWrite("Frame handle: " & Hex($f))
-	  ;Local $res = DllCall("ClAsHbOtDlL.dll", "str", "FindMatch", "ptr", $f, "str", "Images\"&$bmpArray[$i], "int", 3)
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "temp.bmp", "str", "Images\"&$bmpArray[$i], "int", 3)
-
-	  If @error Then
-		 DebugWrite("ScanFrameForBestBMP() DLL error " & @error)
-		  Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
-			"This is catastrophic, exiting.")
-		 Exit
-	  EndIf
-
-	  ;DebugWrite($bmpArray[$i] & ": " & $res[0])
-
-	  Local $split = StringSplit($res[0], "|", 2)
-	  If $split[2] > $threshold And $split[2] > $bestConfidence Then
-		 $bestX = $split[0]
-		 $bestY = $split[1]
-		 $bestConfidence = $split[2]
-		 $bestMatch = $i
-	  EndIf
-   Next
-
-; temporary
-FileDelete("temp.bmp")
-
-EndFunc
-
 Func InColorSphere(Const $color, Const $center, Const $radius)
    Local $r = BitShift(BitAND($color, 0x00FF0000), 16)
    Local $g = BitShift(BitAND($color, 0x0000FF00), 8)
@@ -573,8 +536,163 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
+Func GetTownHallLevel(Const $frame, ByRef $left, ByRef $top)
+   ; Returns best TH level match, -1 if no good match
+   Local $bestMatch = -1
+   Local $bestConf = 0
+   Local $bestX, $bestY
+   For $i = 0 To UBound($TownHallBMPs)-1
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($frame, "Images\"&$TownHallBMPs[$i], $conf, $x, $y)
+
+	  If $conf >= $gConfidenceTownHall Then
+
+		 ; Need to check for case where a town hall is "found" in the sandy beach area, this is a false positive.
+		 ; http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
+		 ; return (b.x - a.x)*(c.y - a.y) > (b.y - a.y)*(c.x - a.x);
+		 Local $beachSideOfSWLine = ($gSouthPoint[0] - $gEastPoint[0])*($y - $gEastPoint[1]) > ($gSouthPoint[1] - $gEastPoint[1])*($x - $gEastPoint[0])
+		 ;DebugWrite($TownHallBMPs[$i] & " " & $conf & " " & $x & " " & $y & " " & $beachSideOfSWLine)
+
+		 If $beachSideOfSWLine=False And $conf>=$bestConf Then
+			$bestConf = $conf
+			$bestMatch = $i
+			$bestX = $x
+			$bestY = $y
+		 EndIf
+	  EndIf
+   Next
+
+   If $bestMatch <> -1 Then
+	  ;DebugWrite("Likely TH Level " & $bestMatch+6 & " conf: " & $bestConfidence)
+	  $left = $bestX
+	  $top = $bestY
+	  Return $bestMatch+6
+   Else
+	  ;_GDIPlus_ImageSaveToFile($frame, "ObscuredTH" & Random(0, 100000, 1) & ".bmp")
+	  Return -1
+   EndIf
+EndFunc
+
+Func ScanFrameForOneBMP(Const $f, Const ByRef $needle, ByRef $confidence, ByRef $x, ByRef $y)
+   $confidence = 0
+   $x = -1
+   $y = -1
+
+; temporary
+_GDIPlus_ImageSaveToFile($f, "temp.bmp")
+
+   Local $res = DllCall($gDllHandle, "str", "FindMatch", "str", "temp.bmp", "str", $needle)
+
+   If @error Then
+	  DebugWrite("ScanFrameForOneBMP() DllCall @error=" & @error)
+	   Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
+
+   Local $split = StringSplit($res[0], "|", 2)
+   $x = $split[0]
+   $y = $split[1]
+   $confidence = $split[2]
+
+; temporary
+FileDelete("temp.bmp")
+
+EndFunc
+
+Func ScanFrameForBestBMP(Const $f, Const ByRef $bmpArray, Const $threshold, ByRef $bestMatch, ByRef $bestConfidence, ByRef $bestX, ByRef $bestY)
+   $bestMatch = -1
+   $bestConfidence = 0
+   $bestX = -1
+   $bestY = -1
+
+; temporary
+_GDIPlus_ImageSaveToFile($f, "temp.bmp")
+
+   For $i = 0 to UBound($bmpArray)-1
+	  ;DebugWrite("Frame handle: " & Hex($f))
+	  ;Local $res = DllCall("ClAsHbOtDlL.dll", "str", "FindMatch", "ptr", $f, "str", "Images\"&$bmpArray[$i])
+	  Local $res = DllCall($gDllHandle, "str", "FindMatch", "str", "temp.bmp", "str", "Images\"&$bmpArray[$i])
+
+	  If @error Then
+		 DebugWrite("ScanFrameForBestBMP() DllCall @error=" & @error)
+		  Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+			"This is catastrophic, exiting.")
+		 Exit
+	  EndIf
+
+	  ;DebugWrite($bmpArray[$i] & ": " & $res[0])
+
+	  Local $split = StringSplit($res[0], "|", 2)
+	  If $split[2] > $threshold And $split[2] > $bestConfidence Then
+		 $bestX = $split[0]
+		 $bestY = $split[1]
+		 $bestConfidence = $split[2]
+		 $bestMatch = $i
+	  EndIf
+   Next
+
+; temporary
+FileDelete("temp.bmp")
+
+EndFunc
+
+Func ScanFrameForAllBMPs(Const $f, Const ByRef $bmpArray, Const $threshold, Const $maxMatches, ByRef $matchX, ByRef $matchY)
+; temporary
+_GDIPlus_ImageSaveToFile($f, "temp.bmp")
+
+    ; Find all the buildings of the specified type
+   Local $matchCount = 0
+   For $i = 0 To UBound($bmpArray)-1
+	  ; Get matches for this resource
+	  Local $res = DllCall($gDllHandle, "str", "FindAllMatches", "str", "temp.bmp", "str", "Images\"&$bmpArray[$i], "int", $maxMatches, "double", $threshold)
+
+	  If @error Then
+		 DebugWrite("ScanFrameForAllBMPs() DllCall @error=" & @error)
+		 Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+			"This is catastrophic, exiting.")
+		 Exit
+	  EndIf
+
+	  Local $split = StringSplit($res[0], "|", 2)
+	  ;DebugWrite("Num matches " & $bmpArray[$i] & ": " & $split[0])
+
+	  For $j = 0 To $split[0]-1
+		 ; Loop through all captured points so far, if this one is within 8 pix of an existing one, then skip it.
+		 Local $alreadyFound = False
+		 For $k = 0 To $matchCount-1
+			If DistBetweenTwoPoints($split[$j*3+1], $split[$j*3+2], $matchX[$k], $matchY[$k]) < 8 Then
+			   $alreadyFound = True
+			   ;DebugWrite("    Already found " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
+			   ExitLoop
+			EndIf
+		 Next
+
+		 ; Otherwise add it to the growing list of matches, if it is $buildingConfidence % or greater confidence
+		 If $alreadyFound = False Then
+			If $split[$j*3+3] > $threshold Then
+			   ;DebugWrite("    Adding " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
+			   $matchCount += 1
+			   ReDim $matchX[$matchCount]
+			   ReDim $matchY[$matchCount]
+			   $matchX[$matchCount-1] = $split[$j*3+1]
+			   $matchY[$matchCount-1] = $split[$j*3+2]
+			EndIf
+		 EndIf
+	  Next
+   Next
+
+; temporary
+FileDelete("temp.bmp")
+
+Return $matchCount
+
+EndFunc
+
 Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
-   DebugWrite("CaptureFrame() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+   ;DebugWrite("CaptureFrame() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+
+   Local $hGdipBitmap
 
    If $gBackgroundScraping Then
 	  Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
@@ -586,7 +704,10 @@ Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBl
 	  _WinAPI_SelectObject($memDC, $hHBITMAP)
 	  _WinAPI_BitBlt($memDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $hDC, $x1, $y1, $SRCCOPY)
 
-	  Local $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+	  $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+	  If $hGdipBitmap=0 Then
+		 DebugWrite("RefreshFrame() Error creating bitmap @error=" & @error & " @extended=" & @extended)
+	  EndIf
 
 	  _WinAPI_DeleteObject($hHBITMAP)
 	  _WinAPI_SelectObject($memDC, $bmpOriginal)
@@ -596,7 +717,7 @@ Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBl
    Else
 	  Local $cPos = GetClientPos()
 	  Local $hHBITMAP = _ScreenCapture_Capture("", $cPos[0]+$x1, $cPos[1]+$y1, $cPos[0]+$x2, $cPos[1]+$y2)
-	  Local $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+	  $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
 	  _WinAPI_DeleteObject($hHBITMAP)
 
    EndIf
@@ -618,7 +739,7 @@ Func TestBackGroundScrape()
    Local $notBlackPixel = False
    For $i = 1 To 100
 	  Local $pix = _GDIPlus_BitmapGetPixel($frame, Random(0, $w-1, 1), Random(0, $h-1, 1))
-	  DebugWrite($i & " 0x" & Hex(BitAND($pix, 0xffffff)))
+	  ;DebugWrite($i & " 0x" & Hex(BitAND($pix, 0xffffff)))
 	  If  BitAND($pix, 0xffffff) <> 0x000000 Then
 		 $notBlackPixel = True
 		 ExitLoop

@@ -28,12 +28,14 @@ GLobal $gBlueStacksPID = 0
 Global $gBlueStacksHwnd = 0
 Global $gBlueStacksControlHwnd = 0
 Global $gBlueStacksWidth = 860
-Global $gBlueStacksHeight = 780
-Global $gScreenCenter[2] = [429, 337]
+Global $gBlueStacksHeight = 733
+Global $gScreenCenter[2] = [429, 337] ; Color at this point = 0xF1BE5A
 Global $gNorthPoint[2] = [429, 69]
 Global $gEastPoint[2] = [71, 337]
 Global $gWestPoint[2] = [787, 337]
 Global $gSouthPoint[2] = [429, 605]
+; Note to self: due to Jan 26, 2016 CoC release, the max y extent for buttons is 680,
+;   to avoid clicking on Android system bar icons
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"
@@ -41,6 +43,7 @@ Global $gIniFile = "CoC Bot.ini"
 ; GUI
 Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False, $gDonateTroopsStartup = False
 Global $gFindMatchClicked = False, $gAutoPushClicked = False, $gAutoRaidClicked = False, $gDefenseFarmClicked = False
+Global $gAutoNeedToCollectStartingLoot = False, $gAutoNeedToCollectEndingLoot = False
 
 ; Lists of troop and spell types
 Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroopWallBreaker, _
@@ -64,7 +67,8 @@ Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMat
    $eScreenWaitRaid, $eScreenLiveRaid, $eScreenEndBattle, _
    $eScreenLiveReplayEndBattle, $eScreenVillageWasAttacked, $eScreenChatDimmed, _
    $eWindowArmyManager, $eScreenPlayStore, $eScreenAndroidMessageBox, _
-   $eShopOrLayout, $eProfile, $eAchievements, $eSettings, $eScreenUnknown
+   $eShopOrLayout, $eProfile, $eAchievements, $eSettings, $eStarBonus, _
+   $eScreenUnknown
 
 ; Error conditions
 Global Enum $eErrorAndroidMessageBox=1, $eErrorAttackingDisabled
@@ -81,18 +85,20 @@ Global $gMyMaxSpells = 999
 Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 
 ; Confidence Levels
-Global $gConfidenceTownHall = IniRead($gIniFile, "Confidence", "Town Hall", 0.94)
-Global $gConfidenceCollectLoot = IniRead($gIniFile, "Confidence", "Collect Loot", 0.95)
-Global $gConfidenceArmyCamp = IniRead($gIniFile, "Confidence", "Army Camp", 0.94)
-Global $gConfidenceBarracks = IniRead($gIniFile, "Confidence", "Barracks", 0.95)
-Global $gConfidenceCollector =IniRead($gIniFile, "Confidence", "Collector",  0.92)
-Global $gConfidenceDEStorage = IniRead($gIniFile, "Confidence", "Dark Elixir Storage", 0.95)
-Global $gConfidenceRaidTroopSlot = IniRead($gIniFile, "Confidence", "Raid Troop Slot", 0.98)
-Global $gConfidenceDonateTroopSlot = IniRead($gIniFile, "Confidence", "Donate Troop Slot", 0.985)
-Global $gConfidenceBarracksTroopSlot = IniRead($gIniFile, "Confidence", "Barracks Troop Slot", 0.99)
-Global $gConfidenceCampTroopSlot = IniRead($gIniFile, "Confidence", "Camp Troop Slot", 0.99)
-Global $gConfidenceTrainTroopsButton = IniRead($gIniFile, "Confidence", "Train Troops Button", 0.99)
-Global $gConfidenceStorages = IniRead($gIniFile, "Confidence", "Storages", 0.94)
+Global $gConfidenceTownHall = 0.94
+Global $gConfidenceCollectLoot = 0.95
+Global $gConfidenceArmyCamp = 0.94
+Global $gConfidenceBarracks = 0.95
+Global $gConfidenceCollector = 0.92
+Global $gConfidenceDEStorage = 0.95
+Global $gConfidenceRaidTroopSlot = 0.98
+Global $gConfidenceDonateTroopSlot = 0.985
+Global $gConfidenceBarracksTroopSlot = 0.99
+Global $gConfidenceCampTroopSlot = 0.99
+Global $gConfidenceTrainTroopsButton = 0.99
+Global $gConfidenceDonateButton = 0.99
+Global $gConfidenceStorages = 0.94
+Global $gConfidenceLootCart = 0.99
 
 ; Deploy locations
 Global $gMaxDeployBoxes = 19

@@ -68,17 +68,15 @@ Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
    If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "BuiltTroopsFrame1.bmp")
 
    For $i = $eTroopBarbarian To $eTroopLavaHound
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BuiltTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-	  ;DebugWrite("GetBuiltTroops " & $gTroopNames[$i] & " found at " & $split[0] & ", " & $split[1] & _
-		; 		 " confidence " & Round($split[2]*100, 2) & "%")
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
-	  If $split[2] > $gConfidenceCampTroopSlot Then
+	  If $conf > $gConfidenceCampTroopSlot Then
 		 Local $textBox[10] = [ _
-			$split[0]+$rCampSlotTroopCountTextBox[0], _
-			$split[1]+$rCampSlotTroopCountTextBox[1], _
-			$split[0]+$rCampSlotTroopCountTextBox[2], _
-			$split[1]+$rCampSlotTroopCountTextBox[3], _
+			$x+$rCampSlotTroopCountTextBox[0], _
+			$y+$rCampSlotTroopCountTextBox[1], _
+			$x+$rCampSlotTroopCountTextBox[2], _
+			$y+$rCampSlotTroopCountTextBox[3], _
 			$rCampSlotTroopCountTextBox[4], _
 			$rCampSlotTroopCountTextBox[5], _
 			$rCampSlotTroopCountTextBox[6], _
@@ -103,12 +101,10 @@ Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
    If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "BuiltTroopsFrame2.bmp")
 
    For $i = $eTroopKing To $eTroopWarden
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BuiltTroopsFrame2.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-	  ;DebugWrite("GetBuiltTroops " & $gTroopNames[$i] & " found at " & $split[0] & ", " & $split[1] & _
-		; 		 " confidence " & Round($split[2]*100, 2) & "%")
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
-	  If $split[2] > $gConfidenceCampTroopSlot Then
+	  If $conf > $gConfidenceCampTroopSlot Then
 		 $index[$i] = 1
 		 DebugWrite("GetBuiltTroops() " & $gTroopNames[$i] & " " & $index[$i])
 	  EndIf
@@ -259,15 +255,14 @@ Func FindBarracksTroopSlots(Const $f, Const ByRef $bitmaps, ByRef $index)
    If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "BarracksFrame.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "BarracksFrame.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
-	  ;DebugWrite("Barracks troop " & $bitmaps[$i] & " found at " & $split[0] & ", " & $split[1] & " conf: " & $split[2])
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($f, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
-	  If $split[2] > $gConfidenceBarracksTroopSlot Then
-		 $index[$i][0] = $split[0]+$rBarracksButtonOffset[0]
-		 $index[$i][1] = $split[1]+$rBarracksButtonOffset[1]
-		 $index[$i][2] = $split[0]+$rBarracksButtonOffset[2]
-		 $index[$i][3] = $split[1]+$rBarracksButtonOffset[3]
+	  If $conf > $gConfidenceBarracksTroopSlot Then
+		 $index[$i][0] = $x+$rBarracksButtonOffset[0]
+		 $index[$i][1] = $y+$rBarracksButtonOffset[1]
+		 $index[$i][2] = $x+$rBarracksButtonOffset[2]
+		 $index[$i][3] = $y+$rBarracksButtonOffset[3]
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1

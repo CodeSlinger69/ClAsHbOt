@@ -40,7 +40,6 @@ Opt("GUIOnEventMode", 1)
 #include <GUI.au3>
 #include <Settings.au3>
 #include <Scraper.au3>
-#include <Buildings.au3>
 #include <ArmyManager.au3>
 #include <CollectLoot.au3>
 #include <AutoPush.au3>
@@ -60,8 +59,7 @@ Opt("GUIOnEventMode", 1)
 Main()
 
 Func Main()
-;MsgBox($MB_OK, "", "Waiting")
-   ;DLLLoad()
+   DLLLoad()
 
    StartBlueStacks()
 
@@ -69,9 +67,12 @@ Func Main()
 
    ReadSettings()
 
-;DebugWrite("WhereAmI: " & WhereAmI())
+;MsgBox($MB_OK, "", "Waiting")
+;Local $f = CaptureFrame("Test")
+;DebugWrite("WhereAmI: " & WhereAmI($f))
 ;ZoomOut2()
 ;$gScraperDebug = True
+;$gDebugSaveScreenCaptures = True
 ;TestMyStuff()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
@@ -81,12 +82,12 @@ Func Main()
 ;TestEndBattleBonus()
 ;TestDeployBoxCalcs()
 ;TestDonate()
-;MsgBox($MB_OK, "", "Waiting")
 ;TestTownHall()
 ;TestCollectors()
 ;TestStorage()
-;Local $f = CaptureFrame("Test")
 ;DLLStoreFrame($f)
+;_GDIPlus_BitmapDispose($f)
+;TestCollectMyLoot()
 ;Exit
 
    InitGUI()
@@ -108,6 +109,17 @@ Func MainApplicationLoop()
 
 	  ; Update status on GUI
 	  GetMyLootNumbers($frame)
+
+	  ; Does loot tracking need updating?
+	  If $gAutoNeedToCollectStartingLoot Then
+		 CaptureAutoBeginLoot()
+		 $gAutoNeedToCollectStartingLoot = False
+	  EndIf
+
+	  If $gAutoNeedToCollectEndingLoot Then
+		 CaptureAutoEndLoot()
+		 $gAutoNeedToCollectEndingLoot = False
+	  EndIf
 
 	  ; Check for offline issues
 	  If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And _
@@ -364,10 +376,45 @@ Func GetMyLootNumbers($frame)
    EndIf
 EndFunc
 
+Func CaptureAutoBeginLoot()
+   Local $frame = CaptureFrame("CaptureAutoBeginLoot")
+   GetMyLootNumbers($frame)
+   _GDIPlus_BitmapDispose($frame)
+
+   Local $n = GUICtrlRead($GUI_MyGold)
+   If $n <> "-" Then $gAutoRaidBeginLoot[0] = $n
+   $n = GUICtrlRead($GUI_MyElix)
+   If $n <> "-" Then $gAutoRaidBeginLoot[1] = $n
+   $n = GUICtrlRead($GUI_MyDark)
+   If $n <> "-" Then $gAutoRaidBeginLoot[2] = $n
+   $n = GUICtrlRead($GUI_MyCups)
+   If $n <> "-" Then $gAutoRaidBeginLoot[3] = $n
+
+   DebugWrite("Auto Begin: " & _
+	  " Gold:" & $gAutoRaidBeginLoot[0] & _
+	  " Elix:" & $gAutoRaidBeginLoot[1] & _
+	  " Dark:" & $gAutoRaidBeginLoot[2] & _
+	  " Cups:" & $gAutoRaidBeginLoot[3])
+
+   GUICtrlSetData($GUI_Winnings, "Net winnings: 0 / 0 / 0 / 0")
+EndFunc
+
+Func CaptureAutoEndLoot()
+   Local $netGold = GUICtrlRead($GUI_MyGold) - $gAutoRaidBeginLoot[0]
+   Local $netElix = GUICtrlRead($GUI_MyElix) - $gAutoRaidBeginLoot[1]
+   Local $netDark = GUICtrlRead($GUI_MyDark) - $gAutoRaidBeginLoot[2]
+   Local $netCups = GUICtrlRead($GUI_MyCups) - $gAutoRaidBeginLoot[3]
+   DebugWrite("Auto Profit: " & _
+	  " Gold:" & $netGold & _
+	  " Elix:" & $netElix & _
+	  " Dark:" & $netDark & _
+	  " Cups:" & $netCups)
+EndFunc
+
 Func DebugWrite($text)
    If $gDebug Then
 	  ConsoleWrite(_NowDate() & " " & _NowTime() & " " & $text & @CRLF)
-	  FileWrite("ClashBotLog.txt", _NowDate() & " " & _NowTime() & " " & $text & @CRLF)
+	  FileWrite("ClashBotLog.txt", _NowDate() & " " & _NowTime(5) & " " & $text & @CRLF)
    EndIf
 EndFunc
 

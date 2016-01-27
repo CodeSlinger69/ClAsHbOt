@@ -26,6 +26,7 @@ Func AutoRaid(ByRef $f, ByRef $timer, ByRef $THCorner)
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
 
 	  ResetToCoCMainScreen($f)
+	  ZoomOut2($f)
 
 	  Local $findResults = AutoRaidFindMatch($f, False, $THCorner)
 	  If $findResults = False Then
@@ -75,7 +76,13 @@ EndFunc
 Func AutoRaidFindMatch(ByRef $f, Const $returnFirstMatch, ByRef $THCorner)
    ; Click Attack
    DebugWrite("AutoRaidFindMatch() Click Attack button")
-   RandomWeightedClick($rMainScreenAttackButton)
+   If IsButtonPresent($f, $rMainScreenAttackNoStarsButton) Then
+	  RandomWeightedClick($rMainScreenAttackNoStarsButton)
+   ElseIf IsButtonPresent($f, $rMainScreenAttackWithStarsButton) Then
+	  RandomWeightedClick($rMainScreenAttackWithStarsButton)
+   Else
+	  DebugWrite("AutoRaidFindMatch() Find Match failed - could not find Attack! button")
+   EndIf
 
    ; Wait for Find a Match button
    If WaitForButton($f, 10000, $rFindMatchScreenFindAMatchNoShieldButton, $rFindMatchScreenFindAMatchWithShieldButton) = False Then
@@ -185,6 +192,9 @@ Func AutoRaidFindMatch(ByRef $f, Const $returnFirstMatch, ByRef $THCorner)
 EndFunc
 
 Func AutoWaitForNextButton(ByRef $f)
+   _GDIPlus_BitmapDispose($f)
+   $f = CaptureFrame("AutoRaidFindMatch")
+
    If WaitForButton($f, 30000, $rWaitRaidScreenNextButton) = False Then
 	  If @error = $eErrorAttackingDisabled Then
 		 DebugWrite("Find Match failed - Attacking is Disabled")
@@ -263,7 +273,7 @@ Func CheckForRaidableBase(Const $frame, Const $townHall, Const $gold, Const $eli
 		 DebugWrite("CheckForRaidableBase() No match (adj loot) (Adj: " & $adjGold & " / " & $adjElix & ")" )
 		 Return False
 	  Else
-		 DebugWrite("CheckForRaidableBase() Match!" & @CRLF)
+		 DebugWrite("CheckForRaidableBase() Match!  Adjusted loot: " & $adjGold & " / " & $adjElix & @CRLF)
 		 Return $eAutoExecuteRaid
 	  EndIf
    EndIf
@@ -296,10 +306,10 @@ Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef
    ; Get Town Hall level
    $thLevel = GetTownHallLevel($frame, $thLeft, $thTop)
 
-   SetAutoRaidResults($gold, $elix, $dark, $cups, $thLevel, $deadBase)
-
+   Local $townHallIndiator = $thLevel<>-1 ? $thLevel : "-"
+   Local $deadBaseIndicator = _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED ? ($deadBase=True ? "T" : "F") : "-"
+   GUICtrlSetData($GUI_Results, "Last scan: " & $gold & " / " & $elix & " / " & $dark & " / " & $cups & " / " & $townHallIndiator & " / " & $deadBaseIndicator)
    DebugWrite("AutoRaidGetDisplayedLoot() " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $thLevel & " / " & $deadBase)
-
 EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
@@ -696,16 +706,16 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableRaidTroopsFrame2to11.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame2to11.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
-	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[0]
-		 $index[$i][1] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[1]
-		 $index[$i][2] = $split[0]+$rRaidTroopBox2[0]+$rRaidButtonOffset[2]
-		 $index[$i][3] = $split[1]+$rRaidTroopBox2[1]+$rRaidButtonOffset[3]
-		 ;DebugWrite("Pass 2 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
-			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
+	  If $conf > $gConfidenceRaidTroopSlot Then
+		 $index[$i][0] = $rRaidTroopBox2[0] + $x + $rRaidButtonOffset[0]
+		 $index[$i][1] = $rRaidTroopBox2[1] + $y + $rRaidButtonOffset[1]
+		 $index[$i][2] = $rRaidTroopBox2[0] + $x + $rRaidButtonOffset[2]
+		 $index[$i][3] = $rRaidTroopBox2[1] + $y + $rRaidButtonOffset[3]
+		 ;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
+			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
 	  EndIf
    Next
 
@@ -721,17 +731,16 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($frame, "AvailableRaidTroopsFrame1.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
-	  Local $res = DllCall("ImageMatch.dll", "str", "FindMatch", "str", "AvailableRaidTroopsFrame1.bmp", "str", "Images\"&$bitmaps[$i], "int", 3)
-	  Local $split = StringSplit($res[0], "|", 2) ; x, y, conf
+	  Local $conf, $x, $y
+	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
-	  If $split[2] > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $split[0]+$rRaidTroopBox1[0]+$rRaidButtonOffset[0]
-		 $index[$i][1] = $split[1]+$rRaidTroopBox1[1]+$rRaidButtonOffset[1]
-		 $index[$i][2] = $split[0]+$rRaidTroopBox1[0]+$rRaidButtonOffset[2]
-		 $index[$i][3] = $split[1]+$rRaidTroopBox1[1]+$rRaidButtonOffset[3]
-		 ;DebugWrite("Pass 1 Raid troop " & $bitmaps[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] &  ", " & _
-			;		 $index[$i][2] & ", " & $index[$i][3] & " confidence " & Round($split[2]*100, 2) & "%")
-		 ExitLoop ; only one possible button in this pass
+	  If $conf > $gConfidenceRaidTroopSlot Then
+		 $index[$i][0] = $rRaidTroopBox1[0] + $x + $rRaidButtonOffset[0]
+		 $index[$i][1] = $rRaidTroopBox1[1] + $y + $rRaidButtonOffset[1]
+		 $index[$i][2] = $rRaidTroopBox1[0] + $x + $rRaidButtonOffset[2]
+		 $index[$i][3] = $rRaidTroopBox1[1] + $y + $rRaidButtonOffset[3]
+		 ;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
+			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
 	  EndIf
    Next
 
@@ -741,6 +750,7 @@ EndFunc
 Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
    _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("UpdateRaidTroopCounts")
+   If $gDebugSaveScreenCaptures Then _GDIPlus_ImageSaveToFile($f, "UpdateRaidTroopCounts.bmp")
 
    For $i = 0 To UBound($index) - 1
 	  If $index[$i][0] <> -1 Then
@@ -748,7 +758,11 @@ Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
 		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
 			$index[$i][4] = 1
 		 Else
-			Local $loc[4] = [ $index[$i][0]+31, $rRaidTroopBox1[3], $rRaidTroopSelectedColor[2], $rRaidTroopSelectedColor[3] ]
+			Local $loc[4] = [ _
+			   $index[$i][0]+$rRaidTroopSelectedColor[0], _
+			   $index[$i][1]+$rRaidTroopSelectedColor[1], _
+			   $rRaidTroopSelectedColor[2], _
+			   $rRaidTroopSelectedColor[3] ]
 			;DebugWrite("GetAvailableTroops() loc = " & $loc[0] & " " & $loc[1] & " " & Hex($loc[2]) & " " & $loc[3])
 
 			If IsColorPresent($f, $loc) Then
@@ -756,8 +770,8 @@ Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
 			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1]-4, $index[$i][2]-5, $index[$i][1]+10, _
 									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
 									 0, 0, 0, 0]
-			   ;DebugWrite($textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
-			   ;	$textBox[5] & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
+			   ;DebugWrite("Selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
+				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
 			   Local $t = ScrapeFuzzyText($f, $gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
 			  ; DebugWrite("GetAvailableTroops() (selected) = " & $t)
 
@@ -766,6 +780,8 @@ Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
 			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
 									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
 									 0, 0, 0, 0]
+			   ;DebugWrite("Not selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
+				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
 			   Local $t = ScrapeFuzzyText($f, $gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
 			   ;DebugWrite("GetAvailableTroops() (not selected) = " & $t)
 

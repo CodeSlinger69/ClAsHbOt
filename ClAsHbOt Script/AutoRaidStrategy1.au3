@@ -204,26 +204,26 @@ Func AutoRaidStrategy1GetDirection(Const $f)
 
    ; Count the storages, by top/bottom half
    Local $allMatchY[1], $totalMatches=0
-   Local $matchX[1], $matchY[1], $matchCount
+   Local $matchX[1], $matchY[1]
 
-   $matchCount = LocateBuildings("Gold Storages", $f, $GoldStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
-   $totalMatches+=$matchCount
+   Local $matchCount = ScanFrameForAllBMPs($f, $GoldStorageBMPs, $gConfidenceStorages, 4, $matchX, $matchY)
+   $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " gold storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
    For $i = 0 To $matchCount-1
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   $matchCount = LocateBuildings("Elixir Storages", $f, $ElixStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
-   $totalMatches+=$matchCount
+   Local $matchCount = ScanFrameForAllBMPs($f, $ElixStorageBMPs, $gConfidenceStorages, 4, $matchX, $matchY)
+   $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " elix storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
    For $i = 0 To $matchCount-1
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   $matchCount = LocateBuildings("Dark Elixir Storages", $f, $DarkStorageBMPs, $gConfidenceStorages, $matchX, $matchY)
-   $totalMatches+=$matchCount
+   Local $matchCount = ScanFrameForAllBMPs($f, $DarkStorageBMPs, $gConfidenceStorages, 1, $matchX, $matchY)
+   $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
    For $i = 0 To $matchCount-1

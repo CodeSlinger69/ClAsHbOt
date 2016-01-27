@@ -36,7 +36,7 @@ Func StartBlueStacks()
 		 "Exiting.")
 	  Exit
    EndIf
-   DebugWrite("BlueStacks hWnd: " & Hex($gBlueStacksHwnd))
+   DebugWrite("StartBlueStacks() hWnd: " & Hex($gBlueStacksHwnd))
 
    Local $t = TimerInit()
    Do
@@ -49,7 +49,7 @@ Func StartBlueStacks()
 		 "Exiting.")
 	  Exit
    EndIf
-   DebugWrite("BlueStacks Control hWnd: " & Hex($gBlueStacksControlHwnd))
+   DebugWrite("StartBlueStacks() Control hWnd: " & Hex($gBlueStacksControlHwnd))
 
 EndFunc
 
@@ -67,7 +67,7 @@ Func BlueStacksIsRunning()
    If $isActive=0 Then Return False
 
    $gBlueStacksPID = WinGetProcess($gTitle)
-   DebugWrite("BlueStacks pid=" & $gBlueStacksPID)
+   DebugWrite("StartBlueStacks() pid=" & $gBlueStacksPID)
 
    Return True
 EndFunc
