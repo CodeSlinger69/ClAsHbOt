@@ -97,7 +97,7 @@ Global $gConfidenceCampTroopSlot = 0.99
 Global $gConfidenceTrainTroopsButton = 0.99
 Global $gConfidenceDonateButton = 0.99
 Global $gConfidenceStorages = 0.94
-Global $gConfidenceLootCart = 0.95
+Global $gConfidenceLootCart = 0.94
 
 ; Deploy locations
 Global $gMaxDeployBoxes = 19

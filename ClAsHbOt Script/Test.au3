@@ -138,9 +138,7 @@ Func TestRaidTroopsCount()
    Local $troopIndex[$eTroopCount][5]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
 
-   Local $frame = CaptureFrame("TestRaidTroopsCount")
-   ;SaveDebugImage($frame, "TestRaidTroopsCount.bmp")
-   UpdateRaidTroopCounts($frame, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    For $i=0 To $eTroopCount-1
 	  If $troopIndex[$i][4]>0 Then DebugWrite("Available " & $gTroopNames[$i] & ": " & $troopIndex[$i][4])
@@ -148,13 +146,11 @@ Func TestRaidTroopsCount()
 
    Local $spellIndex[$eSpellCount][5]
    FindRaidTroopSlots($gSpellSlotBMPs, $spellIndex)
-   UpdateRaidTroopCounts($frame, $spellIndex)
+   UpdateRaidTroopCounts($spellIndex)
 
    For $i=0 To $eSpellCount-1
 	  If $spellIndex[$i][4]>0 Then DebugWrite("Available " & $gSpellNames[$i] & ": " & $spellIndex[$i][4])
    Next
-
-   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestBarracksStatus()

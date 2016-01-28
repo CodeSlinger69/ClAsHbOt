@@ -87,7 +87,7 @@ Func AutoRaidExecuteRaidStrategy3(ByRef $f)
 
    ; 1st wave (only one wave in this strategy)
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($f, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    DebugWrite("Available Balloons: " & $troopIndex[$eTroopBalloon][4])
    DebugWrite("Avaliable Minions: " & $troopIndex[$eTroopMinion][4])
@@ -95,18 +95,18 @@ Func AutoRaidExecuteRaidStrategy3(ByRef $f)
    ; Deploy all balloons
    If $troopIndex[$eTroopBalloon][4] > 0 Then
 	  DebugWrite("Deploying all balloons (" & $troopIndex[$eTroopBalloon][4] & ")")
-	  DeployTroopsToSides($f, $eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($eTroopBalloon, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy all minions
    If $troopIndex[$eTroopMinion][4] > 0 Then
 	  DebugWrite("Deploying all minions (" & $troopIndex[$eTroopMinion][4] & ")")
-	  DeployTroopsToSides($f, $eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
    EndIf
 
    ; Deploy and monitor heroes
    Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
-   DeployAndMonitorHeroes($f, $troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
+   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
    WaitForBattleEnd($f, $kingDeployed, $queenDeployed, $wardenDeployed)

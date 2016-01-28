@@ -88,7 +88,7 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $f)
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($f, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    DebugWrite("Available Barbarians: " & $troopIndex[$eTroopBarbarian][4])
    DebugWrite("Avaliable Archers: " & $troopIndex[$eTroopArcher][4])
@@ -99,9 +99,12 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $f)
    ; Determine attack direction
    Local $direction = AutoRaidStrategy1GetDirection($f)
 
-   ; Get buttons
-   Local $giantButton[4] = [$troopIndex[$eTroopGiant][0], $troopIndex[$eTroopGiant][1], $troopIndex[$eTroopGiant][2], $troopIndex[$eTroopGiant][3]]
-   Local $breakerButton[4] = [$troopIndex[$eTroopWallBreaker][0], $troopIndex[$eTroopWallBreaker][1], $troopIndex[$eTroopWallBreaker][2], $troopIndex[$eTroopWallBreaker][3]]
+   ; Get button
+   Local $breakerButton[4] = [ _
+	  $rRaidTroopBox[0] + $troopIndex[$eTroopWallBreaker][0], _
+	  $rRaidTroopBox[1] + $troopIndex[$eTroopWallBreaker][1], _
+	  $rRaidTroopBox[0] + $troopIndex[$eTroopWallBreaker][2], _
+	  $rRaidTroopBox[1] + $troopIndex[$eTroopWallBreaker][3]]
 
    ;
    ; Deploy troops
@@ -109,9 +112,9 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $f)
    Local $deployStart = TimerInit()
 
    ; Deploy giants
-   If $giantButton[0] <> -1 Then
+   If $troopIndex[$eTroopGiant][0] <> -1 Then
 	  Local $numGiantBoxesPerSide = 5
-	  DeployTroopsToSides($f, $eTroopGiant, $troopIndex, $eAutoRaidDeployRemaining, $direction, $numGiantBoxesPerSide)
+	  DeployTroopsToSides($eTroopGiant, $troopIndex, $eAutoRaidDeployRemaining, $direction, $numGiantBoxesPerSide)
    EndIf
 
    Sleep(3000)
@@ -157,41 +160,41 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $f)
    EndIf
 
    ; 1st wave
-   UpdateRaidTroopCounts($f, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    ; Deploy 50% of barbs
    Local $archBarbNumDeployBoxesPerSide = 10 ; focus on the top or bottom corner to follow the giants
    If $troopIndex[$eTroopBarbarian][4] > 0 Then
 	  DebugWrite("Deploying 50% of Barbarians (" & Int($troopIndex[$eTroopBarbarian][4]*0.5) & ")")
-	  DeployTroopsToSides($f, $eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy 50% of archers
    If $troopIndex[$eTroopArcher][4] > 0 Then
 	  DebugWrite("Deploying 50% of Archers (" & Int($troopIndex[$eTroopArcher][4]*0.5) & ")")
-	  DeployTroopsToSides($f, $eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployFiftyPercent, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    Sleep(3000)
 
    ; 2nd wave
-   UpdateRaidTroopCounts($f, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][4] > 0 Then
 	  DebugWrite("Deploying remaining Barbarians (" & $troopIndex[$eTroopBarbarian][4] & ")")
-	  DeployTroopsToSides($f, $eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($eTroopBarbarian, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy rest of archers
    If $troopIndex[$eTroopArcher][4] > 0 Then
 	  DebugWrite("Deploying remaining Archers (" & $troopIndex[$eTroopArcher][4] & ")")
-	  DeployTroopsToSides($f, $eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
+	  DeployTroopsToSides($eTroopArcher, $troopIndex, $eAutoRaidDeployRemaining, $direction, $archBarbNumDeployBoxesPerSide)
    EndIf
 
    ; Deploy and monitor heroes
    Local $kingDeployed=False, $queenDeployed=False, $wardenDeployed=False
-   DeployAndMonitorHeroes($f, $troopIndex, $deployStart, $direction, 18, $kingDeployed, $queenDeployed, $wardenDeployed)
+   DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 18, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
    WaitForBattleEnd($f, $kingDeployed, $queenDeployed, $wardenDeployed)

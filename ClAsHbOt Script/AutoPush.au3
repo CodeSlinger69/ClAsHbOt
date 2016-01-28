@@ -201,7 +201,7 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
    FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($f, $troopIndex)
+   UpdateRaidTroopCounts($troopIndex)
 
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    Local $archButton[4] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], $troopIndex[$eTroopArcher][3]]
@@ -394,7 +394,7 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 	  EndIf
 
 	  ; Get counts of available troops
-	  UpdateRaidTroopCounts($f, $troopIndex)
+	  UpdateRaidTroopCounts($troopIndex)
 
 	  If $availableBarbs=0 And $availableArchs=0 Then ExitLoop
 

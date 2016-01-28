@@ -51,7 +51,7 @@ Global $rMainScreenOpenChatButton[8] = [322, 353, 345, 408, 339, 406, 0xD44B16, 
 Global $rMainScreenClosedChatButton[8] = [7, 353, 31, 408, 16, 406, 0xD44B16, 6]
 Global $rChatWindowDonateButton[8] = [0, 0, 105, 40, 0, 0, 0, 0]
 Global $rBattleHasEndedScreenReturnHomeButton[8] = [360, 549, 498, 604, 428, 599, 0x60B010, 6]
-Global $rLiveReplayEndScreenReturnHomeButton[8] = [15, 625, 108, 714, 72, 652, 0x103F7E, 6] ; Check for 2016/01/26 update
+Global $rLiveReplayEndScreenReturnHomeButton[8] = [14, 624, 110, 680, 71, 654, 0x0971C0, 6]
 Global $rWindowVillageWasAttackedOkayButton[8] = [360, 494, 500, 549, 429, 539, 0x5FAC10, 6]
 Global $rSafeAreaButton[8] = [780, 0, 859, 35, 0, 0, 0, 0]
 Global $rCollectorButton[8] = [0, 0, 14, 28, 0, 0, 0, 0]
@@ -99,8 +99,7 @@ Global $rZoomedOutFullColor[4] = [$gScreenCenter[0], 1, 0x000000, 0]
 
 ; Bounding Boxes
 ; Left, Top, Right, Bottom
-Global $rRaidTroopBox1[4] = [37, 639, 101, 726] ; first button only
-Global $rRaidTroopBox2[4] = [109, 639, 826, 726] ; buttons 2-11
+Global $rRaidTroopBox[4] = [37, 634, 826, 726]
 Global $rRaidButtonOffset[4] = [0, -17, 62, 21]
 Global $rCampTroopBox1[4] = [126, 197, 740, 275] ; main troops
 Global $rCampTroopBox2[4] = [425, 444, 611, 521] ; heroes

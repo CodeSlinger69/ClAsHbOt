@@ -446,10 +446,14 @@ Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level
 EndFunc
 
 ; howMany: $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
-Func DeployTroopsToSides(ByRef $f, Const $troop, ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
+Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
    DebugWrite("DeployTroopsToSides()")
    Local $xClick, $yClick
-   Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
+   Local $troopButton[4] = [ _
+	  $rRaidTroopBox[0] + $index[$troop][0], _
+	  $rRaidTroopBox[1] + $index[$troop][1], _
+	  $rRaidTroopBox[0] + $index[$troop][2], _
+	  $rRaidTroopBox[1] + $index[$troop][3]]
 
    ; Handle the deploy one troop situation first
    If $howMany=$eAutoRaidDeployOneTroop Then
@@ -489,7 +493,7 @@ Func DeployTroopsToSides(ByRef $f, Const $troop, ByRef $index, Const $howMany, C
    If $howMany=$eAutoRaidDeploySixtyPercent Or $howMany=$eAutoRaidDeployFiftyPercent Then Return
 
    ; If we are deploying all, then check remaining and continue to deploy to make sure they all get out there
-   UpdateRaidTroopCounts($f, $index)
+   UpdateRaidTroopCounts($index)
 
    $troopsAvailable = $index[$troop][4]
 
@@ -508,19 +512,23 @@ Func DeployTroopsToSides(ByRef $f, Const $troop, ByRef $index, Const $howMany, C
 	  Next
    EndIf
 
-   UpdateRaidTroopCounts($f, $index)
+   UpdateRaidTroopCounts($index)
    $troopsAvailable = $index[$troop][4]
 
    If $troopsAvailable>0 Then
 	  DebugWrite("Finishing to safe boxes: " & $troopsAvailable & " troops available.")
-	  DeployTroopsToSafeBoxes($f, $troop, $index, $dir)
+	  DeployTroopsToSafeBoxes($troop, $index, $dir)
    EndIf
 EndFunc
 
-Func DeployTroopsToSafeBoxes(ByRef $f, Const $troop, ByRef $index, Const $dir)
+Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
    DebugWrite("DeployTroopsToSafeBoxes()")
    Local $xClick, $yClick, $count
-   Local $troopButton[4] = [$index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
+   Local $troopButton[4] = [ _
+	  $rRaidTroopBox[0] + $index[$troop][0], _
+	  $rRaidTroopBox[1] + $index[$troop][1], _
+	  $rRaidTroopBox[0] + $index[$troop][2], _
+	  $rRaidTroopBox[1] + $index[$troop][3]]
 
    ; Deploy half to left
    Local $troopsAvailable = Int($index[$troop][4] / 2)
@@ -537,7 +545,7 @@ Func DeployTroopsToSafeBoxes(ByRef $f, Const $troop, ByRef $index, Const $dir)
    Next
 
    ; Deploy half to right
-   UpdateRaidTroopCounts($f, $index)
+   UpdateRaidTroopCounts($index)
    $troopsAvailable = $index[$troop][4]
 
    DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
@@ -696,18 +704,18 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
 
-   Local $frame = CaptureFrame("FindRaidTroopSlots2to11", $rRaidTroopBox2[0], $rRaidTroopBox2[1], $rRaidTroopBox2[2], $rRaidTroopBox2[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "AvailableRaidTroopsFrame2to11.bmp")
+   Local $frame = CaptureFrame("FindRaidTroopSlots2", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "AvailableRaidTroopsFrame2.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $conf, $x, $y
 	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
 	  If $conf > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $rRaidTroopBox2[0] + $x + $rRaidButtonOffset[0]
-		 $index[$i][1] = $rRaidTroopBox2[1] + $y + $rRaidButtonOffset[1]
-		 $index[$i][2] = $rRaidTroopBox2[0] + $x + $rRaidButtonOffset[2]
-		 $index[$i][3] = $rRaidTroopBox2[1] + $y + $rRaidButtonOffset[3]
+		 $index[$i][0] = $x + $rRaidButtonOffset[0]
+		 $index[$i][1] = $y + $rRaidButtonOffset[1]
+		 $index[$i][2] = $x + $rRaidButtonOffset[2]
+		 $index[$i][3] = $y + $rRaidButtonOffset[3]
 		 ;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
 			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
 	  EndIf
@@ -721,62 +729,71 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
 
-   Local $frame = CaptureFrame("FindRaidTroopSlots1", $rRaidTroopBox1[0], $rRaidTroopBox1[1], $rRaidTroopBox1[2], $rRaidTroopBox1[3])
+   Local $frame = CaptureFrame("FindRaidTroopSlots1", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
    If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "AvailableRaidTroopsFrame1.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
+	  If $index[$i][0]=-1 Then
+		 Local $conf, $x, $y
+		 ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
-	  If $conf > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $rRaidTroopBox1[0] + $x + $rRaidButtonOffset[0]
-		 $index[$i][1] = $rRaidTroopBox1[1] + $y + $rRaidButtonOffset[1]
-		 $index[$i][2] = $rRaidTroopBox1[0] + $x + $rRaidButtonOffset[2]
-		 $index[$i][3] = $rRaidTroopBox1[1] + $y + $rRaidButtonOffset[3]
-		 ;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
-			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+		 If $conf > $gConfidenceRaidTroopSlot Then
+			$index[$i][0] = $x + $rRaidButtonOffset[0]
+			$index[$i][1] = $y + $rRaidButtonOffset[1]
+			$index[$i][2] = $x + $rRaidButtonOffset[2]
+			$index[$i][3] = $y + $rRaidButtonOffset[3]
+			;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
+			   ;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+		 EndIf
 	  EndIf
    Next
 
    _GDIPlus_BitmapDispose($frame)
 EndFunc
 
-Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("UpdateRaidTroopCounts")
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "UpdateRaidTroopCounts.bmp")
+Func UpdateRaidTroopCounts(ByRef $index)
+   Local $frame = CaptureFrame("UpdateRaidTroopCounts", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "UpdateRaidTroopCounts.bmp")
 
    For $i = 0 To UBound($index) - 1
 	  If $index[$i][0] <> -1 Then
 
 		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
 			$index[$i][4] = 1
+
 		 Else
+			; Determine if this raid button is "selected"
 			Local $loc[4] = [ _
-			   $index[$i][0]+$rRaidTroopSelectedColor[0], _
-			   $index[$i][1]+$rRaidTroopSelectedColor[1], _
+			   $index[$i][0] + $rRaidTroopSelectedColor[0], _
+			   $index[$i][1] + $rRaidTroopSelectedColor[1], _
 			   $rRaidTroopSelectedColor[2], _
 			   $rRaidTroopSelectedColor[3] ]
 			;DebugWrite("GetAvailableTroops() loc = " & $loc[0] & " " & $loc[1] & " " & Hex($loc[2]) & " " & $loc[3])
 
-			If IsColorPresent($f, $loc) Then
+			If IsColorPresent($frame, $loc) Then
 			   ; Troop is "selected"
-			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1]-4, $index[$i][2]-5, $index[$i][1]+10, _
-									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
-									 0, 0, 0, 0]
+			   Local $textBox[10] = [ _
+				  $index[$i][0] + 5, _
+				  $index[$i][1] - 4, _
+				  $index[$i][2] - 5, _
+				  $index[$i][1] + 10, _
+				  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], 0, 0, 0, 0]
 			   ;DebugWrite("Selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
-			   Local $t = ScrapeFuzzyText($f, $gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
+			   Local $t = ScrapeFuzzyText($frame, $gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
 			  ; DebugWrite("GetAvailableTroops() (selected) = " & $t)
 
 			Else
 			   ; Troop is not "selected"
-			   Local $textBox[10] = [$index[$i][0]+5, $index[$i][1], $index[$i][2]-5, $index[$i][1]+18, _
-									 $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], _
-									 0, 0, 0, 0]
+			   Local $textBox[10] = [ _
+				  $index[$i][0] + 5, _
+				  $index[$i][1], _
+				  $index[$i][2] - 5, _
+				  $index[$i][1] + 18, _
+				  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], 0, 0, 0, 0]
 			   ;DebugWrite("Not selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
-			   Local $t = ScrapeFuzzyText($f, $gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
+			   Local $t = ScrapeFuzzyText($frame, $gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
 			   ;DebugWrite("GetAvailableTroops() (not selected) = " & $t)
 
 			EndIf
@@ -785,14 +802,30 @@ Func UpdateRaidTroopCounts(ByRef $f, ByRef $index)
 		 EndIf
 	  EndIf
    Next
+
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
-Func DeployAndMonitorHeroes(ByRef $f, Const ByRef $troopIndex, Const $deployStart, Const $direction, Const $boxIndex, _
+Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direction, Const $boxIndex, _
 						    ByRef $kingDeployed, ByRef $queenDeployed, ByRef $wardenDeployed)
 
-   Local $kingButton[4] = [$troopIndex[$eTroopKing][0], $troopIndex[$eTroopKing][1], $troopIndex[$eTroopKing][2], $troopIndex[$eTroopKing][3]]
-   Local $queenButton[4] = [$troopIndex[$eTroopQueen][0], $troopIndex[$eTroopQueen][1], $troopIndex[$eTroopQueen][2], $troopIndex[$eTroopQueen][3]]
-   Local $wardenButton[4] = [$troopIndex[$eTroopWarden][0], $troopIndex[$eTroopWarden][1], $troopIndex[$eTroopWarden][2], $troopIndex[$eTroopWarden][3]]
+   Local $kingButton[4] = [ _
+	  $rRaidTroopBox[0] + $index[$eTroopKing][0], _
+	  $rRaidTroopBox[1] + $index[$eTroopKing][1], _
+	  $rRaidTroopBox[0] + $index[$eTroopKing][2], _
+	  $rRaidTroopBox[1] + $index[$eTroopKing][3]]
+
+   Local $queenButton[4] = [ _
+	  $rRaidTroopBox[0] + $index[$eTroopQueen][0], _
+	  $rRaidTroopBox[1] + $index[$eTroopQueen][1], _
+	  $rRaidTroopBox[0] + $index[$eTroopQueen][2], _
+	  $rRaidTroopBox[1] + $index[$eTroopQueen][3]]
+
+   Local $wardenButton[4] = [ _
+	  $rRaidTroopBox[0] + $index[$eTroopWarden][0], _
+	  $rRaidTroopBox[1] + $index[$eTroopWarden][1], _
+	  $rRaidTroopBox[0] + $index[$eTroopWarden][2], _
+	  $rRaidTroopBox[1] + $index[$eTroopWarden][3]]
 
    ; Get box to deploy into
    Local $deployBox[4]
@@ -831,24 +864,24 @@ Func DeployAndMonitorHeroes(ByRef $f, Const ByRef $troopIndex, Const $deployStar
    Local $wardenDeployDelay = 3000 ; 3 seconds after queen or king
    Local $royaltyDeploySide = Random()
 
-   While (($kingPoweredUp=False And $troopIndex[$eTroopKing][0]<>-1) Or _
-	      ($queenPoweredUp=False And $troopIndex[$eTroopQueen][0]<>-1) Or _
-	      ($wardenPoweredUp=False And $troopIndex[$eTroopWarden][0]<>-1)) And _
+   While (($kingPoweredUp=False And $index[$eTroopKing][0]<>-1) Or _
+	      ($queenPoweredUp=False And $index[$eTroopQueen][0]<>-1) Or _
+	      ($wardenPoweredUp=False And $index[$eTroopWarden][0]<>-1)) And _
 		 TimerDiff($deployStart) < $gMaxRaidDuration
 
 	  ; Get frame
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("DeployAndMonitorHeroes")
+	  Local $frame = CaptureFrame("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
+	  If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "DeployAndMonitorHeroes.bmp")
 
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then
 		 Local $kingColor[4] = [ _
-			$troopIndex[$eTroopKing][0]+$rKingQueenHealthGreenColor[0], _
-			$troopIndex[$eTroopKing][1]+$rKingQueenHealthGreenColor[1], _
+			$index[$eTroopKing][0]+$rKingQueenHealthGreenColor[0], _
+			$index[$eTroopKing][1]+$rKingQueenHealthGreenColor[1], _
 			$rKingQueenHealthGreenColor[2], _
 			$rKingQueenHealthGreenColor[3]]
 
-		 If IsColorPresent($f, $kingColor) = False Then
+		 If IsColorPresent($frame, $kingColor) = False Then
 			;GrabFrameToFile("PreKingPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up King")
 			RandomWeightedClick($kingButton)
@@ -859,12 +892,12 @@ Func DeployAndMonitorHeroes(ByRef $f, Const ByRef $troopIndex, Const $deployStar
 	  ; Get Queen's health color, and power up if needed
 	  If $queenDeployed And $queenPoweredUp = False Then
 		 Local $queenColor[4] = [ _
-			$troopIndex[$eTroopQueen][0]+$rKingQueenHealthGreenColor[0], _
-			$troopIndex[$eTroopQueen][1]+$rKingQueenHealthGreenColor[1], _
+			$index[$eTroopQueen][0]+$rKingQueenHealthGreenColor[0], _
+			$index[$eTroopQueen][1]+$rKingQueenHealthGreenColor[1], _
 			$rKingQueenHealthGreenColor[2], _
 			$rKingQueenHealthGreenColor[3]]
 
-		 If IsColorPresent($f, $queenColor) = False Then
+		 If IsColorPresent($frame, $queenColor) = False Then
 			;GrabFrameToFile("PreQueenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up Queen")
 			RandomWeightedClick($queenButton)
@@ -875,18 +908,20 @@ Func DeployAndMonitorHeroes(ByRef $f, Const ByRef $troopIndex, Const $deployStar
 	  ; Get Warden's health color, and power up if needed
 	  If $wardenDeployed And $wardenPoweredUp = False Then
 		 Local $wardenColor[4] = [ _
-			$troopIndex[$eTroopWarden][0]+$rWardenHealthGreenColor[0], _
-			$troopIndex[$eTroopWarden][1]+$rWardenHealthGreenColor[1], _
+			$index[$eTroopWarden][0]+$rWardenHealthGreenColor[0], _
+			$index[$eTroopWarden][1]+$rWardenHealthGreenColor[1], _
 			$rWardenHealthGreenColor[2], _
 			$rWardenHealthGreenColor[3]]
 
-		 If IsColorPresent($f, $wardenColor) = False Then
+		 If IsColorPresent($frame, $wardenColor) = False Then
 			;GrabFrameToFile("PreWardenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
 			DebugWrite("Powering up Warden")
 			RandomWeightedClick($wardenButton)
 			$wardenPoweredUp = True
 		 EndIf
 	  EndIf
+
+	  _GDIPlus_BitmapDispose($frame)
 
 	  ; Deploy King if not already deployed
 	  If $kingButton[0]<>-1 And $kingDeployed=False Then
