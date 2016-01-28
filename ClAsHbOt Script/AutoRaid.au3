@@ -243,18 +243,18 @@ Func CheckForRaidableBase(Const $frame, Const $townHall, Const $gold, Const $eli
 
    ; Dead base check
    If $GUIDeadBasesOnly And $deadbase=False Then
-	  DebugWrite("CheckForRaidableBase() No match (deadbase)")
+	  DebugWrite("CheckForRaidableBase() No match (deadbase=false)")
 	  Return False
    EndIf
 
    ; Town Hall match?
    If $townHall=-1 Then
-	  DebugWrite("CheckForRaidableBase() No match, (obscured Town Hall?)")
+	  DebugWrite("CheckForRaidableBase() No match, Town Hall unknown (obscured?)")
 	  Return False
    EndIf
 
    If $townHall>$GUITownHall Then
-	  DebugWrite("CheckForRaidableBase() No match (town hall)")
+	  DebugWrite("CheckForRaidableBase() No match (town hall=" & $townHall & ")")
 	  Return False
    EndIf
 
@@ -262,7 +262,7 @@ Func CheckForRaidableBase(Const $frame, Const $townHall, Const $gold, Const $eli
    If $GUIIgnoreStorages And ($myTHLevel-$townHall<2 Or $myTHLevel>=11) Then ; "ignore storages" only valid if target TH<2 levels from my TH level. or my TH level>=11
 	  ; Check unadjusted first to possibly skip adjustment scan
 	  If $gold<$GUIGold Or $elix<$GUIElix Or $dark<$GUIDark Then
-		 DebugWrite("CheckForRaidableBase() No match (loot)")
+		 DebugWrite("CheckForRaidableBase() No match (loot) gold=" & $gold & " elix=" & $elix & " dark=" & $dark)
 		 Return False
 	  EndIf
 

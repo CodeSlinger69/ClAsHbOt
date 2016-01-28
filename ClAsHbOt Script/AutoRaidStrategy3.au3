@@ -38,14 +38,14 @@ Func FillBarracksStrategy3(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
+	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Specified balloons in each barracks on initial fill
 	  If $initialFillFlag And $barracksCount>=1 And $barracksCount<=4 Then
 		 ; Dequeue troops
 		 DequeueTroops($f)
 
-		 FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
+		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 		 QueueTroopsEvenly($eTroopBalloon, $troopSlots, $numberOfBalloons)
 	  EndIf

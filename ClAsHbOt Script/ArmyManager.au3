@@ -250,19 +250,24 @@ Func OpenNextAvailableDarkBarracks(ByRef $f)
    Return False
 EndFunc
 
-Func FindBarracksTroopSlots(Const $f, Const ByRef $bitmaps, ByRef $index)
+Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "BarracksFrame.bmp")
+
+   Local $frame = CaptureFrame("GetTownHallLevel", $rBarracksTroopBox[0], $rBarracksTroopBox[1], $rBarracksTroopBox[2], $rBarracksTroopBox[3])
+   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
+   _WinAPI_DeleteObject($frame)
+
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BarracksFrame.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
 	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($f, "Images\"&$bitmaps[$i], $conf, $x, $y)
+	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
 	  If $conf > $gConfidenceBarracksTroopSlot Then
-		 $index[$i][0] = $x+$rBarracksButtonOffset[0]
-		 $index[$i][1] = $y+$rBarracksButtonOffset[1]
-		 $index[$i][2] = $x+$rBarracksButtonOffset[2]
-		 $index[$i][3] = $y+$rBarracksButtonOffset[3]
+		 $index[$i][0] = $rBarracksTroopBox[0] + $x + $rBarracksButtonOffset[0]
+		 $index[$i][1] = $rBarracksTroopBox[1] + $y + $rBarracksButtonOffset[1]
+		 $index[$i][2] = $rBarracksTroopBox[0] + $x + $rBarracksButtonOffset[2]
+		 $index[$i][3] = $rBarracksTroopBox[1] + $y + $rBarracksButtonOffset[3]
 	  Else
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1

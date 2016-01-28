@@ -78,10 +78,18 @@ int NeedleCache::TownHallSearch(const char* haystack, MATCHPOINTS* match)
 
 		if (maxVal > bestConfidence)
 		{
-			bestConfidence = maxVal;
-			bestPoint.x = maxLoc.x;
-			bestPoint.y = maxLoc.y;
-			bestTH = i+6;
+			// Need to check for case where a town hall is "found" in the sandy beach area, this is a false positive.
+			// http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
+			// return (b.x - a.x)*(c.y - a.y) > (b.y - a.y)*(c.x - a.x);
+			bool beachSideOfSWLine = (southPoint.x - eastPoint.x)*((northPoint.y+maxLoc.y) - eastPoint.y) > (southPoint.y - eastPoint.y)*((eastPoint.x+maxLoc.x) - eastPoint.x);
+
+			if (beachSideOfSWLine == false)
+			{
+				bestConfidence = maxVal;
+				bestPoint.x = maxLoc.x;
+				bestPoint.y = maxLoc.y;
+				bestTH = i+6;
+			}
 		}
 	}
 
@@ -258,6 +266,11 @@ void NeedleCache::WriteLog(const char* text)
 		err = fclose(f);
 	}
 }
+
+const Point NeedleCache::northPoint = Point(429, 69);
+const Point NeedleCache::eastPoint = Point(71, 337);
+const Point NeedleCache::westPoint = Point(787, 337);
+const Point NeedleCache::southPoint = Point(429, 605);
 
 const char* NeedleCache::townHallBMPs[townHallBMPCount] = { 
 	"TownHall\\TH6.bmp", "TownHall\\TH7.bmp", "TownHall\\TH8.bmp", "TownHall\\TH9.bmp", "TownHall\\TH10.bmp", "TownHall\\TH11.bmp" };

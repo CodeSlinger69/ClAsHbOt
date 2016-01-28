@@ -41,14 +41,14 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
+	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Giants and specified breakers in each barracks on initial fill
 	  If $initialFillFlag And ($breakersToQueue>0 Or $giantsToQueue>0) Then
 		 ; Dequeue troops
 		 DequeueTroops($f)
 
-		 FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
+		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 		 ; Giants
 		 If $giantsToQueue>0 Then QueueTroopsEvenly($eTroopGiant, $troopSlots, $giantsToQueue)

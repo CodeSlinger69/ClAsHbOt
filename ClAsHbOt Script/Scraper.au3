@@ -553,11 +553,12 @@ Func GetTownHallLevel(ByRef $left, ByRef $top)
    FileDelete("temp.bmp")  ; temporary
 
    Local $split = StringSplit($res[0], "|", 2)
-   $left = $split[1] + $gEastPoint[0]
-   $top = $split[2] + $gNorthPoint[1]
-   ;DebugWrite("GetTownHallLevel() TH: " & $split[0] & " loc: " & $left & "," & $top & " conf: " & $split[3])
+   Local $thLevel = Number($split[0])
+   $left = Number($split[1] + $gEastPoint[0])
+   $top = Number($split[2] + $gNorthPoint[1])
+   ;DebugWrite("GetTownHallLevel() TH: " & $thLevel & " loc: " & $left & "," & $top & " conf: " & $split[3])
 
-   Return $split[0]
+   Return $thLevel
 EndFunc
 
 Func FindBestStorage(Const $type, ByRef $left, ByRef $top, ByRef $conf)
@@ -575,9 +576,9 @@ Func FindBestStorage(Const $type, ByRef $left, ByRef $top, ByRef $conf)
    EndIf
 
    Local $split = StringSplit($res[0], "|", 2)
-   $left = $split[1] + $gScreenCenter[0]-150
-   $top = $split[2] + $gScreenCenter[1]-150
-   $conf = $split[3]
+   $left = Number($split[1] + $gScreenCenter[0]-150)
+   $top = Number($split[2] + $gScreenCenter[1]-150)
+   $conf = Number($split[3])
    DebugWrite("FindBestStorage() " & $split[0] & ", loc: " & $left & "," & $top & " conf: " & $split[3])
 
    If $split[0] = "" Then SaveDebugImage($frame, "StorageUsageFrame" & StringUpper($type) & FileGetTime("temp.bmp", 0, $FT_STRING) & ".bmp")
@@ -606,12 +607,12 @@ Func FindAllStorages(Const $type, Const $maxMatch, ByRef $x, ByRef $y)
    ;DebugWrite("Num matches " & $type & ": " & $split[0])
 
    For $j = 0 To $split[0]-1
-	  $x[$j] = $split[$j*3+1] + $gScreenCenter[0]-150
-	  $y[$j] = $split[$j*3+2] + $gScreenCenter[1]-150
+	  $x[$j] = Number($split[$j*3+1] + $gScreenCenter[0]-150)
+	  $y[$j] = Number($split[$j*3+2] + $gScreenCenter[1]-150)
 	  ;DebugWrite("Match " & $j & ": " & $x[$j] & "," & $y[$j] & "  conf: " & $split[$j*3+3])
    Next
 
-   ;FileDelete("temp.bmp")  ; temporary
+   FileDelete("temp.bmp")  ; temporary
    _WinAPI_DeleteObject($frame)
 
    Return $split[0]

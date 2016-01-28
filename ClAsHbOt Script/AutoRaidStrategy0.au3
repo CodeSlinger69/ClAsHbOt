@@ -35,14 +35,14 @@ Func FillBarracksStrategy0(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
+	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 	  ; Specified breakers in each barracks on initial fill
 	  If $initialFillFlag And $breakersToQueue>0 Then
 		 ; Dequeue troops
 		 DequeueTroops($f)
 
-		 FindBarracksTroopSlots($f, $gBarracksTroopSlotBMPs, $troopSlots)
+		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
 
 		 ; If breakers are included then queue up breakers in each barracks
 		 If $breakersToQueue>0 Then QueueTroopsEvenly($eTroopWallBreaker, $troopSlots, $breakersToQueue)

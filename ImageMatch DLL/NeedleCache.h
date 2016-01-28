@@ -24,6 +24,12 @@ private:
 	char scriptPath[MAX_PATH];  // no terminating backslash
 	char logFilePath[MAX_PATH];
 
+
+	static const Point northPoint;
+	static const Point eastPoint;
+	static const Point westPoint;
+	static const Point southPoint;
+
 	static const int townHallBMPCount = 6;
 	static const char* townHallBMPs[townHallBMPCount];
 	Mat townHalls[townHallBMPCount];

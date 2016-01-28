@@ -30,10 +30,10 @@ Global $gBlueStacksControlHwnd = 0
 Global $gBlueStacksWidth = 860
 Global $gBlueStacksHeight = 733
 Global $gScreenCenter[2] = [429, 337] ; Color at this point = 0xF1BE5A
-Global $gNorthPoint[2] = [429, 69]
-Global $gEastPoint[2] = [71, 337]
-Global $gWestPoint[2] = [787, 337]
-Global $gSouthPoint[2] = [429, 605]
+Global $gNorthPoint[2] = [429, 69] ; also update in the DLL if this changes
+Global $gEastPoint[2] = [71, 337] ; also update in the DLL if this changes
+Global $gWestPoint[2] = [787, 337] ; also update in the DLL if this changes
+Global $gSouthPoint[2] = [429, 605] ; also update in the DLL if this changes
 ; Note to self: due to Jan 26, 2016 CoC release, the max y extent for buttons is 680,
 ;   to avoid clicking on Android system bar icons
 
