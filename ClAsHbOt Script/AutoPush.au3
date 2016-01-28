@@ -414,12 +414,16 @@ EndFunc
 
 Func THSnipeClickCorner(Const $THCorner)
    If $THCorner = "North" Then
+	  DebugWrite("THSnipeClickCorner north box: " & $rTHSnipeNorthDeployBox[0] & " " & $rTHSnipeNorthDeployBox[1] & " " & $rTHSnipeNorthDeployBox[2] & " " & $rTHSnipeNorthDeployBox[3])
 	  RandomWeightedClick($rTHSnipeNorthDeployBox)
    ElseIf $THCorner = "East" Then
+	  DebugWrite("THSnipeClickCorner east box: " & $rTHSnipeEastDeployBox[0] & " " & $rTHSnipeEastDeployBox[1] & " " & $rTHSnipeEastDeployBox[2] & " " & $rTHSnipeEastDeployBox[3])
 	  RandomWeightedClick($rTHSnipeEastDeployBox)
    ElseIf $THCorner = "West" Then
+	  DebugWrite("THSnipeClickCorner west box: " & $rTHSnipeWestDeployBox[0] & " " & $rTHSnipeWestDeployBox[1] & " " & $rTHSnipeWestDeployBox[2] & " " & $rTHSnipeWestDeployBox[3])
 	  RandomWeightedClick($rTHSnipeWestDeployBox)
    ElseIf $THCorner = "South" Then
+	  DebugWrite("THSnipeClickCorner south box: " & $rTHSnipeSouthDeployBox[0] & " " & $rTHSnipeSouthDeployBox[1] & " " & $rTHSnipeSouthDeployBox[2] & " " & $rTHSnipeSouthDeployBox[3])
 	  RandomWeightedClick($rTHSnipeSouthDeployBox)
    EndIf
 

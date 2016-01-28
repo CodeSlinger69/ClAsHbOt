@@ -1,17 +1,19 @@
 Func InitScraper()
    _GDIPlus_Startup()
 
-   If TestBackGroundScrape() = False Then
-	  $gBackgroundScraping = False
+   If $gBackgroundScraping = True Then
+	  If TestBackGroundScrape() = False Then
+		 $gBackgroundScraping = False
 
-	  DebugWrite("InitScraper() Background scraping disabled")
-	  Local $res = MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Background scraping disabled", _
-		 "Background scraping has been disabled, as it appears to not be working." & @CRLF & @CRLF & _
-		 "If you are running BlueStacks inside of another virtual machine, this may be the cause. " & _
-		 "For ClAsHbOt to work correctly in this situation, the BlueStacks window must be visible " & _
-		 "and not obscured at any time.")
-   Else
-	  DebugWrite("InitScraper() Background scraping enabled")
+		 DebugWrite("InitScraper() Background scraping disabled")
+		 Local $res = MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Background scraping disabled", _
+			"Background scraping has been disabled, as it appears to not be working." & @CRLF & @CRLF & _
+			"If you are running BlueStacks inside of another virtual machine, this may be the cause. " & _
+			"For ClAsHbOt to work correctly in this situation, the BlueStacks window must be visible " & _
+			"and not obscured at any time.")
+	  Else
+		 DebugWrite("InitScraper() Background scraping enabled")
+	  EndIf
    EndIf
 EndFunc
 
@@ -537,7 +539,7 @@ Func GetClientPos()
 EndFunc
 
 Func GetTownHallLevel(ByRef $left, ByRef $top)
-   Local $frame = CaptureFrame("GetTownHallLevel", $gEastPoint[0], $gNorthPoint[1]-10, $gWestPoint[0], $gSouthPoint[1])
+   Local $frame = CaptureFrame("GetTownHallLevel", $gWestPoint[0], $gNorthPoint[1]-10, $gEastPoint[0], $gSouthPoint[1])
    _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
    _WinAPI_DeleteObject($frame)
 
@@ -554,8 +556,8 @@ Func GetTownHallLevel(ByRef $left, ByRef $top)
 
    Local $split = StringSplit($res[0], "|", 2)
    Local $thLevel = Number($split[0])
-   $left = Number($split[1] + $gEastPoint[0])
-   $top = Number($split[2] + $gNorthPoint[1])
+   $left = Number($split[1] + $gWestPoint[0])
+   $top = Number($split[2] + $gNorthPoint[1]-10)
    ;DebugWrite("GetTownHallLevel() TH: " & $thLevel & " loc: " & $left & "," & $top & " conf: " & $split[3])
 
    Return $thLevel

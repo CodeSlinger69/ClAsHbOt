@@ -201,6 +201,9 @@ Func AutoWaitForNextButton(ByRef $f)
 		 $gPossibleKick = 2
 		 $gLastPossibleKickTime = TimerInit()
 
+		 ; Exit the game
+		 GoOffline($f)
+
 	  Else
 		 DebugWrite("Find Match failed - timeout waiting for Wait Raid screen")
 

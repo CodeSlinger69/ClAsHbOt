@@ -67,3 +67,7 @@ Global $gArmyCampTroopsBMPs [$eTroopCount] = [ _
   "Camp\CampMinion.bmp", "Camp\CampHogRider.bmp", "Camp\CampValkyrie.bmp", "Camp\CampGolem.bmp", _
   "Camp\CampWitch.bmp", "Camp\CampLavaHound.bmp", _
   "Camp\CampKing.bmp", "Camp\CampQueen.bmp", "Camp\CampWarden.bmp"]
+
+Global $gDefenseReloadInfoButtonBMP = "Reload\InfoButton.bmp"
+Global $gDefenseReloadButtonsBMPs[3] = [ "Reload\GoldButton.bmp", "Reload\ElixButton.bmp", "Reload\DarkButton.bmp" ]
+

@@ -40,6 +40,7 @@ Opt("GUIOnEventMode", 1)
 #include <Scraper.au3>
 #include <ArmyManager.au3>
 #include <CollectLoot.au3>
+#include <ReloadDefenses.au3>
 #include <AutoPush.au3>
 #include <AutoRaid.au3>
 #include <AutoRaidDumpCups.au3>
@@ -97,7 +98,7 @@ EndFunc
 Func MainApplicationLoop()
    Local $lastOnlineCheckTimer = TimerInit()
    Local $lastCollectLootTimer = TimerInit()
-   Local $lastQueueDonatableTroopsTimer = TimerInit()
+   Local $lastReloadDefensesTimer = TimerInit()
    Local $lastTrainingCheckTimer = TimerInit()
    Local $lastDefenseFarmTimer = TimerInit()
    Local $snipeTHCorner
@@ -130,7 +131,7 @@ Func MainApplicationLoop()
 
 		 CheckForAndroidMessageBox($frame)
 		 $lastOnlineCheckTimer = TimerInit()
-		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
+		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 	  EndIf
 
 	  Local $autoInProgress = $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecuteRaid Or $gAutoStage=$eAutoExecuteSnipe Or _
@@ -165,7 +166,25 @@ Func MainApplicationLoop()
 
 			If WhereAmI($frame)=$eScreenMain Then CollectLoot($frame)
 			$lastCollectLootTimer = TimerInit()
-			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
+			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
+		 EndIf
+
+		 ; Reload defenses
+		 If _GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED And _
+			$gPossibleKick < 2 And _
+			(TimerDiff($lastReloadDefensesTimer) >= $gReloadDefensesInterval Or $gReloadDefensesClicked) Then
+
+			$gReloadDefensesClicked = False
+
+			If WhereAmI($frame) = $eScreenMain Then
+			   ZoomOut2($frame)
+			Else
+			   ResetToCoCMainScreen($frame)
+			EndIf
+
+			If WhereAmI($frame)=$eScreenMain Then ReloadDefenses($frame)
+			$lastReloadDefensesTimer = TimerInit()
+			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 		 EndIf
 
 	  Endif ; If $autoInProgress=False...
@@ -240,13 +259,14 @@ Func MainApplicationLoop()
 	  ; Pause for 5 seconds
 	  Local $t=TimerInit()
 	  While TimerDiff($t)<5000
-		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
+		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 
-		 If ($gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gFindMatchClicked Or $gAutoPushClicked Or $gAutoRaidClicked) And _
+		 If ($gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gReloadDefensesClicked Or $gFindMatchClicked Or $gAutoPushClicked Or $gAutoRaidClicked) And _
 			_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox)<>$BST_CHECKED Then ExitLoop
 		 If $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecuteRaid Or $gAutoStage=$eAutoExecuteSnipe Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop
+		 If _GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED And TimerDiff($lastReloadDefensesTimer) >= $gReloadDefensesInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED And TimerDiff($lastDefenseFarmTimer) >= $gDefenseFarmOfflineTime Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And IsColorPresent($frame, $rNewChatMessagesColor) Then ExitLoop
 
@@ -269,26 +289,37 @@ Func MainApplicationLoop()
    WEnd
 EndFunc
 
-Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $trainingTimer, Const $defenseFarmTimer)
+Func UpdateCountdownTimers(Const $onlineTimer, Const $lootTimer, Const $defensesTimer, Const $trainingTimer, Const $defenseFarmTimer)
 
    ; Keep online
    If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_UNCHECKED Then
-	  GUICtrlSetData($GUI_KeepOnlineCheckBox, "F5 Keep Online 0:00")
+	  GUICtrlSetData($GUI_KeepOnlineCheckBox, "Keep Online 0:00")
    Else
 	  Local $ms = $gOnlineCheckInterval - TimerDiff($onlineTimer)
 	  If $ms < 0 Then $ms = 0
-	  GUICtrlSetData($GUI_KeepOnlineCheckBox, "F5 Keep Online " & millisecondToMMSS($ms))
+	  GUICtrlSetData($GUI_KeepOnlineCheckBox, "Keep Online " & millisecondToMMSS($ms))
    EndIf
 
    ; Collect loot
    If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_UNCHECKED Then
-	  GUICtrlSetData($GUI_CollectLootCheckBox, "F6 Collect Loot 0:00")
+	  GUICtrlSetData($GUI_CollectLootCheckBox, "Collect Loot 0:00")
    ElseIf _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED Then
-	  GUICtrlSetData($GUI_CollectLootCheckBox, "F6 Collect Loot -:--")
+	  GUICtrlSetData($GUI_CollectLootCheckBox, "Collect Loot -:--")
    Else
 	  Local $ms = $gCollectLootInterval - TimerDiff($lootTimer)
 	  If $ms < 0 Then $ms = 0
-	  GUICtrlSetData($GUI_CollectLootCheckBox, "F6 Collect Loot " & millisecondToMMSS($ms))
+	  GUICtrlSetData($GUI_CollectLootCheckBox, "Collect Loot " & millisecondToMMSS($ms))
+   EndIf
+
+   ; Reload defenses
+   If _GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_UNCHECKED Then
+	  GUICtrlSetData($GUI_ReloadDefensesCheckBox, "Reload Defenses 00:00")
+   ElseIf _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED Then
+	  GUICtrlSetData($GUI_ReloadDefensesCheckBox, "Reload Defenses --:--")
+   Else
+	  Local $ms = $gReloadDefensesInterval - TimerDiff($defensesTimer)
+	  If $ms < 0 Then $ms = 0
+	  GUICtrlSetData($GUI_ReloadDefensesCheckBox, "Reload Defenses " & millisecondToMMSS($ms))
    EndIf
 
    ; Auto Raid
@@ -360,6 +391,8 @@ Func GetMyLootNumbers($frame)
 		 If $GUIMyTownHall = 0 Then
 			ZoomOut2($frame)
 
+			RandomWeightedClick($rSafeAreaButton)
+			Sleep(500)
 			Local $top, $left
 			Local $MyTownHall = GetTownHallLevel($left, $top)
 

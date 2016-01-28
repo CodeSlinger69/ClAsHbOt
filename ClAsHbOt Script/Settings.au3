@@ -17,6 +17,9 @@ Func ReadSettings()
    $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
    $gDebugSaveScreenCaptures = _Boolean(IniRead($gIniFile, "Debug", "Save Screen Captures", False))
 
+   ; Foreground / background interaction
+   $gBackgroundScraping = _Boolean(IniRead($gIniFile, "General", "Use Background Mode", True))
+
    ; Mouse
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding
    DebugWrite("Setting Mouse Deploy Troop Click Delay = " & $gDeployTroopClickDelay)
@@ -43,10 +46,10 @@ Func ReadSettings()
    DebugWrite("Setting Interval Online Check = " & $gOnlineCheckInterval)
    Global $gCollectLootInterval = IniRead($gIniFile, "Interval", "Collect Loot", 180000)
    DebugWrite("Setting Interval Collect Loot = " & $gCollectLootInterval)
+   Global $gReloadDefensesInterval = IniRead($gIniFile, "Interval", "Reload Defenses", 1200000)
+   DebugWrite("Setting Interval Reload Defenses = " & $gReloadDefensesInterval)
    Global $gTroopTrainingCheckInterval = IniRead($gIniFile, "Interval", "Troop Training Check", 180000)
    DebugWrite("Setting Interval Troop Training Check = " & $gTroopTrainingCheckInterval)
-   ;Global $gQueueDonatableTroopsInterval = IniRead($gIniFile, "Interval", "Queue Donatable Troops", 600000)
-   ;DebugWrite("Setting Interval Queue Donatable Troops = " & $gQueueDonatableTroopsInterval)
    Global $gPauseBetweenNexts = IniRead($gIniFile, "Interval", "Pause Between Nexts", 2000)  ; 2 seconds to avoid client out of sync errors
    DebugWrite("Setting Interval Pause Between Nexts = " & $gPauseBetweenNexts)
 

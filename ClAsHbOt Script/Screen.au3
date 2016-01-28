@@ -190,24 +190,6 @@ EndFunc
 Func WhereAmI(Const $f)
    If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "WhereAmIFrame.bmp")
 
-   ; $ScreenAndroidHome
-   Local $bestMatch, $bestConfidence, $bestX, $bestY
-   ScanFrameForBestBMP($f, $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
-   ;DebugWrite("Android Home Scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
-
-   If $bestMatch <> -1 Then
-	  Return $eScreenAndroidHome
-   EndIf
-
-   ; $eScreenPlayStore
-   Local $bestMatch, $bestConfidence, $bestX, $bestY
-   ScanFrameForBestBMP($f, $gPlayStoreOpenButton, 0.99, $bestMatch, $bestConfidence, $bestX, $bestY)
-   ;DebugWrite("Play Store scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
-
-   If $bestMatch <> -1 Then
-	  Return $eScreenPlayStore
-   EndIf
-
    ; $eScreenAndroidMessageBox
    If IsButtonPresent($f, $rAndroidMessageButton1) Then Return $eScreenAndroidMessageBox
    If IsButtonPresent($f, $rAndroidMessageButton2) Then Return $eScreenAndroidMessageBox
@@ -257,6 +239,24 @@ Func WhereAmI(Const $f)
 
    ; $eStarBonus
    If IsButtonPresent($f, $rStarBonusWindowOkayButton) Then Return $eStarBonus
+
+   ; $ScreenAndroidHome
+   Local $bestMatch, $bestConfidence, $bestX, $bestY
+   ScanFrameForBestBMP($f, $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
+   ;DebugWrite("Android Home Scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
+
+   If $bestMatch <> -1 Then
+	  Return $eScreenAndroidHome
+   EndIf
+
+   ; $eScreenPlayStore
+   Local $bestMatch, $bestConfidence, $bestX, $bestY
+   ScanFrameForBestBMP($f, $gPlayStoreOpenButton, 0.99, $bestMatch, $bestConfidence, $bestX, $bestY)
+   ;DebugWrite("Play Store scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
+
+   If $bestMatch <> -1 Then
+	  Return $eScreenPlayStore
+   EndIf
 
    ; $Unknown
    #cs

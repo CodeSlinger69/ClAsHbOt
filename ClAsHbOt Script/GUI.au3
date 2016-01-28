@@ -10,7 +10,7 @@
 ; GUI Globals
 Global $GUI, $GUIImage, $GUIGraphic
 Global $GUI_Width=285, $GUI_Height=478
-Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheckBox, _
+Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheckBox, $GUI_ReloadDefensesCheckBox, _
 	  $GUI_FindMatchCheckBox, $GUI_AutoPushCheckBox, $GUI_AutoRaidCheckBox, $GUI_DefenseFarmCheckBox
 Global $GUI_CloseButton
 Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_AutoRaidUseBreakers, $GUI_AutoRaidBreakerCountEdit, _
@@ -49,31 +49,35 @@ Func InitGUI()
 
    ; Left side, things todo group
    $y+=31
-   $h=161
+   $h=180
    GUICtrlCreateGroup("Things Todo", $x, $y, $w, $h)
 
    $y += 15
-   $GUI_KeepOnlineCheckBox = GUICtrlCreateCheckbox("F5 Keep Online 0:00", $x+5, $y, $w-6, 25)
+   $GUI_KeepOnlineCheckBox = GUICtrlCreateCheckbox("Keep Online 0:00", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_KeepOnlineCheckBox, "GUIKeepOnlineCheckBox")
 
    $y += 19
-   $GUI_CollectLootCheckBox = GUICtrlCreateCheckbox("F6 Collect Loot 0:00", $x+5, $y, $w-6, 25)
+   $GUI_CollectLootCheckBox = GUICtrlCreateCheckbox("Collect Loot 0:00", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_CollectLootCheckBox, "GUICollectLootCheckBox")
 
    $y += 19
-   $GUI_DonateTroopsCheckBox = GUICtrlCreateCheckbox("F7 Donate Troops", $x+5, $y, $w-6, 25)
+   $GUI_DonateTroopsCheckBox = GUICtrlCreateCheckbox("Donate Troops", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_DonateTroopsCheckBox, "GUIDonateTroopsCheckBox")
 
    $y += 19
-   $GUI_FindMatchCheckBox = GUICtrlCreateCheckbox("F8 Find Match", $x+5, $y, $w-6, 25)
+   $GUI_ReloadDefensesCheckBox = GUICtrlCreateCheckbox("Reload Defenses 00:00", $x+5, $y, $w-6, 25)
+   GUICtrlSetOnEvent($GUI_ReloadDefensesCheckBox, "GUIReloadDefensesCheckBox")
+
+   $y += 19
+   $GUI_FindMatchCheckBox = GUICtrlCreateCheckbox("Find Match (F8)", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_FindMatchCheckBox, "GUIFindMatchCheckBox")
 
    $y += 19
-   $GUI_AutoPushCheckBox = GUICtrlCreateCheckbox("F9 Auto Push", $x+5, $y, $w-6, 25)
+   $GUI_AutoPushCheckBox = GUICtrlCreateCheckbox("Auto Push (F9)", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_AutoPushCheckBox, "GUIAutoPushCheckBox")
 
    $y += 19
-   $GUI_AutoRaidCheckBox = GUICtrlCreateCheckbox("F10 Auto Raid", $x+5, $y, $w-6, 25)
+   $GUI_AutoRaidCheckBox = GUICtrlCreateCheckbox("Auto Raid (F10)", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_AutoRaidCheckBox, "GUIAutoRaidCheckBox")
 
    $y += 19
@@ -172,7 +176,7 @@ Func InitGUI()
    $GUI_AutoStatus = GUICtrlCreateLabel("Auto: Idle", $x, $y, $w, 17)
 
    $y += 70
-   $GUI_CloseButton = GUICtrlCreateButton("F11 Close", $x+10, $y, 70, 25)
+   $GUI_CloseButton = GUICtrlCreateButton("Close (F11)", $x+10, $y, 70, 25)
    GUICtrlSetOnEvent($GUI_CloseButton, "GUICloseButton")
    GUISetOnEvent($GUI_EVENT_CLOSE, "GUICloseButton")
 
@@ -184,9 +188,6 @@ Func InitGUI()
    GUISetState(@SW_SHOW)
 
    ; Grab hotkeys
-   HotKeySet("{F5}", HotKeyPressed)
-   HotKeySet("{F6}", HotKeyPressed)
-   HotKeySet("{F7}", HotKeyPressed)
    HotKeySet("{F8}", HotKeyPressed)
    HotKeySet("{F9}", HotKeyPressed)
    HotKeySet("{F10}", HotKeyPressed)
@@ -195,9 +196,6 @@ EndFunc
 
 Func ExitGUI()
    ; Release hotkeys
-   HotKeySet("{F5}")
-   HotKeySet("{F6}")
-   HotKeySet("{F7}")
    HotKeySet("{F8}")
    HotKeySet("{F9}")
    HotKeySet("{F10}")
@@ -241,21 +239,6 @@ EndFunc
 
 Func HotKeyPressed()
    Switch @HotKeyPressed
-   Case "{F5}" ; Keep Online
-	  Local $chk = (_GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED) ? True : False
-	  _GUICtrlButton_SetCheck($GUI_KeepOnlineCheckBox, $chk ? $BST_UNCHECKED : $BST_CHECKED)
-	  GUIKeepOnlineCheckBox()
-
-   Case "{F6}" ; Collect Resources
-	  Local $chk = (_GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED) ? True : False
-	  _GUICtrlButton_SetCheck($GUI_CollectLootCheckBox, $chk ? $BST_UNCHECKED : $BST_CHECKED)
-	  GUICollectLootCheckBox()
-
-   Case "{F7}" ; Donate Troops
-	  Local $chk = (_GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED) ? True : False
-	  _GUICtrlButton_SetCheck($GUI_DonateTroopsCheckBox, $chk ? $BST_UNCHECKED : $BST_CHECKED)
-	  GUIDonateTroopsCheckBox()
-
    Case "{F8}" ; Find Match
 	  Local $chk = (_GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_CHECKED) ? True : False
 	  _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $chk ? $BST_UNCHECKED : $BST_CHECKED)
@@ -291,6 +274,11 @@ Func GUIDonateTroopsCheckBox()
    DebugWrite("Donate Troops clicked")
    $gDonateTroopsClicked = (_GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED) ? True : False
    $gDonateTroopsStartup = $gDonateTroopsClicked
+EndFunc
+
+Func GUIReloadDefensesCheckBox()
+   DebugWrite("Reload Defenses clicked")
+   $gReloadDefensesClicked = (_GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED) ? True : False
 EndFunc
 
 Func GUIFindMatchCheckBox()
@@ -379,17 +367,12 @@ Func GUIDefenseFarmCheckBox()
    DebugWrite("Defense Farm clicked")
    $gDefenseFarmClicked = (_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED) ? True : False
    _GUICtrlButton_Enable($GUI_KeepOnlineCheckBox, Not($gDefenseFarmClicked))
-   ;_GUICtrlButton_Enable($GUI_CollectLootCheckBox, Not($gDefenseFarmClicked))
-   ;_GUICtrlButton_Enable($GUI_DonateTroopsCheckBox, Not($gDefenseFarmClicked))
    _GUICtrlButton_Enable($GUI_FindMatchCheckBox, Not($gDefenseFarmClicked))
    _GUICtrlButton_Enable($GUI_AutoPushCheckBox, Not($gDefenseFarmClicked))
    _GUICtrlButton_Enable($GUI_AutoRaidCheckBox, Not($gDefenseFarmClicked))
 
    ; Disable check boxes
    If $gDefenseFarmClicked Then
-	  HotKeySet("{F5}") ; Keep Online
-	  ;HotKeySet("{F6}") ; Collect Loot
-	  ;HotKeySet("{F7}") ; Donate Troops
 	  HotKeySet("{F8}") ; Find Match
 	  HotKeySet("{F9}") ; Find Snipable TH
 	  HotKeySet("{F10}") ; Auto Raid
@@ -399,9 +382,6 @@ Func GUIDefenseFarmCheckBox()
 	  _GUICtrlButton_SetCheck($GUI_AutoRaidCheckBox, $BST_UNCHECKED)
 	  $gPossibleKick = 0
    Else
-	  HotKeySet("{F5}", HotKeyPressed) ; Keep Online
-	  HotKeySet("{F6}", HotKeyPressed) ; Collect Loot
-	  HotKeySet("{F7}", HotKeyPressed) ; Donate Troops
 	  HotKeySet("{F8}", HotKeyPressed) ; Find Match
 	  HotKeySet("{F9}", HotKeyPressed) ; Find Snipable TH
 	  HotKeySet("{F10}", HotKeyPressed) ; Auto Raid

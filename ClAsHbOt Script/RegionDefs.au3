@@ -77,6 +77,8 @@ Global $rAchievementsWindowCloseButton[8] = [663, 159, 698, 193, 681, 188, 0xC40
 Global $rSettingsWindowCloseButton[8] = [744, 101, 779, 134, 762, 130, 0xD80406, 0]
 Global $rLootCartCollectButton[8] = [392, 620, 469, 680, 435, 645, 0x9F3BB0, 6]
 Global $rStarBonusWindowOkayButton[8] = [355, 469, 498, 526, 427, 513, 0x5FAC10, 6]
+Global $rReloadDefensesOkayButton[8] = [442, 400, 584, 458, 513, 445, 0x5CAC10, 0]
+
 
 ; Pixel color regions
 ; x, y, color, radius
@@ -104,8 +106,10 @@ Global $rRaidButtonOffset[4] = [0, -17, 62, 21]
 Global $rCampTroopBox1[4] = [126, 197, 740, 275] ; main troops
 Global $rCampTroopBox2[4] = [425, 444, 611, 521] ; heroes
 Global $rChatBox[4] = [0, 0, 309, 680]
+Global $rReloadDefensesBox[4] = [246, 617, 614, 702]
+Global $rReloadDefensesButtonOffset[4] = [0, -18, 78, 43]
 Global $rDonateButtonOffset[4] = [0, -19, 58, 58]
-Global $rTHSnipeNorthDeployBox[4] = [$gScreenCenter[0]-20, $gNorthPoint[1]-20, $gScreenCenter[0]+20, $gNorthPoint[1]]
-Global $rTHSnipeSouthDeployBox[4] = [$gScreenCenter[0]-20, $gSouthPoint[1], $gScreenCenter[0]+20, $gSouthPoint[1]+20]
-Global $rTHSnipeEastDeployBox[4] = [20, $gScreenCenter[1]-15, 50, $gScreenCenter[1]+15]
-Global $rTHSnipeWestDeployBox[4] = [808, $gScreenCenter[1]-15, 838, $gScreenCenter[1]+15]
+Global $rTHSnipeNorthDeployBox[4] = [$gScreenCenter[0]-20, $gNorthPoint[1]-20, $gScreenCenter[0]+20, $gNorthPoint[1]-10]
+Global $rTHSnipeSouthDeployBox[4] = [$gScreenCenter[0]-20, $gSouthPoint[1]+10, $gScreenCenter[0]+20, $gSouthPoint[1]+20]
+Global $rTHSnipeEastDeployBox[4] = [$gEastPoint[0]+20, $gScreenCenter[1]-15, $gEastPoint[0]+50, $gScreenCenter[1]+15]
+Global $rTHSnipeWestDeployBox[4] = [$gWestPoint[0]-50, $gScreenCenter[1]-15, $gWestPoint[0]-20, $gScreenCenter[1]+15]

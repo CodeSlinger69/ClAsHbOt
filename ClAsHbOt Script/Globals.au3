@@ -12,6 +12,7 @@ Global $gDllHandle = 0
 
 ; Scraper Globals
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
+Global $gBackgroundScraping
 
 ; Raiding variables
 Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)
@@ -23,7 +24,6 @@ Global $gLastPossibleKickTime = TimerInit()
 ; BlueStacks
 Global $gTitle = "BlueStacks App Player"
 Global $gAppClassInstance = "[CLASS:BlueStacksApp; INSTANCE:1]"
-Global $gBackgroundScraping = True
 GLobal $gBlueStacksPID = 0
 Global $gBlueStacksHwnd = 0
 Global $gBlueStacksControlHwnd = 0
@@ -31,8 +31,8 @@ Global $gBlueStacksWidth = 860
 Global $gBlueStacksHeight = 733
 Global $gScreenCenter[2] = [429, 337] ; Color at this point = 0xF1BE5A
 Global $gNorthPoint[2] = [429, 69] ; also update in the DLL if this changes
-Global $gEastPoint[2] = [71, 337] ; also update in the DLL if this changes
-Global $gWestPoint[2] = [787, 337] ; also update in the DLL if this changes
+Global $gWestPoint[2] = [71, 337] ; also update in the DLL if this changes
+Global $gEastPoint[2] = [787, 337] ; also update in the DLL if this changes
 Global $gSouthPoint[2] = [429, 605] ; also update in the DLL if this changes
 ; Note to self: due to Jan 26, 2016 CoC release, the max y extent for buttons is 680,
 ;   to avoid clicking on Android system bar icons
@@ -42,7 +42,8 @@ Global $gIniFile = "CoC Bot.ini"
 
 ; GUI
 Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False, $gDonateTroopsStartup = False
-Global $gFindMatchClicked = False, $gAutoPushClicked = False, $gAutoRaidClicked = False, $gDefenseFarmClicked = False
+Global $gReloadDefensesClicked = False, $gFindMatchClicked = False, $gAutoPushClicked = False, $gAutoRaidClicked = False
+Global $gDefenseFarmClicked = False
 Global $gAutoNeedToCollectStartingLoot = False, $gAutoNeedToCollectEndingLoot = False
 
 ; Lists of troop and spell types
@@ -98,6 +99,7 @@ Global $gConfidenceTrainTroopsButton = 0.99
 Global $gConfidenceDonateButton = 0.99
 Global $gConfidenceStorages = 0.94
 Global $gConfidenceLootCart = 0.94
+Global $gConfidenceReloadBarButton = 0.99
 
 ; Deploy locations
 Global $gMaxDeployBoxes = 19
