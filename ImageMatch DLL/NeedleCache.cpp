@@ -81,7 +81,7 @@ int NeedleCache::TownHallSearch(const char* haystack, MATCHPOINTS* match)
 			// Need to check for case where a town hall is "found" in the sandy beach area, this is a false positive.
 			// http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
 			// return (b.x - a.x)*(c.y - a.y) > (b.y - a.y)*(c.x - a.x);
-			bool beachSideOfSWLine = (southPoint.x - eastPoint.x)*((northPoint.y+maxLoc.y) - eastPoint.y) > (southPoint.y - eastPoint.y)*((eastPoint.x+maxLoc.x) - eastPoint.x);
+			bool beachSideOfSWLine = (southPoint.x - eastPoint.x)*((northPoint.y-10+maxLoc.y) - eastPoint.y) > (southPoint.y - eastPoint.y)*((eastPoint.x+maxLoc.x) - eastPoint.x);
 
 			if (beachSideOfSWLine == false)
 			{

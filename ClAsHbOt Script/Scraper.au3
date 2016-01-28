@@ -537,7 +537,7 @@ Func GetClientPos()
 EndFunc
 
 Func GetTownHallLevel(ByRef $left, ByRef $top)
-   Local $frame = CaptureFrame("GetTownHallLevel", $gEastPoint[0], $gNorthPoint[1], $gWestPoint[0], $gSouthPoint[1])
+   Local $frame = CaptureFrame("GetTownHallLevel", $gEastPoint[0], $gNorthPoint[1]-10, $gWestPoint[0], $gSouthPoint[1])
    _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
    _WinAPI_DeleteObject($frame)
 
