@@ -13,3 +13,14 @@
 
 // TODO: reference additional headers your program requires here
 
+#include <ctime>
+#include <vector>
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
+#include "opencv2/opencv.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+///* Debug
+//#include "opencv2/highgui/highgui.hpp"
+
+using namespace cv;
+

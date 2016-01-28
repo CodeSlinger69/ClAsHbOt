@@ -8,9 +8,6 @@ Global $GUIImages[12] = [ _
   "GUISplash\troop-healer.png", "GUISplash\troop-pekka.png", "GUISplash\troop-wallbreaker.png", _
   "GUISplash\troop-wizard.png" , "GUISplash\troop-bk.png", "GUISplash\troop-aq.png"]
 
-Global $TownHallBMPs[6] = [ _
-  "TownHall\TH6.bmp", "TownHall\TH7.bmp", "TownHall\TH8.bmp", "TownHall\TH9.bmp", "TownHall\TH10.bmp", "TownHall\TH11.bmp"]
-
 Global $CollectLootBMPs[9] = [ _
   "Loot\FullGoldCollector1.bmp", "Loot\FullGoldCollector2.bmp", "Loot\FullGoldCollector3.bmp", _
   "Loot\FullElixCollector1.bmp", "Loot\FullElixCollector2.bmp", "Loot\FullElixCollector3.bmp", _
@@ -25,31 +22,6 @@ Global $CollectorBMPs[12] = [ _
   "Collectors\ElixCollectorL9.bmp", _
   "Collectors\DarkCollectorL6.bmp", "Collectors\DarkCollectorL5.bmp", "Collectors\DarkCollectorL4.bmp", _
   "Collectors\DarkCollectorL3.bmp"]
-
-Global $GoldStorageBMPs[14] = [ _
-  "Storages\GoldStorageL12.00.bmp", "Storages\GoldStorageL12.25.bmp", "Storages\GoldStorageL12.50.bmp", _
-  "Storages\GoldStorageL12.75.bmp", "Storages\GoldStorageL12.90.bmp", _
-  "Storages\GoldStorageL11.00.bmp", "Storages\GoldStorageL11.25.bmp", "Storages\GoldStorageL11.50.bmp", _
-  "Storages\GoldStorageL11.75.bmp", "Storages\GoldStorageL11.90.bmp", _
-  "Storages\GoldStorageL10.00.bmp", "Storages\GoldStorageL10.25.bmp", "Storages\GoldStorageL10.50.bmp", _
-  "Storages\GoldStorageL10.90.bmp" ]
-
-Global $ElixStorageBMPs[15] = [ _
-  "Storages\ElixStorageL12.00.bmp", "Storages\ElixStorageL12.25.bmp", "Storages\ElixStorageL12.50.bmp", _
-  "Storages\ElixStorageL12.75.bmp", "Storages\ElixStorageL12.90.bmp", _
-  "Storages\ElixStorageL11.00.bmp", "Storages\ElixStorageL11.25.bmp", "Storages\ElixStorageL11.50.bmp", _
-  "Storages\ElixStorageL11.75.bmp", "Storages\ElixStorageL11.90.bmp", _
-  "Storages\ElixStorageL10.00.bmp", "Storages\ElixStorageL10.25.bmp", "Storages\ElixStorageL10.50.bmp", _
-  "Storages\ElixStorageL10.75.bmp", "Storages\ElixStorageL10.90.bmp"]
-
-Global $DarkStorageBMPs[16] = [ _
-  "Storages\DarkStorageL6.00.bmp", "Storages\DarkStorageL6.25.bmp", "Storages\DarkStorageL6.50.bmp", _
-  "Storages\DarkStorageL6.75.bmp", "Storages\DarkStorageL6.90.bmp", _
-  "Storages\DarkStorageL5.00.bmp", "Storages\DarkStorageL5.25.bmp", "Storages\DarkStorageL5.50.bmp", _
-  "Storages\DarkStorageL4.00.bmp", "Storages\DarkStorageL4.25.bmp", "Storages\DarkStorageL4.50.bmp", _
-  "Storages\DarkStorageL4.90.bmp", _
-  "Storages\DarkStorageL3.00.bmp", "Storages\DarkStorageL3.25.bmp", _
-  "Storages\DarkStorageL2.00.bmp", "Storages\DarkStorageL2.50.bmp"]
 
 Global $gTroopSlotBMPs[$eTroopCount] = [ _
   "RaidSlots\SlotBarbarian.bmp", "RaidSlots\SlotArcher.bmp", "RaidSlots\SlotGiant.bmp", "RaidSlots\SlotGoblin.bmp", _

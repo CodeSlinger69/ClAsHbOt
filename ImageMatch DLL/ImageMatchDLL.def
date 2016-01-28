@@ -1,4 +1,8 @@
 LIBRARY   ImageMatch
 EXPORTS
+   Initialize
+   TownHallSearch
+   FindBestStorage
+   FindAllStorages
    FindMatch
    FindAllMatches

@@ -1,4 +1,3 @@
-
 ; Text boxes - left, top, right, bottom, Text Color - center, radius,
 ; Present indicator x, y, color, radius
 Global $rMyGoldTextBox[10] =       [690,  24, 802,  36, 0xffffff, 9, 825,  30, 0xE7C438, 6]
@@ -43,7 +42,7 @@ Global $rConfirmExitButton[8] = [444, 400, 582, 456, 505, 447, 0x5FAC10, 0]
 Global $rMainScreenAttackNoStarsButton[8] = [16, 625, 108, 680, 73, 664, 0xD56440, 6]
 Global $rMainScreenAttackWithStarsButton[8] = [16, 625, 108, 680, 72, 670, 0xD46440, 6]
 Global $rFindMatchScreenFindAMatchNoShieldButton[8] = [137, 519, 354, 617, 278, 610, 0xEFC628, 6]
-Global $rFindMatchScreenFindAMatchWithShieldButton[8] = [138, 505, 354, 601, 325, 580, 0xD84800, 6] ; Need 2016/01/26 update (color on bot/mid gold coin)
+Global $rFindMatchScreenFindAMatchWithShieldButton[8] = [138, 476, 354, 572, 279, 566, 0xEFC82F, 6]
 Global $rFindMatchScreenCloseWindowButton[8] = [784, 17, 825, 55, 804, 48, 0xC80408, 6]
 Global $rWaitRaidScreenNextButton[8] = [682, 543, 830, 610, 696, 597, 0xD84400, 6]
 Global $rLiveRaidScreenEndBattleButton[8] = [16, 578, 123, 609, 64, 605, 0xC00000, 0]

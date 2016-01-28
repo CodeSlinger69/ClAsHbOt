@@ -2,20 +2,80 @@
 //
 
 #include "stdafx.h"
-#include <gdiplus.h>
-#pragma comment(lib, "gdiplus.lib")
-#include "opencv2/opencv.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-///* Debug
-//#include "opencv2/highgui/highgui.hpp"
-using namespace cv;
 #include "ImageMatchDLL.h"
+#include "NeedleCache.h"
 
-char* __stdcall FindMatch(char *haystack, char *needle, int match_method)
+char* __stdcall Initialize(char* scriptDir)
 {
+	needleCache = new NeedleCache();
+	needleCache->SetDirectories(scriptDir);
+	needleCache->LoadNeedles();
+
+	sprintf_s(returnString, MAXSTRING, "Success");
+	return returnString;
+}
+
+char* __stdcall TownHallSearch(char* haystack)
+{
+	NeedleCache::MATCHPOINTS match;
+	int thLevel = needleCache->TownHallSearch(haystack, &match);
+	
+	sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", thLevel, match.x, match.y, match.val);
+	return returnString;
+}
+
+char* __stdcall FindBestStorage(char* type, char* haystack, double threshold)
+{
+	NeedleCache::MATCHPOINTS match;
+	std::string matchedString;
+	NeedleCache::lootType t = strstr(type, "gold") ? NeedleCache::gold : 
+							  strstr(type, "elix") ? NeedleCache::elix : 
+							  strstr(type, "dark") ? NeedleCache::dark : (NeedleCache::lootType) 0;
+
+	matchedString = needleCache->BestStorageSearch(t, haystack, threshold, &match);
+
+	if (matchedString.length() > 0)
+		sprintf_s(returnString, MAXSTRING, "%s|%d|%d|%.4f", matchedString.c_str(), match.x, match.y, match.val);
+	else
+		sprintf_s(returnString, MAXSTRING, "%s|%d|%d|%.4f", "", -1, -1, 0);
+
+	return returnString;
+}
+
+char* __stdcall FindAllStorages(char* type, char* haystack, double threshold, int maxMatch)
+{
+	std::vector<NeedleCache::MATCHPOINTS> matches(maxMatch);
+	int matchCount;
+	NeedleCache::lootType t = strstr(type, "gold") ? NeedleCache::gold : 
+							  strstr(type, "elix") ? NeedleCache::elix : 
+							  strstr(type, "dark") ? NeedleCache::dark : (NeedleCache::lootType) 0;
+
+	matchCount = needleCache->FindAllStorages(t, haystack, threshold, maxMatch, &matches);
+
+	if (matchCount > 0)
+	{
+		sprintf_s(returnString, MAXSTRING, "%d", matchCount);
+		for (int i=0; i<matchCount; i++)
+		{
+			char curMatch[MAXSTRING];
+			sprintf_s(curMatch, MAXSTRING, "|%d|%d|%.4f", matches.at(i).x, matches.at(i).y, matches.at(i).val);
+			strcat_s(returnString, MAXSTRING, curMatch);
+		}
+	}
+	else
+	{
+		sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", 0, -1, -1, 0);
+	}
+
+	return returnString;
+}
+
+char* __stdcall FindMatch(char* haystack, char* needle)
+{
+	//Mat img = ConvertBitmapToMat(frame);
 	Mat img = imread(haystack);
 	Mat templ = imread(needle);
-	Mat result = DoMatch(img, templ, match_method);
+	Mat result = DoMatch(img, templ, CV_TM_CCORR_NORMED);
 	
 	/*// Debug
 	char* image_window = "Source Image";	
@@ -29,31 +89,22 @@ char* __stdcall FindMatch(char *haystack, char *needle, int match_method)
 	Point minLoc, maxLoc;
 	minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
 
-	// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
-	Point matchLoc = (match_method  == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED) ? minLoc : maxLoc; 
-	double matchVal = (match_method  == CV_TM_SQDIFF || match_method == CV_TM_SQDIFF_NORMED) ? minVal : maxVal;
-	//int x = matchLoc.x + templ.cols/2; // for midpoint
-	//int y = matchLoc.y + templ.rows/2;
-	int x = matchLoc.x;
-	int y = matchLoc.y;
-
 	/*// Debug
-	rectangle( img_display, matchLoc, Point( matchLoc.x + templ.cols , matchLoc.y + templ.rows ), Scalar(0,0xff,0), 2, 8, 0 );
+	rectangle( img_display, maxLoc, Point( maxLoc.x + templ.cols , maxLoc.y + templ.rows ), Scalar(0,0xff,0), 2, 8, 0 );
 	imshow( image_window, img_display );
 	waitKey(0);
 	*/
 
-	sprintf_s(returnString, MAXSTRING, "%d|%d|%.4f", x, y, matchVal);
-	//MessageBox(NULL, returnString, "FindMatch End", MB_OK);
-	
+	sprintf_s(returnString, MAXSTRING, "%d|%d|%.4f", maxLoc.x, maxLoc.y, maxVal);
 	return returnString;
 }
 
-char* __stdcall FindAllMatches(char *haystack, char *needle, int match_method, int max_matches, double threshold)
+char* __stdcall FindAllMatches(char* haystack, char* needle, int max_matches, double threshold)
 {
+	//Mat img = ConvertBitmapToMat(frame);
 	Mat img = imread(haystack);
 	Mat templ = imread(needle);
-	Mat result = DoMatch(img, templ, match_method);
+	Mat result = DoMatch(img, templ, CV_TM_CCORR_NORMED);
 
 	int count = 0;
 	struct MATCHPOINTS {
@@ -69,28 +120,18 @@ char* __stdcall FindAllMatches(char *haystack, char *needle, int match_method, i
 		Point minLoc, maxLoc;
 		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
 
-		// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
-		double matchVal = (match_method==CV_TM_SQDIFF || match_method==CV_TM_SQDIFF_NORMED) ? minVal : maxVal;
-
-		if ( ((match_method==CV_TM_SQDIFF || match_method==CV_TM_SQDIFF_NORMED) && matchVal <= threshold) ||
-			 (match_method!=CV_TM_SQDIFF && match_method!=CV_TM_SQDIFF_NORMED && matchVal >= threshold) )
+		if (maxVal>=threshold)
 		{
-			Point matchLoc = (match_method==CV_TM_SQDIFF || match_method==CV_TM_SQDIFF_NORMED) ? minLoc : maxLoc; 
-
 			// Fill haystack with pure green so we don't match this same location
-			rectangle(img, matchLoc, cv::Point(matchLoc.x + templ.cols, matchLoc.y + templ.rows),
-							CV_RGB(0,255,0), 2);
+			rectangle(img, maxLoc, cv::Point(maxLoc.x + templ.cols, maxLoc.y + templ.rows), CV_RGB(0,255,0), 2);
 
-			// Fill results array with hi or lo vals, so we don't match this same location
-			Scalar fillVal = (match_method==CV_TM_SQDIFF || match_method==CV_TM_SQDIFF_NORMED) ? 1 : 0;
-			floodFill(result, matchLoc, fillVal, 0, Scalar(0.1), Scalar(1.0));
+			// Fill results array with lo vals, so we don't match this same location
+			floodFill(result, maxLoc, 0, 0, Scalar(0.1), Scalar(1.0));
 
 			// Add matched location to the vector
-			//matches[count].x = matchLoc.x + templ.cols/2; // for midpoint
-			//matches[count].y = matchLoc.y + templ.rows/2;
-			matches[count].x = matchLoc.x;
-			matches[count].y = matchLoc.y;
-			matches[count].val = matchVal;
+			matches[count].x = maxLoc.x;
+			matches[count].y = maxLoc.y;
+			matches[count].val = maxVal;
 			count++;
 		}
 		else
@@ -130,4 +171,44 @@ Mat DoMatch(Mat img, Mat templ, int match_method)
 	//normalize( result, result, 1, 100, NORM_MINMAX, -1, Mat() );
 
 	return result;
+}
+
+CLSID GetEncoderClsid(const WCHAR* format)
+{
+	UINT  num = 0;          // number of image encoders
+	UINT  size = 0;         // size of the image encoder array in bytes
+
+	Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
+
+	Gdiplus::GetImageEncodersSize(&num, &size);
+	if (size == 0)
+		return CLSID();  // Failure
+
+	pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
+	if (pImageCodecInfo == NULL)
+		return CLSID();  // Failure
+
+	Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
+
+	for (UINT j = 0; j < num; ++j)
+	{
+		if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+		{
+			CLSID clsid = pImageCodecInfo[j].Clsid;
+			free(pImageCodecInfo);
+			return clsid;  // Success
+		}
+	}
+
+	free(pImageCodecInfo);
+	return CLSID();
+}
+
+Mat ConvertBitmapToMat(Gdiplus::Bitmap *frame)
+{
+	CLSID clsid = GetEncoderClsid(L"image/bmp");
+	frame->Save(L"c:\\temp.bmp", &clsid);
+	Mat m = imread("c:\\temp.bmp");
+
+	return m;
 }

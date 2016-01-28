@@ -536,41 +536,85 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
-Func GetTownHallLevel(Const $frame, ByRef $left, ByRef $top)
-   ; Returns best TH level match, -1 if no good match
-   Local $bestMatch = -1
-   Local $bestConf = 0
-   Local $bestX, $bestY
-   For $i = 0 To UBound($TownHallBMPs)-1
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$TownHallBMPs[$i], $conf, $x, $y)
+Func GetTownHallLevel(ByRef $left, ByRef $top)
+   Local $frame = CaptureFrame("GetTownHallLevel", $gEastPoint[0], $gNorthPoint[1], $gWestPoint[0], $gSouthPoint[1])
+   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
+   _WinAPI_DeleteObject($frame)
 
-	  If $conf >= $gConfidenceTownHall Then
+   Local $res = DllCall($gDllHandle, "str", "TownHallSearch", "str", "temp.bmp")
 
-		 ; Need to check for case where a town hall is "found" in the sandy beach area, this is a false positive.
-		 ; http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
-		 ; return (b.x - a.x)*(c.y - a.y) > (b.y - a.y)*(c.x - a.x);
-		 Local $beachSideOfSWLine = ($gSouthPoint[0] - $gEastPoint[0])*($y - $gEastPoint[1]) > ($gSouthPoint[1] - $gEastPoint[1])*($x - $gEastPoint[0])
-		 ;DebugWrite($TownHallBMPs[$i] & " " & $conf & " " & $x & " " & $y & " " & $beachSideOfSWLine)
+   If @error Then
+	  DebugWrite("GetTownHallLevel() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, TownHallSearch" & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
 
-		 If $beachSideOfSWLine=False And $conf>=$bestConf Then
-			$bestConf = $conf
-			$bestMatch = $i
-			$bestX = $x
-			$bestY = $y
-		 EndIf
-	  EndIf
+   FileDelete("temp.bmp")  ; temporary
+
+   Local $split = StringSplit($res[0], "|", 2)
+   $left = $split[1] + $gEastPoint[0]
+   $top = $split[2] + $gNorthPoint[1]
+   ;DebugWrite("GetTownHallLevel() TH: " & $split[0] & " loc: " & $left & "," & $top & " conf: " & $split[3])
+
+   Return $split[0]
+EndFunc
+
+Func FindBestStorage(Const $type, ByRef $left, ByRef $top, ByRef $conf)
+   ; Type must be "gold", "elix", or "dark"
+   Local $frame = CaptureFrame("TestStorage", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
+   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
+
+   Local $res = DllCall($gDllHandle, "str", "FindBestStorage", "str", $type, "str", "temp.bmp", "double", $gConfidenceStorages)
+
+   If @error Then
+	  DebugWrite("FindBestStorage() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindBestStorage" & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
+
+   Local $split = StringSplit($res[0], "|", 2)
+   $left = $split[1] + $gScreenCenter[0]-150
+   $top = $split[2] + $gScreenCenter[1]-150
+   $conf = $split[3]
+   DebugWrite("FindBestStorage() " & $split[0] & ", loc: " & $left & "," & $top & " conf: " & $split[3])
+
+   If $split[0] = "" Then SaveDebugImage($frame, "StorageUsageFrame" & StringUpper($type) & FileGetTime("temp.bmp", 0, $FT_STRING) & ".bmp")
+
+   FileDelete("temp.bmp")  ; temporary
+   _WinAPI_DeleteObject($frame)
+
+   Return $split[0]
+EndFunc
+
+Func FindAllStorages(Const $type, Const $maxMatch, ByRef $x, ByRef $y)
+   ; Type must be "gold", "elix", or "dark"
+   Local $frame = CaptureFrame("FindAllStorages", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
+   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
+
+   Local $res = DllCall($gDllHandle, "str", "FindAllStorages", "str", $type, "str", "temp.bmp", "double", $gConfidenceStorages, "int", $maxMatch)
+
+   If @error Then
+	  DebugWrite("FindAllStorages() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindAllStorages" & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
+
+   Local $split = StringSplit($res[0], "|", 2)
+   ;DebugWrite("Num matches " & $type & ": " & $split[0])
+
+   For $j = 0 To $split[0]-1
+	  $x[$j] = $split[$j*3+1] + $gScreenCenter[0]-150
+	  $y[$j] = $split[$j*3+2] + $gScreenCenter[1]-150
+	  ;DebugWrite("Match " & $j & ": " & $x[$j] & "," & $y[$j] & "  conf: " & $split[$j*3+3])
    Next
 
-   If $bestMatch <> -1 Then
-	  ;DebugWrite("Likely TH Level " & $bestMatch+6 & " conf: " & $bestConfidence)
-	  $left = $bestX
-	  $top = $bestY
-	  Return $bestMatch+6
-   Else
-	  ;SaveDebugImage($frame, "ObscuredTH" & Random(0, 100000, 1) & ".bmp")
-	  Return -1
-   EndIf
+   ;FileDelete("temp.bmp")  ; temporary
+   _WinAPI_DeleteObject($frame)
+
+   Return $split[0]
 EndFunc
 
 Func ScanFrameForOneBMP(Const $f, Const ByRef $needle, ByRef $confidence, ByRef $x, ByRef $y)
@@ -585,7 +629,7 @@ _GDIPlus_ImageSaveToFile($f, "temp.bmp")
 
    If @error Then
 	  DebugWrite("ScanFrameForOneBMP() DllCall @error=" & @error)
-	   Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
 		 "This is catastrophic, exiting.")
 	  Exit
    EndIf
@@ -616,7 +660,7 @@ _GDIPlus_ImageSaveToFile($f, "temp.bmp")
 
 	  If @error Then
 		 DebugWrite("ScanFrameForBestBMP() DllCall @error=" & @error)
-		  Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+		 MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
 			"This is catastrophic, exiting.")
 		 Exit
 	  EndIf
@@ -649,7 +693,7 @@ _GDIPlus_ImageSaveToFile($f, "temp.bmp")
 
 	  If @error Then
 		 DebugWrite("ScanFrameForAllBMPs() DllCall @error=" & @error)
-		 Local $res = MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+		 MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
 			"This is catastrophic, exiting.")
 		 Exit
 	  EndIf

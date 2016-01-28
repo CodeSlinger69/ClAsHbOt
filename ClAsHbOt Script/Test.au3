@@ -65,39 +65,72 @@ Func TestEndBattleBonus()
 EndFunc
 
 Func TestStorage()
-   Local $frame = CaptureFrame("TestEndBattleLoot")
    Local $x, $y, $conf, $matchIndex
    Local $usageAdj = 10
 
-   ScanFrameForBestBMP($frame, $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-   DebugWrite("Gold Match Index: " & $matchIndex)
-   If $matchIndex <> -1 Then
-	  Local $s = $GoldStorageBMPs[$matchIndex]
+   Local $t = TimerInit()
+   Local $s = FindBestStorage("gold", $x, $y, $conf)
+   DebugWrite("Gold: " & Round(TimerDiff($t)) & "ms")
+   DebugWrite("Gold Match: " & $s)
+   If $s <> "" Then
 	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
-   ScanFrameForBestBMP($frame, $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-   DebugWrite("Elix Match Index: " & $matchIndex)
-   If $matchIndex <> -1 Then
-	  Local $s = $ElixStorageBMPs[$matchIndex]
+   Local $t = TimerInit()
+   Local $s = FindBestStorage("elix", $x, $y, $conf)
+   DebugWrite("Elix: " & Round(TimerDiff($t)) & "ms")
+   DebugWrite("Elix Match: " & $s)
+   If $s <> "" Then
 	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
-   ScanFrameForBestBMP($frame, $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-   DebugWrite("Dark Match Index: " & $matchIndex)
-   If $matchIndex <> -1 Then
-	  Local $s = $DarkStorageBMPs[$matchIndex]
+   Local $t = TimerInit()
+   Local $s = FindBestStorage("dark", $x, $y, $conf)
+   DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
+   DebugWrite("Dark Match: " & $s)
+   If $s <> "" Then
 	  Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 1))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
+EndFunc
+
+Func TestFindAllStorages()
+   Local $x[4], $y[4]
+
+   Local $t = TimerInit()
+   Local $count = FindAllStorages("gold", 4, $x, $y)
+   DebugWrite("Gold: " & Round(TimerDiff($t)) & "ms")
+
+   DebugWrite("Gold Match Count: " & $count)
+   For $i = 0 To $count-1
+	  DebugWrite("Gold Match " & $i & ": " & $x[$i] & "," & $y[$i])
+   Next
+
+   Local $t = TimerInit()
+   Local $count = FindAllStorages("elix", 4, $x, $y)
+   DebugWrite("Elix: " & Round(TimerDiff($t)) & "ms")
+
+   DebugWrite("Elix Match Count: " & $count)
+   For $i = 0 To $count-1
+	  DebugWrite("Elix Match " & $i & ": " & $x[$i] & "," & $y[$i])
+   Next
+
+   Local $t = TimerInit()
+   Local $count = FindAllStorages("dark", 1, $x, $y)
+   DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
+
+   DebugWrite("Dark Match Count: " & $count)
+   For $i = 0 To $count-1
+	  DebugWrite("Dark Match " & $i & ": " & $x[$i] & "," & $y[$i])
+   Next
 EndFunc
 
 Func TestRaidTroopsCount()
@@ -241,16 +274,12 @@ Func TestDonate()
 EndFunc
 
 Func TestTownHall()
-   Local $frame = CaptureFrame("TestTownHall")
-   ;Local $frame = _GDIPlus_BitmapCreateFromFile("ObscuredTH23687.bmp")
-   ;SaveDebugImage($frame, "TestTownHall.bmp")
-
    Local $left, $top
-   Local $th = GetTownHallLevel($frame, $left, $top)
+   Local $t = TimerInit()
+   Local $th = GetTownHallLevel($left, $top)
+   DebugWrite("TownHall: " & Round(TimerDiff($t)) & "ms")
 
    DebugWrite("Likely TH Level " & $th & " @ " & $left & "," & $top)
-
-   _WinAPI_DeleteObject($frame)
 EndFunc
 
 Func TestCollectors()

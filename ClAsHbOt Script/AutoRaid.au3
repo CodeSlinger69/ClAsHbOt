@@ -267,7 +267,7 @@ Func CheckForRaidableBase(Const $frame, Const $townHall, Const $gold, Const $eli
 	  EndIf
 
 	  Local $adjGold=$gold, $adjElix=$elix
-	  AdjustLootForStorages($frame, $townHall, $gold, $elix, $adjGold, $adjElix)
+	  AdjustLootForStorages($townHall, $gold, $elix, $adjGold, $adjElix)
 
 	  If $adjGold<$GUIGold Or $adjElix<$GUIElix Or $dark<$GUIDark Then
 		 DebugWrite("CheckForRaidableBase() No match (adj loot) (Adj: " & $adjGold & " / " & $adjElix & ")" )
@@ -305,7 +305,7 @@ Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef
    $deadBase = IsColorPresent($frame, $rDeadBaseIndicatorColor)
 
    ; Get Town Hall level
-   $thLevel = GetTownHallLevel($frame, $thLeft, $thTop)
+   $thLevel = GetTownHallLevel($thLeft, $thTop)
 
    Local $townHallIndiator = $thLevel<>-1 ? $thLevel : "-"
    Local $deadBaseIndicator = _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED ? ($deadBase=True ? "T" : "F") : "-"
@@ -314,19 +314,17 @@ Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef
 EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
-Func AdjustLootForStorages(Const $frame, Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   Local $x, $y, $conf, $matchIndex
+Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
+   Local $x, $y, $conf
    Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
-   ScanFrameForBestBMP($frame, $GoldStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   Local $s = FindBestStorage("gold", $x, $y, $conf)
 
-   If $matchIndex = -1 Then
+   If $s = "" Then
 	  DebugWrite("AdjustLootForStorages() Could not find gold storage match.")
-	  SaveDebugImage($frame, "StorageUsageFrameGold" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
-	  Local $s = $GoldStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
@@ -336,13 +334,11 @@ Func AdjustLootForStorages(Const $frame, Const $townHall, Const $gold, Const $el
    EndIf
 
    ; Elixir
-   ScanFrameForBestBMP($frame, $ElixStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
+   Local $s = FindBestStorage("elix", $x, $y, $conf)
 
-   If $matchIndex = -1 Then
+   If $s = "" Then
 	  DebugWrite("AdjustLootForStorages() Could not find elixir storage match.")
-	  SaveDebugImage($frame, "StorageUsageFrameElix" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
    Else
-	  Local $s = $ElixStorageBMPs[$matchIndex]
 	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
 	  Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
@@ -352,10 +348,7 @@ Func AdjustLootForStorages(Const $frame, Const $townHall, Const $gold, Const $el
    EndIf
 
    ; Dark - Just temporarily, to fill out saved bitmaps
-   ScanFrameForBestBMP($frame, $DarkStorageBMPs, $gConfidenceStorages, $matchIndex, $conf, $x, $y)
-   If $matchIndex = -1 Then
-	  SaveDebugImage($frame, "StorageUsageFrameDark" & FileGetTime("StorageUsageFrame.bmp", 0, $FT_STRING) & ".bmp")
-   EndIf
+   Local $s = FindBestStorage("dark", $x, $y, $conf)
 
 EndFunc
 

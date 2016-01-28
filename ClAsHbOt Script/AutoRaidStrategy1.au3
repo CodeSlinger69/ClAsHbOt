@@ -204,9 +204,9 @@ Func AutoRaidStrategy1GetDirection(Const $f)
 
    ; Count the storages, by top/bottom half
    Local $allMatchY[1], $totalMatches=0
-   Local $matchX[1], $matchY[1]
+   Local $matchX[4], $matchY[4]
 
-   Local $matchCount = ScanFrameForAllBMPs($f, $GoldStorageBMPs, $gConfidenceStorages, 4, $matchX, $matchY)
+   Local $matchCount = FindAllStorages("gold", 4, $matchX, $matchY)
    $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " gold storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -214,7 +214,7 @@ Func AutoRaidStrategy1GetDirection(Const $f)
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   Local $matchCount = ScanFrameForAllBMPs($f, $ElixStorageBMPs, $gConfidenceStorages, 4, $matchX, $matchY)
+   Local $matchCount = FindAllStorages("elix", 4, $matchX, $matchY)
    $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " elix storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -222,7 +222,7 @@ Func AutoRaidStrategy1GetDirection(Const $f)
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   Local $matchCount = ScanFrameForAllBMPs($f, $DarkStorageBMPs, $gConfidenceStorages, 1, $matchX, $matchY)
+   Local $matchCount = FindAllStorages("dark", 4, $matchX, $matchY)
    $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]

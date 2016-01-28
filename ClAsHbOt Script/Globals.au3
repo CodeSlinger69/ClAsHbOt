@@ -90,7 +90,6 @@ Global $gConfidenceCollectLoot = 0.95
 Global $gConfidenceArmyCamp = 0.94
 Global $gConfidenceBarracks = 0.95
 Global $gConfidenceCollector = 0.92
-Global $gConfidenceDEStorage = 0.95
 Global $gConfidenceRaidTroopSlot = 0.98
 Global $gConfidenceDonateTroopSlot = 0.985
 Global $gConfidenceBarracksTroopSlot = 0.99

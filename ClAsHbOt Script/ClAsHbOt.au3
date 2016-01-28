@@ -65,7 +65,7 @@ Func Main()
 
    ReadSettings()
 
-;MsgBox($MB_OK, "", "Waiting")
+;MsgBox($MB_OK, "", "Waiting - Attach debugger!")
 ;Local $f = CaptureFrame("Test")
 ;DebugWrite("WhereAmI: " & WhereAmI($f))
 ;ZoomOut2()
@@ -83,9 +83,10 @@ Func Main()
 ;TestTownHall()
 ;TestCollectors()
 ;TestStorage()
+;TestFindAllStorages()
 ;DLLStoreFrame($f)
-;_GDIPlus_BitmapDispose($f)
 ;TestCollectMyLoot()
+;_GDIPlus_BitmapDispose($f)
 ;Exit
 
    InitGUI()
@@ -322,7 +323,6 @@ Func GetMyLootNumbers($frame)
 
    ; My loot is only scrapable on some screens
    If WhereAmI($frame)=$eScreenMain Or WhereAmI($frame)=$eScreenWaitRaid Or WhereAmI($frame)=$eScreenLiveRaid Then
-
 	  Local $MyGold = 0
 	  If IsTextBoxPresent($frame, $rMyGoldTextBox) = True Then
 		 $MyGold = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
@@ -361,7 +361,7 @@ Func GetMyLootNumbers($frame)
 			ZoomOut2($frame)
 
 			Local $top, $left
-			Local $MyTownHall = GetTownHallLevel($frame, $left, $top)
+			Local $MyTownHall = GetTownHallLevel($left, $top)
 
 			If $MyTownHall = -1 Then
 				  DebugWrite("Could not detect Town Hall level")
