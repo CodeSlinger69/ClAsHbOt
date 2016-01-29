@@ -542,7 +542,7 @@ EndFunc
 Func GetTownHallLevel(ByRef $left, ByRef $top)
    Local $frame = CaptureFrame("GetTownHallLevel", $gWestPoint[0], $gNorthPoint[1]-10, $gEastPoint[0], $gSouthPoint[1])
    _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
-   _WinAPI_DeleteObject($frame)
+   _GDIPlus_BitmapDispose($frame)
 
    Local $res = DllCall($gDllHandle, "str", "TownHallSearch", "str", "temp.bmp", "double", $gConfidenceTownHall)
 
@@ -587,7 +587,7 @@ Func FindBestStorage(Const $type, ByRef $left, ByRef $top, ByRef $conf)
    If $split[0] = "" Then SaveDebugImage($frame, "StorageUsageFrame" & StringUpper($type) & FileGetTime("temp.bmp", 0, $FT_STRING) & ".bmp")
 
    FileDelete("temp.bmp")  ; temporary
-   _WinAPI_DeleteObject($frame)
+   _GDIPlus_BitmapDispose($frame)
 
    Return $split[0]
 EndFunc
@@ -616,7 +616,7 @@ Func FindAllStorages(Const $type, Const $maxMatch, ByRef $x, ByRef $y)
    Next
 
    FileDelete("temp.bmp")  ; temporary
-   _WinAPI_DeleteObject($frame)
+   _GDIPlus_BitmapDispose($frame)
 
    Return $split[0]
 EndFunc

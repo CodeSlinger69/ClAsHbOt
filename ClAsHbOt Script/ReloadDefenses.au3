@@ -52,7 +52,7 @@ Func ReloadDefenses(ByRef $f)
 		 ; Wait for Reload confirmation window
 		 If WaitForButton($f, 5000, $rReloadDefensesOkayButton) = False Then
 			DebugWrite("ReloadDefenses() Failed - timeout waiting for Reload Confirmation window, resetting")
-			_WinAPI_DeleteObject($f)
+			_GDIPlus_BitmapDispose($f)
 			$f = CaptureFrame("ReloadDefenses")
 			ResetToCoCMainScreen($f)
 			Return
@@ -63,7 +63,7 @@ Func ReloadDefenses(ByRef $f)
 			; Wait for reload bar
 			If WaitForReloadBar($f) = False Then
 			   DebugWrite("ReloadDefenses() Reload button bar did not reappear, resetting")
-			   _WinAPI_DeleteObject($f)
+			   _GDIPlus_BitmapDispose($f)
 			   $f = CaptureFrame("ReloadDefenses")
 			   ResetToCoCMainScreen($f)
 			   Return
@@ -77,7 +77,7 @@ Func ReloadDefenses(ByRef $f)
    RandomWeightedClick($rSafeAreaButton)
    Sleep(500)
 
-   _WinAPI_DeleteObject($f)
+   _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("ReloadDefenses")
 EndFunc
 
@@ -95,7 +95,7 @@ Func WaitForReloadBar(ByRef $f)
 	  If $conf > $gConfidenceReloadBarButton Then $gotBar = True
 
 	  Sleep(500)
-	  _WinAPI_DeleteObject($f)
+	  _GDIPlus_BitmapDispose($f)
 	  $f = CaptureFrame("WaitForReloadBar", $rReloadDefensesBox[0], $rReloadDefensesBox[1], $rReloadDefensesBox[2], $rReloadDefensesBox[3])
    WEnd
 

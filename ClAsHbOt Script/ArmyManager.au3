@@ -255,7 +255,7 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
 
    Local $frame = CaptureFrame("GetTownHallLevel", $rBarracksTroopBox[0], $rBarracksTroopBox[1], $rBarracksTroopBox[2], $rBarracksTroopBox[3])
    _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
-   _WinAPI_DeleteObject($frame)
+   _GDIPlus_BitmapDispose($frame)
 
    If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BarracksFrame.bmp")
 

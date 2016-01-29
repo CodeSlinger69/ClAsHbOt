@@ -56,7 +56,7 @@ Func ResetToCoCMainScreen(ByRef $f)
    ; Unknown screen - don't do anything
    Case $eScreenUnknown
 	  DebugWrite("ResetToCoCMainScreen() On Unknown Screen - doing nothing")
-	  SaveDebugImage($f, "UnknownFrame" & Random(0, 100000, 1) & ".bmp")
+	  ;SaveDebugImage($f, "UnknownFrame" & Random(0, 100000, 1) & ".bmp")
 	  Return False
 
    ; Android Home Screen - start CoC
