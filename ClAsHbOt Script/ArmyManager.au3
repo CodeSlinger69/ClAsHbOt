@@ -253,10 +253,7 @@ EndFunc
 Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
    ; Populates index with the client area coords of all available troop buttons
 
-   Local $frame = CaptureFrame("GetTownHallLevel", $rBarracksTroopBox[0], $rBarracksTroopBox[1], $rBarracksTroopBox[2], $rBarracksTroopBox[3])
-   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
-   _GDIPlus_BitmapDispose($frame)
-
+   Local $frame = CaptureFrame("FindBarracksTroopSlots", $rBarracksTroopBox[0], $rBarracksTroopBox[1], $rBarracksTroopBox[2], $rBarracksTroopBox[3])
    If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BarracksFrame.bmp")
 
    For $i = 0 To UBound($bitmaps)-1
@@ -275,6 +272,8 @@ Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 $index[$i][3] = -1
 	  EndIf
    Next
+
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func DequeueTroops(ByRef $f)
