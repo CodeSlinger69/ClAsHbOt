@@ -1,24 +1,17 @@
 #pragma once
+#include "ImageMatchDLL.h"
 
 class NeedleCache
 {
 public:
 	NeedleCache(void);
 	~NeedleCache(void);
-
-	enum lootType {gold, elix, dark};
-	struct MATCHPOINTS
-	{
-		int x;
-		int y;
-		double val;
-	};
 	
 	void SetDirectories(const char* scriptDir);
 	void LoadNeedles(void);
-	int TownHallSearch(const char* haystack, MATCHPOINTS* match);
+	int TownHallSearch(const char* haystack, const double threshold, MATCHPOINTS* match);
 	std::string BestStorageSearch(const lootType type, const char* haystack, const double threshold, MATCHPOINTS* match);
-	int FindAllStorages(const lootType type, const char* haystack, const double threshold, const int maxMatch, std::vector<NeedleCache::MATCHPOINTS>* matches);
+	void FindAllStorages(const lootType type, const char* haystack, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches);
 
 private:
 	char scriptPath[MAX_PATH];  // no terminating backslash

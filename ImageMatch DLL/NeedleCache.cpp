@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "NeedleCache.h"
-
+#include "ImageMatchDLL.h"
 
 NeedleCache::NeedleCache(void)
 {
@@ -56,10 +56,9 @@ void NeedleCache::LoadNeedles(void)
 		darkStorages[i] = imread(path);
 	}
 	WriteLog("Dark Elixir Storages images loaded");
-
 }
 
-int NeedleCache::TownHallSearch(const char* haystack, MATCHPOINTS* match)
+int NeedleCache::TownHallSearch(const char* haystack, const double threshold, MATCHPOINTS* match)
 {
 	Point bestPoint(0, 0);
 	double bestConfidence = 0;
@@ -76,7 +75,7 @@ int NeedleCache::TownHallSearch(const char* haystack, MATCHPOINTS* match)
 		
 		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
 
-		if (maxVal > bestConfidence)
+		if (maxVal > bestConfidence && maxVal >= threshold)
 		{
 			// Need to check for case where a town hall is "found" in the sandy beach area, this is a false positive.
 			// http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
@@ -99,7 +98,7 @@ int NeedleCache::TownHallSearch(const char* haystack, MATCHPOINTS* match)
 	return bestTH;
 }
 
-std::string NeedleCache::BestStorageSearch(const lootType type, const char* haystack, const double threshold, NeedleCache::MATCHPOINTS* match)
+std::string NeedleCache::BestStorageSearch(const lootType type, const char* haystack, const double threshold, MATCHPOINTS* match)
 {
 	Mat img = imread(haystack);
 
@@ -124,7 +123,7 @@ std::string NeedleCache::BestStorageSearch(const lootType type, const char* hays
 		Point minLoc, maxLoc;
 		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
 
-		if (maxVal > threshold && maxVal > bestMaxVal)
+		if (maxVal >= threshold && maxVal > bestMaxVal)
 		{
 			bestMaxVal = maxVal;
 			bestMaxLoc = maxLoc;
@@ -142,7 +141,7 @@ std::string NeedleCache::BestStorageSearch(const lootType type, const char* hays
 	return bestNeedle;
 }
 
-int NeedleCache::FindAllStorages(const lootType type, const char* haystack, const double threshold, const int maxMatch, std::vector<NeedleCache::MATCHPOINTS>* matches)
+void NeedleCache::FindAllStorages(const lootType type, const char* haystack, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches)
 {
 	Mat img = imread(haystack);
 
@@ -200,9 +199,11 @@ int NeedleCache::FindAllStorages(const lootType type, const char* haystack, cons
 				// Add matched location to the vector
 				if (alreadyFound == false)
 				{
-					matches->at(count).val = maxVal;
-					matches->at(count).x = maxLoc.x;
-					matches->at(count).y = maxLoc.y;
+					MATCHPOINTS match;
+					match.val = maxVal;
+					match.x = maxLoc.x;
+					match.y = maxLoc.y;
+					matches->push_back(match);
 					count++;
 				}
 			}
@@ -215,9 +216,11 @@ int NeedleCache::FindAllStorages(const lootType type, const char* haystack, cons
 		if (count >= maxMatch)
 			break;
 	}
-
-	return count;
 }
+
+
+
+
 
 Mat NeedleCache::FindMatch(Mat haystack, Mat needle)
 {

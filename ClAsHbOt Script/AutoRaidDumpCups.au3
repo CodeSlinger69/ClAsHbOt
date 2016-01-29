@@ -72,38 +72,33 @@ Func DoCupsDump(ByRef $f)
    Local $button[4]
 
    If $wardenCount>0 Then
-	  $button[0] = $rRaidTroopBox[0] + $troopIndex[$eTroopWarden][0]
-	  $button[1] = $rRaidTroopBox[1] + $troopIndex[$eTroopWarden][1]
-	  $button[2] = $rRaidTroopBox[0] + $troopIndex[$eTroopWarden][2]
-	  $button[3] = $rRaidTroopBox[1] + $troopIndex[$eTroopWarden][3]
+	  For $i = 0 To 3
+		 $button[$i] = $troopIndex[$eTroopWarden][$i]
+	  Next
 	  DebugWrite("DoCupsDump() Deploying Warden")
 
    ElseIf $kingCount>0 Then
-	  $button[0] = $rRaidTroopBox[0] + $troopIndex[$eTroopKing][0]
-	  $button[1] = $rRaidTroopBox[1] + $troopIndex[$eTroopKing][1]
-	  $button[2] = $rRaidTroopBox[0] + $troopIndex[$eTroopKing][2]
-	  $button[3] = $rRaidTroopBox[1] + $troopIndex[$eTroopKing][3]
+	  For $i = 0 To 3
+		 $button[$i] = $troopIndex[$eTroopKing][$i]
+	  Next
 	  DebugWrite("DoCupsDump() Deploying King")
 
    ElseIf $queenCount>0 Then
-	  $button[0] = $rRaidTroopBox[0] + $troopIndex[$eTroopQueen][0]
-	  $button[1] = $rRaidTroopBox[1] + $troopIndex[$eTroopQueen][1]
-	  $button[2] = $rRaidTroopBox[0] + $troopIndex[$eTroopQueen][2]
-	  $button[3] = $rRaidTroopBox[1] + $troopIndex[$eTroopQueen][3]
+	  For $i = 0 To 3
+		 $button[$i] = $troopIndex[$eTroopQueen][$i]
+	  Next
 	  DebugWrite("DoCupsDump() Deploying Queen")
 
    ElseIf $barbCount>0 Then
-	  $button[0] = $rRaidTroopBox[0] + $troopIndex[$eTroopBarbarian][0]
-	  $button[1] = $rRaidTroopBox[1] + $troopIndex[$eTroopBarbarian][1]
-	  $button[2] = $rRaidTroopBox[0] + $troopIndex[$eTroopBarbarian][2]
-	  $button[3] = $rRaidTroopBox[1] + $troopIndex[$eTroopBarbarian][3]
+	  For $i = 0 To 3
+		 $button[$i] = $troopIndex[$eTroopBarbarian][$i]
+	  Next
 	  DebugWrite("DoCupsDump() Deploying Barbarian")
 
    Else ; Archer
-	  $button[0] = $rRaidTroopBox[0] + $troopIndex[$eTroopArcher][0]
-	  $button[1] = $rRaidTroopBox[1] + $troopIndex[$eTroopArcher][1]
-	  $button[2] = $rRaidTroopBox[0] + $troopIndex[$eTroopArcher][2]
-	  $button[3] = $rRaidTroopBox[1] + $troopIndex[$eTroopArcher][3]
+	  For $i = 0 To 3
+		 $button[$i] = $troopIndex[$eTroopArcher][$i]
+	  Next
 	  DebugWrite("DoCupsDump() Deploying Archer")
 
    EndIf

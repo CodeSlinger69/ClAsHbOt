@@ -1,9 +1,12 @@
-Func CollectLoot(ByRef $f)
+Func CollectLoot()
    ;DebugWrite("CollectLoot()")
+
+   Local $frame = CaptureFrame("CollectLoot", $gWestPoint[0], $gNorthPoint[1], $gEastPoint[0], $gSouthPoint[1])
+   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "CollectLootFrame.bmp")
 
    ; Find all the collectors that need clicking in the frame
    Local $mX[1], $mY[1]
-   Local $matchCount = ScanFrameForAllBMPs($f, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY)
+   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY)
 
    ; Do the collecting
    If $matchCount > 0 Then
@@ -15,8 +18,12 @@ Func CollectLoot(ByRef $f)
 	  DebugWrite("CollectLoot() Found " & $matchCount & " collectors, clicking")
 	  For $i = 0 To $matchCount-1
 
-		 Local $button[4] = [$sortedX[$i]+$rCollectorButton[0], $sortedY[$i]+$rCollectorButton[1], _
-						     $sortedX[$i]+$rCollectorButton[2], $sortedY[$i]+$rCollectorButton[3]]
+		 Local $button[4] = [ _
+			$gWestPoint[0]  + $sortedX[$i] + $rCollectorButton[0], _
+			$gNorthPoint[1] + $sortedY[$i] + $rCollectorButton[1], _
+			$gWestPoint[0]  + $sortedX[$i] + $rCollectorButton[2], _
+			$gNorthPoint[1] + $sortedY[$i] + $rCollectorButton[3]]
+
 		 RandomWeightedClick($button)
 
 		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])
@@ -28,19 +35,26 @@ Func CollectLoot(ByRef $f)
 
    ; Check for loot cart
    Local $conf, $x, $y
-   ScanFrameForOneBMP($f, "Images\"&$LootCartBMPs[0], $conf, $x, $y)
+   ScanFrameForOneBMP($frame, "Images\"&$LootCartBMPs[0], $conf, $x, $y)
 
    If $conf > $gConfidenceLootCart Then
 	  DebugWrite("CollectLoot() Found loot cart, collecting")
 
-	  Local $button[4] = [$x, $y, $x+15, $y+15]
+	  Local $button[4] = [ _
+		 $gWestPoint[0]  + $x, _
+		 $gNorthPoint[1] + $y, _
+		 $gWestPoint[0]  + $x + 15, _
+		 $gNorthPoint[1] + $y + 15]
+
 	  RandomWeightedClick($button)
 
-	  If WaitForButton($f, 5000, $rLootCartCollectButton) = True Then
+	  If WaitForButton($frame, 5000, $rLootCartCollectButton) = True Then
 		 RandomWeightedClick($rLootCartCollectButton)
 		 Sleep(1000)
 	  EndIf
    EndIf
+
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func SortArrayByClosestNeighbor(Const $matchCount, Const ByRef $x, Const ByRef $y, ByRef $sortedX, ByRef $sortedY)

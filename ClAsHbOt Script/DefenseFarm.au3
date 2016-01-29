@@ -34,7 +34,7 @@ Func DefenseFarmDoWork(ByRef $f)
 
    If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED Then
 	  DebugWrite("DefenseFarmDoWork() Collecting loot")
-	  CollectLoot($f)
+	  CollectLoot()
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED Then
@@ -67,10 +67,12 @@ Func GoOffline(ByRef $f)
    ; Click Android back button
    DebugWrite("GoOffline() Clicking Android back button")
    RandomWeightedClick($rAndroidBackButton)
+   Sleep(500)
 
    ; Wait for Confirm Exit button
-   If WaitForButton($f, 5000, $rConfirmExitButton) = False Then
+   If WaitForButton($f, 10000, $rConfirmExitButton) = False Then
 	  DebugWrite("GoOffline() Error, timeout waiting for Confirm Exit button")
+	  If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "ConfirmExitError.bmp")
 	  Return False
    EndIf
 

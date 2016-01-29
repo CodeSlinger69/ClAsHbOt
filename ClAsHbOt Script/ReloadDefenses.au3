@@ -76,6 +76,9 @@ Func ReloadDefenses(ByRef $f)
    ; Deselect Town Hall
    RandomWeightedClick($rSafeAreaButton)
    Sleep(500)
+
+   _WinAPI_DeleteObject($f)
+   $f = CaptureFrame("ReloadDefenses")
 EndFunc
 
 Func WaitForReloadBar(ByRef $f)

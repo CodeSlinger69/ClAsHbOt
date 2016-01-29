@@ -390,10 +390,12 @@ EndFunc
 
 Func GUICloseButton()
    DebugWrite("Close clicked")
+   _BlockInputEx(0, "", "", $gBlueStacksHwnd)
    SaveSettings()
    ExitGUI()
    ExitScraper()
    DLLUnload()
+
    Exit
 EndFunc
 

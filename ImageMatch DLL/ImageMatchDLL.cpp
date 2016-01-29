@@ -1,9 +1,10 @@
 // ImageMatch.cpp : Defines the exported functions for the DLL application.
 //
-
 #include "stdafx.h"
 #include "ImageMatchDLL.h"
 #include "NeedleCache.h"
+
+char returnString[MAXSTRING];
 
 char* __stdcall Initialize(char* scriptDir)
 {
@@ -15,10 +16,10 @@ char* __stdcall Initialize(char* scriptDir)
 	return returnString;
 }
 
-char* __stdcall TownHallSearch(char* haystack)
+char* __stdcall TownHallSearch(char* haystack, double threshold)
 {
-	NeedleCache::MATCHPOINTS match;
-	int thLevel = needleCache->TownHallSearch(haystack, &match);
+	MATCHPOINTS match;
+	int thLevel = needleCache->TownHallSearch(haystack, threshold, &match);
 	
 	sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", thLevel, match.x, match.y, match.val);
 	return returnString;
@@ -26,11 +27,9 @@ char* __stdcall TownHallSearch(char* haystack)
 
 char* __stdcall FindBestStorage(char* type, char* haystack, double threshold)
 {
-	NeedleCache::MATCHPOINTS match;
+	MATCHPOINTS match;
 	std::string matchedString;
-	NeedleCache::lootType t = strstr(type, "gold") ? NeedleCache::gold : 
-							  strstr(type, "elix") ? NeedleCache::elix : 
-							  strstr(type, "dark") ? NeedleCache::dark : (NeedleCache::lootType) 0;
+	lootType t = strstr(type, "gold") ? gold : strstr(type, "elix") ? elix : strstr(type, "dark") ? dark : (lootType) 0;
 
 	matchedString = needleCache->BestStorageSearch(t, haystack, threshold, &match);
 
@@ -44,28 +43,12 @@ char* __stdcall FindBestStorage(char* type, char* haystack, double threshold)
 
 char* __stdcall FindAllStorages(char* type, char* haystack, double threshold, int maxMatch)
 {
-	std::vector<NeedleCache::MATCHPOINTS> matches(maxMatch);
-	int matchCount;
-	NeedleCache::lootType t = strstr(type, "gold") ? NeedleCache::gold : 
-							  strstr(type, "elix") ? NeedleCache::elix : 
-							  strstr(type, "dark") ? NeedleCache::dark : (NeedleCache::lootType) 0;
+	std::vector<MATCHPOINTS> matches;
 
-	matchCount = needleCache->FindAllStorages(t, haystack, threshold, maxMatch, &matches);
+	lootType t = strstr(type, "gold") ? gold : strstr(type, "elix") ? elix : strstr(type, "dark") ? dark : (lootType) 0;
 
-	if (matchCount > 0)
-	{
-		sprintf_s(returnString, MAXSTRING, "%d", matchCount);
-		for (int i=0; i<matchCount; i++)
-		{
-			char curMatch[MAXSTRING];
-			sprintf_s(curMatch, MAXSTRING, "|%d|%d|%.4f", matches.at(i).x, matches.at(i).y, matches.at(i).val);
-			strcat_s(returnString, MAXSTRING, curMatch);
-		}
-	}
-	else
-	{
-		sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", 0, -1, -1, 0);
-	}
+	needleCache->FindAllStorages(t, haystack, threshold, maxMatch, &matches);
+	PrepareReturnString(matches);
 
 	return returnString;
 }
@@ -211,4 +194,22 @@ Mat ConvertBitmapToMat(Gdiplus::Bitmap *frame)
 	Mat m = imread("c:\\temp.bmp");
 
 	return m;
+}
+
+void PrepareReturnString(const std::vector<MATCHPOINTS> matches)
+{
+	if (!matches.empty())
+	{
+		sprintf_s(returnString, MAXSTRING, "%d", matches.size());
+		for (int i=0; i<(int) matches.size(); i++)
+		{
+			char curMatch[MAXSTRING];
+			sprintf_s(curMatch, MAXSTRING, "|%d|%d|%.4f", matches.at(i).x, matches.at(i).y, matches.at(i).val);
+			strcat_s(returnString, MAXSTRING, curMatch);
+		}
+	}
+	else
+	{
+		sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", 0, -1, -1, 0);
+	}
 }

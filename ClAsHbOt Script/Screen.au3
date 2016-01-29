@@ -286,9 +286,11 @@ Func ZoomOut2(ByRef $f)
    If IsColorPresent($f, $rZoomedOutFullColor) Then Return
 
    While TimerDiff($t)<5000 And $p=False
+
 	  _SendMessage($gBlueStacksHwnd, $WM_KEYDOWN, $VK_DOWN, 0)
 	  Sleep(100)
 	  _SendMessage($gBlueStacksHwnd, $WM_KEYUP, $VK_DOWN, 0)
+
 	  _GDIPlus_BitmapDispose($f)
 	  $f = CaptureFrame("ZoomOut2")
 	  $p = IsColorPresent($f, $rZoomedOutFullColor)

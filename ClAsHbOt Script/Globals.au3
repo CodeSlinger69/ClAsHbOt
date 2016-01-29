@@ -1,4 +1,4 @@
-Global $gVersion = "20161118+WIP"
+Global $gVersion = "20160118+WIP"
 Global $gAutoItVersionRequired = "3.3.14.2"
 
 ; Debug - these are overwritten once ReadSettings() in Settings.au3 is called, however these need to be defined here, as there can

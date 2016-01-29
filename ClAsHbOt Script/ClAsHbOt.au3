@@ -27,6 +27,7 @@ Opt("GUIOnEventMode", 1)
 #include <File.au3>
 #include <WindowsConstants.au3>
 #include <SendMessage.au3>
+#include <BlockInputEx.au3>
 
 ; CoC Bot Includes
 #include <Globals.au3>
@@ -164,7 +165,7 @@ Func MainApplicationLoop()
 			   ResetToCoCMainScreen($frame)
 			EndIf
 
-			If WhereAmI($frame)=$eScreenMain Then CollectLoot($frame)
+			If WhereAmI($frame)=$eScreenMain Then CollectLoot()
 			$lastCollectLootTimer = TimerInit()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 		 EndIf

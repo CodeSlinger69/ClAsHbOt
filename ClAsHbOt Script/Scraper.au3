@@ -19,6 +19,7 @@ EndFunc
 
 Func ExitScraper()
    _GDIPlus_Shutdown()
+   DebugWrite("ExitScraper() Scraper shut down")
 EndFunc
 
 Func ScrapeFuzzyText(Const $frame, Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
@@ -543,7 +544,7 @@ Func GetTownHallLevel(ByRef $left, ByRef $top)
    _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
    _WinAPI_DeleteObject($frame)
 
-   Local $res = DllCall($gDllHandle, "str", "TownHallSearch", "str", "temp.bmp")
+   Local $res = DllCall($gDllHandle, "str", "TownHallSearch", "str", "temp.bmp", "double", $gConfidenceTownHall)
 
    If @error Then
 	  DebugWrite("GetTownHallLevel() DllCall @error=" & @error)

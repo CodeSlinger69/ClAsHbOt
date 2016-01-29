@@ -4,12 +4,16 @@ Func RandomWeightedClick(Const $button, Const $scale = 1, Const $density = 1, Co
    _ControlClick($xClick, $yClick)
 EndFunc
 
-; Adapted from ClashGameBot https://gamebot.org
+; Adapted from ClashGameBot https://mybot.run
 Func _ControlClick(Const $x, Const $y, Const $numClicks = 1, Const $delay = 0)
+   _BlockInputEx(1, "", "", $gBlueStacksHwnd)
+
    For $i = 1 To $numClicks
 	  ControlClick($gTitle, "", "", "left", "1", $x, $y)
 	  Sleep($delay)
    Next
+
+   _BlockInputEx(0, "", "", $gBlueStacksHwnd)
 EndFunc
 
 Func _ClickHold(Const $x, Const $y, Const $duration)
@@ -17,11 +21,15 @@ Func _ClickHold(Const $x, Const $y, Const $duration)
    Local $WM_LBUTTONDOWN  = 0x0201
    Local $WM_LBUTTONUP  = 0x0202
 
+   _BlockInputEx(1, "", "", $gBlueStacksHwnd)
+
    DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksHwnd, "int", $WM_LBUTTONDOWN, "int", _
 			$MK_LBUTTON, "long", _MakeLong($x, $y))
    Sleep($duration)
    DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksHwnd, "int", $WM_LBUTTONUP, "int", _
 			$MK_LBUTTON, "long", _MakeLong($x, $y))
+
+   _BlockInputEx(0, "", "", $gBlueStacksHwnd)
 EndFunc
 
 Func _MakeLong($LoWord, $HiWord)

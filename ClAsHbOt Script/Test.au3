@@ -225,7 +225,7 @@ Func TestDonate()
    If IsButtonPresent($frame, $rMainScreenOpenChatButton)=False Then OpenChatWindow($frame)
 
    Local $donateButtons[1][4]
-   FindDonateButtons($frame, $donateButtons)
+   FindDonateButtons($donateButtons)
 
    For $i = 0 To UBound($donateButtons)-1
 	  Local $requestText = GetRequestText($frame, $donateButtons, $i)

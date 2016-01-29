@@ -31,6 +31,8 @@ EndFunc
 
 Func DLLUnload()
    DllClose($gDllHandle)
+   DebugWrite("DLLUnload() ImageMatch.dll unloaded")
+
 EndFunc
 
 #cs

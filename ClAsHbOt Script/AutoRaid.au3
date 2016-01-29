@@ -451,16 +451,13 @@ EndFunc
 ; howMany: $eAutoRaidDeployFiftyPercent, $eAutoRaidDeploySixtyPercent, $eAutoRaidDeployRemaining, $eAutoRaidDeployOneTroop
 Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir, Const $boxesPerSide)
    DebugWrite("DeployTroopsToSides()")
-   Local $xClick, $yClick
-   Local $troopButton[4] = [ _
-	  $rRaidTroopBox[0] + $index[$troop][0], _
-	  $rRaidTroopBox[1] + $index[$troop][1], _
-	  $rRaidTroopBox[0] + $index[$troop][2], _
-	  $rRaidTroopBox[1] + $index[$troop][3]]
+
+   Local $troopButton[4] = [ $index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
 
    ; Handle the deploy one troop situation first
    If $howMany=$eAutoRaidDeployOneTroop Then
 	  RandomWeightedClick($troopButton)
+	  Local $xClick, $yClick
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
 	  _ControlClick($xClick, $yClick)
 	  Return
@@ -483,7 +480,6 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
    Local $clickPoints1[$troopsToDeploy][2]
    ; Always deploy first set of troops left to right to avoid accidentally clicking the Next button
    GetAutoRaidClickPoints(0, $dir, $troopsToDeploy, $boxesPerSide, $clickPoints1)
-
    RandomWeightedClick($troopButton)
    Sleep(200)
 
@@ -526,25 +522,20 @@ EndFunc
 
 Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
    DebugWrite("DeployTroopsToSafeBoxes()")
-   Local $xClick, $yClick, $count
-   Local $troopButton[4] = [ _
-	  $rRaidTroopBox[0] + $index[$troop][0], _
-	  $rRaidTroopBox[1] + $index[$troop][1], _
-	  $rRaidTroopBox[0] + $index[$troop][2], _
-	  $rRaidTroopBox[1] + $index[$troop][3]]
+
+   Local $troopButton[4] = [ $index[$troop][0], $index[$troop][1], $index[$troop][2], $index[$troop][3]]
 
    ; Deploy half to left
    Local $troopsAvailable = Int($index[$troop][4] / 2)
    DebugWrite("Deploying to left safe box: " & $troopsAvailable & " troops.")
-   $count=0
    RandomWeightedClick($troopButton)
    Sleep(200)
 
    For $i = 1 To $troopsAvailable
+	  Local $xClick, $yClick
 	  RandomWeightedCoords( ($dir = "Top" ? $NWSafeDeployBox : $SWSafeDeployBox), $xClick, $yClick)
 	  _ControlClick($xClick, $yClick)
 	  Sleep($gDeployTroopClickDelay)
-	  $count+=1
    Next
 
    ; Deploy half to right
@@ -552,15 +543,14 @@ Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
    $troopsAvailable = $index[$troop][4]
 
    DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
-   $count=0
    RandomWeightedClick($troopButton)
    Sleep(200)
 
    For $i = 1 To $troopsAvailable
+	  Local $xClick, $yClick
    	  RandomWeightedCoords( ($dir = "Top" ? $NESafeDeployBox : $SESafeDeployBox), $xClick, $yClick)
 	  _ControlClick($xClick, $yClick)
 	  Sleep($gDeployTroopClickDelay)
-	  $count+=1
    Next
 EndFunc
 
@@ -715,10 +705,10 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
 	  If $conf > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $x + $rRaidButtonOffset[0]
-		 $index[$i][1] = $y + $rRaidButtonOffset[1]
-		 $index[$i][2] = $x + $rRaidButtonOffset[2]
-		 $index[$i][3] = $y + $rRaidButtonOffset[3]
+		 $index[$i][0] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[0]
+		 $index[$i][1] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[1]
+		 $index[$i][2] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[2]
+		 $index[$i][3] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[3]
 		 ;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
 			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
 	  EndIf
@@ -741,10 +731,10 @@ Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
 		 ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
 
 		 If $conf > $gConfidenceRaidTroopSlot Then
-			$index[$i][0] = $x + $rRaidButtonOffset[0]
-			$index[$i][1] = $y + $rRaidButtonOffset[1]
-			$index[$i][2] = $x + $rRaidButtonOffset[2]
-			$index[$i][3] = $y + $rRaidButtonOffset[3]
+			$index[$i][0] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[0]
+			$index[$i][1] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[1]
+			$index[$i][2] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[2]
+			$index[$i][3] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[3]
 			;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
 			   ;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
 		 EndIf
@@ -767,8 +757,8 @@ Func UpdateRaidTroopCounts(ByRef $index)
 		 Else
 			; Determine if this raid button is "selected"
 			Local $loc[4] = [ _
-			   $index[$i][0] + $rRaidTroopSelectedColor[0], _
-			   $index[$i][1] + $rRaidTroopSelectedColor[1], _
+			   $index[$i][0] + $rRaidTroopSelectedColor[0] - $rRaidTroopBox[0], _
+			   $index[$i][1] + $rRaidTroopSelectedColor[1] - $rRaidTroopBox[1], _
 			   $rRaidTroopSelectedColor[2], _
 			   $rRaidTroopSelectedColor[3] ]
 			;DebugWrite("GetAvailableTroops() loc = " & $loc[0] & " " & $loc[1] & " " & Hex($loc[2]) & " " & $loc[3])
@@ -776,10 +766,10 @@ Func UpdateRaidTroopCounts(ByRef $index)
 			If IsColorPresent($frame, $loc) Then
 			   ; Troop is "selected"
 			   Local $textBox[10] = [ _
-				  $index[$i][0] + 5, _
-				  $index[$i][1] - 4, _
-				  $index[$i][2] - 5, _
-				  $index[$i][1] + 10, _
+				  $index[$i][0] + 5  - $rRaidTroopBox[0], _
+				  $index[$i][1] - 4  - $rRaidTroopBox[1], _
+				  $index[$i][2] - 5  - $rRaidTroopBox[0], _
+				  $index[$i][1] + 10 - $rRaidTroopBox[1], _
 				  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], 0, 0, 0, 0]
 			   ;DebugWrite("Selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
@@ -789,10 +779,10 @@ Func UpdateRaidTroopCounts(ByRef $index)
 			Else
 			   ; Troop is not "selected"
 			   Local $textBox[10] = [ _
-				  $index[$i][0] + 5, _
-				  $index[$i][1], _
-				  $index[$i][2] - 5, _
-				  $index[$i][1] + 18, _
+				  $index[$i][0] + 5  - $rRaidTroopBox[0], _
+				  $index[$i][1]      - $rRaidTroopBox[1], _
+				  $index[$i][2] - 5  - $rRaidTroopBox[0], _
+				  $index[$i][1] + 18 - $rRaidTroopBox[1], _
 				  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], 0, 0, 0, 0]
 			   ;DebugWrite("Not selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
@@ -812,23 +802,9 @@ EndFunc
 Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direction, Const $boxIndex, _
 						    ByRef $kingDeployed, ByRef $queenDeployed, ByRef $wardenDeployed)
 
-   Local $kingButton[4] = [ _
-	  $rRaidTroopBox[0] + $index[$eTroopKing][0], _
-	  $rRaidTroopBox[1] + $index[$eTroopKing][1], _
-	  $rRaidTroopBox[0] + $index[$eTroopKing][2], _
-	  $rRaidTroopBox[1] + $index[$eTroopKing][3]]
-
-   Local $queenButton[4] = [ _
-	  $rRaidTroopBox[0] + $index[$eTroopQueen][0], _
-	  $rRaidTroopBox[1] + $index[$eTroopQueen][1], _
-	  $rRaidTroopBox[0] + $index[$eTroopQueen][2], _
-	  $rRaidTroopBox[1] + $index[$eTroopQueen][3]]
-
-   Local $wardenButton[4] = [ _
-	  $rRaidTroopBox[0] + $index[$eTroopWarden][0], _
-	  $rRaidTroopBox[1] + $index[$eTroopWarden][1], _
-	  $rRaidTroopBox[0] + $index[$eTroopWarden][2], _
-	  $rRaidTroopBox[1] + $index[$eTroopWarden][3]]
+   Local $kingButton[4] = [ $index[$eTroopKing][0], $index[$eTroopKing][1], $index[$eTroopKing][2], $index[$eTroopKing][3]]
+   Local $queenButton[4] = [ $index[$eTroopQueen][0], $index[$eTroopQueen][1], $index[$eTroopQueen][2], $index[$eTroopQueen][3]]
+   Local $wardenButton[4] = [ $index[$eTroopWarden][0], $index[$eTroopWarden][1], $index[$eTroopWarden][2], $index[$eTroopWarden][3]]
 
    ; Get box to deploy into
    Local $deployBox[4]
@@ -879,8 +855,8 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then
 		 Local $kingColor[4] = [ _
-			$index[$eTroopKing][0]+$rKingQueenHealthGreenColor[0], _
-			$index[$eTroopKing][1]+$rKingQueenHealthGreenColor[1], _
+			$index[$eTroopKing][0] - $rRaidTroopBox[0] + $rKingQueenHealthGreenColor[0], _
+			$index[$eTroopKing][1] - $rRaidTroopBox[1] + $rKingQueenHealthGreenColor[1], _
 			$rKingQueenHealthGreenColor[2], _
 			$rKingQueenHealthGreenColor[3]]
 
@@ -895,8 +871,8 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 	  ; Get Queen's health color, and power up if needed
 	  If $queenDeployed And $queenPoweredUp = False Then
 		 Local $queenColor[4] = [ _
-			$index[$eTroopQueen][0]+$rKingQueenHealthGreenColor[0], _
-			$index[$eTroopQueen][1]+$rKingQueenHealthGreenColor[1], _
+			$index[$eTroopQueen][0] - $rRaidTroopBox[0] + $rKingQueenHealthGreenColor[0], _
+			$index[$eTroopQueen][1] - $rRaidTroopBox[1] + $rKingQueenHealthGreenColor[1], _
 			$rKingQueenHealthGreenColor[2], _
 			$rKingQueenHealthGreenColor[3]]
 
@@ -911,8 +887,8 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 	  ; Get Warden's health color, and power up if needed
 	  If $wardenDeployed And $wardenPoweredUp = False Then
 		 Local $wardenColor[4] = [ _
-			$index[$eTroopWarden][0]+$rWardenHealthGreenColor[0], _
-			$index[$eTroopWarden][1]+$rWardenHealthGreenColor[1], _
+			$index[$eTroopWarden][0] - $rRaidTroopBox[0] + $rWardenHealthGreenColor[0], _
+			$index[$eTroopWarden][1] - $rRaidTroopBox[1] + $rWardenHealthGreenColor[1], _
 			$rWardenHealthGreenColor[2], _
 			$rWardenHealthGreenColor[3]]
 
