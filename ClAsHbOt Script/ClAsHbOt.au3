@@ -12,6 +12,7 @@ Massive rework todo
 - Battle end bonus char maps - "74" needed?
 - $rAttackingDisabledPoint1Color, 2, 3
 
+GoOffline() Error, timeout waiting for Confirm Exit button
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -68,7 +69,6 @@ Func Main()
    ReadSettings()
 
 ;MsgBox($MB_OK, "", "Waiting - Attach debugger!")
-;Local $f = CaptureFrame("Test")
 ;DebugWrite("WhereAmI: " & WhereAmI($f))
 ;ZoomOut2()
 ;$gScraperDebug = True
@@ -88,7 +88,6 @@ Func Main()
 ;TestFindAllStorages()
 ;DLLStoreFrame($f)
 ;TestCollectMyLoot()
-;_GDIPlus_BitmapDispose($f)
 ;Exit
 
    InitGUI()
@@ -394,8 +393,8 @@ Func GetMyLootNumbers($frame)
 
 			RandomWeightedClick($rSafeAreaButton)
 			Sleep(500)
-			Local $top, $left
-			Local $MyTownHall = GetTownHallLevel($left, $top)
+			Local $MyTownHall, $top, $left, $conf
+			FindTownHall($MyTownHall, $left, $top, $conf)
 
 			If $MyTownHall = -1 Then
 				  DebugWrite("Could not detect Town Hall level")

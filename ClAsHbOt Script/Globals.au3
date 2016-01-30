@@ -6,6 +6,8 @@ Global $gAutoItVersionRequired = "3.3.14.2"
 Global $gScraperDebug = False
 Global $gDebug = True
 Global $gDebugSaveScreenCaptures = False
+Global $gDebugSaveUnknownStorageFrames = False
+Global $gDebugLogCallsToCaptureFrame = False
 
 ; Dll
 Global $gDllHandle = 0
@@ -13,6 +15,10 @@ Global $gDllHandle = 0
 ; Scraper Globals
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
 Global $gBackgroundScraping
+Global Enum $eLootTypeGold, $eLootTypeElix, $eLootTypeDark
+Global $gLootTypeNames[3] = [ "Gold", "Elix", "Dark" ]
+Global Enum $eRaidSlotTypeTroop, $eRaidSlotTypeSpell
+Global $gRaidSlotTypeNames[2] = [ "Troop", "Spell" ]
 
 ; Raiding variables
 Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)

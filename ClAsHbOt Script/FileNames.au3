@@ -13,8 +13,6 @@ Global $CollectLootBMPs[9] = [ _
   "Loot\FullElixCollector1.bmp", "Loot\FullElixCollector2.bmp", "Loot\FullElixCollector3.bmp", _
   "Loot\FullDarkCollector1.bmp", "Loot\FullDarkCollector2.bmp", "Loot\FullDarkCollector3.bmp" ]
 
-Global $LootCartBMPs[1] = [ "Loot\LootCart1.bmp" ]
-
 Global $CollectorBMPs[12] = [ _
   "Collectors\GoldCollectorL12.bmp", "Collectors\GoldCollectorL11.bmp", "Collectors\GoldCollectorL10.bmp", _
   "Collectors\GoldCollectorL9.bmp", _
@@ -22,19 +20,6 @@ Global $CollectorBMPs[12] = [ _
   "Collectors\ElixCollectorL9.bmp", _
   "Collectors\DarkCollectorL6.bmp", "Collectors\DarkCollectorL5.bmp", "Collectors\DarkCollectorL4.bmp", _
   "Collectors\DarkCollectorL3.bmp"]
-
-Global $gTroopSlotBMPs[$eTroopCount] = [ _
-  "RaidSlots\SlotBarbarian.bmp", "RaidSlots\SlotArcher.bmp", "RaidSlots\SlotGiant.bmp", "RaidSlots\SlotGoblin.bmp", _
-  "RaidSlots\SlotWallBreaker.bmp", "RaidSlots\SlotBalloon.bmp", "RaidSlots\SlotWizard.bmp", "RaidSlots\SlotHealer.bmp", _
-  "RaidSlots\SlotDragon.bmp", "RaidSlots\SlotPekka.bmp", _
-  "RaidSlots\SlotMinion.bmp", "RaidSlots\SlotHogRider.bmp", "RaidSlots\SlotValkyrie.bmp", "RaidSlots\SlotGolem.bmp", _
-  "RaidSlots\SlotWitch.bmp", "RaidSlots\SlotLavaHound.bmp", "RaidSlots\SlotKing.bmp", "RaidSlots\SlotQueen.bmp", _
-  "RaidSlots\SlotWarden.bmp" ]
-
-Global $gSpellSlotBMPs[$eSpellCount] = [ _
-  "RaidSlots\SlotLightningSpell.bmp", "RaidSlots\SlotHealSpell.bmp", "RaidSlots\SlotRageSpell.bmp", _
-  "RaidSlots\SlotJumpSpell.bmp", "RaidSlots\SlotFreezeSpell.bmp", "RaidSlots\SlotPoisonSpell.bmp", _
-  "RaidSlots\SlotEarthquakeSpell.bmp", "RaidSlots\SlotHasteSpell.bmp"]
 
 Global $DonateButtonBMPs[1] = ["Donate\DonateButton.bmp"]
 

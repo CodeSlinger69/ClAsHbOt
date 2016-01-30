@@ -1,8 +1,8 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
-#include "NeedleCache.h"
+#include "Scraper.h"
 
-NeedleCache* needleCache;
+Scraper* scraper;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -20,7 +20,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		break;
 	case DLL_PROCESS_DETACH:
 		//MessageBox(NULL, L"DLL Unload", L"", MB_OK);
-		delete needleCache;
+		delete scraper;
 		break;
 	}
 	return TRUE;

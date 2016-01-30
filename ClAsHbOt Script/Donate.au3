@@ -128,8 +128,8 @@ Func FindDonateButtons(ByRef $buttons)
    Local $frame = CaptureFrame("FindDonateButtons", $rChatBox[0], $rChatBox[1], $rChatBox[2], $rChatBox[3])
    If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "ChatFrame.bmp")
 
-   Local $mX[1], $mY[1]
-   Local $matchCount = ScanFrameForAllBMPs($frame, $DonateButtonBMPs, $gConfidenceDonateButton, 4, $mX, $mY)
+   Local $mX[1], $mY[1], $conf[1]
+   Local $matchCount = ScanFrameForAllBMPs($frame, $DonateButtonBMPs, $gConfidenceDonateButton, 4, $mX, $mY, $conf)
 
    _GDIPlus_BitmapDispose($frame)
 
@@ -150,7 +150,8 @@ Func FindDonateButtons(ByRef $buttons)
 		 $buttons[$i][6] = $rChatWindowDonateButton[6]
 		 $buttons[$i][7] = $rChatWindowDonateButton[7]
 
-		 DebugWrite("FindDonateButtons() Donate button " & $i & " found at: " & $buttons[$i][0] & ", " & $buttons[$i][1] & ", " & $buttons[$i][2] & ", " & $buttons[$i][3])
+		 DebugWrite("FindDonateButtons() Donate button " & $i & " found at: " & $buttons[$i][0] & ", " & $buttons[$i][1] & ", " & _
+			$buttons[$i][2] & ", " & $buttons[$i][3] & " confidence " & Round($conf*100, 2) & "%")
 	  Next
 
 	  Return True

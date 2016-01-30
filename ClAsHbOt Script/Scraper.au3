@@ -418,7 +418,8 @@ Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
    Local $lastTimeRem = Round($wait/1000)
    _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("WaitForButton " & $lastTimeRem)
-
+DebugWrite("WaitForButton() max wait=" & $wait & " time rem=" & $lastTimeRem & " buttons: " & $p1 & " " & $p2 & " " & $p3)
+SaveDebugImage($f, "WaitForButton" & $lastTimeRem & ".bmp")
    While TimerDiff($t)<$wait And $p1=False And $p2=False And $p3=False
 	  If IsButtonPresent($f, $rAndroidMessageButton1) Or IsButtonPresent($f, $rAndroidMessageButton2) Then
 		 Return SetError($eErrorAndroidMessageBox, 0, False)
@@ -432,7 +433,9 @@ Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
 	  If $timeRem<>$lastTimeRem Then
 		 $lastTimeRem = $timeRem
 		 _GDIPlus_BitmapDispose($f)
-		 $f = CaptureFrame("WaitForButton " & $timeRem)
+		 $f = CaptureFrame("WaitForButton " & $lastTimeRem)
+DebugWrite("WaitForButton() max wait=" & $wait & " time rem=" & $lastTimeRem & " buttons: " & $p1 & " " & $p2 & " " & $p3)
+SaveDebugImage($f, "WaitForButton" & $lastTimeRem & ".bmp")
 		 $p1 = IsButtonPresent($f, $b1)
 		 $p2 = $b2=0 ? False : IsButtonPresent($f, $b2)
 		 $p3 = $b3=0 ? False : IsButtonPresent($f, $b3)
@@ -539,37 +542,60 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
-Func GetTownHallLevel(ByRef $left, ByRef $top)
-   Local $frame = CaptureFrame("GetTownHallLevel", $gWestPoint[0], $gNorthPoint[1]-10, $gEastPoint[0], $gSouthPoint[1])
-   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
-   _GDIPlus_BitmapDispose($frame)
-
-   Local $res = DllCall($gDllHandle, "str", "TownHallSearch", "str", "temp.bmp", "double", $gConfidenceTownHall)
+Func FindTownHall(ByRef $level, ByRef $left, ByRef $top, ByRef $conf)
+   Local $hHBITMAP = CaptureFrameHBITMAP("GetTownHallLevel", $gWestPoint[0], $gNorthPoint[1]-10, $gEastPoint[0], $gSouthPoint[1])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindTownHallFrame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "FindTownHall", "handle", $hHBITMAP, "double", $gConfidenceTownHall)
 
    If @error Then
 	  DebugWrite("GetTownHallLevel() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, TownHallSearch" & @CRLF & _
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindTownHall" & @CRLF & _
 		 "This is catastrophic, exiting.")
 	  Exit
    EndIf
 
-   FileDelete("temp.bmp")  ; temporary
-
    Local $split = StringSplit($res[0], "|", 2)
-   Local $thLevel = Number($split[0])
+   $level = Number($split[0])
    $left = Number($split[1] + $gWestPoint[0])
    $top = Number($split[2] + $gNorthPoint[1]-10)
-   ;DebugWrite("GetTownHallLevel() TH: " & $thLevel & " loc: " & $left & "," & $top & " conf: " & $split[3])
+   $conf = NUmber($split[3])
+   ;DebugWrite("GetTownHallLevel() TH: " & $thLevel & " loc: " & $left & "," & $top & " conf: " & $conf)
 
-   Return $thLevel
+   _WinAPI_DeleteObject($hHBITMAP)
+EndFunc
+
+Func FindLootCart(ByRef $left, ByRef $top, ByRef $conf)
+   Local $hHBITMAP = CaptureFrameHBITMAP("FindLootCart", $gWestPoint[0], $gNorthPoint[1], $gEastPoint[0], $gSouthPoint[1])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindLootCartFrame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "FindLootCart", "handle", $hHBITMAP, "double", $gConfidenceLootCart)
+   ;DebugWrite("FindLootCart() $res[0]=" & $res[0])
+
+   If @error Then
+	  DebugWrite("FindLootCart() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindLootCart" & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
+
+   Local $split = StringSplit($res[0], "|", 2)
+   If $split[0]<> -1 Then
+	  $left = Number($split[0] + $gWestPoint[0])
+	  $top = Number($split[1] + $gNorthPoint[1])
+	  $conf = Number($split[2])
+	  ;DebugWrite("FindLootCart() " & $left & "," & $top & " conf: " & $conf)
+   Else
+	  $left = -1
+	  $top = -1
+	  $conf = Number($split[2])
+   EndIf
+
+   _WinAPI_DeleteObject($hHBITMAP)
 EndFunc
 
 Func FindBestStorage(Const $type, ByRef $left, ByRef $top, ByRef $conf)
-   ; Type must be "gold", "elix", or "dark"
-   Local $frame = CaptureFrame("TestStorage", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
-   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
-
-   Local $res = DllCall($gDllHandle, "str", "FindBestStorage", "str", $type, "str", "temp.bmp", "double", $gConfidenceStorages)
+   Local $hHBITMAP = CaptureFrameHBITMAP("FindBestStorage", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindBestStorage" & $gLootTypeNames[$type] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "FindBestStorage", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceStorages)
 
    If @error Then
 	  DebugWrite("FindBestStorage() DllCall @error=" & @error)
@@ -582,22 +608,20 @@ Func FindBestStorage(Const $type, ByRef $left, ByRef $top, ByRef $conf)
    $left = Number($split[1] + $gScreenCenter[0]-150)
    $top = Number($split[2] + $gScreenCenter[1]-150)
    $conf = Number($split[3])
-   DebugWrite("FindBestStorage() " & $split[0] & ", loc: " & $left & "," & $top & " conf: " & $split[3])
+   DebugWrite("FindBestStorage() " & $split[0] & ", loc: " & $left & "," & $top & " conf: " & $conf)
 
-   If $split[0] = "" Then SaveDebugImage($frame, "StorageUsageFrame" & StringUpper($type) & FileGetTime("temp.bmp", 0, $FT_STRING) & ".bmp")
+   If $split[0] = "" And $gDebugSaveUnknownStorageFrames = True Then
+	  SaveDebugHBITMAP($hHBITMAP, "StorageUsageFrame" & $gLootTypeNames[$type] & FileGetTime("temp.bmp", 0, $FT_STRING) & ".bmp")
+   EndIf
 
-   FileDelete("temp.bmp")  ; temporary
-   _GDIPlus_BitmapDispose($frame)
-
+   _WinAPI_DeleteObject($hHBITMAP)
    Return $split[0]
 EndFunc
 
 Func FindAllStorages(Const $type, Const $maxMatch, ByRef $x, ByRef $y)
-   ; Type must be "gold", "elix", or "dark"
-   Local $frame = CaptureFrame("FindAllStorages", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
-   _GDIPlus_ImageSaveToFile($frame, "temp.bmp")   ; temporary
-
-   Local $res = DllCall($gDllHandle, "str", "FindAllStorages", "str", $type, "str", "temp.bmp", "double", $gConfidenceStorages, "int", $maxMatch)
+   Local $hHBITMAP = CaptureFrameHBITMAP("FindAllStorages", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindAllStorages" & $gLootTypeNames[$type] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "FindAllStorages", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceStorages, "int", $maxMatch)
 
    If @error Then
 	  DebugWrite("FindAllStorages() DllCall @error=" & @error)
@@ -607,7 +631,7 @@ Func FindAllStorages(Const $type, Const $maxMatch, ByRef $x, ByRef $y)
    EndIf
 
    Local $split = StringSplit($res[0], "|", 2)
-   ;DebugWrite("Num matches " & $type & ": " & $split[0])
+   ;DebugWrite("Num matches " & $gLootTypeNames[$type] & ": " & $split[0])
 
    For $j = 0 To $split[0]-1
 	  $x[$j] = Number($split[$j*3+1] + $gScreenCenter[0]-150)
@@ -615,9 +639,42 @@ Func FindAllStorages(Const $type, Const $maxMatch, ByRef $x, ByRef $y)
 	  ;DebugWrite("Match " & $j & ": " & $x[$j] & "," & $y[$j] & "  conf: " & $split[$j*3+3])
    Next
 
-   FileDelete("temp.bmp")  ; temporary
-   _GDIPlus_BitmapDispose($frame)
+   _WinAPI_DeleteObject($hHBITMAP)
+   Return $split[0]
+EndFunc
 
+Func LocateRaidSlots(Const $type, ByRef $index)
+   Local $hHBITMAP = CaptureFrameHBITMAP("LocateRaidSlots", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "LocateRaidSlots" & $gRaidSlotTypeNames[$type] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "LocateRaidSlots", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceRaidTroopSlot)
+   ;DebugWrite("DLL $res=" & $res[0])
+
+   If @error Then
+	  DebugWrite("LocateRaidSlots() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, LocateRaidSlots" & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
+
+   Local $split = StringSplit($res[0], "|", 2)
+   ;DebugWrite("Num matches " & $gRaidSlotTypeNames[$type] & ": " & $split[0])
+
+   For $i = 0 To $split[0]-1
+	  Local $x = Number($split[$i*3+1])
+	  Local $y = Number($split[$i*3+2])
+	  Local $conf = Number($split[$i*3+3])
+
+	  If $index[$i][0]=-1 And $x<>-1 Then
+		 $index[$i][0] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[0]
+		 $index[$i][1] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[1]
+		 $index[$i][2] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[2]
+		 $index[$i][3] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[3]
+		 ;DebugWrite("Raid " & $gRaidSlotTypeNames[$type] & " " & (($type=$eRaidSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
+			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+	  EndIf
+   Next
+
+   _WinAPI_DeleteObject($hHBITMAP)
    Return $split[0]
 EndFunc
 
@@ -685,7 +742,7 @@ FileDelete("temp.bmp")
 
 EndFunc
 
-Func ScanFrameForAllBMPs(Const $f, Const ByRef $bmpArray, Const $threshold, Const $maxMatches, ByRef $matchX, ByRef $matchY)
+Func ScanFrameForAllBMPs(Const $f, Const ByRef $bmpArray, Const $threshold, Const $maxMatches, ByRef $matchX, ByRef $matchY, ByRef $confs)
 ; temporary
 _GDIPlus_ImageSaveToFile($f, "temp.bmp")
 
@@ -723,8 +780,10 @@ _GDIPlus_ImageSaveToFile($f, "temp.bmp")
 			   $matchCount += 1
 			   ReDim $matchX[$matchCount]
 			   ReDim $matchY[$matchCount]
+			   ReDim $confs[$matchCount]
 			   $matchX[$matchCount-1] = $split[$j*3+1]
 			   $matchY[$matchCount-1] = $split[$j*3+2]
+			   $confs[$matchCount-1] = $split[$j*3+3]
 			EndIf
 		 EndIf
 	  Next
@@ -738,7 +797,9 @@ Return $matchCount
 EndFunc
 
 Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
-   ;DebugWrite("CaptureFrame() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+   If $gDebugLogCallsToCaptureFrame = True Then
+	  DebugWrite("CaptureFrame() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+   EndIf
 
    Local $hGdipBitmap
 
@@ -773,10 +834,43 @@ Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBl
    Return $hGdipBitmap
 EndFunc
 
+
+Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
+   If $gDebugLogCallsToCaptureFrame = True Then
+	  DebugWrite("CaptureFrameHBITMAP() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+   EndIf
+
+   Local $hHBITMAP
+
+   If $gBackgroundScraping Then
+	  Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
+	  Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
+	  $hHBITMAP = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1, $y2-$y1)
+	  Local $bmpOriginal  = _WinAPI_SelectObject($memDC, $hHBITMAP)
+
+	  DllCall("user32.dll", "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $memDC, "int", 0)
+	  _WinAPI_SelectObject($memDC, $hHBITMAP)
+	  _WinAPI_BitBlt($memDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $hDC, $x1, $y1, $SRCCOPY)
+
+	  _WinAPI_SelectObject($memDC, $bmpOriginal)
+	  _WinAPI_DeleteDC($memDC)
+	  _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $hDC)
+
+   Else
+	  Local $cPos = GetClientPos()
+	  Local $hHBITMAP = _ScreenCapture_Capture("", $cPos[0]+$x1, $cPos[1]+$y1, $cPos[0]+$x2, $cPos[1]+$y2)
+
+   EndIf
+
+   Return $hHBITMAP
+EndFunc
+
 Func SaveDebugImage(Const $hGdipBitmap, Const $filename)
-   ;Local $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
    _GDIPlus_ImageSaveToFile($hGdipBitmap, $filename)
-   ;_GDIPlus_BitmapDispose($hHBITMAP)
+EndFunc
+
+Func SaveDebugHBITMAP(Const $hHBITMAP, Const $filename)
+   _ScreenCapture_SaveImage($filename, $hHBITMAP, False)
 EndFunc
 
 Func TestBackGroundScrape()

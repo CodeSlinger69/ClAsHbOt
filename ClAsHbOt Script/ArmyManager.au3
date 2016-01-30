@@ -1,15 +1,19 @@
-Func AutoQueueTroops(ByRef $f, Const ByRef $initialFill)
+Func AutoQueueTroops(Const ByRef $initialFill)
    DebugWrite("AutoQueueTroops()")
 
-   If ResetToCoCMainScreen($f) = False Then
+   Local $frame = CaptureFrame("AutoQueueTroops")
+
+   If ResetToCoCMainScreen($frame) = False Then
 	  DebugWrite("AutoQueueTroops() Not on main screen, exiting")
+	  _GDIPlus_BitmapDispose($frame)
 	  Return
    EndIf
 
    ; Open Army Manager window
-   If OpenArmyManagerWindow($f) = False Then
+   If OpenArmyManagerWindow($frame) = False Then
 	  DebugWrite("AutoQueueTroops(): Not on army manager screen, resetting")
-	  ResetToCoCMainScreen($f)
+	  ResetToCoCMainScreen($frame)
+	  _GDIPlus_BitmapDispose($frame)
 	  Return
    EndIf
 
@@ -29,24 +33,24 @@ Func AutoQueueTroops(ByRef $f, Const ByRef $initialFill)
    Local $armyCampsFull = False
 
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED Then
-	  FillBarracksStrategy0($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+	  FillBarracksStrategy0($frame, $initialFill, $builtTroopCounts, $armyCampsFull)
    Else
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
-		 FillBarracksStrategy0($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy0($frame, $initialFill, $builtTroopCounts, $armyCampsFull)
 	  Case 1
-		 FillBarracksStrategy1($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy1($frame, $initialFill, $builtTroopCounts, $armyCampsFull)
 	  Case 2
-		 FillBarracksStrategy2($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy2($frame, $initialFill, $builtTroopCounts, $armyCampsFull)
 	  Case 3
-		 FillBarracksStrategy3($f, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy3($frame, $initialFill, $builtTroopCounts, $armyCampsFull)
 	  EndSwitch
    EndIf
 
    If $armyCampsFull Then DebugWrite("Army Camps full.")
 
    ; Close army manager window
-   CloseArmyManagerWindow($f)
+   CloseArmyManagerWindow($frame)
 
    ; Set next stage
    If $armyCampsFull And _
@@ -61,6 +65,8 @@ Func AutoQueueTroops(ByRef $f, Const ByRef $initialFill)
 	  EndIf
 
    EndIf
+
+   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)

@@ -14,7 +14,7 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
 
 	  ResetToCoCMainScreen($f)
 
-	  AutoQueueTroops($f, True)
+	  AutoQueueTroops(True)
 	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
@@ -22,7 +22,7 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 ResetToCoCMainScreen($f)
-		 AutoQueueTroops($f, False)
+		 AutoQueueTroops(False)
 		 $timer = TimerInit()
 	  EndIf
 
@@ -200,8 +200,23 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   For $i = 0 To UBound($troopIndex)-1
+	  $troopIndex[$i][0] = -1
+	  $troopIndex[$i][1] = -1
+	  $troopIndex[$i][2] = -1
+	  $troopIndex[$i][3] = -1
+	  $troopIndex[$i][4] = 0
+   Next
+
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   RandomWeightedClick($rRaidSlotsButton2)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   UpdateRaidSlotCounts($troopIndex)
 
    Local $barbButton[4] = [$troopIndex[$eTroopBarbarian][0], $troopIndex[$eTroopBarbarian][1], $troopIndex[$eTroopBarbarian][2], $troopIndex[$eTroopBarbarian][3]]
    Local $archButton[4] = [$troopIndex[$eTroopArcher][0], $troopIndex[$eTroopArcher][1], $troopIndex[$eTroopArcher][2], $troopIndex[$eTroopArcher][3]]
@@ -394,7 +409,7 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 	  EndIf
 
 	  ; Get counts of available troops
-	  UpdateRaidTroopCounts($troopIndex)
+	  UpdateRaidSlotCounts($troopIndex)
 
 	  If $availableBarbs=0 And $availableArchs=0 Then ExitLoop
 

@@ -1,8 +1,11 @@
 LIBRARY   ImageMatch
 EXPORTS
    Initialize
-   TownHallSearch
+   FindTownHall
+   FindLootCart
    FindBestStorage
    FindAllStorages
+   LocateRaidSlots
+
    FindMatch
    FindAllMatches

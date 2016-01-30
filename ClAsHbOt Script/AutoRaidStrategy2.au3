@@ -86,7 +86,23 @@ EndFunc
 Func AutoRaidExecuteRaidStrategy2(ByRef $f)
    DebugWrite("AutoRaidExecuteRaidStrategy2()")
 
+   ; Get raid troop slots
    Local $troopIndex[$eTroopCount][5]
+   For $i = 0 To UBound($troopIndex)-1
+	  $troopIndex[$i][0] = -1
+	  $troopIndex[$i][1] = -1
+	  $troopIndex[$i][2] = -1
+	  $troopIndex[$i][3] = -1
+	  $troopIndex[$i][4] = 0
+   Next
+
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   RandomWeightedClick($rRaidSlotsButton2)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy0GetDirection($f)
@@ -97,8 +113,7 @@ Func AutoRaidExecuteRaidStrategy2(ByRef $f)
    Local $deployStart = TimerInit()
 
    ; 1st wave
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidSlotCounts($troopIndex)
 
    DebugWrite("Available Barbarians: " & $troopIndex[$eTroopBarbarian][4])
    DebugWrite("Avaliable Archers: " & $troopIndex[$eTroopArcher][4])
@@ -125,7 +140,7 @@ Func AutoRaidExecuteRaidStrategy2(ByRef $f)
    EndIf
 
    ; 2nd wave
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidSlotCounts($troopIndex)
 
    ; Deploy rest of barbs
    If $troopIndex[$eTroopBarbarian][4] > 0 Then

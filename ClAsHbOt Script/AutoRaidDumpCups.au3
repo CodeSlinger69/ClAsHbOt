@@ -48,8 +48,23 @@ Func DoCupsDump(ByRef $f)
 
    ; What troops are available?
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   For $i = 0 To UBound($troopIndex)-1
+	  $troopIndex[$i][0] = -1
+	  $troopIndex[$i][1] = -1
+	  $troopIndex[$i][2] = -1
+	  $troopIndex[$i][3] = -1
+	  $troopIndex[$i][4] = 0
+   Next
+
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   RandomWeightedClick($rRaidSlotsButton2)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   UpdateRaidSlotCounts($troopIndex)
 
    Local $kingCount = $troopIndex[$eTroopKing][4]
    Local $queenCount = $troopIndex[$eTroopQueen][4]

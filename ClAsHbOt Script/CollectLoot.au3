@@ -5,8 +5,8 @@ Func CollectLoot()
    If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "CollectLootFrame.bmp")
 
    ; Find all the collectors that need clicking in the frame
-   Local $mX[1], $mY[1]
-   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY)
+   Local $mX[1], $mY[1], $c[1]
+   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY, $c)
 
    ; Do the collecting
    If $matchCount > 0 Then
@@ -15,7 +15,6 @@ Func CollectLoot()
 	  SortArrayByClosestNeighbor($matchCount, $mX, $mY, $sortedX, $sortedY)
 
 	  ; Collect the gold, elixir and dark loot
-	  DebugWrite("CollectLoot() Found " & $matchCount & " collectors, clicking")
 	  For $i = 0 To $matchCount-1
 
 		 Local $button[4] = [ _
@@ -24,6 +23,7 @@ Func CollectLoot()
 			$gWestPoint[0]  + $sortedX[$i] + $rCollectorButton[2], _
 			$gNorthPoint[1] + $sortedY[$i] + $rCollectorButton[3]]
 
+		 DebugWrite("CollectLoot() Found collectors, clicking " & $i & " of " & $matchCount & " at " & $button[0] & "," & $button[1])
 		 RandomWeightedClick($button)
 
 		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])
@@ -34,18 +34,12 @@ Func CollectLoot()
    EndIf
 
    ; Check for loot cart
-   Local $conf, $x, $y
-   ScanFrameForOneBMP($frame, "Images\"&$LootCartBMPs[0], $conf, $x, $y)
+   Local $x, $y, $conf
+   FindLootCart($x, $y, $conf)
 
-   If $conf > $gConfidenceLootCart Then
-	  DebugWrite("CollectLoot() Found loot cart, collecting")
-
-	  Local $button[4] = [ _
-		 $gWestPoint[0]  + $x, _
-		 $gNorthPoint[1] + $y, _
-		 $gWestPoint[0]  + $x + 15, _
-		 $gNorthPoint[1] + $y + 15]
-
+   If $x <> -1 Then
+	  Local $button[4] = [$x, $y, $x + 15, $y + 15]
+	  DebugWrite("CollectLoot() Found loot cart, clicking at " & $button[0] & "," & $button[1] & " confidence " & Round($conf*100, 2) & "%")
 	  RandomWeightedClick($button)
 
 	  If WaitForButton($frame, 5000, $rLootCartCollectButton) = True Then

@@ -69,7 +69,7 @@ Func TestStorage()
    Local $usageAdj = 10
 
    Local $t = TimerInit()
-   Local $s = FindBestStorage("gold", $x, $y, $conf)
+   Local $s = FindBestStorage($eLootTypeGold, $x, $y, $conf)
    DebugWrite("Gold: " & Round(TimerDiff($t)) & "ms")
    DebugWrite("Gold Match: " & $s)
    If $s <> "" Then
@@ -80,7 +80,7 @@ Func TestStorage()
    EndIf
 
    Local $t = TimerInit()
-   Local $s = FindBestStorage("elix", $x, $y, $conf)
+   Local $s = FindBestStorage($eLootTypeElix, $x, $y, $conf)
    DebugWrite("Elix: " & Round(TimerDiff($t)) & "ms")
    DebugWrite("Elix Match: " & $s)
    If $s <> "" Then
@@ -91,7 +91,7 @@ Func TestStorage()
    EndIf
 
    Local $t = TimerInit()
-   Local $s = FindBestStorage("dark", $x, $y, $conf)
+   Local $s = FindBestStorage($eLootTypeDark, $x, $y, $conf)
    DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
    DebugWrite("Dark Match: " & $s)
    If $s <> "" Then
@@ -106,7 +106,7 @@ Func TestFindAllStorages()
    Local $x[4], $y[4]
 
    Local $t = TimerInit()
-   Local $count = FindAllStorages("gold", 4, $x, $y)
+   Local $count = FindAllStorages($eLootTypeGold, 4, $x, $y)
    DebugWrite("Gold: " & Round(TimerDiff($t)) & "ms")
 
    DebugWrite("Gold Match Count: " & $count)
@@ -115,7 +115,7 @@ Func TestFindAllStorages()
    Next
 
    Local $t = TimerInit()
-   Local $count = FindAllStorages("elix", 4, $x, $y)
+   Local $count = FindAllStorages($eLootTypeElix, 4, $x, $y)
    DebugWrite("Elix: " & Round(TimerDiff($t)) & "ms")
 
    DebugWrite("Elix Match Count: " & $count)
@@ -124,7 +124,7 @@ Func TestFindAllStorages()
    Next
 
    Local $t = TimerInit()
-   Local $count = FindAllStorages("dark", 1, $x, $y)
+   Local $count = FindAllStorages($eLootTypeDark, 1, $x, $y)
    DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
 
    DebugWrite("Dark Match Count: " & $count)
@@ -135,18 +135,49 @@ EndFunc
 
 Func TestRaidTroopsCount()
 
+   ; Troops
    Local $troopIndex[$eTroopCount][5]
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
+   For $i = 0 To UBound($troopIndex)-1
+	  $troopIndex[$i][0] = -1
+	  $troopIndex[$i][1] = -1
+	  $troopIndex[$i][2] = -1
+	  $troopIndex[$i][3] = -1
+	  $troopIndex[$i][4] = 0
+   Next
 
-   UpdateRaidTroopCounts($troopIndex)
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   RandomWeightedClick($rRaidSlotsButton2)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   UpdateRaidSlotCounts($troopIndex)
 
    For $i=0 To $eTroopCount-1
 	  If $troopIndex[$i][4]>0 Then DebugWrite("Available " & $gTroopNames[$i] & ": " & $troopIndex[$i][4])
    Next
 
+   ; Spells
    Local $spellIndex[$eSpellCount][5]
-   FindRaidTroopSlots($gSpellSlotBMPs, $spellIndex)
-   UpdateRaidTroopCounts($spellIndex)
+   For $i = 0 To UBound($spellIndex)-1
+	  $spellIndex[$i][0] = -1
+	  $spellIndex[$i][1] = -1
+	  $spellIndex[$i][2] = -1
+	  $spellIndex[$i][3] = -1
+	  $spellIndex[$i][4] = 0
+   Next
+
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeSpell, $spellIndex)
+
+   RandomWeightedClick($rRaidSlotsButton2)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeSpell, $spellIndex)
+
+   UpdateRaidSlotCounts($spellIndex)
 
    For $i=0 To $eSpellCount-1
 	  If $spellIndex[$i][4]>0 Then DebugWrite("Available " & $gSpellNames[$i] & ": " & $spellIndex[$i][4])
@@ -270,24 +301,24 @@ Func TestDonate()
 EndFunc
 
 Func TestTownHall()
-   Local $left, $top
+   Local $th, $left, $top, $conf
    Local $t = TimerInit()
-   Local $th = GetTownHallLevel($left, $top)
+   FindTownHall($th, $left, $top, $conf)
    DebugWrite("TownHall: " & Round(TimerDiff($t)) & "ms")
 
-   DebugWrite("Likely TH Level " & $th & " @ " & $left & "," & $top)
+   DebugWrite("Likely TH Level " & $th & " @ " & $left & "," & $top & " confidence " & Round($conf*100, 2) & "%")
 EndFunc
 
 Func TestCollectors()
-   Local $matchX[1], $matchY[1]
+   Local $matchX[1], $matchY[1], $c[1]
 
    ; Grab frame
    Local $frame = CaptureFrame("TestCollectors")
 
-   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectorBMPs, $gConfidenceCollector, 14, $matchX, $matchY)
+   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectorBMPs, $gConfidenceCollector, 14, $matchX, $matchY, $c)
 
    For $i = 0 To $matchCount-1
-	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
+	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & " confidence " & Round($c[$i]*100, 2) & "%")
    Next
 
    _GDIPlus_BitmapDispose($frame)
@@ -296,8 +327,11 @@ EndFunc
 Func TestCollectMyLoot()
    Local $frame = CaptureFrame("TestCollectMyLoot")
 
-   Local $mX[1], $mY[1]
-   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY)
+   Local $mX[1], $mY[1], $c[1]
+   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY, $c)
+   For $i = 0 To $matchCount-1
+	  DebugWrite("Found collectors " & $i & " " & $mX[$i] & "," & $mY[$i] & " confidence " & Round($c[$i]*100, 2) & "%")
+   Next
 
    ; Do the collecting
    If $matchCount > 0 Then
@@ -306,21 +340,18 @@ Func TestCollectMyLoot()
 	  SortArrayByClosestNeighbor($matchCount, $mX, $mY, $sortedX, $sortedY)
 
 	  DebugWrite("CollectLoot() Found " & $matchCount & " collectors")
-	  For $i = 0 To $matchCount-1
-		 DebugWrite("Found collectors " & $i & " " & $sortedX[$i] & "," & $sortedY[$i])
-	  Next
 
 	  Sleep(1000)
    EndIf
 
-   ; Check for loot cart
-   Local $conf, $x, $y
-   ScanFrameForOneBMP($frame, "Images\"&$LootCartBMPs[0], $conf, $x, $y)
-
-   If $conf > $gConfidenceLootCart Then
-	  DebugWrite("Found loot cart: " & $conf & " " & $x & "," & $y)
-   EndIf
-
    _GDIPlus_BitmapDispose($frame)
+
+   ; Check for loot cart
+   Local $x, $y, $conf
+   FindLootCart($x, $y, $conf)
+
+   If $x <> -1 Then
+	  DebugWrite("Found loot cart: " & $x & "," & $y & " confidence " & Round($conf*100, 2) & "%")
+   EndIf
 EndFunc
 

@@ -312,6 +312,8 @@ Func WaitForScreen(ByRef $f, Const $wait, Const $s1, Const $s2=-1)
    Local $t = TimerInit()
    Local $s = WhereAmI($f)
    Local $lastTimeRem = Round($wait/1000)
+
+   _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("WaitForScreen " & $lastTimeRem)
    $s = WhereAmI($f)
 

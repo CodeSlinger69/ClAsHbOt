@@ -9,7 +9,7 @@ Func AutoRaid(ByRef $f, ByRef $timer, ByRef $THCorner)
 
 	  ResetToCoCMainScreen($f)
 
-	  AutoQueueTroops($f, True)
+	  AutoQueueTroops(True)
 	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
@@ -17,7 +17,8 @@ Func AutoRaid(ByRef $f, ByRef $timer, ByRef $THCorner)
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 ResetToCoCMainScreen($f)
-		 AutoQueueTroops($f, False)
+
+		 AutoQueueTroops(False)
 		 $timer = TimerInit()
 	  EndIf
 
@@ -170,7 +171,7 @@ Func AutoRaidFindMatch(ByRef $f, Const $returnFirstMatch, ByRef $THCorner)
 	  If IsButtonPresent($f, $rWaitRaidScreenNextButton) Then
 		 DebugWrite("AutoRaidFindMatch() Click Next button")
 		 RandomWeightedClick($rWaitRaidScreenNextButton)
-		 Sleep(1000)
+		 Sleep(250)
 
 	  Else
 		 DebugWrite("AutoRaidFindMatch() Next Button disappeared, resetting.")
@@ -308,7 +309,8 @@ Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef
    $deadBase = IsColorPresent($frame, $rDeadBaseIndicatorColor)
 
    ; Get Town Hall level
-   $thLevel = GetTownHallLevel($thLeft, $thTop)
+   Local $conf
+   FindTownHall($thLevel, $thLeft, $thTop, $conf)
 
    Local $townHallIndiator = $thLevel<>-1 ? $thLevel : "-"
    Local $deadBaseIndicator = _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED ? ($deadBase=True ? "T" : "F") : "-"
@@ -323,7 +325,7 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
-   Local $s = FindBestStorage("gold", $x, $y, $conf)
+   Local $s = FindBestStorage($eLootTypeGold, $x, $y, $conf)
 
    If $s = "" Then
 	  DebugWrite("AdjustLootForStorages() Could not find gold storage match.")
@@ -337,7 +339,7 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Elixir
-   Local $s = FindBestStorage("elix", $x, $y, $conf)
+   Local $s = FindBestStorage($eLootTypeElix, $x, $y, $conf)
 
    If $s = "" Then
 	  DebugWrite("AdjustLootForStorages() Could not find elixir storage match.")
@@ -351,7 +353,7 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Dark - Just temporarily, to fill out saved bitmaps
-   Local $s = FindBestStorage("dark", $x, $y, $conf)
+   Local $s = FindBestStorage($eLootTypeDark, $x, $y, $conf)
 
 EndFunc
 
@@ -492,7 +494,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
    If $howMany=$eAutoRaidDeploySixtyPercent Or $howMany=$eAutoRaidDeployFiftyPercent Then Return
 
    ; If we are deploying all, then check remaining and continue to deploy to make sure they all get out there
-   UpdateRaidTroopCounts($index)
+   UpdateRaidSlotCounts($index)
 
    $troopsAvailable = $index[$troop][4]
 
@@ -511,7 +513,7 @@ Func DeployTroopsToSides(Const $troop, ByRef $index, Const $howMany, Const $dir,
 	  Next
    EndIf
 
-   UpdateRaidTroopCounts($index)
+   UpdateRaidSlotCounts($index)
    $troopsAvailable = $index[$troop][4]
 
    If $troopsAvailable>0 Then
@@ -539,7 +541,7 @@ Func DeployTroopsToSafeBoxes(Const $troop, ByRef $index, Const $dir)
    Next
 
    ; Deploy half to right
-   UpdateRaidTroopCounts($index)
+   UpdateRaidSlotCounts($index)
    $troopsAvailable = $index[$troop][4]
 
    DebugWrite("Deploying to right safe box: " & $troopsAvailable & " troops.")
@@ -644,6 +646,8 @@ Func WaitForBattleEnd(ByRef $f, Const $kingDeployed, Const $queenDeployed, Const
    WEnd
 
    If WaitForScreen($f, 5000, $eScreenEndBattle) Then
+	  Sleep(3000) ; Long wait due to bonus numbers "flying in"
+	  If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "EndBattleFrame.bmp")
 	  Local $goldWin = ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
 	  Local $elixWin = ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
 	  Local $darkWin = IsTextBoxPresent($f, $rEndBattleDarkTextBox) ? ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
@@ -681,70 +685,7 @@ Func WaitForBattleEnd(ByRef $f, Const $kingDeployed, Const $queenDeployed, Const
    EndIf
 EndFunc
 
-Func FindRaidTroopSlots(Const ByRef $bitmaps, ByRef $index)
-   ; Populates index with the client area coords of all available troop buttons
-   For $i = 0 To UBound($index)-1
-	  $index[$i][0] = -1
-	  $index[$i][1] = -1
-	  $index[$i][2] = -1
-	  $index[$i][3] = -1
-	  $index[$i][4] = 0
-   Next
-
-   ;
-   ; Check buttons 2-11
-   ;
-   RandomWeightedClick($rRaidSlotsButton1)
-   Sleep(200)
-
-   Local $frame = CaptureFrame("FindRaidTroopSlots2", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "AvailableRaidTroopsFrame2.bmp")
-
-   For $i = 0 To UBound($bitmaps)-1
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
-
-	  If $conf > $gConfidenceRaidTroopSlot Then
-		 $index[$i][0] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[0]
-		 $index[$i][1] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[1]
-		 $index[$i][2] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[2]
-		 $index[$i][3] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[3]
-		 ;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
-			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
-	  EndIf
-   Next
-
-   _GDIPlus_BitmapDispose($frame)
-
-   ;
-   ; Check first button
-   ;
-   RandomWeightedClick($rRaidSlotsButton2)
-   Sleep(200)
-
-   Local $frame = CaptureFrame("FindRaidTroopSlots1", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "AvailableRaidTroopsFrame1.bmp")
-
-   For $i = 0 To UBound($bitmaps)-1
-	  If $index[$i][0]=-1 Then
-		 Local $conf, $x, $y
-		 ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
-
-		 If $conf > $gConfidenceRaidTroopSlot Then
-			$index[$i][0] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[0]
-			$index[$i][1] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[1]
-			$index[$i][2] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[2]
-			$index[$i][3] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[3]
-			;DebugWrite("Raid troop " & $bitmaps[$i] & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
-			   ;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
-		 EndIf
-	  EndIf
-   Next
-
-   _GDIPlus_BitmapDispose($frame)
-EndFunc
-
-Func UpdateRaidTroopCounts(ByRef $index)
+Func UpdateRaidSlotCounts(ByRef $index)
    Local $frame = CaptureFrame("UpdateRaidTroopCounts", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
    If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "UpdateRaidTroopCounts.bmp")
 

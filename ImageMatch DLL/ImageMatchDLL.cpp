@@ -2,36 +2,44 @@
 //
 #include "stdafx.h"
 #include "ImageMatchDLL.h"
-#include "NeedleCache.h"
+#include "Scraper.h"
 
 char returnString[MAXSTRING];
 
 char* __stdcall Initialize(char* scriptDir)
 {
-	needleCache = new NeedleCache();
-	needleCache->SetDirectories(scriptDir);
-	needleCache->LoadNeedles();
+	scraper = new Scraper();
+	scraper->SetDirectories(scriptDir);
+	scraper->LoadNeedles();
 
 	sprintf_s(returnString, MAXSTRING, "Success");
 	return returnString;
 }
 
-char* __stdcall TownHallSearch(char* haystack, double threshold)
+char* __stdcall FindTownHall(HBITMAP hBmp, double threshold)
 {
 	MATCHPOINTS match;
-	int thLevel = needleCache->TownHallSearch(haystack, threshold, &match);
+	int thLevel = scraper->FindTownHall(hBmp, threshold, &match);
 	
 	sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", thLevel, match.x, match.y, match.val);
 	return returnString;
 }
 
-char* __stdcall FindBestStorage(char* type, char* haystack, double threshold)
+char* __stdcall FindLootCart(HBITMAP hBmp, double threshold)
+{
+	MATCHPOINTS match;
+	scraper->FindLootCart(hBmp, threshold, &match);
+	
+	sprintf_s(returnString, MAXSTRING, "%d|%d|%.4f", match.x, match.y, match.val);
+	return returnString;
+}
+
+char* __stdcall FindBestStorage(lootType type, HBITMAP hBmp, double threshold)
 {
 	MATCHPOINTS match;
 	std::string matchedString;
-	lootType t = strstr(type, "gold") ? gold : strstr(type, "elix") ? elix : strstr(type, "dark") ? dark : (lootType) 0;
 
-	matchedString = needleCache->BestStorageSearch(t, haystack, threshold, &match);
+	matchedString = scraper->FindBestStorage(type, hBmp, threshold, &match);
 
 	if (matchedString.length() > 0)
 		sprintf_s(returnString, MAXSTRING, "%s|%d|%d|%.4f", matchedString.c_str(), match.x, match.y, match.val);
@@ -41,13 +49,21 @@ char* __stdcall FindBestStorage(char* type, char* haystack, double threshold)
 	return returnString;
 }
 
-char* __stdcall FindAllStorages(char* type, char* haystack, double threshold, int maxMatch)
+char* __stdcall FindAllStorages(lootType type, HBITMAP hBmp, double threshold, int maxMatch)
 {
 	std::vector<MATCHPOINTS> matches;
 
-	lootType t = strstr(type, "gold") ? gold : strstr(type, "elix") ? elix : strstr(type, "dark") ? dark : (lootType) 0;
+	scraper->FindAllStorages(type, hBmp, threshold, maxMatch, &matches);
+	PrepareReturnString(matches);
 
-	needleCache->FindAllStorages(t, haystack, threshold, maxMatch, &matches);
+	return returnString;
+}
+
+char* __stdcall LocateRaidSlots(slotType type, HBITMAP hBmp, double threshold)
+{
+	std::vector<MATCHPOINTS> matches;
+
+	scraper->LocateRaidSlots(type, hBmp, threshold, &matches);
 	PrepareReturnString(matches);
 
 	return returnString;

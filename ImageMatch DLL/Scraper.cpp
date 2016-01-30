@@ -1,17 +1,20 @@
 #include "stdafx.h"
-#include "NeedleCache.h"
+#include "Scraper.h"
 #include "ImageMatchDLL.h"
+#include "CGdiPlus.h"
 
-NeedleCache::NeedleCache(void)
+Scraper::Scraper(void)
 {
+	CGdiPlus::Init();
 }
 
 
-NeedleCache::~NeedleCache(void)
+Scraper::~Scraper(void)
 {
+	CGdiPlus::Shutdown();
 }
 
-void NeedleCache::SetDirectories(const char* scriptDir)
+void Scraper::SetDirectories(const char* scriptDir)
 {
 	strcpy_s(scriptPath, MAX_PATH, scriptDir);
 	sprintf_s(logFilePath, MAX_PATH, "%s\\ClashBotLog.txt", scriptPath);
@@ -19,7 +22,7 @@ void NeedleCache::SetDirectories(const char* scriptDir)
 	WriteLog("Directory paths set successfully");
 }
 
-void NeedleCache::LoadNeedles(void)
+void Scraper::LoadNeedles(void)
 {
 	// Town Hall Images
 	for (int i=0; i<townHallBMPCount; i++)
@@ -29,6 +32,12 @@ void NeedleCache::LoadNeedles(void)
 		townHalls[i] = imread(path);
 	}
 	WriteLog("TownHall images loaded");
+
+	// Loot Cart Image
+	char path[MAX_PATH];
+	sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, lootCartBMPs[0]);
+	lootCart[0] = imread(path);
+	WriteLog("Loot Cart images loaded");
 
 	// Gold Storage Images
 	for (int i=0; i<goldStorageBMPCount; i++)
@@ -56,14 +65,43 @@ void NeedleCache::LoadNeedles(void)
 		darkStorages[i] = imread(path);
 	}
 	WriteLog("Dark Elixir Storages images loaded");
+
+	// Raid Troop Slot Images
+	for (int i=0; i<raidTroopSlotBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, raidTroopSlotBMPs[i]);
+		raidTroopSlots[i] = imread(path);
+	}
+	WriteLog("Raid Troop Slot images loaded");
+
+	// Raid Spell Slot Images
+	for (int i=0; i<raidSpellSlotBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, raidSpellSlotBMPs[i]);
+		raidSpellSlots[i] = imread(path);
+	}
+	WriteLog("Raid Spell Slot images loaded");
+
 }
 
-int NeedleCache::TownHallSearch(const char* haystack, const double threshold, MATCHPOINTS* match)
+int Scraper::FindTownHall(HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
 {
 	Point bestPoint(0, 0);
 	double bestConfidence = 0;
 	int bestTH = -1;
-	Mat img = imread(haystack);
+	
+	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
+	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
+	delete pBitmap;
+
+	cvtColor( img, img, CV_BGRA2BGR );
+
+	// Debug
+	//namedWindow( "Display window", WINDOW_AUTOSIZE );
+	//imshow( "Display window", img );
+	//waitKey(0); 
 
 	for (int i=0; i<townHallBMPCount; i++)
 	{
@@ -98,13 +136,46 @@ int NeedleCache::TownHallSearch(const char* haystack, const double threshold, MA
 	return bestTH;
 }
 
-std::string NeedleCache::BestStorageSearch(const lootType type, const char* haystack, const double threshold, MATCHPOINTS* match)
+int Scraper::FindLootCart(HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
 {
-	Mat img = imread(haystack);
+	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
+	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
+	delete pBitmap;
 
-	int storageCount = type==gold ? goldStorageBMPCount : 
-					   type==elix ? elixStorageBMPCount : 
-					   type==dark ? darkStorageBMPCount : 0;
+	cvtColor( img, img, CV_BGRA2BGR );
+
+	Mat result( FindMatch(img, lootCart[0]) );
+
+	double minVal, maxVal;
+	Point minLoc, maxLoc;
+	minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
+
+	match->val = maxVal;
+	if (maxVal >= threshold)
+	{
+		match->x = maxLoc.x;
+		match->y = maxLoc.y;
+		return 1;
+	}
+	else
+	{
+		match->x = -1;
+		match->y = -1;
+		return 0;
+	}
+}
+
+std::string Scraper::FindBestStorage(const lootType type, HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
+{
+	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
+	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
+	delete pBitmap;
+
+	cvtColor( img, img, CV_BGRA2BGR );
+
+	int storageCount = type==lootGold ? goldStorageBMPCount : 
+					   type==lootElix ? elixStorageBMPCount : 
+					   type==lootDark ? darkStorageBMPCount : 0;
 
 	double bestMaxVal = 0;
 	Point bestMaxLoc(0, 0);
@@ -112,9 +183,9 @@ std::string NeedleCache::BestStorageSearch(const lootType type, const char* hays
 
 	for (int i=0; i<storageCount; i++)
 	{
-		Mat needle(	type==gold ? goldStorages[i] : 
-					type==elix ? elixStorages[i] : 
-					type==dark ? darkStorages[i] : Mat() );
+		Mat needle(	type==lootGold ? goldStorages[i] : 
+					type==lootElix ? elixStorages[i] : 
+					type==lootDark ? darkStorages[i] : Mat() );
 
 		Mat result( FindMatch(img, needle) );
 
@@ -127,7 +198,7 @@ std::string NeedleCache::BestStorageSearch(const lootType type, const char* hays
 		{
 			bestMaxVal = maxVal;
 			bestMaxLoc = maxLoc;
-			bestNeedle = type==gold ? goldStorageBMPs[i] : type==elix ? elixStorageBMPs[i] : type==dark ? darkStorageBMPs[i] : "";
+			bestNeedle = type==lootGold ? goldStorageBMPs[i] : type==lootElix ? elixStorageBMPs[i] : type==lootDark ? darkStorageBMPs[i] : "";
 		}
 	}
 
@@ -141,22 +212,26 @@ std::string NeedleCache::BestStorageSearch(const lootType type, const char* hays
 	return bestNeedle;
 }
 
-void NeedleCache::FindAllStorages(const lootType type, const char* haystack, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches)
+void Scraper::FindAllStorages(const lootType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches)
 {
-	Mat img = imread(haystack);
+	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
+	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
+	delete pBitmap;
 
-	int storageCount = type==gold ? goldStorageBMPCount : 
-					   type==elix ? elixStorageBMPCount : 
-					   type==dark ? darkStorageBMPCount : 0;
+	cvtColor( img, img, CV_BGRA2BGR );
+
+	int storageCount = type==lootGold ? goldStorageBMPCount : 
+					   type==lootElix ? elixStorageBMPCount : 
+					   type==lootDark ? darkStorageBMPCount : 0;
 
 	int count = 0;
 
 	for (int i=0; i<storageCount; i++)
 	{
 		// Get matches for this storage
-		Mat needle(	type==gold ? goldStorages[i] : 
-					type==elix ? elixStorages[i] : 
-					type==dark ? darkStorages[i] : Mat() );
+		Mat needle(	type==lootGold ? goldStorages[i] : 
+					type==lootElix ? elixStorages[i] : 
+					type==lootDark ? darkStorages[i] : Mat() );
 
 		Mat result( FindMatch(img, needle) );
 
@@ -218,11 +293,53 @@ void NeedleCache::FindAllStorages(const lootType type, const char* haystack, con
 	}
 }
 
+void Scraper::LocateRaidSlots(const slotType type, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches)
+{
+	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
+	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
+	delete pBitmap;
+
+	cvtColor( img, img, CV_BGRA2BGR );
+
+	int slotCount = type==slotTroop ? raidTroopSlotBMPCount : 
+					type==slotSpell ? raidSpellSlotBMPCount : 0;
+
+	int count = 0;
+
+	for (int i=0; i<slotCount; i++)
+	{
+		// Get matches for this storage
+		Mat needle(	type==slotTroop ? raidTroopSlots[i] : 
+					type==slotSpell ? raidSpellSlots[i] : Mat() );
+
+		Mat result( FindMatch(img, needle) );
+
+		double minVal, maxVal;
+		Point minLoc, maxLoc;
+		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
+
+		MATCHPOINTS match;
+		match.val = maxVal;
+
+		if (maxVal >= threshold)
+		{
+			match.x = maxLoc.x;
+			match.y = maxLoc.y;
+		}
+		else
+		{
+			match.x = -1;
+			match.y = -1;
+		}
+
+		matches->push_back(match);
+		count++;
+	}
+}
 
 
 
-
-Mat NeedleCache::FindMatch(Mat haystack, Mat needle)
+Mat Scraper::FindMatch(Mat haystack, Mat needle)
 {
 	Mat result;
 
@@ -239,12 +356,12 @@ Mat NeedleCache::FindMatch(Mat haystack, Mat needle)
 	return result;
 }
 
-double NeedleCache::DistanceBetweenTwoPoints(const double x1, const double y1, const double x2, const double y2)
+double Scraper::DistanceBetweenTwoPoints(const double x1, const double y1, const double x2, const double y2)
 {
 	return sqrt( pow((x1 - x2), 2.0) + pow((y1 - y2), 2.0) );
 }
 	
-void NeedleCache::WriteLog(const char* text)
+void Scraper::WriteLog(const char* text)
 {
 	FILE* f;
 	errno_t err;
@@ -270,27 +387,40 @@ void NeedleCache::WriteLog(const char* text)
 	}
 }
 
-const Point NeedleCache::northPoint = Point(429, 69);
-const Point NeedleCache::westPoint = Point(71, 337);
-const Point NeedleCache::eastPoint = Point(787, 337);
-const Point NeedleCache::southPoint = Point(429, 605);
+const Point Scraper::northPoint = Point(429, 69);
+const Point Scraper::westPoint = Point(71, 337);
+const Point Scraper::eastPoint = Point(787, 337);
+const Point Scraper::southPoint = Point(429, 605);
 
-const char* NeedleCache::townHallBMPs[townHallBMPCount] = { 
+const char* Scraper::townHallBMPs[townHallBMPCount] = { 
 	"TownHall\\TH6.bmp", "TownHall\\TH7.bmp", "TownHall\\TH8.bmp", "TownHall\\TH9.bmp", "TownHall\\TH10.bmp", "TownHall\\TH11.bmp" };
 
-const char* NeedleCache::goldStorageBMPs[goldStorageBMPCount] = { 
+const char* Scraper::lootCartBMPs[1] = { "Loot\\LootCart1.bmp" };
+
+const char* Scraper::goldStorageBMPs[goldStorageBMPCount] = { 
 	"Storages\\GoldStorageL12.00.bmp", "Storages\\GoldStorageL12.25.bmp", "Storages\\GoldStorageL12.50.bmp", "Storages\\GoldStorageL12.75.bmp", "Storages\\GoldStorageL12.90.bmp",
 	"Storages\\GoldStorageL11.00.bmp", "Storages\\GoldStorageL11.25.bmp", "Storages\\GoldStorageL11.50.bmp", "Storages\\GoldStorageL11.75.bmp", "Storages\\GoldStorageL11.90.bmp",
 	"Storages\\GoldStorageL10.00.bmp", "Storages\\GoldStorageL10.25.bmp", "Storages\\GoldStorageL10.50.bmp", "Storages\\GoldStorageL10.90.bmp" };
 
-const char* NeedleCache::elixStorageBMPs[elixStorageBMPCount] = { 
+const char* Scraper::elixStorageBMPs[elixStorageBMPCount] = { 
 	"Storages\\ElixStorageL12.00.bmp", "Storages\\ElixStorageL12.25.bmp", "Storages\\ElixStorageL12.50.bmp", "Storages\\ElixStorageL12.75.bmp", "Storages\\ElixStorageL12.90.bmp",
 	"Storages\\ElixStorageL11.00.bmp", "Storages\\ElixStorageL11.25.bmp", "Storages\\ElixStorageL11.50.bmp", "Storages\\ElixStorageL11.75.bmp", "Storages\\ElixStorageL11.90.bmp",
 	"Storages\\ElixStorageL10.00.bmp", "Storages\\ElixStorageL10.25.bmp", "Storages\\ElixStorageL10.50.bmp", "Storages\\ElixStorageL10.75.bmp", "Storages\\ElixStorageL10.90.bmp" };
 
-const char* NeedleCache::darkStorageBMPs[darkStorageBMPCount] = { 
+const char* Scraper::darkStorageBMPs[darkStorageBMPCount] = { 
 	"Storages\\DarkStorageL6.00.bmp", "Storages\\DarkStorageL6.25.bmp", "Storages\\DarkStorageL6.50.bmp", "Storages\\DarkStorageL6.75.bmp", "Storages\\DarkStorageL6.90.bmp",
 	"Storages\\DarkStorageL5.00.bmp", "Storages\\DarkStorageL5.25.bmp", "Storages\\DarkStorageL5.50.bmp", 
 	"Storages\\DarkStorageL4.00.bmp", "Storages\\DarkStorageL4.25.bmp", "Storages\\DarkStorageL4.50.bmp", "Storages\\DarkStorageL4.90.bmp",
 	"Storages\\DarkStorageL3.00.bmp", "Storages\\DarkStorageL3.25.bmp",
 	"Storages\\DarkStorageL2.00.bmp", "Storages\\DarkStorageL2.50.bmp" };
+
+const char* Scraper::raidTroopSlotBMPs[raidTroopSlotBMPCount] = {
+	"RaidSlots\\SlotBarbarian.bmp", "RaidSlots\\SlotArcher.bmp", "RaidSlots\\SlotGiant.bmp", "RaidSlots\\SlotGoblin.bmp", "RaidSlots\\SlotWallBreaker.bmp",
+	"RaidSlots\\SlotBalloon.bmp", "RaidSlots\\SlotWizard.bmp", "RaidSlots\\SlotHealer.bmp", "RaidSlots\\SlotDragon.bmp", "RaidSlots\\SlotPekka.bmp",
+	"RaidSlots\\SlotMinion.bmp", "RaidSlots\\SlotHogRider.bmp", "RaidSlots\\SlotValkyrie.bmp", "RaidSlots\\SlotGolem.bmp", "RaidSlots\\SlotWitch.bmp",
+	"RaidSlots\\SlotLavaHound.bmp", "RaidSlots\\SlotKing.bmp", "RaidSlots\\SlotQueen.bmp", "RaidSlots\\SlotWarden.bmp" };
+
+const char* Scraper::raidSpellSlotBMPs[raidSpellSlotBMPCount] = {
+	"RaidSlots\\SlotLightningSpell.bmp", "RaidSlots\\SlotHealSpell.bmp", "RaidSlots\\SlotRageSpell.bmp", "RaidSlots\\SlotJumpSpell.bmp", "RaidSlots\\SlotFreezeSpell.bmp",
+	"RaidSlots\\SlotPoisonSpell.bmp", "RaidSlots\\SlotEarthquakeSpell.bmp", "RaidSlots\\SlotHasteSpell.bmp" };
+

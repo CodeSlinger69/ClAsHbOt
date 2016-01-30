@@ -75,7 +75,23 @@ EndFunc
 Func AutoRaidExecuteRaidStrategy3(ByRef $f)
    DebugWrite("AutoRaidExecuteRaidStrategy3()")
 
+   ; Get raid troop slots
    Local $troopIndex[$eTroopCount][5]
+   For $i = 0 To UBound($troopIndex)-1
+	  $troopIndex[$i][0] = -1
+	  $troopIndex[$i][1] = -1
+	  $troopIndex[$i][2] = -1
+	  $troopIndex[$i][3] = -1
+	  $troopIndex[$i][4] = 0
+   Next
+
+   RandomWeightedClick($rRaidSlotsButton1)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+
+   RandomWeightedClick($rRaidSlotsButton2)
+   Sleep(200)
+   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy3GetDirection($f)
@@ -86,8 +102,7 @@ Func AutoRaidExecuteRaidStrategy3(ByRef $f)
    Local $deployStart = TimerInit()
 
    ; 1st wave (only one wave in this strategy)
-   FindRaidTroopSlots($gTroopSlotBMPs, $troopIndex)
-   UpdateRaidTroopCounts($troopIndex)
+   UpdateRaidSlotCounts($troopIndex)
 
    DebugWrite("Available Balloons: " & $troopIndex[$eTroopBalloon][4])
    DebugWrite("Avaliable Minions: " & $troopIndex[$eTroopMinion][4])
@@ -118,13 +133,13 @@ Func AutoRaidStrategy3GetDirection(Const $f)
    DebugWrite("AutoRaidStrategy3GetDirection()")
 
    ; Count the collectors, by top/bottom half
-   Local $matchX[1], $matchY[1]
+   Local $matchX[1], $matchY[1], $conf[1]
 
-   Local $matchCount = ScanFrameForAllBMPs($f, $CollectorBMPs, $gConfidenceCollector, 14, $matchX, $matchY)
+   Local $matchCount = ScanFrameForAllBMPs($f, $CollectorBMPs, $gConfidenceCollector, 14, $matchX, $matchY, $conf)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To $matchCount-1
-	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i])
+	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & " confidence " & Round($conf*100, 2) & "%")
 	  If $matchY[$i]+21 < $gScreenCenter[1] Then
 		 $collectorsOnTop += 1
 	  Else

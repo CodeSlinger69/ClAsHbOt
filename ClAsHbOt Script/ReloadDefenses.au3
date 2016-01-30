@@ -1,7 +1,7 @@
 Func ReloadDefenses(ByRef $f)
    ;DebugWrite("ReloadDefenses()")
 
-   Local $conf, $x, $y
+   Local $th, $conf, $x, $y
    Local $button[4]
 
    If ResetToCoCMainScreen($f) = False Then
@@ -12,7 +12,7 @@ Func ReloadDefenses(ByRef $f)
    ; Find town hall
    RandomWeightedClick($rSafeAreaButton)
    Sleep(500)
-   Local $th = GetTownHallLevel($x, $y)
+   FindTownHall($th, $x, $y, $conf)
    If $th = -1 Then
 	  DebugWrite("ReloadDefenses() Could not find Town Hall, exiting")
 	  Return
