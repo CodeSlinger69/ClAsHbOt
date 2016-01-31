@@ -57,13 +57,14 @@ Opt("GUIOnEventMode", 1)
 Main()
 
 Func Main()
+   ReadSettings()
+
    DLLLoad()
 
    StartBlueStacks()
 
    InitScraper()
 
-   ReadSettings()
 ;ZoomOut2()
 ;$gScraperDebug = True
 ;$gDebugSaveScreenCaptures = True
