@@ -69,10 +69,20 @@ Func GoOffline(ByRef $f)
    RandomWeightedClick($rAndroidBackButton)
    Sleep(500)
 
-   ; Wait for Confirm Exit button
-   If WaitForButton($f, 10000, $rConfirmExitButton) = False Then
+   ; Wait for Confirm Exit button (can't use WaitForButton function here, as it detects
+   ; Attacking Disabled and can interfere with clicking Confirm Exit, as this function can
+   ; be called from AutoRaid or DumpCups when a Attacking Disabled is detected.
+   Local $t = TimerInit()
+   Local $p1 = IsButtonPresent($f, $rConfirmExitButton)
+   While TimerDiff($t)<10000 And $p1=False
+	  _GDIPlus_BitmapDispose($f)
+	  $f = CaptureFrame("GoOffline" & Round((10000-TimerDiff($t))/1000))
+	  $p1 = IsButtonPresent($f, $rConfirmExitButton)
+	  Sleep(500)
+   WEnd
+
+   If $p1 = False Then
 	  DebugWrite("GoOffline() Error, timeout waiting for Confirm Exit button")
-	  If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "ConfirmExitError.bmp")
 	  Return False
    EndIf
 

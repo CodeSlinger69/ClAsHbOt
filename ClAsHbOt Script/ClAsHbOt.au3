@@ -11,8 +11,6 @@ Dec 10 Update To Do
 Massive rework todo
 - Battle end bonus char maps - "74" needed?
 - $rAttackingDisabledPoint1Color, 2, 3
-
-GoOffline() Error, timeout waiting for Confirm Exit button
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -32,7 +30,6 @@ Opt("GUIOnEventMode", 1)
 
 ; CoC Bot Includes
 #include <Globals.au3>
-#include <FileNames.au3>
 #include <Version.au3>
 #include <ClAsHbOtDlL.au3>
 #include <CharMaps.au3>
@@ -67,9 +64,6 @@ Func Main()
    InitScraper()
 
    ReadSettings()
-
-;MsgBox($MB_OK, "", "Waiting - Attach debugger!")
-;DebugWrite("WhereAmI: " & WhereAmI($f))
 ;ZoomOut2()
 ;$gScraperDebug = True
 ;$gDebugSaveScreenCaptures = True
@@ -77,6 +71,7 @@ Func Main()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
 ;TestBarracksStatus()
+;TestBarracksTroopSlots()
 ;TestBuiltTroops()
 ;TestEndBattleLoot()
 ;TestEndBattleBonus()
@@ -86,7 +81,6 @@ Func Main()
 ;TestCollectors()
 ;TestStorage()
 ;TestFindAllStorages()
-;DLLStoreFrame($f)
 ;TestCollectMyLoot()
 ;Exit
 
@@ -393,8 +387,8 @@ Func GetMyLootNumbers($frame)
 
 			RandomWeightedClick($rSafeAreaButton)
 			Sleep(500)
-			Local $MyTownHall, $top, $left, $conf
-			FindTownHall($MyTownHall, $left, $top, $conf)
+			Local $top, $left, $conf
+			Local $MyTownHall = FindBestBMP($eSearchTypeTownHall, $left, $top, $conf)
 
 			If $MyTownHall = -1 Then
 				  DebugWrite("Could not detect Town Hall level")

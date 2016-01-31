@@ -45,14 +45,26 @@ Func FillBarracksStrategy2(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+	  For $i = $eTroopBarbarian To $eTroopLavaHound
+		 $troopSlots[$i][0] = -1
+		 $troopSlots[$i][1] = -1
+		 $troopSlots[$i][2] = -1
+		 $troopSlots[$i][3] = -1
+	  Next
+	  LocateSlots($eActionTypeBarracks, $eSlotTypeTroop, $troopSlots)
 
 	  ; Specified breakers in standard barracks on initial fill
 	  If $initialFillFlag And $breakersToQueue>0 And $barracksCount<=4 Then
 		 ; Dequeue troops
 		 DequeueTroops($f)
 
-		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+		 For $i = $eTroopBarbarian To $eTroopLavaHound
+			$troopSlots[$i][0] = -1
+			$troopSlots[$i][1] = -1
+			$troopSlots[$i][2] = -1
+			$troopSlots[$i][3] = -1
+		 Next
+		 LocateSlots($eActionTypeBarracks, $eSlotTypeTroop, $troopSlots)
 
 		 ; If breakers are included then queue up breakers in each barracks
 		 If $breakersToQueue>0 Then QueueTroopsEvenly($eTroopWallBreaker, $troopSlots, $breakersToQueue)
@@ -98,11 +110,11 @@ Func AutoRaidExecuteRaidStrategy2(ByRef $f)
 
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy0GetDirection($f)

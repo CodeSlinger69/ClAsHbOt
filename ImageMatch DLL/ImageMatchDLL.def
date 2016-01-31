@@ -1,11 +1,7 @@
 LIBRARY   ImageMatch
 EXPORTS
    Initialize
-   FindTownHall
-   FindLootCart
-   FindBestStorage
-   FindAllStorages
-   LocateRaidSlots
-
-   FindMatch
-   FindAllMatches
+   FindBestBMP
+   FindAllBMPs
+   LocateSlots
+   CountBuiltTroops

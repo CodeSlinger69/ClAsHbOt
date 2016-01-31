@@ -418,8 +418,7 @@ Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
    Local $lastTimeRem = Round($wait/1000)
    _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("WaitForButton " & $lastTimeRem)
-DebugWrite("WaitForButton() max wait=" & $wait & " time rem=" & $lastTimeRem & " buttons: " & $p1 & " " & $p2 & " " & $p3)
-SaveDebugImage($f, "WaitForButton" & $lastTimeRem & ".bmp")
+
    While TimerDiff($t)<$wait And $p1=False And $p2=False And $p3=False
 	  If IsButtonPresent($f, $rAndroidMessageButton1) Or IsButtonPresent($f, $rAndroidMessageButton2) Then
 		 Return SetError($eErrorAndroidMessageBox, 0, False)
@@ -434,8 +433,7 @@ SaveDebugImage($f, "WaitForButton" & $lastTimeRem & ".bmp")
 		 $lastTimeRem = $timeRem
 		 _GDIPlus_BitmapDispose($f)
 		 $f = CaptureFrame("WaitForButton " & $lastTimeRem)
-DebugWrite("WaitForButton() max wait=" & $wait & " time rem=" & $lastTimeRem & " buttons: " & $p1 & " " & $p2 & " " & $p3)
-SaveDebugImage($f, "WaitForButton" & $lastTimeRem & ".bmp")
+
 		 $p1 = IsButtonPresent($f, $b1)
 		 $p2 = $b2=0 ? False : IsButtonPresent($f, $b2)
 		 $p3 = $b3=0 ? False : IsButtonPresent($f, $b3)
@@ -542,135 +540,269 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
-Func FindTownHall(ByRef $level, ByRef $left, ByRef $top, ByRef $conf)
-   Local $hHBITMAP = CaptureFrameHBITMAP("GetTownHallLevel", $gWestPoint[0], $gNorthPoint[1]-10, $gEastPoint[0], $gSouthPoint[1])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindTownHallFrame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "FindTownHall", "handle", $hHBITMAP, "double", $gConfidenceTownHall)
+Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf)
+   ; Get frame
+   Local $box[4], $thresh
+   If $searchType = $eSearchTypeTownHall Then
+	  $box[0] = $gWestPoint[0]
+	  $box[1] = $gNorthPoint[1]-10
+	  $box[2] = $gEastPoint[0]
+	  $box[3] = $gSouthPoint[1]
+	  $thresh = $gConfidenceTownHall
+
+   ElseIf $searchType = $eSearchTypeLootCart Then
+	  $box[0] = $gWestPoint[0]
+	  $box[1] = $gNorthPoint[1]-10
+	  $box[2] = $gEastPoint[0]
+	  $box[3] = $gSouthPoint[1]
+	  $thresh = $gConfidenceLootCart
+
+   ElseIf $searchType=$eSearchClashIcon Then
+	  $box[0] = 0
+	  $box[1] = 0
+	  $box[2] = $gBlueStacksWidth
+	  $box[3] = $gBlueStacksHeight
+	  $thresh = $gConfidenceClashIcon
+
+   ElseIf $searchType=$eSearchPlayStoreOpenButton Then
+	  $box[0] = 0
+	  $box[1] = 0
+	  $box[2] = $gBlueStacksWidth
+	  $box[3] = $gBlueStacksHeight
+	  $thresh = $gConfidencePlayStoreOpenButton
+
+   ElseIf $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage Then
+	  $box[0] = $gScreenCenter[0]-150
+	  $box[1] = $gScreenCenter[1]-150
+	  $box[2] = $gScreenCenter[0]+150
+	  $box[3] = $gScreenCenter[1]+150
+	  $thresh = $gConfidenceStorages
+
+   Else
+	  DebugWrite("FindBestBMP() Error, searchType not recognized: " & $searchType)
+	  Return
+
+   EndIf
+
+   Local $hHBITMAP = CaptureFrameHBITMAP("FindBestBMP" & $gSearchTypeNames[$searchType], $box[0], $box[1], $box[2], $box[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindBestBMP" & $gSearchTypeNames[$searchType] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "FindBestBMP", "int", $searchType, "handle", $hHBITMAP, "double", $thresh)
+   ;DebugWrite("FindBestBMP() $res[0]=" & $res[0])
 
    If @error Then
-	  DebugWrite("GetTownHallLevel() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindTownHall" & @CRLF & _
+	  DebugWrite("FindBestBMP() " & $gSearchTypeNames[$searchType] & " DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, FindBestBMP" & @CRLF & _
 		 "This is catastrophic, exiting.")
 	  Exit
    EndIf
 
    Local $split = StringSplit($res[0], "|", 2)
-   $level = Number($split[0])
-   $left = Number($split[1] + $gWestPoint[0])
-   $top = Number($split[2] + $gNorthPoint[1]-10)
-   $conf = NUmber($split[3])
-   ;DebugWrite("GetTownHallLevel() TH: " & $thLevel & " loc: " & $left & "," & $top & " conf: " & $conf)
-
-   _WinAPI_DeleteObject($hHBITMAP)
-EndFunc
-
-Func FindLootCart(ByRef $left, ByRef $top, ByRef $conf)
-   Local $hHBITMAP = CaptureFrameHBITMAP("FindLootCart", $gWestPoint[0], $gNorthPoint[1], $gEastPoint[0], $gSouthPoint[1])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindLootCartFrame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "FindLootCart", "handle", $hHBITMAP, "double", $gConfidenceLootCart)
-   ;DebugWrite("FindLootCart() $res[0]=" & $res[0])
-
-   If @error Then
-	  DebugWrite("FindLootCart() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindLootCart" & @CRLF & _
-		 "This is catastrophic, exiting.")
-	  Exit
-   EndIf
-
-   Local $split = StringSplit($res[0], "|", 2)
-   If $split[0]<> -1 Then
-	  $left = Number($split[0] + $gWestPoint[0])
-	  $top = Number($split[1] + $gNorthPoint[1])
-	  $conf = Number($split[2])
-	  ;DebugWrite("FindLootCart() " & $left & "," & $top & " conf: " & $conf)
+   If $split[1]<> -1 Then
+	  $left = Number($split[1] + $box[0])
+	  $top = Number($split[2] + $box[1])
+	  $conf = Number($split[3])
+	  ;DebugWrite("FindBestBMP() " & $gSearchTypeNames[$SearchType] & " " & $left & "," & $top & " conf: " & $conf)
    Else
 	  $left = -1
 	  $top = -1
-	  $conf = Number($split[2])
+	  $conf = Number($split[3])
    EndIf
 
    _WinAPI_DeleteObject($hHBITMAP)
+
+   If $searchType = $eSearchTypeTownHall Then
+	  If $split[1] = -1 Then
+		 Return -1
+	  Else
+		 Local $a = StringInStr($split[0], "TH")
+		 Local $b = StringInStr($split[0], ".bmp")
+		 Local $c = StringMid($split[0], $a+2, $b-$a-2)
+		 Return Number($c)
+	  EndIf
+   Else
+	  Return $split[0]
+   EndIf
 EndFunc
 
-Func FindBestStorage(Const $type, ByRef $left, ByRef $top, ByRef $conf)
-   Local $hHBITMAP = CaptureFrameHBITMAP("FindBestStorage", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindBestStorage" & $gLootTypeNames[$type] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "FindBestStorage", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceStorages)
+Func FindAllBMPs(Const $searchType, Const $maxMatch, ByRef $matchX, ByRef $matchY, ByRef $confs)
+   Local $box[4], $thresh
+   If $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage Then
+	  $box[0] = $gScreenCenter[0]-150
+	  $box[1] = $gScreenCenter[1]-150
+	  $box[2] = $gScreenCenter[0]+150
+	  $box[3] = $gScreenCenter[1]+150
+	  $thresh = $gConfidenceStorages
+
+   ElseIf $searchType = $eSearchTypeLootCollector Then
+	  $box[0] = $gWestPoint[0]
+	  $box[1] = $gNorthPoint[1]-10
+	  $box[2] = $gEastPoint[0]
+	  $box[3] = $gSouthPoint[1]
+	  $thresh = $gConfidenceCollector
+
+   ElseIf $searchType = $eSearchTypeLootBubble Then
+	  $box[0] = $gWestPoint[0]
+	  $box[1] = $gNorthPoint[1]
+	  $box[2] = $gEastPoint[0]
+	  $box[3] = $gSouthPoint[1]
+	  $thresh = $gConfidenceCollectLoot
+
+   ElseIf $searchType = $eSearchDonateButton Then
+	  For $i=0 To 3
+		 $box[$i] = $rChatBox[$i]
+	  Next
+	  $thresh = $gConfidenceDonateButton
+
+   Else
+	  DebugWrite("FindAllBMPs() Error, searchType not recognized: " & $searchType)
+	  Return
+
+   EndIf
+
+   Local $hHBITMAP = CaptureFrameHBITMAP("FindAllBMPs" & $gSearchTypeNames[$searchType], $box[0], $box[1], $box[2], $box[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindAllBMPs" & $gSearchTypeNames[$searchType] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "FindAllBMPs", "int", $searchType, "handle", $hHBITMAP, "double", $thresh, "int", $maxMatch)
+   ;DebugWrite("FindAllBMPs() $res[0]=" & $res[0])
 
    If @error Then
-	  DebugWrite("FindBestStorage() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindBestStorage" & @CRLF & _
+	  DebugWrite("FindAllBMPs() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, FindAllBMPs" & @CRLF & _
 		 "This is catastrophic, exiting.")
 	  Exit
    EndIf
 
    Local $split = StringSplit($res[0], "|", 2)
-   $left = Number($split[1] + $gScreenCenter[0]-150)
-   $top = Number($split[2] + $gScreenCenter[1]-150)
-   $conf = Number($split[3])
-   DebugWrite("FindBestStorage() " & $split[0] & ", loc: " & $left & "," & $top & " conf: " & $conf)
+   Local $matchCount = $split[0]
+   ;DebugWrite("Num matches " & $gSearchTypeNames[$searchType] & ": " & $matchCount)
 
-   If $split[0] = "" And $gDebugSaveUnknownStorageFrames = True Then
-	  SaveDebugHBITMAP($hHBITMAP, "StorageUsageFrame" & $gLootTypeNames[$type] & FileGetTime("temp.bmp", 0, $FT_STRING) & ".bmp")
-   EndIf
-
-   _WinAPI_DeleteObject($hHBITMAP)
-   Return $split[0]
-EndFunc
-
-Func FindAllStorages(Const $type, Const $maxMatch, ByRef $x, ByRef $y)
-   Local $hHBITMAP = CaptureFrameHBITMAP("FindAllStorages", $gScreenCenter[0]-150, $gScreenCenter[1]-150, $gScreenCenter[0]+150, $gScreenCenter[1]+150)
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindAllStorages" & $gLootTypeNames[$type] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "FindAllStorages", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceStorages, "int", $maxMatch)
-
-   If @error Then
-	  DebugWrite("FindAllStorages() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, FindAllStorages" & @CRLF & _
-		 "This is catastrophic, exiting.")
-	  Exit
-   EndIf
-
-   Local $split = StringSplit($res[0], "|", 2)
-   ;DebugWrite("Num matches " & $gLootTypeNames[$type] & ": " & $split[0])
+   ReDim $matchX[$matchCount]
+   ReDim $matchY[$matchCount]
+   ReDim $confs[$matchCount]
 
    For $j = 0 To $split[0]-1
-	  $x[$j] = Number($split[$j*3+1] + $gScreenCenter[0]-150)
-	  $y[$j] = Number($split[$j*3+2] + $gScreenCenter[1]-150)
-	  ;DebugWrite("Match " & $j & ": " & $x[$j] & "," & $y[$j] & "  conf: " & $split[$j*3+3])
+	  $matchX[$j] = $split[$j*3+1] + $box[0]
+	  $matchY[$j] = $split[$j*3+2] + $box[1]
+	  $confs[$j] = $split[$j*3+3]
    Next
 
    _WinAPI_DeleteObject($hHBITMAP)
-   Return $split[0]
+   Return $matchCount
 EndFunc
 
-Func LocateRaidSlots(Const $type, ByRef $index)
-   Local $hHBITMAP = CaptureFrameHBITMAP("LocateRaidSlots", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "LocateRaidSlots" & $gRaidSlotTypeNames[$type] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "LocateRaidSlots", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceRaidTroopSlot)
+Func FindTopOfDonateBox()
+   Local $frame = CaptureFrame("FindTopOfDonateBox")
+   Local $topDonateBox = -1
+   For $i = 0 To 300
+	  Local $c[4] = [650, $i, 0xFFFFFF, 0]
+	  If IsColorPresent($frame, $c) Then
+		 $topDonateBox = $i
+		 ExitLoop
+	  EndIf
+   Next
+   _GDIPlus_BitmapDispose($frame)
+
+   Return $topDonateBox
+EndFunc
+
+Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
+   ; Get frame
+   Local $box[4], $thresh
+   If $actionType = $eActionTypeRaid Then
+	  For $i=0 To 3
+		 $box[$i] = $rRaidTroopBox[$i]
+	  Next
+	  $thresh = $gConfidenceRaidTroopSlot
+
+   ElseIf $actionType = $eActionTypeDonate Then
+	  Local $topDonateBox = FindTopOfDonateBox()
+	  If $topDonateBox = -1 Then
+		 DebugWrite("LocateSlots() for Donate failed - cound not find top of donate troops window")
+		 Return
+	  EndIf
+	  $box[0] = ($slotType = $eSlotTypeTroop ? $rDonateTroopsBox[0] : $rDonateSpellsBox[0])
+	  $box[1] = ($slotType = $eSlotTypeTroop ? $rDonateTroopsBox[1] : $rDonateSpellsBox[1]) + $topDonateBox
+	  $box[2] = ($slotType = $eSlotTypeTroop ? $rDonateTroopsBox[2] : $rDonateSpellsBox[2])
+	  $box[3] = ($slotType = $eSlotTypeTroop ? $rDonateTroopsBox[3] : $rDonateSpellsBox[3]) + $topDonateBox
+	  $thresh = $gConfidenceDonateTroopSlot
+
+   ElseIf $actionType = $eActionTypeBarracks Then
+	  For $i=0 To 3
+		  $box[$i] = $rBarracksTroopBox[$i]
+	  Next
+	  $thresh = $gConfidenceBarracksTroopSlot
+
+
+   ElseIf $actionType = $eActionTypeReloadButton Then
+	  For $i=0 To 3
+		 $box[$i] = $rReloadDefensesBox[$i]
+	  Next
+	  $thresh = $gConfidenceReloadButton
+
+   Else
+	  DebugWrite("FindAllBMPs() Error, actionType not recognized: " & $actionType)
+	  Return
+
+   EndIf
+
+   Local $hHBITMAP = CaptureFrameHBITMAP("LocateSlots" & $gActionTypeNames[$actionType] & $gSlotTypeNames[$slotType], _
+	  $box[0], $box[1], $box[2], $box[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, _
+	  "LocateSlots" & $gActionTypeNames[$actionType] & $gSlotTypeNames[$slotType] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "LocateSlots", "int", $actionType, "int", $slotType, "handle", $hHBITMAP, "double", $thresh)
    ;DebugWrite("DLL $res=" & $res[0])
 
    If @error Then
-	  DebugWrite("LocateRaidSlots() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL, LocateRaidSlots" & @CRLF & _
+	  DebugWrite("LocateSlots() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, LocateSlots" & @CRLF & _
 		 "This is catastrophic, exiting.")
 	  Exit
    EndIf
 
    Local $split = StringSplit($res[0], "|", 2)
-   ;DebugWrite("Num matches " & $gRaidSlotTypeNames[$type] & ": " & $split[0])
+   ;DebugWrite("Num matches " & $gActionTypeNames[$actionType] & $gSlotTypeNames[$slotType] & ": " & $split[0])
 
    For $i = 0 To $split[0]-1
 	  Local $x = Number($split[$i*3+1])
 	  Local $y = Number($split[$i*3+2])
 	  Local $conf = Number($split[$i*3+3])
 
-	  If $index[$i][0]=-1 And $x<>-1 Then
-		 $index[$i][0] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[0]
-		 $index[$i][1] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[1]
-		 $index[$i][2] = $rRaidTroopBox[0] + $x + $rRaidButtonOffset[2]
-		 $index[$i][3] = $rRaidTroopBox[1] + $y + $rRaidButtonOffset[3]
-		 ;DebugWrite("Raid " & $gRaidSlotTypeNames[$type] & " " & (($type=$eRaidSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found at " & $x & ", " & $y & " confidence " & Round($conf*100, 2) & "%" & _
-			;" box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+	  If $actionType = $eActionTypeRaid Then
+		 If $index[$i][0]=-1 And $x<>-1 Then
+			$index[$i][0] = $box[0] + $x + $rRaidButtonOffset[0]
+			$index[$i][1] = $box[1] + $y + $rRaidButtonOffset[1]
+			$index[$i][2] = $box[0] + $x + $rRaidButtonOffset[2]
+			$index[$i][3] = $box[1] + $y + $rRaidButtonOffset[3]
+			;DebugWrite("Raid " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
+			 ;  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+		 EndIf
+
+	  ElseIf $actionType = $eActionTypeDonate Then
+		 If $x<>-1 Then
+			Local $iP = ($slotType=$eSlotTypeTroop ? $i : $eSpellPoison+$i)
+			   $index[$iP][0] = $box[0] + $x + $rDonateButtonOffset[0]
+			   $index[$iP][1] = $box[1] + $y + $rDonateButtonOffset[1]
+			   $index[$iP][2] = $box[0] + $x + $rDonateButtonOffset[2]
+			   $index[$iP][3] = $box[1] + $y + $rDonateButtonOffset[3]
+			   ;DebugWrite("Donate " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$iP] : $gSpellNames[$iP]) & " found, confidence " & Round($conf*100, 2) & "%" & _
+				;  " box: " & $index[$iP][0] & "," & $index[$iP][1] & "," & $index[$iP][2] & "," & $index[$iP][3])
+		 EndIf
+
+	  ElseIf $actionType = $eActionTypeBarracks Then
+		 If $x<>-1 Then
+			$index[$i][0] = $box[0] + $x + $rRaidButtonOffset[0]
+			$index[$i][1] = $box[1] + $y + $rRaidButtonOffset[1]
+			$index[$i][2] = $box[0] + $x + $rRaidButtonOffset[2]
+			$index[$i][3] = $box[1] + $y + $rRaidButtonOffset[3]
+		 EndIf
+
+	  ElseIf $actionType = $eActionTypeReloadButton Then
+		 If $x<>-1 Then
+			$index[$i][0] = $box[0] + $x + $rReloadDefensesButtonOffset[0]
+			$index[$i][1] = $box[1] + $y + $rReloadDefensesButtonOffset[1]
+			$index[$i][2] = $box[0] + $x + $rReloadDefensesButtonOffset[2]
+			$index[$i][3] = $box[1] + $y + $rReloadDefensesButtonOffset[3]
+		 EndIf
+
 	  EndIf
    Next
 
@@ -678,122 +810,70 @@ Func LocateRaidSlots(Const $type, ByRef $index)
    Return $split[0]
 EndFunc
 
-Func ScanFrameForOneBMP(Const $f, Const ByRef $needle, ByRef $confidence, ByRef $x, ByRef $y)
-   $confidence = 0
-   $x = -1
-   $y = -1
+Func CountBuiltTroops(Const $type, ByRef $index)
+   Local $box[4]
+   For $i=0 To 3
+	  $box[$i] = ($type = $eBuiltTroopClassNormal ? $rCampTroopBox1[$i]: $rCampTroopBox2[$i])
+   Next
 
-; temporary
-_GDIPlus_ImageSaveToFile($f, "temp.bmp")
-
-   Local $res = DllCall($gDllHandle, "str", "FindMatch", "str", "temp.bmp", "str", $needle)
+   Local $hHBITMAP = CaptureFrameHBITMAP("CountBuiltTroopsHeroes", $box[0], $box[1], $box[2], $box[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "CountBuiltTroops" & $gBuiltTroopClassNames[$type] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "CountBuiltTroops", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceCampTroopSlot)
+   ;DebugWrite("DLL $res=" & $res[0])
 
    If @error Then
-	  DebugWrite("ScanFrameForOneBMP() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
+	  DebugWrite("LocateRaidSlots() DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, CountBuiltTroops" & @CRLF & _
 		 "This is catastrophic, exiting.")
 	  Exit
    EndIf
 
    Local $split = StringSplit($res[0], "|", 2)
-   $x = $split[0]
-   $y = $split[1]
-   $confidence = $split[2]
+   ;DebugWrite("Num matches " & $gBuiltTroopClassNames[$type] & ": " & $split[0])
 
-; temporary
-FileDelete("temp.bmp")
+   For $i = 0 To $split[0]-1
+	  Local $x = Number($split[$i*3+1])
+	  Local $y = Number($split[$i*3+2])
+	  Local $conf = Number($split[$i*3+3])
 
-EndFunc
+	  Local $iP = ($type=$eBuiltTroopClassNormal ? $i : $eTroopKing+$i)
 
-Func ScanFrameForBestBMP(Const $f, Const ByRef $bmpArray, Const $threshold, ByRef $bestMatch, ByRef $bestConfidence, ByRef $bestX, ByRef $bestY)
-   $bestMatch = -1
-   $bestConfidence = 0
-   $bestX = -1
-   $bestY = -1
+	  If $x = -1 Then
+		 $index[$iP] = 0
+	  Else
+		 If $type = $eBuiltTroopClassNormal Then
+			Local $textBox[10] = [ _
+			   $x+$rCampSlotTroopCountTextBox[0], _
+			   $y+$rCampSlotTroopCountTextBox[1], _
+			   $x+$rCampSlotTroopCountTextBox[2], _
+			   $y+$rCampSlotTroopCountTextBox[3], _
+			   $rCampSlotTroopCountTextBox[4], _
+			   $rCampSlotTroopCountTextBox[5], _
+			   $rCampSlotTroopCountTextBox[6], _
+			   $rCampSlotTroopCountTextBox[7], _
+			   $rCampSlotTroopCountTextBox[8], _
+			   $rCampSlotTroopCountTextBox[9] ]
 
-; temporary
-_GDIPlus_ImageSaveToFile($f, "temp.bmp")
+			;DebugWrite("box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3])
 
-   For $i = 0 to UBound($bmpArray)-1
-	  ;DebugWrite("Frame handle: " & Hex($f))
-	  ;Local $res = DllCall("ClAsHbOtDlL.dll", "str", "FindMatch", "ptr", $f, "str", "Images\"&$bmpArray[$i])
-	  Local $res = DllCall($gDllHandle, "str", "FindMatch", "str", "temp.bmp", "str", "Images\"&$bmpArray[$i])
+			Local $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+			Local $t = ScrapeFuzzyText($hGdipBitmap, $gBarracksCharacterMaps, $textBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
+			_GDIPlus_BitmapDispose($hGdipBitmap)
+			;DebugWrite("text: " & $gTroopNames[$iP] & " " & $t)
 
-	  If @error Then
-		 DebugWrite("ScanFrameForBestBMP() DllCall @error=" & @error)
-		 MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
-			"This is catastrophic, exiting.")
-		 Exit
-	  EndIf
+			$index[$iP] = Number(StringMid($t, 2))
 
-	  ;DebugWrite($bmpArray[$i] & ": " & $res[0])
+		 Else ; $type = $eBuiltTroopTypeHero
+			$index[$iP] = 1
 
-	  Local $split = StringSplit($res[0], "|", 2)
-	  If $split[2] > $threshold And $split[2] > $bestConfidence Then
-		 $bestX = $split[0]
-		 $bestY = $split[1]
-		 $bestConfidence = $split[2]
-		 $bestMatch = $i
-	  EndIf
-   Next
-
-; temporary
-FileDelete("temp.bmp")
-
-EndFunc
-
-Func ScanFrameForAllBMPs(Const $f, Const ByRef $bmpArray, Const $threshold, Const $maxMatches, ByRef $matchX, ByRef $matchY, ByRef $confs)
-; temporary
-_GDIPlus_ImageSaveToFile($f, "temp.bmp")
-
-    ; Find all the buildings of the specified type
-   Local $matchCount = 0
-   For $i = 0 To UBound($bmpArray)-1
-	  ; Get matches for this resource
-	  Local $res = DllCall($gDllHandle, "str", "FindAllMatches", "str", "temp.bmp", "str", "Images\"&$bmpArray[$i], "int", $maxMatches, "double", $threshold)
-
-	  If @error Then
-		 DebugWrite("ScanFrameForAllBMPs() DllCall @error=" & @error)
-		 MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error with DLL." & @CRLF & _
-			"This is catastrophic, exiting.")
-		 Exit
-	  EndIf
-
-	  Local $split = StringSplit($res[0], "|", 2)
-	  ;DebugWrite("Num matches " & $bmpArray[$i] & ": " & $split[0])
-
-	  For $j = 0 To $split[0]-1
-		 ; Loop through all captured points so far, if this one is within 8 pix of an existing one, then skip it.
-		 Local $alreadyFound = False
-		 For $k = 0 To $matchCount-1
-			If DistBetweenTwoPoints($split[$j*3+1], $split[$j*3+2], $matchX[$k], $matchY[$k]) < 8 Then
-			   $alreadyFound = True
-			   ;DebugWrite("    Already found " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
-			   ExitLoop
-			EndIf
-		 Next
-
-		 ; Otherwise add it to the growing list of matches, if it is $buildingConfidence % or greater confidence
-		 If $alreadyFound = False Then
-			If $split[$j*3+3] > $threshold Then
-			   ;DebugWrite("    Adding " & $j & ": " & $split[$j*3+1] & "," & $split[$j*3+2] & "  " & $split[$j*3+3])
-			   $matchCount += 1
-			   ReDim $matchX[$matchCount]
-			   ReDim $matchY[$matchCount]
-			   ReDim $confs[$matchCount]
-			   $matchX[$matchCount-1] = $split[$j*3+1]
-			   $matchY[$matchCount-1] = $split[$j*3+2]
-			   $confs[$matchCount-1] = $split[$j*3+3]
-			EndIf
 		 EndIf
-	  Next
+
+		 DebugWrite("CountBuiltTroops() " & $iP & " " & $gTroopNames[$iP] & " " & $index[$iP])
+	  EndIf
    Next
 
-; temporary
-FileDelete("temp.bmp")
-
-Return $matchCount
-
+   _WinAPI_DeleteObject($hHBITMAP)
+   Return $split[0]
 EndFunc
 
 Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)

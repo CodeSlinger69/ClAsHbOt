@@ -1,9 +1,6 @@
 Func ReloadDefenses(ByRef $f)
    ;DebugWrite("ReloadDefenses()")
 
-   Local $th, $conf, $x, $y
-   Local $button[4]
-
    If ResetToCoCMainScreen($f) = False Then
 	  DebugWrite("ReloadDefenses() Not on main screen, exiting")
 	  Return
@@ -12,23 +9,23 @@ Func ReloadDefenses(ByRef $f)
    ; Find town hall
    RandomWeightedClick($rSafeAreaButton)
    Sleep(500)
-   FindTownHall($th, $x, $y, $conf)
+   Local $conf, $x, $y
+   Local $th = FindBestBMP($eSearchTypeTownHall, $x, $y, $conf)
    If $th = -1 Then
 	  DebugWrite("ReloadDefenses() Could not find Town Hall, exiting")
 	  Return
    EndIf
 
    ; Click on town hall
-   $button[0] = $x + 6
-   $button[1] = $y + 15
-   $button[2] = $x + 16
-   $button[3] = $y + 25
+   Local $button[4] = [ $x + 6, $y + 15, $x + 16, $y + 25 ]
    DebugWrite("ReloadDefenses() Clicking Town Hall " & $button[0] & ", " & $button[1] & ", " & $button[2] & ", " & $button[3])
    RandomWeightedClick($button)
    Sleep(500)
 
    ; Wait for reload bar
-   If WaitForReloadBar($f) = False Then
+   Local $buttonIndex[4][4]
+
+   If WaitForReloadBar($buttonIndex) = False Then
 	  DebugWrite("ReloadDefenses() Could not find Reload button bar, exiting")
 	  Return
    EndIf
@@ -36,17 +33,14 @@ Func ReloadDefenses(ByRef $f)
    DebugWrite("ReloadDefenses() Found Reload button bar")
 
    ; See if each reload button is present
-   For $i = 0 To UBound($gDefenseReloadButtonsBMPs)-1
-	  ScanFrameForOneBMP($f, "Images\"&$gDefenseReloadButtonsBMPs[$i], $conf, $x, $y)
-
-	  If $conf > $gConfidenceReloadBarButton Then
+   For $i = 1 To 3
+	  If $buttonIndex[$i][0] <> -1 Then
 		 ; Click button
-		 $button[0] = $rReloadDefensesBox[0] + $x + $rReloadDefensesButtonOffset[0]
-		 $button[1] = $rReloadDefensesBox[1] + $y + $rReloadDefensesButtonOffset[1]
-		 $button[2] = $rReloadDefensesBox[0] + $x + $rReloadDefensesButtonOffset[2]
-		 $button[3] = $rReloadDefensesBox[1] + $y + $rReloadDefensesButtonOffset[3]
-
-		 DebugWrite("ReloadDefenses() Found " & $gDefenseReloadButtonsBMPs[$i] & " button, clicking")
+		 Local $button[4]
+		 For $j = 0 To 3
+			$button[$j] = $buttonIndex[$i][$j]
+		 Next
+		 DebugWrite("ReloadDefenses() Found " & $gReloadButtonNames[$i] & " button, clicking")
 		 RandomWeightedClick($button)
 
 		 ; Wait for Reload confirmation window
@@ -57,11 +51,14 @@ Func ReloadDefenses(ByRef $f)
 			ResetToCoCMainScreen($f)
 			Return
 		 Else
+			Sleep(500)
+
 			; Click OK button
+			DebugWrite("ReloadDefenses() Found confirmation window, clicking OK button")
 			RandomWeightedClick($rReloadDefensesOkayButton)
 
 			; Wait for reload bar
-			If WaitForReloadBar($f) = False Then
+			If WaitForReloadBar($buttonIndex) = False Then
 			   DebugWrite("ReloadDefenses() Reload button bar did not reappear, resetting")
 			   _GDIPlus_BitmapDispose($f)
 			   $f = CaptureFrame("ReloadDefenses")
@@ -81,23 +78,30 @@ Func ReloadDefenses(ByRef $f)
    $f = CaptureFrame("ReloadDefenses")
 EndFunc
 
-Func WaitForReloadBar(ByRef $f)
+Func WaitForReloadBar(ByRef $index)
    Local $t = TimerInit()
-   Local $gotBar = False
-   $f = CaptureFrame("WaitForReloadBar", $rReloadDefensesBox[0], $rReloadDefensesBox[1], $rReloadDefensesBox[2], $rReloadDefensesBox[3])
+   For $i=0 To 3
+	  $index[$i][0] = -1
+	  $index[$i][1] = -1
+	  $index[$i][2] = -1
+	  $index[$i][3] = -1
+   Next
+   Local $matchCount = LocateSlots($eActionTypeReloadButton, $eSlotTypeTroop, $index)
 
-   While TimerDiff($t)<5000 And $gotBar = False
-	  If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "ReloadDefensesFrame.bmp")
-
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($f, "Images\"&$gDefenseReloadInfoButtonBMP, $conf, $x, $y)
-
-	  If $conf > $gConfidenceReloadBarButton Then $gotBar = True
-
+   While TimerDiff($t)<5000 And $index[0][0]=-1
 	  Sleep(500)
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("WaitForReloadBar", $rReloadDefensesBox[0], $rReloadDefensesBox[1], $rReloadDefensesBox[2], $rReloadDefensesBox[3])
+	  For $i=0 To 3
+		 $index[$i][0] = -1
+		 $index[$i][1] = -1
+		 $index[$i][2] = -1
+		 $index[$i][3] = -1
+	  Next
+	  $matchCount = LocateSlots($eActionTypeReloadButton, $eSlotTypeTroop, $index)
    WEnd
 
-   Return $gotBar
+   If $index[0][0] = -1 Then
+	  Return False
+   EndIf
+
+   Return True
 EndFunc

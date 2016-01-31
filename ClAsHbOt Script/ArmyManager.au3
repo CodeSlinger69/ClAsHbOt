@@ -19,10 +19,8 @@ Func AutoQueueTroops(Const ByRef $initialFill)
 
    ; Count how many troops are already built
    Local $builtTroopCounts[$eTroopCount]
-   For $i = $eTroopBarbarian To $eTroopWarden
-	  $builtTroopCounts[$i] = 0
-   Next
-   GetBuiltTroops($gArmyCampTroopsBMPs, $builtTroopCounts)
+   CountBuiltTroops($eBuiltTroopClassNormal, $builtTroopCounts)
+   CountBuiltTroops($eBuiltTroopClassHero, $builtTroopCounts)
 
    ; Check if we are waiting for heroes
    Local $heroWait = _GUICtrlComboBox_GetCurSel($GUI_AutoRaidWaitForHeroesCombo)
@@ -67,57 +65,6 @@ Func AutoQueueTroops(Const ByRef $initialFill)
    EndIf
 
    _GDIPlus_BitmapDispose($frame)
-EndFunc
-
-Func GetBuiltTroops(Const ByRef $bitmaps, ByRef $index)
-   Local $frame = CaptureFrame("GetBuiltTroops1", $rCampTroopBox1[0], $rCampTroopBox1[1], $rCampTroopBox1[2], $rCampTroopBox1[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BuiltTroopsFrame1.bmp")
-
-   For $i = $eTroopBarbarian To $eTroopLavaHound
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
-
-	  If $conf > $gConfidenceCampTroopSlot Then
-		 Local $textBox[10] = [ _
-			$x+$rCampSlotTroopCountTextBox[0], _
-			$y+$rCampSlotTroopCountTextBox[1], _
-			$x+$rCampSlotTroopCountTextBox[2], _
-			$y+$rCampSlotTroopCountTextBox[3], _
-			$rCampSlotTroopCountTextBox[4], _
-			$rCampSlotTroopCountTextBox[5], _
-			$rCampSlotTroopCountTextBox[6], _
-			$rCampSlotTroopCountTextBox[7], _
-			$rCampSlotTroopCountTextBox[8], _
-			$rCampSlotTroopCountTextBox[9] ]
-
-		 ;DebugWrite("box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3])
-
-		 Local $t = ScrapeFuzzyText($frame, $gBarracksCharacterMaps, $textBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
-		 ;DebugWrite("text: " & $gTroopNames[$i] & " " & $t)
-
-		 $index[$i] = Number(StringMid($t, 2))
-		 DebugWrite("GetBuiltTroops() " & $gTroopNames[$i] & " " & $index[$i])
-	  EndIf
-   Next
-
-   _GDIPlus_BitmapDispose($frame)
-
-
-   $frame = CaptureFrame("GetBuiltTroops2", $rCampTroopBox2[0], $rCampTroopBox2[1], $rCampTroopBox2[2], $rCampTroopBox2[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BuiltTroopsFrame2.bmp")
-
-   For $i = $eTroopKing To $eTroopWarden
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
-
-	  If $conf > $gConfidenceCampTroopSlot Then
-		 $index[$i] = 1
-		 DebugWrite("GetBuiltTroops() " & $gTroopNames[$i] & " " & $index[$i])
-	  EndIf
-   Next
-
-   _GDIPlus_BitmapDispose($frame)
-
 EndFunc
 
 Func OpenArmyManagerWindow(ByRef $f)
@@ -254,32 +201,6 @@ Func OpenNextAvailableDarkBarracks(ByRef $f)
 
    ; If there are no more available dark barracks, then return false
    Return False
-EndFunc
-
-Func FindBarracksTroopSlots(Const ByRef $bitmaps, ByRef $index)
-   ; Populates index with the client area coords of all available troop buttons
-
-   Local $frame = CaptureFrame("FindBarracksTroopSlots", $rBarracksTroopBox[0], $rBarracksTroopBox[1], $rBarracksTroopBox[2], $rBarracksTroopBox[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "BarracksFrame.bmp")
-
-   For $i = 0 To UBound($bitmaps)-1
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$bitmaps[$i], $conf, $x, $y)
-
-	  If $conf > $gConfidenceBarracksTroopSlot Then
-		 $index[$i][0] = $rBarracksTroopBox[0] + $x + $rBarracksButtonOffset[0]
-		 $index[$i][1] = $rBarracksTroopBox[1] + $y + $rBarracksButtonOffset[1]
-		 $index[$i][2] = $rBarracksTroopBox[0] + $x + $rBarracksButtonOffset[2]
-		 $index[$i][3] = $rBarracksTroopBox[1] + $y + $rBarracksButtonOffset[3]
-	  Else
-		 $index[$i][0] = -1
-		 $index[$i][1] = -1
-		 $index[$i][2] = -1
-		 $index[$i][3] = -1
-	  EndIf
-   Next
-
-   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func DequeueTroops(ByRef $f)

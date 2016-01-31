@@ -34,11 +34,41 @@ void Scraper::LoadNeedles(void)
 	WriteLog("TownHall images loaded");
 
 	// Loot Cart Image
-	char path[MAX_PATH];
-	sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, lootCartBMPs[0]);
-	lootCart[0] = imread(path);
+	for (int i=0; i<lootCartBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, lootCartBMPs[i]);
+		lootCarts[i] = imread(path);
+	}
 	WriteLog("Loot Cart images loaded");
 
+	// Clash Icon Images
+	for (int i=0; i<clashIconBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, clashIconBMPs[i]);
+		clashIcons[i] = imread(path);
+	}
+	WriteLog("Clash Icon images loaded");
+	
+	// Play Store Open Button Images
+	for (int i=0; i<playStoreOpenButtonBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, playStoreOpenButtonBMPs[i]);
+		playStoreOpenButtons[i] = imread(path);
+	}
+	WriteLog("Play Store Open Button images loaded");
+
+	// Donate Button Images
+	for (int i=0; i<donateButtonBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, donateButtonBMPs[i]);
+		donateButtons[i] = imread(path);
+	}
+	WriteLog("Donate Button images loaded");
+	
 	// Gold Storage Images
 	for (int i=0; i<goldStorageBMPCount; i++)
 	{
@@ -84,88 +114,71 @@ void Scraper::LoadNeedles(void)
 	}
 	WriteLog("Raid Spell Slot images loaded");
 
+	// Army Camp Troop Images
+	for (int i=0; i<armyCampTroopBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, armyCampTroopBMPs[i]);
+		armyCampSlots[i] = imread(path);
+	}
+	WriteLog("Army Camp Troop images loaded");
+
+	// Barracks Troop Slot Images
+	for (int i=0; i<barracksTroopSlotBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, barracksTroopSlotBMPs[i]);
+		barracksTroopSlots[i] = imread(path);
+	}
+	WriteLog("Barracks Troop Slot images loaded");
+
+	// Donate Troop Slot Images
+	for (int i=0; i<donateTroopSlotBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, donateTroopSlotBMPs[i]);
+		donateTroopSlots[i] = imread(path);
+	}
+	WriteLog("Donate Troop Slot images loaded");
+
+	// Donate Spell Slot Images
+	for (int i=0; i<donateSpellSlotBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, donateSpellSlotBMPs[i]);
+		donateSpellSlots[i] = imread(path);
+	}
+	WriteLog("Donate Spell Slot images loaded");
+
+	// Reload Button Images
+	for (int i=0; i<reloadButtonBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, reloadButtonBMPs[i]);
+		reloadButtons[i] = imread(path);
+	}
+	WriteLog("Reload Button images loaded");
+
+	// Collector Images
+	for (int i=0; i<collectorBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, collectorBMPs[i]);
+		collectors[i] = imread(path);
+	}
+	WriteLog("Collector images loaded");
+
+	// Loot Bubble Images
+	for (int i=0; i<lootBubbleBMPCount; i++)
+	{
+		char path[MAX_PATH];
+		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, lootBubbleBMPs[i]);
+		lootBubbles[i] = imread(path);
+	}
+	WriteLog("Loot Bubble images loaded");
 }
 
-int Scraper::FindTownHall(HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
-{
-	Point bestPoint(0, 0);
-	double bestConfidence = 0;
-	int bestTH = -1;
-	
-	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
-	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
-	delete pBitmap;
-
-	cvtColor( img, img, CV_BGRA2BGR );
-
-	// Debug
-	//namedWindow( "Display window", WINDOW_AUTOSIZE );
-	//imshow( "Display window", img );
-	//waitKey(0); 
-
-	for (int i=0; i<townHallBMPCount; i++)
-	{
-		Mat result( FindMatch(img, townHalls[i]) );
-
-		// Localize the best match with minMaxLoc
-		double minVal, maxVal;
-		Point minLoc, maxLoc;
-		
-		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
-
-		if (maxVal > bestConfidence && maxVal >= threshold)
-		{
-			// Need to check for case where a town hall is "found" in the sandy beach area, this is a false positive.
-			// http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
-			// return (b.x - a.x)*(c.y - a.y) > (b.y - a.y)*(c.x - a.x);
-			bool beachSideOfSWLine = (southPoint.x - westPoint.x)*((northPoint.y-10+maxLoc.y) - westPoint.y) > (southPoint.y - westPoint.y)*((westPoint.x+maxLoc.x) - westPoint.x);
-
-			if (beachSideOfSWLine == false)
-			{
-				bestConfidence = maxVal;
-				bestPoint.x = maxLoc.x;
-				bestPoint.y = maxLoc.y;
-				bestTH = i+6;
-			}
-		}
-	}
-
-	match->x = bestPoint.x;
-	match->y = bestPoint.y;
-	match->val = bestConfidence;
-	return bestTH;
-}
-
-int Scraper::FindLootCart(HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
-{
-	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
-	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
-	delete pBitmap;
-
-	cvtColor( img, img, CV_BGRA2BGR );
-
-	Mat result( FindMatch(img, lootCart[0]) );
-
-	double minVal, maxVal;
-	Point minLoc, maxLoc;
-	minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
-
-	match->val = maxVal;
-	if (maxVal >= threshold)
-	{
-		match->x = maxLoc.x;
-		match->y = maxLoc.y;
-		return 1;
-	}
-	else
-	{
-		match->x = -1;
-		match->y = -1;
-		return 0;
-	}
-}
-
-std::string Scraper::FindBestStorage(const lootType type, HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
+std::string Scraper::FindBestBMP(const searchType type, HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
 {
 	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
 	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
@@ -173,19 +186,27 @@ std::string Scraper::FindBestStorage(const lootType type, HBITMAP hBmp, const do
 
 	cvtColor( img, img, CV_BGRA2BGR );
 
-	int storageCount = type==lootGold ? goldStorageBMPCount : 
-					   type==lootElix ? elixStorageBMPCount : 
-					   type==lootDark ? darkStorageBMPCount : 0;
+	int bmpCount = type==searchTownHall ? townHallBMPCount :
+				   type==searchLootCart ? lootCartBMPCount :
+				   type==searchClashIcon ? clashIconBMPCount :
+				   type==searchPlayStoreOpenButton ? playStoreOpenButtonBMPCount :
+				   type==searchGoldStorage ? goldStorageBMPCount : 
+				   type==searchElixStorage ? elixStorageBMPCount :
+				   type==searchDarkStorage ? darkStorageBMPCount : 0;
 
 	double bestMaxVal = 0;
 	Point bestMaxLoc(0, 0);
 	std::string bestNeedle("");
 
-	for (int i=0; i<storageCount; i++)
+	for (int i=0; i<bmpCount; i++)
 	{
-		Mat needle(	type==lootGold ? goldStorages[i] : 
-					type==lootElix ? elixStorages[i] : 
-					type==lootDark ? darkStorages[i] : Mat() );
+		Mat needle(	type==searchTownHall ? townHalls[i] : 
+					type==searchLootCart ? lootCarts[i] : 
+				    type==searchClashIcon ? clashIcons[i] :
+				    type==searchPlayStoreOpenButton ? playStoreOpenButtons[i] :
+					type==searchGoldStorage ? goldStorages[i] : 
+					type==searchElixStorage ? elixStorages[i] :
+					type==searchDarkStorage ? darkStorages[i] : Mat() );
 
 		Mat result( FindMatch(img, needle) );
 
@@ -194,11 +215,19 @@ std::string Scraper::FindBestStorage(const lootType type, HBITMAP hBmp, const do
 		Point minLoc, maxLoc;
 		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
 
-		if (maxVal >= threshold && maxVal > bestMaxVal)
+		bool beachSideOfSWLine = BeachSideOfSWLine((westPoint.x+maxLoc.x), (northPoint.y-10+maxLoc.y));
+
+		if (maxVal >= threshold && maxVal > bestMaxVal && (type!=searchTownHall || !beachSideOfSWLine))
 		{
 			bestMaxVal = maxVal;
 			bestMaxLoc = maxLoc;
-			bestNeedle = type==lootGold ? goldStorageBMPs[i] : type==lootElix ? elixStorageBMPs[i] : type==lootDark ? darkStorageBMPs[i] : "";
+			bestNeedle = type==searchTownHall ? townHallBMPs[i] : 
+						 type==searchLootCart ? lootCartBMPs[i] : 
+						 type==searchClashIcon ? clashIconBMPs[i] :
+						 type==searchPlayStoreOpenButton ? playStoreOpenButtonBMPs[i] :
+						 type==searchGoldStorage ? goldStorageBMPs[i] : 
+						 type==searchElixStorage ? elixStorageBMPs[i] : 
+						 type==searchDarkStorage ? darkStorageBMPs[i] : "";
 		}
 	}
 
@@ -212,7 +241,7 @@ std::string Scraper::FindBestStorage(const lootType type, HBITMAP hBmp, const do
 	return bestNeedle;
 }
 
-void Scraper::FindAllStorages(const lootType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches)
+void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches)
 {
 	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
 	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
@@ -220,18 +249,24 @@ void Scraper::FindAllStorages(const lootType type, HBITMAP hBmp, const double th
 
 	cvtColor( img, img, CV_BGRA2BGR );
 
-	int storageCount = type==lootGold ? goldStorageBMPCount : 
-					   type==lootElix ? elixStorageBMPCount : 
-					   type==lootDark ? darkStorageBMPCount : 0;
+	int bmpCount = type==searchGoldStorage ? goldStorageBMPCount : 
+				   type==searchElixStorage ? elixStorageBMPCount : 
+				   type==searchDarkStorage ? darkStorageBMPCount : 
+				   type==searchLootCollector ? collectorBMPCount : 
+				   type==searchLootBubble ? lootBubbleBMPCount : 
+				   type==searchDonateButton ? donateButtonBMPCount : 0;
 
 	int count = 0;
 
-	for (int i=0; i<storageCount; i++)
+	for (int i=0; i<bmpCount; i++)
 	{
 		// Get matches for this storage
-		Mat needle(	type==lootGold ? goldStorages[i] : 
-					type==lootElix ? elixStorages[i] : 
-					type==lootDark ? darkStorages[i] : Mat() );
+		Mat needle(	type==searchGoldStorage ? goldStorages[i] : 
+					type==searchElixStorage ? elixStorages[i] : 
+					type==searchDarkStorage ? darkStorages[i] : 
+					type==searchLootCollector ? collectors[i] : 
+					type==searchLootBubble ? lootBubbles[i] : 
+					type==searchDonateButton ? donateButtons[i] : Mat() );
 
 		Mat result( FindMatch(img, needle) );
 
@@ -248,18 +283,9 @@ void Scraper::FindAllStorages(const lootType type, HBITMAP hBmp, const double th
 			// Fill results array with lo vals, so we don't match this same location
 			floodFill(result, maxLoc, 0, 0, Scalar(0.1), Scalar(1.0));
 
-			/*
-			if (maxVal>0)
-			{
-				char a[500];
-				sprintf(a, "%d match %d %d %.4f", i, maxLoc.x+429-150, maxLoc.y+337-150, maxVal);
-				WriteLog(a);
-			}
-			*/
-
 			if (maxVal >= threshold)
 			{
-				// Check if this point is within 10 pixels of an existing match to avoid dups
+				// Check if this point is within 10 pixels of an existing match to avoid dupes
 				bool alreadyFound = false;
 
 				for (int k=0; k<count; k++)
@@ -293,7 +319,7 @@ void Scraper::FindAllStorages(const lootType type, HBITMAP hBmp, const double th
 	}
 }
 
-void Scraper::LocateRaidSlots(const slotType type, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches)
+void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches)
 {
 	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
 	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
@@ -301,16 +327,21 @@ void Scraper::LocateRaidSlots(const slotType type, HBITMAP hBmp, const double th
 
 	cvtColor( img, img, CV_BGRA2BGR );
 
-	int slotCount = type==slotTroop ? raidTroopSlotBMPCount : 
-					type==slotSpell ? raidSpellSlotBMPCount : 0;
-
-	int count = 0;
+	int slotCount = (aType==actionRaid && sType==slotTroop) ? raidTroopSlotBMPCount :
+					(aType==actionRaid && sType==slotSpell) ? raidSpellSlotBMPCount :
+					(aType==actionDonate && sType==slotTroop) ? donateTroopSlotBMPCount :
+					(aType==actionDonate && sType==slotSpell) ? donateSpellSlotBMPCount :
+					(aType==actionBarracks) ? barracksTroopSlotBMPCount : 
+					(aType==actionReloadButton) ? reloadButtonBMPCount : 0;
 
 	for (int i=0; i<slotCount; i++)
 	{
-		// Get matches for this storage
-		Mat needle(	type==slotTroop ? raidTroopSlots[i] : 
-					type==slotSpell ? raidSpellSlots[i] : Mat() );
+		Mat needle( (aType==actionRaid && sType==slotTroop) ? raidTroopSlots[i] :
+					(aType==actionRaid && sType==slotSpell) ? raidSpellSlots[i] :
+					(aType==actionDonate && sType==slotTroop) ? donateTroopSlots[i] :
+					(aType==actionDonate && sType==slotSpell) ? donateSpellSlots[i] :
+					(aType==actionBarracks) ? barracksTroopSlots[i] : 
+				    (aType==actionReloadButton) ? reloadButtons[i] : Mat() );
 
 		Mat result( FindMatch(img, needle) );
 
@@ -333,11 +364,50 @@ void Scraper::LocateRaidSlots(const slotType type, HBITMAP hBmp, const double th
 		}
 
 		matches->push_back(match);
-		count++;
 	}
 }
 
+void Scraper::CountBuiltTroops(const troopClass type, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches)
+{
+	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
+	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
+	delete pBitmap;
 
+	cvtColor( img, img, CV_BGRA2BGR );
+
+	int slotCountStart = type==troopClassNormal ? troopBarbarian : 
+						 type==troopClassHero ? troopKing : 0;
+
+	int slotCountEnd = type==troopClassNormal ? troopLavaHound : 
+					   type==troopClassHero ? troopWarden : 0;
+
+	for (int i=slotCountStart; i<=slotCountEnd; i++)
+	{
+		Mat needle(	armyCampSlots[i] );
+
+		Mat result( FindMatch(img, needle) );
+
+		double minVal, maxVal;
+		Point minLoc, maxLoc;
+		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
+
+		MATCHPOINTS match;
+		match.val = maxVal;
+
+		if (maxVal >= threshold)
+		{
+			match.x = maxLoc.x;
+			match.y = maxLoc.y;
+		}
+		else
+		{
+			match.x = -1;
+			match.y = -1;
+		}
+
+		matches->push_back(match);
+	}
+}
 
 Mat Scraper::FindMatch(Mat haystack, Mat needle)
 {
@@ -354,6 +424,14 @@ Mat Scraper::FindMatch(Mat haystack, Mat needle)
 	threshold(result, result, 0.9, 1.0, CV_THRESH_TOZERO);
 
 	return result;
+}
+
+bool Scraper::BeachSideOfSWLine(const int x, const int y)
+{
+	// Need to check for case where a town hall is "found" in the sandy beach area, this is a false positive.
+	// http://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
+	// return (b.x - a.x)*(c.y - a.y) > (b.y - a.y)*(c.x - a.x);
+	return (southPoint.x - westPoint.x)*(y - westPoint.y) > (southPoint.y - westPoint.y)*(x - westPoint.x);
 }
 
 double Scraper::DistanceBetweenTwoPoints(const double x1, const double y1, const double x2, const double y2)
@@ -395,7 +473,13 @@ const Point Scraper::southPoint = Point(429, 605);
 const char* Scraper::townHallBMPs[townHallBMPCount] = { 
 	"TownHall\\TH6.bmp", "TownHall\\TH7.bmp", "TownHall\\TH8.bmp", "TownHall\\TH9.bmp", "TownHall\\TH10.bmp", "TownHall\\TH11.bmp" };
 
-const char* Scraper::lootCartBMPs[1] = { "Loot\\LootCart1.bmp" };
+const char* Scraper::lootCartBMPs[lootCartBMPCount] = { "Loot\\LootCart1.bmp" };
+
+const char* Scraper::clashIconBMPs[clashIconBMPCount] = { "ClashIcon.bmp" };
+
+const char* Scraper::playStoreOpenButtonBMPs[playStoreOpenButtonBMPCount] = { "PlayStoreOpenButton.bmp" };
+
+const char* Scraper::donateButtonBMPs[donateButtonBMPCount] = { "Donate\\DonateButton.bmp" };
 
 const char* Scraper::goldStorageBMPs[goldStorageBMPCount] = { 
 	"Storages\\GoldStorageL12.00.bmp", "Storages\\GoldStorageL12.25.bmp", "Storages\\GoldStorageL12.50.bmp", "Storages\\GoldStorageL12.75.bmp", "Storages\\GoldStorageL12.90.bmp",
@@ -423,4 +507,41 @@ const char* Scraper::raidTroopSlotBMPs[raidTroopSlotBMPCount] = {
 const char* Scraper::raidSpellSlotBMPs[raidSpellSlotBMPCount] = {
 	"RaidSlots\\SlotLightningSpell.bmp", "RaidSlots\\SlotHealSpell.bmp", "RaidSlots\\SlotRageSpell.bmp", "RaidSlots\\SlotJumpSpell.bmp", "RaidSlots\\SlotFreezeSpell.bmp",
 	"RaidSlots\\SlotPoisonSpell.bmp", "RaidSlots\\SlotEarthquakeSpell.bmp", "RaidSlots\\SlotHasteSpell.bmp" };
+
+
+const char* Scraper::armyCampTroopBMPs[armyCampTroopBMPCount] = {
+	"Camp\\CampBarbarian.bmp", "Camp\\CampArcher.bmp", "Camp\\CampGiant.bmp", "Camp\\CampGoblin.bmp", "Camp\\CampWallBreaker.bmp", 
+	"Camp\\CampBalloon.bmp", "Camp\\CampWizard.bmp", "Camp\\CampHealer.bmp", "Camp\\CampDragon.bmp", "Camp\\CampPekka.bmp",
+	"Camp\\CampMinion.bmp", "Camp\\CampHogRider.bmp", "Camp\\CampValkyrie.bmp", "Camp\\CampGolem.bmp", "Camp\\CampWitch.bmp", 
+	"Camp\\CampLavaHound.bmp", "Camp\\CampKing.bmp", "Camp\\CampQueen.bmp", "Camp\\CampWarden.bmp" };
+
+
+const char* Scraper::barracksTroopSlotBMPs[barracksTroopSlotBMPCount] = {
+	"Barracks\\BarracksBarbarian.bmp", "Barracks\\BarracksArcher.bmp", "Barracks\\BarracksGiant.bmp", "Barracks\\BarracksGoblin.bmp", "Barracks\\BarracksWallBreaker.bmp", 
+	"Barracks\\BarracksBalloon.bmp", "Barracks\\BarracksWizard.bmp", "Barracks\\BarracksHealer.bmp", "Barracks\\BarracksDragon.bmp", "Barracks\\BarracksPekka.bmp",
+	"Barracks\\BarracksMinion.bmp", "Barracks\\BarracksHogRider.bmp", "Barracks\\BarracksValkyrie.bmp", "Barracks\\BarracksGolem.bmp", "Barracks\\BarracksWitch.bmp", 
+	"Barracks\\BarracksLavaHound.bmp" };
+
+	
+const char* Scraper::donateTroopSlotBMPs[donateTroopSlotBMPCount] = { 
+	"Donate\\DonateBarbarian.bmp", "Donate\\DonateArcher.bmp", "Donate\\DonateGiant.bmp", "Donate\\DonateGoblin.bmp", "Donate\\DonateWallBreaker.bmp", 
+	"Donate\\DonateBalloon.bmp", "Donate\\DonateWizard.bmp", "Donate\\DonateHealer.bmp", "Donate\\DonateDragon.bmp", "Donate\\DonatePekka.bmp",
+	"Donate\\DonateMinion.bmp", "Donate\\DonateHogRider.bmp", "Donate\\DonateValkyrie.bmp", "Donate\\DonateGolem.bmp", "Donate\\DonateWitch.bmp", 
+	"Donate\\DonateLavaHound.bmp" };
+
+const char* Scraper::donateSpellSlotBMPs[donateSpellSlotBMPCount] = {
+	"Donate\\DonatePoisonSpell.bmp", "Donate\\DonateEarthquakeSpell.bmp", "Donate\\DonateHasteSpell.bmp" };
+
+const char* Scraper::reloadButtonBMPs[reloadButtonBMPCount] = { 
+	"Reload\\InfoButton.bmp", "Reload\\GoldButton.bmp", "Reload\\ElixButton.bmp", "Reload\\DarkButton.bmp" };
+
+const char* Scraper::collectorBMPs[collectorBMPCount] = {
+	"Collectors\\GoldCollectorL12.bmp", "Collectors\\GoldCollectorL11.bmp", "Collectors\\GoldCollectorL10.bmp", "Collectors\\GoldCollectorL9.bmp",
+	"Collectors\\ElixCollectorL12.bmp", "Collectors\\ElixCollectorL11.bmp", "Collectors\\ElixCollectorL10.bmp", "Collectors\\ElixCollectorL9.bmp",
+	"Collectors\\DarkCollectorL6.bmp", "Collectors\\DarkCollectorL5.bmp", "Collectors\\DarkCollectorL4.bmp", "Collectors\\DarkCollectorL3.bmp" };
+
+const char* Scraper::lootBubbleBMPs[lootBubbleBMPCount] = {
+	"Loot\\FullGoldCollector1.bmp", "Loot\\FullGoldCollector2.bmp", "Loot\\FullGoldCollector3.bmp",
+	"Loot\\FullElixCollector1.bmp", "Loot\\FullElixCollector2.bmp", "Loot\\FullElixCollector3.bmp",
+	"Loot\\FullDarkCollector1.bmp", "Loot\\FullDarkCollector2.bmp", "Loot\\FullDarkCollector3.bmp" };
 

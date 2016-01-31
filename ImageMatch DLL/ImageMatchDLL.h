@@ -2,8 +2,11 @@
 
 #define MAXSTRING 500
 extern char returnString[MAXSTRING];
-enum lootType { lootGold, lootElix, lootDark };
+enum searchType { searchTownHall, searchLootCart, searchClashIcon, searchPlayStoreOpenButton, searchDonateButton, 
+				  searchGoldStorage, searchElixStorage, searchDarkStorage, searchLootCollector, searchLootBubble };
+enum actionType { actionRaid, actionDonate, actionBarracks, actionReloadButton };
 enum slotType { slotTroop, slotSpell };
+enum troopClass { troopClassNormal, troopClassHero };
 
 struct MATCHPOINTS
 {
@@ -12,19 +15,10 @@ struct MATCHPOINTS
 	double val;
 };
 
-Mat DoMatch(Mat img, Mat templ, int match_method);
-CLSID GetEncoderClsid(const WCHAR* format);
-Mat ConvertBitmapToMat(Gdiplus::Bitmap *frame);
 void PrepareReturnString(const std::vector<MATCHPOINTS> matches);
 
 extern "C" char* __stdcall Initialize(char* scriptDir);
-extern "C" char* __stdcall FindTownHall(HBITMAP hBmp, double threshold); 
-extern "C" char* __stdcall FindLootCart(HBITMAP hBmp, double threshold);
-extern "C" char* __stdcall FindBestStorage(lootType type, HBITMAP hBmp, double threshold);
-extern "C" char* __stdcall FindAllStorages(lootType type, HBITMAP hBmp, double threshold, int maxMatch);
-extern "C" char* __stdcall LocateRaidSlots(slotType type, HBITMAP hBmp, double threshold);
-
-extern "C" char* __stdcall FindMatch(char* haystack, char* needle); 
-extern "C" char* __stdcall FindAllMatches(char* haystack, char* needle, int max_matches, double threshold); 
-
-
+extern "C" char* __stdcall FindBestBMP(searchType type, HBITMAP hBmp, double threshold);
+extern "C" char* __stdcall FindAllBMPs(searchType type, HBITMAP hBmp, double threshold, int maxMatch);
+extern "C" char* __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, double threshold);
+extern "C" char* __stdcall CountBuiltTroops(troopClass type, HBITMAP hBmp, double threshold);

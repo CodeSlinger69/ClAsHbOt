@@ -310,7 +310,7 @@ Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef
 
    ; Get Town Hall level
    Local $conf
-   FindTownHall($thLevel, $thLeft, $thTop, $conf)
+   $thLevel = FindBestBMP($eSearchTypeTownHall, $thLeft, $thTop, $conf)
 
    Local $townHallIndiator = $thLevel<>-1 ? $thLevel : "-"
    Local $deadBaseIndicator = _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED ? ($deadBase=True ? "T" : "F") : "-"
@@ -325,7 +325,7 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
-   Local $s = FindBestStorage($eLootTypeGold, $x, $y, $conf)
+   Local $s = FindBestBMP($eSearchTypeGoldStorage, $x, $y, $conf)
 
    If $s = "" Then
 	  DebugWrite("AdjustLootForStorages() Could not find gold storage match.")
@@ -339,7 +339,7 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Elixir
-   Local $s = FindBestStorage($eLootTypeElix, $x, $y, $conf)
+   Local $s = FindBestBMP($eSearchTypeElixStorage, $x, $y, $conf)
 
    If $s = "" Then
 	  DebugWrite("AdjustLootForStorages() Could not find elixir storage match.")
@@ -353,7 +353,7 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Dark - Just temporarily, to fill out saved bitmaps
-   Local $s = FindBestStorage($eLootTypeDark, $x, $y, $conf)
+   Local $s = FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf)
 
 EndFunc
 

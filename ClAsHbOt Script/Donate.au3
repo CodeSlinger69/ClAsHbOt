@@ -34,7 +34,13 @@ Func DonateTroops(ByRef $f)
 
 		 ; Locate troops that are available to donate
 		 Local $donateTroopIndex[$gTroopCountExcludingHeroes][4]
-		 FindDonateTroopSlots($f, $donateTroopIndex)
+		 For $j = 0 To $gTroopCountExcludingHeroes-1
+			$donateTroopIndex[$j][0] = -1
+			$donateTroopIndex[$j][1] = -1
+			$donateTroopIndex[$j][2] = -1
+			$donateTroopIndex[$j][3] = -1
+		 Next
+		 LocateSlots($eActionTypeDonate, $eSlotTypeTroop, $donateTroopIndex)
 
 		 For $i=0 To $gTroopCountExcludingHeroes-1
 			If $donateTroopIndex[$i][0]>0 Then DebugWrite("DonateTroops() " & $gTroopNames[$i] & " available to donate")
@@ -42,7 +48,13 @@ Func DonateTroops(ByRef $f)
 
 		 ; Locate spells that are available to donate
 		 Local $donateSpellIndex[$eSpellCount][4]
-		 FindDonateSpellSlots($f, $donateSpellIndex)
+		 For $j = 0 To $eSpellCount-1
+			$donateSpellIndex[$j][0] = -1
+			$donateSpellIndex[$j][1] = -1
+			$donateSpellIndex[$j][2] = -1
+			$donateSpellIndex[$j][3] = -1
+		 Next
+		 LocateSlots($eActionTypeDonate, $eSlotTypeSpell, $donateSpellIndex)
 
 		 For $i=0 To $eSpellCount-1
 		    If $donateSpellIndex[$i][0]>0 Then DebugWrite("DonateTroops() " & $gSpellNames[$i] & " available to donate.")
@@ -125,33 +137,24 @@ Func OpenChatWindow(ByRef $f)
 EndFunc
 
 Func FindDonateButtons(ByRef $buttons)
-   Local $frame = CaptureFrame("FindDonateButtons", $rChatBox[0], $rChatBox[1], $rChatBox[2], $rChatBox[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "ChatFrame.bmp")
-
    Local $mX[1], $mY[1], $conf[1]
-   Local $matchCount = ScanFrameForAllBMPs($frame, $DonateButtonBMPs, $gConfidenceDonateButton, 4, $mX, $mY, $conf)
-
-   _GDIPlus_BitmapDispose($frame)
+   Local $matchCount = FindAllBMPs($eSearchDonateButton, 4, $mX, $mY, $conf)
 
    If $matchCount <= 0 Then
 	  DebugWrite("FindDonateButton() Donate button not found.")
 	  Return False
 
    Else
-	  ReDim $buttons[$matchCount][8]
+	  ReDim $buttons[$matchCount][4]
 
 	  For $i=0 To $matchCount-1
-		 $buttons[$i][0] = $rChatBox[0] + $mX[$i]
-		 $buttons[$i][1] = $rChatBox[1] + $mY[$i]
-		 $buttons[$i][2] = $rChatBox[0] + $mX[$i] + $rChatWindowDonateButton[2]
-		 $buttons[$i][3] = $rChatBox[1] + $mY[$i] + $rChatWindowDonateButton[3]
-		 $buttons[$i][4] = $rChatWindowDonateButton[4]
-		 $buttons[$i][5] = $rChatWindowDonateButton[5]
-		 $buttons[$i][6] = $rChatWindowDonateButton[6]
-		 $buttons[$i][7] = $rChatWindowDonateButton[7]
+		 $buttons[$i][0] = $mX[$i] + $rChatWindowDonateButton[0]
+		 $buttons[$i][1] = $mY[$i] + $rChatWindowDonateButton[1]
+		 $buttons[$i][2] = $mX[$i] + $rChatWindowDonateButton[2]
+		 $buttons[$i][3] = $mY[$i] + $rChatWindowDonateButton[3]
 
 		 DebugWrite("FindDonateButtons() Donate button " & $i & " found at: " & $buttons[$i][0] & ", " & $buttons[$i][1] & ", " & _
-			$buttons[$i][2] & ", " & $buttons[$i][3] & " confidence " & Round($conf*100, 2) & "%")
+			$buttons[$i][2] & ", " & $buttons[$i][3] & " confidence " & Round($conf[$i]*100, 2) & "%")
 	  Next
 
 	  Return True
@@ -176,8 +179,8 @@ EndFunc
 Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $buttons, Const $index)
    DebugWrite("OpenDonateTroopsWindow() Clicking Donate button")
 
-   Local $button[8]
-   For $i = 0 To 7
+   Local $button[4]
+   For $i = 0 To 3
 	  $button[$i] = $buttons[$index][$i]
    Next
    RandomWeightedClick($button)
@@ -191,91 +194,6 @@ Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $buttons, Const $index)
    _GDIPlus_BitmapDispose($f)
    $f = CaptureFrame("OpenDonateTroopsWindow")
    Return True
-EndFunc
-
-Func FindDonateTroopSlots(Const $f, ByRef $index)
-   Local $topDonateBox = FindTopOfDonateBox($f)
-   If $topDonateBox = -1 Then
-	  DebugWrite("FindDonateTroopSlots() Failed - locating top of donate troops window")
-	  Return
-   EndIf
-
-   Local $frame = CaptureFrame("FindDonateTroopSlots", _
-	  $rDonateTroopsBox[0], _
-	  $rDonateTroopsBox[1] + $topDonateBox, _
-	  $rDonateTroopsBox[2], _
-	  $rDonateTroopsBox[3] + $topDonateBox)
-
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "DonateTroopSlotsFrame.bmp")
-
-   For $i = $eTroopBarbarian To $eTroopLavaHound
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$gDonateTroopSlotBMPs[$i], $conf, $x, $y)
-
-	  If $conf > $gConfidenceDonateTroopSlot Then
-		 $index[$i][0] = $rDonateTroopsBox[0] +                 $x + $rDonateButtonOffset[0]
-		 $index[$i][1] = $rDonateTroopsBox[1] + $topDonateBox + $y + $rDonateButtonOffset[1]
-		 $index[$i][2] = $rDonateTroopsBox[0] +                 $x + $rDonateButtonOffset[2]
-		 $index[$i][3] = $rDonateTroopsBox[1] + $topDonateBox + $y + $rDonateButtonOffset[3]
-		 DebugWrite("FindDonateTroopSlots() Troop " & $gTroopNames[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & ", " & _
-			$index[$i][2] & ", " & $index[$i][3] & " conf: " & Round($conf*100, 2) & "%")
-	  Else
-		 $index[$i][0] = -1
-		 $index[$i][1] = -1
-		 $index[$i][2] = -1
-		 $index[$i][3] = -1
-	  EndIf
-   Next
-
-   _GDIPlus_BitmapDispose($frame)
-EndFunc
-
-Func FindDonateSpellSlots(Const $f, ByRef $index)
-   Local $topDonateBox = FindTopOfDonateBox($f)
-   If $topDonateBox = -1 Then
-	  DebugWrite("FindDonateSpellSlots() Failed - locating top of donate troops window")
-	  Return
-   EndIf
-
-   Local $frame = CaptureFrame("FindDonateSpellSlots", _
-	  $rDonateSpellsBox[0], _
-	  $rDonateSpellsBox[1] + $topDonateBox, _
-	  $rDonateSpellsBox[2], _
-	  $rDonateSpellsBox[3] + $topDonateBox)
-
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "DonateSpellSlotsFrame.bmp")
-
-   For $i = $eSpellPoison To $eSpellHaste
-	  Local $conf, $x, $y
-	  ScanFrameForOneBMP($frame, "Images\"&$gDonateSpellSlotBMPs[$i], $conf, $x, $y)
-
-	  If $conf > $gConfidenceDonateTroopSlot Then
-		 $index[$i][0] = $rDonateSpellsBox[0] +                 $x + $rDonateButtonOffset[0]
-		 $index[$i][1] = $rDonateSpellsBox[1] + $topDonateBox + $y + $rDonateButtonOffset[1]
-		 $index[$i][2] = $rDonateSpellsBox[0] +                 $x + $rDonateButtonOffset[2]
-		 $index[$i][3] = $rDonateSpellsBox[1] + $topDonateBox + $y + $rDonateButtonOffset[3]
-		 DebugWrite("FindDonateSpellSlots() Spell " & $gSpellNames[$i] & " found at " & $index[$i][0] & ", " & $index[$i][1] & ", " & _
-			$index[$i][2] & ", " & $index[$i][3] & " conf: " & Round($conf*100, 2) & "%")
-	  Else
-		 $index[$i][0] = -1
-		 $index[$i][1] = -1
-		 $index[$i][2] = -1
-		 $index[$i][3] = -1
-	  EndIf
-   Next
-
-   _GDIPlus_BitmapDispose($frame)
-EndFunc
-
-Func FindTopOfDonateBox(Const $f)
-   For $i = 0 To 300
-	  Local $c[4] = [650, $i, 0xFFFFFF, 0]
-	  If IsColorPresent($f, $c) Then
-		 Return $i
-	  EndIf
-   Next
-
-   Return -1
 EndFunc
 
 Func ParseRequestTextTroops(Const ByRef $text, Const ByRef $avail, ByRef $index)

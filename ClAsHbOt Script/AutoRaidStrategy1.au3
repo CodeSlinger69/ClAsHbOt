@@ -41,14 +41,26 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+	  For $i = $eTroopBarbarian To $eTroopLavaHound
+		 $troopSlots[$i][0] = -1
+		 $troopSlots[$i][1] = -1
+		 $troopSlots[$i][2] = -1
+		 $troopSlots[$i][3] = -1
+	  Next
+	  LocateSlots($eActionTypeBarracks, $eSlotTypeTroop, $troopSlots)
 
 	  ; Giants and specified breakers in each barracks on initial fill
 	  If $initialFillFlag And ($breakersToQueue>0 Or $giantsToQueue>0) Then
 		 ; Dequeue troops
 		 DequeueTroops($f)
 
-		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+		 For $i = $eTroopBarbarian To $eTroopLavaHound
+			$troopSlots[$i][0] = -1
+			$troopSlots[$i][1] = -1
+			$troopSlots[$i][2] = -1
+			$troopSlots[$i][3] = -1
+		 Next
+		 LocateSlots($eActionTypeBarracks, $eSlotTypeTroop, $troopSlots)
 
 		 ; Giants
 		 If $giantsToQueue>0 Then QueueTroopsEvenly($eTroopGiant, $troopSlots, $giantsToQueue)
@@ -97,11 +109,11 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $f)
 
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    UpdateRaidSlotCounts($troopIndex)
 
@@ -222,9 +234,9 @@ Func AutoRaidStrategy1GetDirection(Const $f)
 
    ; Count the storages, by top/bottom half
    Local $allMatchY[1], $totalMatches=0
-   Local $matchX[4], $matchY[4]
+   Local $matchX[1], $matchY[1], $conf[1]
 
-   Local $matchCount = FindAllStorages($eLootTypeGold, 4, $matchX, $matchY)
+   Local $matchCount = FindAllBMPs($eSearchTypeGoldStorage, 4, $matchX, $matchY, $conf)
    $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " gold storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -232,7 +244,7 @@ Func AutoRaidStrategy1GetDirection(Const $f)
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   Local $matchCount = FindAllStorages($eLootTypeElix, 4, $matchX, $matchY)
+   Local $matchCount = FindAllBMPs($eSearchTypeElixStorage, 4, $matchX, $matchY, $conf)
    $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " elix storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]
@@ -240,7 +252,7 @@ Func AutoRaidStrategy1GetDirection(Const $f)
 	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
    Next
 
-   Local $matchCount = FindAllStorages($eLootTypeDark, 4, $matchX, $matchY)
+   Local $matchCount = FindAllBMPs($eSearchTypeDarkStorage, 4, $matchX, $matchY, $conf)
    $totalMatches += $matchCount
    DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
    ReDim $allMatchY[$totalMatches]

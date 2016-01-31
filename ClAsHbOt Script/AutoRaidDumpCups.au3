@@ -58,11 +58,11 @@ Func DoCupsDump(ByRef $f)
 
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    UpdateRaidSlotCounts($troopIndex)
 

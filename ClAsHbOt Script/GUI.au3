@@ -18,6 +18,12 @@ Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_Auto
 	  $GUI_AutoRaidStrategyCombo, $GUI_AutoRaidWaitForHeroesCombo
 Global $GUI_MyGold, $GUI_MyElix, $GUI_MyDark, $GUI_MyGems, $GUI_MyCups, $GUI_MyTownHall
 Global $GUI_Winnings, $GUI_Results, $GUI_AutoStatus
+Global $GUIImages[12] = [ _
+  "GUISplash\troop-archer.png", "GUISplash\troop-balloon.png", "GUISplash\troop-barbarian.png", _
+  "GUISplash\troop-dragon.png", "GUISplash\troop-giant.png", "GUISplash\troop-goblin.png", _
+  "GUISplash\troop-healer.png", "GUISplash\troop-pekka.png", "GUISplash\troop-wallbreaker.png", _
+  "GUISplash\troop-wizard.png" , "GUISplash\troop-bk.png", "GUISplash\troop-aq.png"]
+
 
 Func InitGUI()
    Local $p = WinGetPos($gTitle)
@@ -390,7 +396,6 @@ EndFunc
 
 Func GUICloseButton()
    DebugWrite("Close clicked")
-   _BlockInputEx(0, "", "", $gBlueStacksHwnd)
    SaveSettings()
    ExitGUI()
    ExitScraper()

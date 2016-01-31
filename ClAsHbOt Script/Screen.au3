@@ -62,10 +62,10 @@ Func ResetToCoCMainScreen(ByRef $f)
    ; Android Home Screen - start CoC
    Case $eScreenAndroidHome
 	  DebugWrite("ResetToCoCMainScreen() On Android Home Screen - Starting Clash of Clans")
-      Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-	  ScanFrameForBestBMP($f, $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
-	  If $bestMatch <> 99 Then
-		 Local $button[4] = [$bestX, $bestY, $bestX+$rScreenAndroidHomeCoCIconButton[2], $bestY+$rScreenAndroidHomeCoCIconButton[3]]
+	  Local $left, $top, $conf
+	  FindBestBMP($eSearchClashIcon, $left, $top, $conf)
+	  If $left <> -1 Then
+		 Local $button[4] = [$left, $top, $left+$rScreenAndroidHomeCoCIconButton[2], $top+$rScreenAndroidHomeCoCIconButton[3]]
 		 RandomWeightedClick($button)
 		 $countdown = 30000
 	  EndIf
@@ -73,10 +73,10 @@ Func ResetToCoCMainScreen(ByRef $f)
    ; Clash screen in Play Store
    Case $eScreenPlayStore
 	  DebugWrite("ResetToCoCMainScreen() On Clash Play Store Screen - Starting Clash of Clans")
-      Local $bestMatch = 99, $bestConfidence = 0, $bestX = 0, $bestY = 0
-	  ScanFrameForBestBMP($f, $gPlayStoreOpenButton, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
-	  If $bestMatch <> 99 Then
-		 Local $button[4] = [$bestX, $bestY, $bestX+$rScreenPlayStoreOpenButton[2], $bestY+$rScreenPlayStoreOpenButton[3]]
+	  Local $left, $top, $conf
+	  FindBestBMP($eSearchPlayStoreOpenButton, $left, $top, $conf)
+	  If $left <> -1 Then
+		 Local $button[4] = [$left, $top, $left+$rScreenPlayStoreOpenButton[2], $top+$rScreenPlayStoreOpenButton[3]]
 		 RandomWeightedClick($button)
 		 $countdown = 30000
 	  EndIf
@@ -190,6 +190,8 @@ EndFunc
 Func WhereAmI(Const $f)
    If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "WhereAmIFrame.bmp")
 
+   Local $left, $top, $conf
+
    ; $eScreenAndroidMessageBox
    If IsButtonPresent($f, $rAndroidMessageButton1) Then Return $eScreenAndroidMessageBox
    If IsButtonPresent($f, $rAndroidMessageButton2) Then Return $eScreenAndroidMessageBox
@@ -241,22 +243,12 @@ Func WhereAmI(Const $f)
    If IsButtonPresent($f, $rStarBonusWindowOkayButton) Then Return $eStarBonus
 
    ; $ScreenAndroidHome
-   Local $bestMatch, $bestConfidence, $bestX, $bestY
-   ScanFrameForBestBMP($f, $CoCIconBMPs, 0.95, $bestMatch, $bestConfidence, $bestX, $bestY)
-   ;DebugWrite("Android Home Scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
-
-   If $bestMatch <> -1 Then
-	  Return $eScreenAndroidHome
-   EndIf
+   FindBestBMP($eSearchClashIcon, $left, $top, $conf)
+   If $left <> -1 Then Return $eScreenAndroidHome
 
    ; $eScreenPlayStore
-   Local $bestMatch, $bestConfidence, $bestX, $bestY
-   ScanFrameForBestBMP($f, $gPlayStoreOpenButton, 0.99, $bestMatch, $bestConfidence, $bestX, $bestY)
-   ;DebugWrite("Play Store scan: " & $bestMatch & " " & $bestConfidence & " " & $bestX & " " & $bestY)
-
-   If $bestMatch <> -1 Then
-	  Return $eScreenPlayStore
-   EndIf
+   FindBestBMP($eSearchPlayStoreOpenButton, $left, $top, $conf)
+   If $left <> -1 Then Return $eScreenPlayStore
 
    ; $Unknown
    #cs

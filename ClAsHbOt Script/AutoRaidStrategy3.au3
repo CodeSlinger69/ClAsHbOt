@@ -38,14 +38,26 @@ Func FillBarracksStrategy3(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 
 	  ; Find the slots for the troops
 	  Local $troopSlots[$gTroopCountExcludingHeroes][4]
-	  FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+	  For $i = $eTroopBarbarian To $eTroopLavaHound
+		 $troopSlots[$i][0] = -1
+		 $troopSlots[$i][1] = -1
+		 $troopSlots[$i][2] = -1
+		 $troopSlots[$i][3] = -1
+	  Next
+	  LocateSlots($eActionTypeBarracks, $eSlotTypeTroop, $troopSlots)
 
 	  ; Specified balloons in each barracks on initial fill
 	  If $initialFillFlag And $barracksCount>=1 And $barracksCount<=4 Then
 		 ; Dequeue troops
 		 DequeueTroops($f)
 
-		 FindBarracksTroopSlots($gBarracksTroopSlotBMPs, $troopSlots)
+		 For $i = $eTroopBarbarian To $eTroopLavaHound
+			$troopSlots[$i][0] = -1
+			$troopSlots[$i][1] = -1
+			$troopSlots[$i][2] = -1
+			$troopSlots[$i][3] = -1
+		 Next
+		 LocateSlots($eActionTypeBarracks, $eSlotTypeTroop, $troopSlots)
 
 		 QueueTroopsEvenly($eTroopBalloon, $troopSlots, $numberOfBalloons)
 	  EndIf
@@ -87,11 +99,11 @@ Func AutoRaidExecuteRaidStrategy3(ByRef $f)
 
    RandomWeightedClick($rRaidSlotsButton1)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
-   LocateRaidSlots($eRaidSlotTypeTroop, $troopIndex)
+   LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    ; Determine attack direction
    Local $direction = AutoRaidStrategy3GetDirection($f)
@@ -135,7 +147,7 @@ Func AutoRaidStrategy3GetDirection(Const $f)
    ; Count the collectors, by top/bottom half
    Local $matchX[1], $matchY[1], $conf[1]
 
-   Local $matchCount = ScanFrameForAllBMPs($f, $CollectorBMPs, $gConfidenceCollector, 14, $matchX, $matchY, $conf)
+   Local $matchCount = FindAllBMPs($eSearchTypeLootCollector, 17, $matchX, $matchY, $conf)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
    For $i = 0 To $matchCount-1

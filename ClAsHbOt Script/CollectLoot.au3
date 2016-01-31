@@ -6,7 +6,7 @@ Func CollectLoot()
 
    ; Find all the collectors that need clicking in the frame
    Local $mX[1], $mY[1], $c[1]
-   Local $matchCount = ScanFrameForAllBMPs($frame, $CollectLootBMPs, $gConfidenceCollectLoot, 17, $mX, $mY, $c)
+   Local $matchCount = FindAllBMPs($eSearchTypeLootBubble, 17, $mX, $mY, $c)
 
    ; Do the collecting
    If $matchCount > 0 Then
@@ -18,12 +18,12 @@ Func CollectLoot()
 	  For $i = 0 To $matchCount-1
 
 		 Local $button[4] = [ _
-			$gWestPoint[0]  + $sortedX[$i] + $rCollectorButton[0], _
-			$gNorthPoint[1] + $sortedY[$i] + $rCollectorButton[1], _
-			$gWestPoint[0]  + $sortedX[$i] + $rCollectorButton[2], _
-			$gNorthPoint[1] + $sortedY[$i] + $rCollectorButton[3]]
+			$sortedX[$i] + $rCollectorButton[0], _
+			$sortedY[$i] + $rCollectorButton[1], _
+			$sortedX[$i] + $rCollectorButton[2], _
+			$sortedY[$i] + $rCollectorButton[3]]
 
-		 DebugWrite("CollectLoot() Found collectors, clicking " & $i & " of " & $matchCount & " at " & $button[0] & "," & $button[1])
+		 DebugWrite("CollectLoot() Found collectors, clicking " & $i+1 & " of " & $matchCount & " at " & $button[0] & "," & $button[1])
 		 RandomWeightedClick($button)
 
 		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])
@@ -35,7 +35,7 @@ Func CollectLoot()
 
    ; Check for loot cart
    Local $x, $y, $conf
-   FindLootCart($x, $y, $conf)
+   FindBestBMP($eSearchTypeLootCart, $x, $y, $conf)
 
    If $x <> -1 Then
 	  Local $button[4] = [$x, $y, $x + 15, $y + 15]

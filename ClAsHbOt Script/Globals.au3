@@ -15,10 +15,16 @@ Global $gDllHandle = 0
 ; Scraper Globals
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
 Global $gBackgroundScraping
-Global Enum $eLootTypeGold, $eLootTypeElix, $eLootTypeDark
-Global $gLootTypeNames[3] = [ "Gold", "Elix", "Dark" ]
-Global Enum $eRaidSlotTypeTroop, $eRaidSlotTypeSpell
-Global $gRaidSlotTypeNames[2] = [ "Troop", "Spell" ]
+Global Enum $eActionTypeRaid, $eActionTypeDonate, $eActionTypeBarracks, $eActionTypeReloadButton
+Global $gActionTypeNames[4] = [ "Raid", "Donate", "Barracks", "ReloadButton" ]
+Global Enum $eSlotTypeTroop, $eSlotTypeSpell
+Global $gSlotTypeNames[2] = [ "Troop", "Spell" ]
+Global Enum $eBuiltTroopClassNormal, $eBuiltTroopClassHero
+Global $gBuiltTroopClassNames[2] = [ "Normal", "Heroes" ]
+Global Enum $eSearchTypeTownHall, $eSearchTypeLootCart, $eSearchClashIcon, $eSearchPlayStoreOpenButton, $eSearchDonateButton, _
+			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeDarkStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble
+Global $gSearchTypeNames[10] = [ "TownHall", "LootCart", "ClashIcon", "PlayStoreOpenButton", "DonateButton", _
+								 "GoldStorage", "ElixStorage", "DarkStorage", "LootCollector", "LootBubble" ]
 
 ; Raiding variables
 Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)
@@ -69,6 +75,9 @@ Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFree
 Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freeze", "Poison", _
    "Earthquake", "Haste"]
 
+; Reload button names
+Global $gReloadButtonNames[4] = ["Info", "Gold", "Elixir", "Dark Elixir"]
+
 ; Known screen/window types
 Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMatch, _
    $eScreenWaitRaid, $eScreenLiveRaid, $eScreenEndBattle, _
@@ -104,8 +113,10 @@ Global $gConfidenceCampTroopSlot = 0.99
 Global $gConfidenceTrainTroopsButton = 0.99
 Global $gConfidenceDonateButton = 0.99
 Global $gConfidenceStorages = 0.94
-Global $gConfidenceLootCart = 0.94
-Global $gConfidenceReloadBarButton = 0.99
+Global $gConfidenceLootCart = 0.93
+Global $gConfidenceReloadButton = 0.99
+Global $gConfidenceClashIcon = 0.99
+Global $gConfidencePlayStoreOpenButton = 0.99
 
 ; Deploy locations
 Global $gMaxDeployBoxes = 19
