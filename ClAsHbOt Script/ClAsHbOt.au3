@@ -10,7 +10,6 @@ Dec 10 Update To Do
 
 Massive rework todo
 - Battle end bonus char maps - "74" needed?
-- $rAttackingDisabledPoint1Color, 2, 3
 #ce
 
 Opt("MustDeclareVars", 1)
@@ -114,6 +113,12 @@ Func MainApplicationLoop()
 	  If $gAutoNeedToCollectEndingLoot Then
 		 CaptureAutoEndLoot()
 		 $gAutoNeedToCollectEndingLoot = False
+	  EndIf
+
+	  ; If Background Mode was clicked, run a check
+	  If $gBackgroundModeClicked Then
+		 TestBackgroundScrape()
+		 $gBackgroundModeClicked = False
 	  EndIf
 
 	  ; Check for offline issues
@@ -256,8 +261,17 @@ Func MainApplicationLoop()
 	  While TimerDiff($t)<5000
 		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 
-		 If ($gKeepOnlineClicked Or $gCollectLootClicked Or $gDonateTroopsClicked Or $gReloadDefensesClicked Or $gFindMatchClicked Or $gAutoPushClicked Or $gAutoRaidClicked) And _
-			_GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox)<>$BST_CHECKED Then ExitLoop
+		 Local $somethingWasClicked = _
+			$gKeepOnlineClicked Or _
+			$gCollectLootClicked Or _
+			$gDonateTroopsClicked Or _
+			$gReloadDefensesClicked Or _
+			$gFindMatchClicked Or _
+			$gAutoPushClicked Or _
+			$gAutoRaidClicked Or _
+			$gBackgroundModeClicked
+
+		 If $somethingWasClicked And _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox)<>$BST_CHECKED Then ExitLoop
 		 If $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecuteRaid Or $gAutoStage=$eAutoExecuteSnipe Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop

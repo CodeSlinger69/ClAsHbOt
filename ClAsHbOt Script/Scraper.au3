@@ -1,20 +1,5 @@
 Func InitScraper()
    _GDIPlus_Startup()
-
-   If $gBackgroundScraping = True Then
-	  If TestBackGroundScrape() = False Then
-		 $gBackgroundScraping = False
-
-		 DebugWrite("InitScraper() Background scraping disabled")
-		 Local $res = MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Background scraping disabled", _
-			"Background scraping has been disabled, as it appears to not be working." & @CRLF & @CRLF & _
-			"If you are running BlueStacks inside of another virtual machine, this may be the cause. " & _
-			"For ClAsHbOt to work correctly in this situation, the BlueStacks window must be visible " & _
-			"and not obscured at any time.")
-	  Else
-		 DebugWrite("InitScraper() Background scraping enabled")
-	  EndIf
-   EndIf
 EndFunc
 
 Func ExitScraper()
@@ -424,7 +409,10 @@ Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
 		 Return SetError($eErrorAndroidMessageBox, 0, False)
 	  EndIf
 
-	  If AttackingIsDisabled($f) Then
+	  If IsColorPresent($f, $rWaitForPersonalBreakPoint1Color) And _
+		 IsColorPresent($f, $rWaitForPersonalBreakPoint2Color) And _
+		 IsColorPresent($f, $rWaitForPersonalBreakPoint3Color) Then
+
 		 Return SetError($eErrorAttackingDisabled, 0, False)
 	  EndIf
 
@@ -463,7 +451,10 @@ Func WaitForColor(ByRef $f, Const $wait, Const $c1, Const $c2=0, Const $c3=0)
 		 Return SetError($eErrorAndroidMessageBox, 0, False)
 	  EndIf
 
-	  If AttackingIsDisabled($f) Then
+	  If IsColorPresent($f, $rWaitForPersonalBreakPoint1Color) And _
+		 IsColorPresent($f, $rWaitForPersonalBreakPoint2Color) And _
+		 IsColorPresent($f, $rWaitForPersonalBreakPoint3Color) Then
+
 		 Return SetError($eErrorAttackingDisabled, 0, False)
 	  EndIf
 
@@ -485,18 +476,6 @@ Func WaitForColor(ByRef $f, Const $wait, Const $c1, Const $c2=0, Const $c3=0)
    Else
 	  Return True
    EndIf
-EndFunc
-
-Func AttackingIsDisabled(Const $f)
-   If IsColorPresent($f, $rAttackingDisabledPoint1Color) And _
-	  IsColorPresent($f, $rAttackingDisabledPoint2Color) And _
-	  IsColorPresent($f, $rAttackingDisabledPoint3Color) Then Return True
-
-   If IsColorPresent($f, $rWaitForPersonalBreakPoint1Color) And _
-	  IsColorPresent($f, $rWaitForPersonalBreakPoint2Color) And _
-	  IsColorPresent($f, $rWaitForPersonalBreakPoint3Color) Then Return True
-
-   Return False
 EndFunc
 
 Func InColorSphere(Const $color, Const $center, Const $radius)
@@ -877,13 +856,15 @@ Func CountBuiltTroops(Const $type, ByRef $index)
 EndFunc
 
 Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
+   Local $backgroundMode = _GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox)
+
    If $gDebugLogCallsToCaptureFrame = True Then
-	  DebugWrite("CaptureFrame() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+	  DebugWrite("CaptureFrame() from " & $fromFunc & ($backgroundMode ? " (background)" : " (foreground)"))
    EndIf
 
    Local $hGdipBitmap
 
-   If $gBackgroundScraping Then
+   If $backgroundMode Then
 	  Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
 	  Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
 	  Local $hHBITMAP = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1, $y2-$y1)
@@ -916,13 +897,15 @@ EndFunc
 
 
 Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
+   Local $backgroundMode = _GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox)
+
    If $gDebugLogCallsToCaptureFrame = True Then
-	  DebugWrite("CaptureFrameHBITMAP() from " & $fromFunc & ($gBackgroundScraping ? " (background)" : " (foreground)"))
+	  DebugWrite("CaptureFrameHBITMAP() from " & $fromFunc & ($backgroundMode ? " (background)" : " (foreground)"))
    EndIf
 
    Local $hHBITMAP
 
-   If $gBackgroundScraping Then
+   If $backgroundMode Then
 	  Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
 	  Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
 	  $hHBITMAP = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1, $y2-$y1)
@@ -953,7 +936,7 @@ Func SaveDebugHBITMAP(Const $hHBITMAP, Const $filename)
    _ScreenCapture_SaveImage($filename, $hHBITMAP, False)
 EndFunc
 
-Func TestBackGroundScrape()
+Func TestBackgroundScrape()
    Local $frame = CaptureFrame("TestBackGroundScrape")
    Local $w = _GDIPlus_ImageGetWidth($frame)
    Local $h = _GDIPlus_ImageGetHeight($frame)
@@ -970,6 +953,19 @@ Func TestBackGroundScrape()
 
    _GDIPlus_BitmapDispose($frame)
 
-   Return $notBlackPixel
+   If $notBlackPixel = False Then
+	  _GUICtrlButton_SetCheck($GUI_BackgroundModeCheckBox, False)
+
+	  DebugWrite("TestBackgroundScrape() Background mode disabled")
+	  Local $res = MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Background mode disabled", _
+		 "Background mode has been disabled, as it appears to not be working." & @CRLF & @CRLF & _
+		 "If you are running BlueStacks inside of another virtual machine, this may be the cause. " & _
+		 "Since ClAsHbOt is now operating in the foreground, the BlueStacks window must be visible " & _
+		 "and not obscured at any time.")
+
+   Else
+	  DebugWrite("TestBackgroundScrape() Background mode confirmed")
+
+   EndIf
 EndFunc
 

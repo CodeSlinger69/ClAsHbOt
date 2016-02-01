@@ -15,14 +15,7 @@ Func ReadSettings()
    EndIf
 
    ; Debug
-   $gScraperDebug = _Boolean(IniRead($gIniFile, "Debug", "Scraper Debug", False))
    $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
-   $gDebugSaveScreenCaptures = _Boolean(IniRead($gIniFile, "Debug", "Save Screen Captures", False))
-   DebugWrite("Setting Debug Save Screen Captures = " & $gDebugSaveScreenCaptures)
-
-   ; Foreground / background interaction
-   $gBackgroundScraping = _Boolean(IniRead($gIniFile, "General", "Use Background Mode", True))
-   DebugWrite("Setting Background Scraping = " & $gBackgroundScraping)
 
    ; Mouse
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding
@@ -120,6 +113,7 @@ Func SaveSettings()
    IniWrite($gIniFile, "General", "Snipe Exposed TH",  _GUICtrlButton_GetCheck($GUI_AutoRaidSnipeExposedTH))
    IniWrite($gIniFile, "General", "Wait For Heroes", _GUICtrlComboBox_GetCurSel($GUI_AutoRaidWaitForHeroesCombo))
    IniWrite($gIniFile, "General", "Raid Strategy", _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo))
+   IniWrite($gIniFile, "General", "Background Mode", _GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox))
 
    DebugWrite("SaveSettings() Settings saved")
 EndFunc

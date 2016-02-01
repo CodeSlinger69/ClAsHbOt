@@ -11,7 +11,8 @@
 Global $GUI, $GUIImage, $GUIGraphic
 Global $GUI_Width=285, $GUI_Height=478
 Global $GUI_KeepOnlineCheckBox, $GUI_CollectLootCheckBox, $GUI_DonateTroopsCheckBox, $GUI_ReloadDefensesCheckBox, _
-	  $GUI_FindMatchCheckBox, $GUI_AutoPushCheckBox, $GUI_AutoRaidCheckBox, $GUI_DefenseFarmCheckBox
+	  $GUI_FindMatchCheckBox, $GUI_AutoPushCheckBox, $GUI_AutoRaidCheckBox, $GUI_DefenseFarmCheckBox, _
+	  $GUI_BackgroundModeCheckBox
 Global $GUI_CloseButton
 Global $GUI_GoldEdit, $GUI_ElixEdit, $GUI_DarkEdit, $GUI_TownHallEdit, $GUI_AutoRaidUseBreakers, $GUI_AutoRaidBreakerCountEdit, _
 	  $GUI_AutoRaidDumpCups, $GUI_AutoRaidDeadBases, $GUI_AutoRaidIgnoreStorages, $GUI_AutoRaidSnipeExposedTH, $GUI_AutoRaidDumpCupsThreshold, _
@@ -53,8 +54,14 @@ Func InitGUI()
    GUICtrlCreateLabel("TH <=", $x+5, $y+2, 40, 17)
    $GUI_TownHallEdit = GUICtrlCreateEdit(IniRead($gIniFile, "General", "Town Hall", 8), $x+50, $y, $x+70, 17, $ES_NUMBER)
 
+   $y += 23
+   $GUI_BackgroundModeCheckBox = GUICtrlCreateCheckbox("Background Mode", $x+5, $y, $w-6, 25)
+   _GUICtrlButton_SetCheck($GUI_BackgroundModeCheckBox, IniRead($gIniFile, "General", "Background Mode", $BST_UNCHECKED))
+   GUICtrlSetOnEvent($GUI_BackgroundModeCheckBox, "GUIBackgroundModeCheckBox")
+   If _GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox) = True Then TestBackgroundScrape()
+
    ; Left side, things todo group
-   $y+=31
+   $y+=30
    $h=180
    GUICtrlCreateGroup("Things Todo", $x, $y, $w, $h)
 
@@ -285,6 +292,11 @@ EndFunc
 Func GUIReloadDefensesCheckBox()
    DebugWrite("Reload Defenses clicked")
    $gReloadDefensesClicked = (_GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED) ? True : False
+EndFunc
+
+Func GUIBackgroundModeCheckBox()
+   DebugWrite("Background Mode clicked")
+   $gBackgroundModeClicked = (_GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox) = $BST_CHECKED) ? True : False
 EndFunc
 
 Func GUIFindMatchCheckBox()

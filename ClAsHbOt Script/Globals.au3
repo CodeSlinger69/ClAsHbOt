@@ -1,10 +1,12 @@
-Global $gVersion = "20160131"
+Global $gVersion = "20160201"
 Global $gAutoItVersionRequired = "3.3.14.2"
 
-; Debug - these are overwritten once ReadSettings() in Settings.au3 is called, however these need to be defined here, as there can
+; Debug - this is overwritten in ReadSettings(), however this needs to be defined here, as there can
 ;   be a need to write debug statements prior to ReadSettings() being called.
-Global $gScraperDebug = False
 Global $gDebug = True
+
+; Debugging switches used during development/testing
+Global $gScraperDebug = False
 Global $gDebugSaveScreenCaptures = False
 Global $gDebugSaveUnknownStorageFrames = False
 Global $gDebugLogCallsToCaptureFrame = False
@@ -14,7 +16,6 @@ Global $gDllHandle = 0
 
 ; Scraper Globals
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
-Global $gBackgroundScraping
 Global Enum $eActionTypeRaid, $eActionTypeDonate, $eActionTypeBarracks, $eActionTypeReloadButton
 Global $gActionTypeNames[4] = [ "Raid", "Donate", "Barracks", "ReloadButton" ]
 Global Enum $eSlotTypeTroop, $eSlotTypeSpell
@@ -55,7 +56,7 @@ Global $gIniFile = "CoC Bot.ini"
 ; GUI
 Global $gKeepOnlineClicked = False, $gCollectLootClicked = False, $gDonateTroopsClicked = False, $gDonateTroopsStartup = False
 Global $gReloadDefensesClicked = False, $gFindMatchClicked = False, $gAutoPushClicked = False, $gAutoRaidClicked = False
-Global $gDefenseFarmClicked = False
+Global $gDefenseFarmClicked = False, $gBackgroundModeClicked = False
 Global $gAutoNeedToCollectStartingLoot = False, $gAutoNeedToCollectEndingLoot = False
 
 ; Lists of troop and spell types
