@@ -1,7 +1,7 @@
 Func ReadSettings()
    ; AutoIt Version Check
-   DebugWrite("AutoIt Version: " & @AutoItVersion)
    If VersionCompare(@AutoItVersion, $gAutoItVersionRequired) < 0 Then
+	  DebugWrite("AutoIt Version: " & @AutoItVersion & " - not up to date")
 	  Local $res = MsgBox(BitOr($MB_OKCANCEL, $MB_ICONQUESTION), "AutoIt Version - ClAsHbOt", _
 	  "Your AutoIt version (" & @AutoItVersion & ") is not up to date." & @CRLF & _
 	  "You may expereience issues unless you update to AutoIt version " & $gAutoItVersionRequired & " or higher." & @CRLF & @CRLF & _
@@ -10,15 +10,19 @@ Func ReadSettings()
 	  If $res = $IDCANCEL Then
 		 Exit
 	  EndIf
+   Else
+	  DebugWrite("AutoIt Version: " & @AutoItVersion & " - OK!")
    EndIf
 
    ; Debug
    $gScraperDebug = _Boolean(IniRead($gIniFile, "Debug", "Scraper Debug", False))
    $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
    $gDebugSaveScreenCaptures = _Boolean(IniRead($gIniFile, "Debug", "Save Screen Captures", False))
+   DebugWrite("Setting Debug Save Screen Captures = " & $gDebugSaveScreenCaptures)
 
    ; Foreground / background interaction
    $gBackgroundScraping = _Boolean(IniRead($gIniFile, "General", "Use Background Mode", True))
+   DebugWrite("Setting Background Scraping = " & $gBackgroundScraping)
 
    ; Mouse
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding

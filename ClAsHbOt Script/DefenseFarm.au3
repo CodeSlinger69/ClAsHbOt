@@ -96,6 +96,8 @@ Func GoOffline(ByRef $f)
 	  Return False
    EndIf
 
+   Sleep(10000)
+
    Return True
 EndFunc
 

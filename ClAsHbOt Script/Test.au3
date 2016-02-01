@@ -299,15 +299,18 @@ Func TestDonate()
 
 	  Local $indexOfTroopToDonate
 	  ParseRequestTextTroops($requestText, $donateTroopIndex, $indexOfTroopToDonate)
-	  DebugWrite("Troop Donate index: " & $indexOfTroopToDonate & " " & $donateTroopIndex[$indexOfTroopToDonate][0] _
-		  & " " & $donateTroopIndex[$indexOfTroopToDonate][1] _
-		   & " " & $donateTroopIndex[$indexOfTroopToDonate][2] _
-		    & " " & $donateTroopIndex[$indexOfTroopToDonate][3] )
+	  DebugWrite("Troop Donate index: " & $indexOfTroopToDonate)
+	  If $indexOfTroopToDonate<> -1 Then
+		 DebugWrite("Troop Donate Box: " & $donateTroopIndex[$indexOfTroopToDonate][0] _
+			& " " & $donateTroopIndex[$indexOfTroopToDonate][1] _
+			& " " & $donateTroopIndex[$indexOfTroopToDonate][2] _
+			& " " & $donateTroopIndex[$indexOfTroopToDonate][3] )
+	  EndIf
 
 	  Local $indexOfSpellToDonate
 	  ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate)
 	  DebugWrite("Spell Donate index: " & $indexOfSpellToDonate)
-Exit
+
 	  ; If donate troops window is still open, then close it
 	  If IsColorPresent($frame, $rWindowChatDimmedColor) Then
 		 DebugWrite("TestDonate() Clicking Safe Area button")

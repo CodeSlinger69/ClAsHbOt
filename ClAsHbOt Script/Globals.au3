@@ -1,4 +1,4 @@
-Global $gVersion = "20160118+WIP"
+Global $gVersion = "20160131"
 Global $gAutoItVersionRequired = "3.3.14.2"
 
 ; Debug - these are overwritten once ReadSettings() in Settings.au3 is called, however these need to be defined here, as there can
@@ -107,7 +107,7 @@ Global $gConfidenceArmyCamp = 0.94
 Global $gConfidenceBarracks = 0.95
 Global $gConfidenceCollector = 0.92
 Global $gConfidenceRaidTroopSlot = 0.98
-Global $gConfidenceDonateTroopSlot = 0.985
+Global $gConfidenceDonateTroopSlot = 0.9875
 Global $gConfidenceBarracksTroopSlot = 0.99
 Global $gConfidenceCampTroopSlot = 0.99
 Global $gConfidenceTrainTroopsButton = 0.99
