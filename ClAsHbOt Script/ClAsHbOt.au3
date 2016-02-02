@@ -64,9 +64,6 @@ Func Main()
 
    InitScraper()
 
-;ZoomOut2()
-;$gScraperDebug = True
-;$gDebugSaveScreenCaptures = True
 ;TestMyStuff()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
