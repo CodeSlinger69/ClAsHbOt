@@ -1,23 +1,18 @@
 Func TestMyStuff()
    Local $frame = CaptureFrame("TestMyStuff")
-   Local $MyGold = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-   DebugWrite("My Gold: " & $MyGold)
-   Local $MyElix = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-   DebugWrite("My Elix: " & $MyElix)
-   Local $MyDark = 0
+
+   DebugWrite("My Gold: " & ScrapeFuzzyText2($fontMyStuff, $rMyGoldTextBox))
+   DebugWrite("My Elix: " & ScrapeFuzzyText2($fontMyStuff, $rMyElixTextBox))
    If IsTextBoxPresent($frame, $rMyGemsTextBoxWithDE) = True Then
-      $MyDark = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  DebugWrite("My Dark: " & ScrapeFuzzyText2($fontMyStuff, $rMyDarkTextBox))
    EndIf
-   DebugWrite("My Dark: " & $MyDark)
-   Local $MyGems = 0
    If IsTextBoxPresent($frame, $rMyGemsTextBoxNoDE) = True Then
-      $MyGems = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGemsTextBoxNoDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  DebugWrite("My Gems: " & ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxNoDE))
    Else
-      $MyGems = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGemsTextBoxWithDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+	  DebugWrite("My Gems: " & ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxWithDE))
    EndIf
-   DebugWrite("My Gems: " & $MyGems)
-   Local $MyCups = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyCupsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
-   DebugWrite("My Cups: " & $MyCups)
+   DebugWrite("My Cups: " & ScrapeFuzzyText2($fontMyStuff, $rMyCupsTextBox))
+
    _GDIPlus_BitmapDispose($frame)
 EndFunc
 
@@ -31,12 +26,12 @@ EndFunc
 
 Func TestEndBattleLoot()
    Local $frame = CaptureFrame("TestEndBattleLoot")
-   Local $goldWin = ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-   Local $elixWin = ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-   Local $darkWin = IsTextBoxPresent($frame, $rEndBattleDarkTextBox) ? ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
+   Local $goldWin = Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleGoldTextBox))
+   Local $elixWin = Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleElixTextBox))
+   Local $darkWin = IsTextBoxPresent($frame, $rEndBattleDarkTextBox) ? Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleDarkTextBox)) : 0
    Local $cupsWin = IsTextBoxPresent($frame, $rEndBattleCupsWithDETextBox) ? _
-					ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsWithDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : _
-					ScrapeFuzzyText($frame, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsNoDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+					Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleCupsWithDETextBox)) : _
+					Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleCupsNoDETextBox))
    DebugWrite("Gold: " & $goldWin)
    DebugWrite("Elix: " & $elixWin)
    DebugWrite("Dark: " & $darkWin)
@@ -53,12 +48,12 @@ Func TestEndBattleBonus()
 	  IsTextBoxPresent($frame, $rEndBattleBonusElixTextBox) Or _
 	  IsTextBoxPresent($frame, $rEndBattleBonusDarkTextBox) Then
 
-	  $goldBonus = ScrapeFuzzyText($frame, $gBattleEndBonusCharacterMaps, $rEndBattleBonusGoldTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
-	  $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
-	  $elixBonus = ScrapeFuzzyText($frame, $gBattleEndBonusCharacterMaps, $rEndBattleBonusElixTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
-	  $elixBonus = StringLeft($elixBonus, 1) = "+" ? StringMid($elixBonus, 2) : 0
-	  $darkBonus = ScrapeFuzzyText($frame, $gBattleEndBonusCharacterMaps, $rEndBattleBonusDarkTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
-	  $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
+	  $goldBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusGoldTextBox)
+	  $goldBonus = StringLeft($goldBonus, 1) = "+" ? Number(StringMid($goldBonus, 2)) : 0
+	  $elixBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusElixTextBox)
+	  $elixBonus = StringLeft($elixBonus, 1) = "+" ? Number(StringMid($elixBonus, 2)) : 0
+	  $darkBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusDarkTextBox)
+	  $darkBonus = StringLeft($darkBonus, 1) = "+" ? Number(StringMid($darkBonus, 2)) : 0
 	  DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
    EndIf
    _GDIPlus_BitmapDispose($frame)
@@ -185,10 +180,8 @@ Func TestRaidTroopsCount()
 EndFunc
 
 Func TestBarracksStatus()
-   Local $frame = CaptureFrame("TestEndBattleLoot")
-   Local $queueStatus = ScrapeFuzzyText($frame, $gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $queueStatus = ScrapeFuzzyText2($fontBarracksStatus, $rBarracksWindowTextBox)
    DebugWrite("Barracks queue status: " & $queueStatus)
-   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestBarracksTroopSlots()
@@ -207,12 +200,21 @@ Func TestBarracksTroopSlots()
 EndFunc
 
 Func TestBuiltTroops()
-   Local $builtTroopCounts[$eTroopCount]
-   CountBuiltTroops($eBuiltTroopClassNormal, $builtTroopCounts)
-   CountBuiltTroops($eBuiltTroopClassHero, $builtTroopCounts)
+   Local $builtTroopCounts[$eTroopCount][5]
+   For $i = 0 To $eTroopCount-1
+	  $builtTroopCounts[$i][0] = -1
+	  $builtTroopCounts[$i][1] = -1
+	  $builtTroopCounts[$i][2] = -1
+	  $builtTroopCounts[$i][3] = -1
+	  $builtTroopCounts[$i][4] = 0
+   Next
+
+   LocateSlots($eActionTypeCamp, $eSlotTypeTroop, $builtTroopCounts)
+   LocateSlots($eActionTypeCamp, $eSlotTypeHero, $builtTroopCounts)
+   UpdateArmyCampSlotCounts($builtTroopCounts)
 
    For $i = $eTroopBarbarian To $eTroopWarden
-	  If $builtTroopCounts[$i]>0 Then DebugWrite("Built troops count " & $gTroopNames[$i] & "=" & $builtTroopCounts[$i])
+	  If $builtTroopCounts[$i][4]>0 Then DebugWrite("Built troops count " & $gTroopNames[$i] & "=" & $builtTroopCounts[$i][4])
    Next
 EndFunc
 

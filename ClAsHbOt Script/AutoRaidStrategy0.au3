@@ -11,7 +11,7 @@ Func FillBarracksStrategy0(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
    DebugWrite("FillBarracksStrategy0(), " & ($initialFillFlag ? "initial fill." : "top up.") )
 
    ; How many breakers are needed?
-   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $builtTroopCounts[$eTroopWallBreaker]
+   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $builtTroopCounts[$eTroopWallBreaker][4]
    If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
    Else

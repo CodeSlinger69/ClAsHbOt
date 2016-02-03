@@ -2,16 +2,21 @@
 //
 #include "stdafx.h"
 #include "ImageMatchDLL.h"
+#include "CGdiPlus.h"
+#include "Logger.h"
 #include "Scraper.h"
+#include "OCR.h"
 
 char returnString[MAXSTRING];
 
-char* __stdcall Initialize(char* scriptDir)
+char* __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
 {
-	scraper = new Scraper();
-	scraper->SetDirectories(scriptDir);
-	scraper->LoadNeedles();
+	CGdiPlus::Init();
+	logger.reset(new Logger(scriptDir, debugGlobal));
+	scraper.reset(new Scraper(scriptDir));
+	ocr.reset(new OCR(scriptDir, debugOCR));
 
+	logger->WriteLog("Initialization complete");
 	sprintf_s(returnString, MAXSTRING, "Success");
 	return returnString;
 }
@@ -19,7 +24,7 @@ char* __stdcall Initialize(char* scriptDir)
 char* __stdcall FindBestBMP(searchType type, HBITMAP hBmp, double threshold)
 {
 	MATCHPOINTS match;
-	std::string matchedString = scraper->FindBestBMP(type, hBmp, threshold, &match);
+	string matchedString = scraper->FindBestBMP(type, hBmp, threshold, match);
 	
 	if (matchedString.length() > 0)
 		sprintf_s(returnString, MAXSTRING, "%s|%d|%d|%.4f", matchedString.c_str(), match.x, match.y, match.val);
@@ -31,9 +36,9 @@ char* __stdcall FindBestBMP(searchType type, HBITMAP hBmp, double threshold)
 
 char* __stdcall FindAllBMPs(searchType type, HBITMAP hBmp, double threshold, int maxMatch)
 {
-	std::vector<MATCHPOINTS> matches;
+	vector<MATCHPOINTS> matches;
 
-	scraper->FindAllBMPs(type, hBmp, threshold, maxMatch, &matches);
+	scraper->FindAllBMPs(type, hBmp, threshold, maxMatch, matches);
 	PrepareReturnString(matches);
 
 	return returnString;
@@ -41,25 +46,25 @@ char* __stdcall FindAllBMPs(searchType type, HBITMAP hBmp, double threshold, int
 
 char* __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, double threshold)
 {
-	std::vector<MATCHPOINTS> matches;
+	vector<MATCHPOINTS> matches;
 
-	scraper->LocateSlots(aType, sType, hBmp, threshold, &matches);
+	scraper->LocateSlots(aType, sType, hBmp, threshold, matches);
 	PrepareReturnString(matches);
 
 	return returnString;
 }
 
-char* __stdcall CountBuiltTroops(troopClass type, HBITMAP hBmp, double threshold)
+char*__stdcall ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::Color foregroundColor, const unsigned int colorRadius, const bool keepSpaces)
 {
-	std::vector<MATCHPOINTS> matches;
+	string s = ocr->ScrapeFuzzyText(hBmp, fontT, foregroundColor, colorRadius, keepSpaces);
 
-	scraper->CountBuiltTroops(type, hBmp, threshold, &matches);
-	PrepareReturnString(matches);
+	sprintf_s(returnString, MAXSTRING, "%s", s.c_str());
 
 	return returnString;
 }
 
-void PrepareReturnString(const std::vector<MATCHPOINTS> matches)
+
+void PrepareReturnString(const vector<MATCHPOINTS> matches)
 {
 	if (!matches.empty())
 	{

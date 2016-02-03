@@ -295,15 +295,15 @@ EndFunc
 Func AutoRaidGetDisplayedLoot(Const $frame, ByRef $thLevel, ByRef $thLeft, ByRef $thTop, _
 						      ByRef $gold, ByRef $elix, ByRef $dark, ByRef $cups, ByRef $deadbase)
 
-   $gold = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-   $elix = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+   $gold = Number(ScrapeFuzzyText2($fontRaidLoot, $rGoldTextBox))
+   $elix = Number(ScrapeFuzzyText2($fontRaidLoot, $rElixTextBox))
 
    If IsTextBoxPresent($frame, $rDarkTextBox)=False Then
 	  $dark = 0
-	  $cups = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rCupsTextBoxNoDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  $cups = Number(ScrapeFuzzyText2($fontRaidLoot, $rCupsTextBoxNoDE))
    Else
-	  $dark = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  $cups = Number(ScrapeFuzzyText($frame, $gRaidLootCharMaps, $rCupsTextBoxWithDE, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  $dark = Number(ScrapeFuzzyText2($fontRaidLoot, $rDarkTextBox))
+	  $cups = Number(ScrapeFuzzyText2($fontRaidLoot, $rCupsTextBoxWithDE))
    EndIf
 
    $deadBase = IsColorPresent($frame, $rDeadBaseIndicatorColor)
@@ -611,9 +611,9 @@ Func WaitForBattleEnd(ByRef $f, Const $kingDeployed, Const $queenDeployed, Const
 	  EndIf
 
 	  ; Get available loot remaining
-	  Local $goldRemaining = Number(ScrapeFuzzyText($f, $gRaidLootCharMaps, $rGoldTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  Local $elixRemaining = Number(ScrapeFuzzyText($f, $gRaidLootCharMaps, $rElixTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
-	  Local $darkRemaining = Number(ScrapeFuzzyText($f, $gRaidLootCharMaps, $rDarkTextBox, $gRaidLootCharMapsMaxWidth, $eScrapeDropSpaces))
+	  Local $goldRemaining = Number(ScrapeFuzzyText2($fontRaidLoot, $rGoldTextBox))
+	  Local $elixRemaining = Number(ScrapeFuzzyText2($fontRaidLoot, $rElixTextBox))
+	  Local $darkRemaining = Number(ScrapeFuzzyText2($fontRaidLoot, $rDarkTextBox))
 
 	  ; If loot has changed, then reset timer
 	  If $goldRemaining<>$lastGold Or $elixRemaining<>$lastElix Or $darkRemaining<>$lastDark Then
@@ -648,12 +648,13 @@ Func WaitForBattleEnd(ByRef $f, Const $kingDeployed, Const $queenDeployed, Const
    If WaitForScreen($f, 5000, $eScreenEndBattle) Then
 	  Sleep(3000) ; Long wait due to bonus numbers "flying in"
 	  If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "EndBattleFrame.bmp")
-	  Local $goldWin = ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleGoldTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $elixWin = ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleElixTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
-	  Local $darkWin = IsTextBoxPresent($f, $rEndBattleDarkTextBox) ? ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleDarkTextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : 0
+
+	  Local $goldWin = Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleGoldTextBox))
+	  Local $elixWin = Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleElixTextBox))
+	  Local $darkWin = IsTextBoxPresent($f, $rEndBattleDarkTextBox) ? Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleDarkTextBox)) : 0
 	  Local $cupsWin = IsTextBoxPresent($f, $rEndBattleCupsWithDETextBox) ? _
-					   ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsWithDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces) : _
-					   ScrapeFuzzyText($f, $gBattleEndWinningsCharacterMaps, $rEndBattleCupsNoDETextBox, $gBattleEndWinningsCharMapsMaxWidth, $eScrapeDropSpaces)
+					   Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleCupsWithDETextBox)) : _
+					   Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleCupsNoDETextBox))
 
 	  Local $goldBonus = 0
 	  Local $elixBonus = 0
@@ -662,12 +663,12 @@ Func WaitForBattleEnd(ByRef $f, Const $kingDeployed, Const $queenDeployed, Const
 		 IsTextBoxPresent($f, $rEndBattleBonusElixTextBox) Or _
 		 IsTextBoxPresent($f, $rEndBattleBonusDarkTextBox) Then
 
-		 $goldBonus = ScrapeFuzzyText($f, $gBattleEndBonusCharacterMaps, $rEndBattleBonusGoldTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
-		 $goldBonus = StringLeft($goldBonus, 1) = "+" ? StringMid($goldBonus, 2) : 0
-		 $elixBonus = ScrapeFuzzyText($f, $gBattleEndBonusCharacterMaps, $rEndBattleBonusElixTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
-		 $elixBonus = StringLeft($f, 1) = "+" ? StringMid($elixBonus, 2) : 0
-		 $darkBonus = ScrapeFuzzyText($f, $gBattleEndBonusCharacterMaps, $rEndBattleBonusDarkTextBox, $gBattleEndBonusCharMapsMaxWidth, $eScrapeDropSpaces)
-		 $darkBonus = StringLeft($darkBonus, 1) = "+" ? StringMid($darkBonus, 2) : 0
+		 $goldBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusGoldTextBox)
+		 $goldBonus = StringLeft($goldBonus, 1) = "+" ? Number(StringMid($goldBonus, 2)) : 0
+		 $elixBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusElixTextBox)
+		 $elixBonus = StringLeft($elixBonus, 1) = "+" ? Number(StringMid($elixBonus, 2)) : 0
+		 $darkBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusDarkTextBox)
+		 $darkBonus = StringLeft($darkBonus, 1) = "+" ? Number(StringMid($darkBonus, 2)) : 0
 	  EndIf
 
 	  DebugWrite("WaitForBattleEnd() Winnings this match: " & $goldWin & " / " & $elixWin & " / " & $darkWin & " / " & $cupsWin)
@@ -702,33 +703,33 @@ Func UpdateRaidSlotCounts(ByRef $index)
 			   $index[$i][1] + $rRaidTroopSelectedColor[1] - $rRaidTroopBox[1], _
 			   $rRaidTroopSelectedColor[2], _
 			   $rRaidTroopSelectedColor[3] ]
-			;DebugWrite("GetAvailableTroops() loc = " & $loc[0] & " " & $loc[1] & " " & Hex($loc[2]) & " " & $loc[3])
+			;DebugWrite("UpdateRaidSlotCounts() loc = " & $loc[0] & " " & $loc[1] & " " & Hex($loc[2]) & " " & $loc[3])
 
 			If IsColorPresent($frame, $loc) Then
 			   ; Troop is "selected"
 			   Local $textBox[10] = [ _
-				  $index[$i][0] + 5  - $rRaidTroopBox[0], _
-				  $index[$i][1] - 4  - $rRaidTroopBox[1], _
-				  $index[$i][2] - 5  - $rRaidTroopBox[0], _
-				  $index[$i][1] + 10 - $rRaidTroopBox[1], _
+				  $index[$i][0] + 5, _
+				  $index[$i][1] - 4, _
+				  $index[$i][2] - 5, _
+				  $index[$i][1] + 10, _
 				  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], 0, 0, 0, 0]
 			   ;DebugWrite("Selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
-			   Local $t = ScrapeFuzzyText($frame, $gRaidTroopCountsSelectedCharMaps, $textBox, $gRaidTroopCountsSelectedCharMapsMaxWidth, $eScrapeDropSpaces)
-			  ; DebugWrite("GetAvailableTroops() (selected) = " & $t)
+			   Local $t = ScrapeFuzzyText2($fontRaidTroopCountSelected, $textBox)
+			   ;DebugWrite("UpdateRaidSlotCounts() (selected) = " & $t)
 
 			Else
 			   ; Troop is not "selected"
 			   Local $textBox[10] = [ _
-				  $index[$i][0] + 5  - $rRaidTroopBox[0], _
-				  $index[$i][1]      - $rRaidTroopBox[1], _
-				  $index[$i][2] - 5  - $rRaidTroopBox[0], _
-				  $index[$i][1] + 18 - $rRaidTroopBox[1], _
+				  $index[$i][0] + 5, _
+				  $index[$i][1] + 0, _
+				  $index[$i][2] - 5, _
+				  $index[$i][1] + 18, _
 				  $rRaidSlotTroopCountTextBox[4], $rRaidSlotTroopCountTextBox[5], 0, 0, 0, 0]
 			   ;DebugWrite("Not selected text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
 				;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
-			   Local $t = ScrapeFuzzyText($frame, $gRaidTroopCountsCharMaps, $textBox, $gRaidTroopCountsCharMapsMaxWidth, $eScrapeDropSpaces)
-			   ;DebugWrite("GetAvailableTroops() (not selected) = " & $t)
+			   Local $t = ScrapeFuzzyText2($fontRaidTroopCountUnselected, $textBox)
+			   ;DebugWrite("UpdateRaidSlotCounts() (not selected) = " & $t)
 
 			EndIf
 

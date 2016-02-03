@@ -4,4 +4,4 @@ EXPORTS
    FindBestBMP
    FindAllBMPs
    LocateSlots
-   CountBuiltTroops
+   ScrapeFuzzyText

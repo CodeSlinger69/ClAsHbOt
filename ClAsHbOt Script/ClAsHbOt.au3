@@ -64,6 +64,10 @@ Func Main()
 
    InitScraper()
 
+;MsgBox($MB_OK, "", "Attach debugger!")
+;ZoomOut2()
+;$gScraperDebug = True
+;$gDebugSaveScreenCaptures = True
 ;TestMyStuff()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
@@ -362,34 +366,34 @@ Func GetMyLootNumbers($frame)
    If WhereAmI($frame)=$eScreenMain Or WhereAmI($frame)=$eScreenWaitRaid Or WhereAmI($frame)=$eScreenLiveRaid Then
 	  Local $MyGold = 0
 	  If IsTextBoxPresent($frame, $rMyGoldTextBox) = True Then
-		 $MyGold = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGoldTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $MyGold = Number(ScrapeFuzzyText2($fontMyStuff, $rMyGoldTextBox))
 		 GUICtrlSetData($GUI_MyGold, $MyGold)
 	  EndIf
 
 	  Local $MyElix = 0
 	  If IsTextBoxPresent($frame, $rMyElixTextBox) = True Then
-		 $MyElix = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyElixTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $MyElix = Number(ScrapeFuzzyText2($fontMyStuff, $rMyElixTextBox))
 		 GUICtrlSetData($GUI_MyElix, $MyElix)
 	  EndIf
 
 	  Local $MyDark = 0
 	  If IsTextBoxPresent($frame, $rMyGemsTextBoxWithDE) = True Then
-		 $MyDark = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyDarkTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $MyDark = Number(ScrapeFuzzyText2($fontMyStuff, $rMyDarkTextBox))
 		 GUICtrlSetData($GUI_MyDark, $MyDark)
 	  EndIf
 
 	  Local $MyGems = 0
 	  If IsTextBoxPresent($frame, $rMyGemsTextBoxNoDE) = True Then
-		 $MyGems = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGemsTextBoxNoDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $MyGems = Number(ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxNoDE))
 		 GUICtrlSetData($GUI_MyGems, $MyGems)
 	  ElseIf IsTextBoxPresent($frame, $rMyGemsTextBoxWithDE) = True Then
-		 $MyGems = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyGemsTextBoxWithDE, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 $MyGems = Number(ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxWithDE))
 		 GUICtrlSetData($GUI_MyGems, $MyGems)
 	  EndIf
 
 	  ; My cups and my town hall can only be scraped from the main screen
 	  If WhereAmI($frame) = $eScreenMain Then
-		 Local $MyCups = Number(ScrapeFuzzyText($frame, $gSmallCharacterMaps, $rMyCupsTextBox, $gSmallCharMapsMaxWidth, $eScrapeDropSpaces))
+		 Local $MyCups = Number(ScrapeFuzzyText2($fontMyStuff, $rMyCupsTextBox))
 		 GUICtrlSetData($GUI_MyCups, $MyCups)
 
 		 ; Only search for my town hall level if we don't already know it

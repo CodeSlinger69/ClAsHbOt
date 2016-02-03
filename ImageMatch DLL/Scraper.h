@@ -1,30 +1,34 @@
 #pragma once
-#include "ImageMatchDLL.h"
 
-class Scraper
+enum searchType { searchTownHall, searchLootCart, searchClashIcon, searchPlayStoreOpenButton, searchDonateButton, 
+				  searchGoldStorage, searchElixStorage, searchDarkStorage, searchLootCollector, searchLootBubble };
+enum actionType { actionRaid, actionDonate, actionBarracks, actionCamp, actionReloadButton };
+enum slotType { slotTroop, slotSpell, slotHero };
+enum troopClass { troopClassNormal, troopClassHero };
+enum troopType {
+	troopBarbarian, troopArcher, troopGiant, troopGoblin, troopWallBreaker,
+	troopBalloon, troopWizard, troopHealer, troopDragon, troopPekka,
+	troopMinion, troopHogRider, troopValkyrie, troopGolem, troopWitch,
+	troopLavaHound,
+	troopKing, troopQueen, troopWarden };
+
+
+struct MATCHPOINTS
 {
+	int x;
+	int y;
+	double val;
+};
+
+class Scraper {
 public:
-	Scraper(void);
-	~Scraper(void);
-	
-	void SetDirectories(const char* scriptDir);
-	void LoadNeedles(void);
-	std::string FindBestBMP(const searchType type, HBITMAP hBmp, const double threshold, MATCHPOINTS* match);
-	void FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches);
-	void LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches);
-	void CountBuiltTroops(const troopClass type, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches);
+	Scraper(const char* scriptDir);
+	std::string FindBestBMP(const searchType type, HBITMAP hBmp, const double threshold, MATCHPOINTS &match);
+	void FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS> &matches);
+	void LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS> &matches);
 
 private:
 	char scriptPath[MAX_PATH];  // no terminating backslash
-	char logFilePath[MAX_PATH];
-	ULONG_PTR u32_Token;
-
-	enum troopType {
-		troopBarbarian, troopArcher, troopGiant, troopGoblin, troopWallBreaker,
-		troopBalloon, troopWizard, troopHealer, troopDragon, troopPekka,
-		troopMinion, troopHogRider, troopValkyrie, troopGolem, troopWitch,
-		troopLavaHound,
-		troopKing, troopQueen, troopWarden };
 
 	static const Point northPoint;
 	static const Point eastPoint;
@@ -102,9 +106,6 @@ private:
 	Mat FindMatch(Mat haystack, Mat needle);
 	bool BeachSideOfSWLine(const int x, const int y);
 	double DistanceBetweenTwoPoints(const double x1, const double y1, const double x2, const double y2);
-	void WriteLog(const char* text);
 };
 
-extern Scraper* scraper;
-
-string type2str(int type);
+extern shared_ptr<Scraper> scraper;

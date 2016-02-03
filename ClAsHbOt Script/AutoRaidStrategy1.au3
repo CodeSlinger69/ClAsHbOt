@@ -13,7 +13,7 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
    Local $giantsNeededInStrategy = 8
 
    ; How many breakers are needed?
-   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $builtTroopCounts[$eTroopWallBreaker]
+   Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $builtTroopCounts[$eTroopWallBreaker][4]
    If _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Wall Breakers needed: " & ($breakersToQueue>0 ? $breakersToQueue : 0))
    Else
@@ -21,7 +21,7 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
    EndIf
 
    ; How many giants are needed?
-   Local $giantsToQueue = $giantsNeededInStrategy - $builtTroopCounts[$eTroopGiant]
+   Local $giantsToQueue = $giantsNeededInStrategy - $builtTroopCounts[$eTroopGiant][4]
    DebugWrite("Giants needed: " & ($giantsToQueue>0 ? $giantsToQueue : 0))
 
    ; Loop through each standard barracks window and queue troops

@@ -15,17 +15,22 @@ Global $gDebugLogCallsToCaptureFrame = False
 Global $gDllHandle = 0
 
 ; Scraper Globals
+; These enums need to be kept in sync with the DLL
 Global Enum $eScrapeDropSpaces, $eScrapeKeepSpaces
-Global Enum $eActionTypeRaid, $eActionTypeDonate, $eActionTypeBarracks, $eActionTypeReloadButton
-Global $gActionTypeNames[4] = [ "Raid", "Donate", "Barracks", "ReloadButton" ]
-Global Enum $eSlotTypeTroop, $eSlotTypeSpell
-Global $gSlotTypeNames[2] = [ "Troop", "Spell" ]
+Global Enum $eActionTypeRaid, $eActionTypeDonate, $eActionTypeBarracks, $eActionTypeCamp, $eActionTypeReloadButton
+Global Enum $eSlotTypeTroop, $eSlotTypeSpell, $eSlotTypeHero
 Global Enum $eBuiltTroopClassNormal, $eBuiltTroopClassHero
-Global $gBuiltTroopClassNames[2] = [ "Normal", "Heroes" ]
 Global Enum $eSearchTypeTownHall, $eSearchTypeLootCart, $eSearchClashIcon, $eSearchPlayStoreOpenButton, $eSearchDonateButton, _
 			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeDarkStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble
+Global Enum $fontMyStuff, $fontRaidTroopCountUnselected, $fontRaidTroopCountSelected, $fontRaidLoot, $fontBarracksStatus, _
+			$fontBattleEndWinnings, $fontBattleEndBonus, $fontChat
+Global $gActionTypeNames[5] = [ "Raid", "Donate", "Barracks", "Camp", "ReloadButton" ]
+Global $gSlotTypeNames[3] = [ "Troop", "Spell", "Hero" ]
+Global $gBuiltTroopClassNames[2] = [ "Normal", "Heroes" ]
 Global $gSearchTypeNames[10] = [ "TownHall", "LootCart", "ClashIcon", "PlayStoreOpenButton", "DonateButton", _
 								 "GoldStorage", "ElixStorage", "DarkStorage", "LootCollector", "LootBubble" ]
+Global $gFontNames[10] = [ "MyStuff", "RaidTroopCountUnselected", "RaidTroopCountSelected", "RaidLoot", "BarracksStatus", _
+						   "BattleEndWinnings", "BattleEndBonus", "Chat" ]
 
 ; Raiding variables
 Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)
@@ -110,7 +115,6 @@ Global $gConfidenceCollector = 0.92
 Global $gConfidenceRaidTroopSlot = 0.98
 Global $gConfidenceDonateTroopSlot = 0.9875
 Global $gConfidenceBarracksTroopSlot = 0.99
-Global $gConfidenceCampTroopSlot = 0.99
 Global $gConfidenceTrainTroopsButton = 0.99
 Global $gConfidenceDonateButton = 0.99
 Global $gConfidenceStorages = 0.94

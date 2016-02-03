@@ -18,13 +18,22 @@ Func AutoQueueTroops(Const ByRef $initialFill)
    EndIf
 
    ; Count how many troops are already built
-   Local $builtTroopCounts[$eTroopCount]
-   CountBuiltTroops($eBuiltTroopClassNormal, $builtTroopCounts)
-   CountBuiltTroops($eBuiltTroopClassHero, $builtTroopCounts)
+   Local $builtTroopCounts[$eTroopCount][5]
+   For $i = 0 To $eTroopCount-1
+	  $builtTroopCounts[$i][0] = -1
+	  $builtTroopCounts[$i][1] = -1
+	  $builtTroopCounts[$i][2] = -1
+	  $builtTroopCounts[$i][3] = -1
+	  $builtTroopCounts[$i][4] = 0
+   Next
+
+   LocateSlots($eActionTypeCamp, $eSlotTypeTroop, $builtTroopCounts)
+   LocateSlots($eActionTypeCamp, $eSlotTypeHero, $builtTroopCounts)
+   UpdateArmyCampSlotCounts($builtTroopCounts)
 
    ; Check if we are waiting for heroes
    Local $heroWait = _GUICtrlComboBox_GetCurSel($GUI_AutoRaidWaitForHeroesCombo)
-   Local $heroCount = $builtTroopCounts[$eTroopKing] + $builtTroopCounts[$eTroopQueen] + $builtTroopCounts[$eTroopWarden]
+   Local $heroCount = $builtTroopCounts[$eTroopKing][4] + $builtTroopCounts[$eTroopQueen][4] + $builtTroopCounts[$eTroopWarden][4]
    If $heroWait>0 And $heroCount>=$heroWait Then DebugWrite("Heroes ready.")
 
    ; Fill
@@ -95,6 +104,33 @@ Func CloseArmyManagerWindow(ByRef $f)
    EndIf
 
    Return True
+EndFunc
+
+Func UpdateArmyCampSlotCounts(ByRef $index)
+   For $i = 0 To $eTroopCount-1
+	  If $index[$i][0] <> -1 Then
+
+		 If $i=$eTroopKing Or $i=$eTroopQueen Or $i=$eTroopWarden Then
+			$index[$i][4] = 1
+
+		 Else
+			; Troop is not "selected"
+			Local $textBox[10] = [ _
+			   $index[$i][0] + $rCampSlotTroopCountTextBox[0], _
+			   $index[$i][1] + $rCampSlotTroopCountTextBox[1], _
+			   $index[$i][2] + $rCampSlotTroopCountTextBox[2], _
+			   $index[$i][1] + $rCampSlotTroopCountTextBox[3], _
+			   $rCampSlotTroopCountTextBox[4], $rCampSlotTroopCountTextBox[5], 0, 0, 0, 0]
+			;DebugWrite("Text box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3] & " " & $textBox[4] & " " & _
+			 ;  Hex($textBox[5]) & " " & $textBox[6] & " " & $textBox[7] & " " & $textBox[8] & " " & $textBox[9] )
+			Local $t = ScrapeFuzzyText2($fontBarracksStatus, $textBox)
+			;DebugWrite("UpdateArmyCampSlotCounts() = " & $t)
+
+			$index[$i][4] = Number(StringMid($t, 2))
+		 EndIf
+
+	  EndIf
+   Next
 EndFunc
 
 ; Returns true if next standard barracks was selected, false otherwise
@@ -245,7 +281,7 @@ Func FillBarracksWithTroops(Const $frame, Const $troop, Const ByRef $troopSlots)
    Local $troopsToFill = 999
 
    ; Get number of troops already queued in this barracks
-   Local $queueStatus = ScrapeFuzzyText($frame, $gBarracksCharacterMaps, $rBarracksWindowTextBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
+   Local $queueStatus = ScrapeFuzzyText2($fontBarracksStatus, $rBarracksWindowTextBox)
    ;DebugWrite("Barracks queue status: " & $queueStatus)
 
    Local $stringLoc = StringInStr($queueStatus, "troops")

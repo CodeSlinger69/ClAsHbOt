@@ -1,29 +1,14 @@
 #include "stdafx.h"
-#include "Scraper.h"
-#include "ImageMatchDLL.h"
 #include "CGdiPlus.h"
+#include "Logger.h"
+#include "Scraper.h"
 
-Scraper::Scraper(void)
-{
-	CGdiPlus::Init();
-}
+shared_ptr<Scraper> scraper;
 
-
-Scraper::~Scraper(void)
-{
-	CGdiPlus::Shutdown();
-}
-
-void Scraper::SetDirectories(const char* scriptDir)
+Scraper::Scraper(const char* scriptDir) 
 {
 	strcpy_s(scriptPath, MAX_PATH, scriptDir);
-	sprintf_s(logFilePath, MAX_PATH, "%s\\ClashBotLog.txt", scriptPath);
 
-	WriteLog("Directory paths set successfully");
-}
-
-void Scraper::LoadNeedles(void)
-{
 	// Town Hall Images
 	for (int i=0; i<townHallBMPCount; i++)
 	{
@@ -31,7 +16,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, townHallBMPs[i]);
 		townHalls[i] = imread(path);
 	}
-	WriteLog("TownHall images loaded");
+	logger->WriteLog("TownHall images loaded");
 
 	// Loot Cart Image
 	for (int i=0; i<lootCartBMPCount; i++)
@@ -40,7 +25,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, lootCartBMPs[i]);
 		lootCarts[i] = imread(path);
 	}
-	WriteLog("Loot Cart images loaded");
+	logger->WriteLog("Loot Cart images loaded");
 
 	// Clash Icon Images
 	for (int i=0; i<clashIconBMPCount; i++)
@@ -49,7 +34,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, clashIconBMPs[i]);
 		clashIcons[i] = imread(path);
 	}
-	WriteLog("Clash Icon images loaded");
+	logger->WriteLog("Clash Icon images loaded");
 	
 	// Play Store Open Button Images
 	for (int i=0; i<playStoreOpenButtonBMPCount; i++)
@@ -58,7 +43,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, playStoreOpenButtonBMPs[i]);
 		playStoreOpenButtons[i] = imread(path);
 	}
-	WriteLog("Play Store Open Button images loaded");
+	logger->WriteLog("Play Store Open Button images loaded");
 
 	// Donate Button Images
 	for (int i=0; i<donateButtonBMPCount; i++)
@@ -67,7 +52,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, donateButtonBMPs[i]);
 		donateButtons[i] = imread(path);
 	}
-	WriteLog("Donate Button images loaded");
+	logger->WriteLog("Donate Button images loaded");
 	
 	// Gold Storage Images
 	for (int i=0; i<goldStorageBMPCount; i++)
@@ -76,7 +61,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, goldStorageBMPs[i]);
 		goldStorages[i] = imread(path);
 	}
-	WriteLog("Gold Storages images loaded");
+	logger->WriteLog("Gold Storages images loaded");
 
 	// Elixir Storage Images
 	for (int i=0; i<elixStorageBMPCount; i++)
@@ -85,7 +70,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, elixStorageBMPs[i]);
 		elixStorages[i] = imread(path);
 	}
-	WriteLog("Elixir Storages images loaded");
+	logger->WriteLog("Elixir Storages images loaded");
 
 	// Dark Elixir Storage Images
 	for (int i=0; i<darkStorageBMPCount; i++)
@@ -94,7 +79,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, darkStorageBMPs[i]);
 		darkStorages[i] = imread(path);
 	}
-	WriteLog("Dark Elixir Storages images loaded");
+	logger->WriteLog("Dark Elixir Storages images loaded");
 
 	// Raid Troop Slot Images
 	for (int i=0; i<raidTroopSlotBMPCount; i++)
@@ -103,7 +88,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, raidTroopSlotBMPs[i]);
 		raidTroopSlots[i] = imread(path);
 	}
-	WriteLog("Raid Troop Slot images loaded");
+	logger->WriteLog("Raid Troop Slot images loaded");
 
 	// Raid Spell Slot Images
 	for (int i=0; i<raidSpellSlotBMPCount; i++)
@@ -112,7 +97,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, raidSpellSlotBMPs[i]);
 		raidSpellSlots[i] = imread(path);
 	}
-	WriteLog("Raid Spell Slot images loaded");
+	logger->WriteLog("Raid Spell Slot images loaded");
 
 	// Army Camp Troop Images
 	for (int i=0; i<armyCampTroopBMPCount; i++)
@@ -121,7 +106,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, armyCampTroopBMPs[i]);
 		armyCampSlots[i] = imread(path);
 	}
-	WriteLog("Army Camp Troop images loaded");
+	logger->WriteLog("Army Camp Troop images loaded");
 
 	// Barracks Troop Slot Images
 	for (int i=0; i<barracksTroopSlotBMPCount; i++)
@@ -130,7 +115,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, barracksTroopSlotBMPs[i]);
 		barracksTroopSlots[i] = imread(path);
 	}
-	WriteLog("Barracks Troop Slot images loaded");
+	logger->WriteLog("Barracks Troop Slot images loaded");
 
 	// Donate Troop Slot Images
 	for (int i=0; i<donateTroopSlotBMPCount; i++)
@@ -139,7 +124,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, donateTroopSlotBMPs[i]);
 		donateTroopSlots[i] = imread(path);
 	}
-	WriteLog("Donate Troop Slot images loaded");
+	logger->WriteLog("Donate Troop Slot images loaded");
 
 	// Donate Spell Slot Images
 	for (int i=0; i<donateSpellSlotBMPCount; i++)
@@ -148,7 +133,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, donateSpellSlotBMPs[i]);
 		donateSpellSlots[i] = imread(path);
 	}
-	WriteLog("Donate Spell Slot images loaded");
+	logger->WriteLog("Donate Spell Slot images loaded");
 
 	// Reload Button Images
 	for (int i=0; i<reloadButtonBMPCount; i++)
@@ -157,7 +142,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, reloadButtonBMPs[i]);
 		reloadButtons[i] = imread(path);
 	}
-	WriteLog("Reload Button images loaded");
+	logger->WriteLog("Reload Button images loaded");
 
 	// Collector Images
 	for (int i=0; i<collectorBMPCount; i++)
@@ -166,7 +151,7 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, collectorBMPs[i]);
 		collectors[i] = imread(path);
 	}
-	WriteLog("Collector images loaded");
+	logger->WriteLog("Collector images loaded");
 
 	// Loot Bubble Images
 	for (int i=0; i<lootBubbleBMPCount; i++)
@@ -175,10 +160,10 @@ void Scraper::LoadNeedles(void)
 		sprintf_s(path, MAX_PATH, "%s\\Images\\%s", scriptPath, lootBubbleBMPs[i]);
 		lootBubbles[i] = imread(path);
 	}
-	WriteLog("Loot Bubble images loaded");
+	logger->WriteLog("Loot Bubble images loaded");
 }
 
-std::string Scraper::FindBestBMP(const searchType type, HBITMAP hBmp, const double threshold, MATCHPOINTS* match)
+string Scraper::FindBestBMP(const searchType type, HBITMAP hBmp, const double threshold, MATCHPOINTS &match)
 {
 	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
 	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
@@ -196,7 +181,7 @@ std::string Scraper::FindBestBMP(const searchType type, HBITMAP hBmp, const doub
 
 	double bestMaxVal = 0;
 	Point bestMaxLoc(0, 0);
-	std::string bestNeedle("");
+	string bestNeedle("");
 
 	for (int i=0; i<bmpCount; i++)
 	{
@@ -233,15 +218,15 @@ std::string Scraper::FindBestBMP(const searchType type, HBITMAP hBmp, const doub
 
 	if (bestMaxVal > 0)
 	{
-		match->val = bestMaxVal;
-		match->x = bestMaxLoc.x;
-		match->y = bestMaxLoc.y;
+		match.val = bestMaxVal;
+		match.x = bestMaxLoc.x;
+		match.y = bestMaxLoc.y;
 	}
 
 	return bestNeedle;
 }
 
-void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS>* matches)
+void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, vector<MATCHPOINTS> &matches)
 {
 	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
 	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
@@ -290,7 +275,7 @@ void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 
 				for (int k=0; k<count; k++)
 				{
-					if (DistanceBetweenTwoPoints((double) maxLoc.x, (double) maxLoc.y, (double) matches->at(k).x, (double) matches->at(k).y) < 10.0)
+					if (DistanceBetweenTwoPoints((double) maxLoc.x, (double) maxLoc.y, (double) matches.at(k).x, (double) matches.at(k).y) < 10.0)
 					{
 						alreadyFound = true;
 						break;
@@ -304,7 +289,7 @@ void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 					match.val = maxVal;
 					match.x = maxLoc.x;
 					match.y = maxLoc.y;
-					matches->push_back(match);
+					matches.push_back(match);
 					count++;
 				}
 			}
@@ -319,7 +304,7 @@ void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 	}
 }
 
-void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches)
+void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, vector<MATCHPOINTS> &matches)
 {
 	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
 	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
@@ -332,6 +317,7 @@ void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP 
 					(aType==actionDonate && sType==slotTroop) ? donateTroopSlotBMPCount :
 					(aType==actionDonate && sType==slotSpell) ? donateSpellSlotBMPCount :
 					(aType==actionBarracks) ? barracksTroopSlotBMPCount : 
+					(aType==actionCamp) ? armyCampTroopBMPCount :
 					(aType==actionReloadButton) ? reloadButtonBMPCount : 0;
 
 	for (int i=0; i<slotCount; i++)
@@ -341,6 +327,7 @@ void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP 
 					(aType==actionDonate && sType==slotTroop) ? donateTroopSlots[i] :
 					(aType==actionDonate && sType==slotSpell) ? donateSpellSlots[i] :
 					(aType==actionBarracks) ? barracksTroopSlots[i] : 
+					(aType==actionCamp) ? armyCampSlots[i] :
 				    (aType==actionReloadButton) ? reloadButtons[i] : Mat() );
 
 		Mat result( FindMatch(img, needle) );
@@ -363,49 +350,7 @@ void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP 
 			match.y = -1;
 		}
 
-		matches->push_back(match);
-	}
-}
-
-void Scraper::CountBuiltTroops(const troopClass type, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS>* matches)
-{
-	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
-	Mat img = CGdiPlus::CopyBmpToMat(pBitmap);
-	delete pBitmap;
-
-	cvtColor( img, img, CV_BGRA2BGR );
-
-	int slotCountStart = type==troopClassNormal ? troopBarbarian : 
-						 type==troopClassHero ? troopKing : 0;
-
-	int slotCountEnd = type==troopClassNormal ? troopLavaHound : 
-					   type==troopClassHero ? troopWarden : 0;
-
-	for (int i=slotCountStart; i<=slotCountEnd; i++)
-	{
-		Mat needle(	armyCampSlots[i] );
-
-		Mat result( FindMatch(img, needle) );
-
-		double minVal, maxVal;
-		Point minLoc, maxLoc;
-		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
-
-		MATCHPOINTS match;
-		match.val = maxVal;
-
-		if (maxVal >= threshold)
-		{
-			match.x = maxLoc.x;
-			match.y = maxLoc.y;
-		}
-		else
-		{
-			match.x = -1;
-			match.y = -1;
-		}
-
-		matches->push_back(match);
+		matches.push_back(match);
 	}
 }
 
@@ -439,32 +384,6 @@ double Scraper::DistanceBetweenTwoPoints(const double x1, const double y1, const
 	return sqrt( pow((x1 - x2), 2.0) + pow((y1 - y2), 2.0) );
 }
 	
-void Scraper::WriteLog(const char* text)
-{
-	FILE* f;
-	errno_t err;
-
-	err = fopen_s(&f, logFilePath, "a");
-
-	if (err==0)
-	{
-		time_t t = time(0);
-		struct std::tm now;
-
-		err = localtime_s (&now, &t); 
-        if (err)
-        {
-			fprintf_s(f, "00/00/0000 00:00:00 ImageMatchDLL %s\n", text);
-		}
-		else
-		{
-			fprintf_s(f, "%d/%d/%d %02d:%02d:%02d ImageMatchDLL %s\n", now.tm_mon+1, now.tm_mday, now.tm_year+1900, now.tm_hour, now.tm_min, now.tm_sec, text);
-		}
-
-		err = fclose(f);
-	}
-}
-
 const Point Scraper::northPoint = Point(429, 69);
 const Point Scraper::westPoint = Point(71, 337);
 const Point Scraper::eastPoint = Point(787, 337);

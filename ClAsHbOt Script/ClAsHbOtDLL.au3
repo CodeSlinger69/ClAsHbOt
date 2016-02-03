@@ -11,7 +11,7 @@ Func DLLLoad()
    DebugWrite("DLLLoad() ImageMatch.dll Loaded")
 
    ; Initialize
-   Local $res = DllCall($gDllHandle, "str", "Initialize", "str", @ScriptDir)
+   Local $res = DllCall($gDllHandle, "str", "Initialize", "str", @ScriptDir, "bool", $gDebug, "bool", $gScraperDebug)
    If @error Then
 	  DebugWrite("DLLLoad() DllCall Initialize @error=" & @error)
 	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error initializing DLL." & @CRLF & _

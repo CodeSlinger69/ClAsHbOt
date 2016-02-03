@@ -7,142 +7,22 @@ Func ExitScraper()
    DebugWrite("ExitScraper() Scraper shut down")
 EndFunc
 
-Func ScrapeFuzzyText(Const $frame, Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
-   Local $w = $box[2] - $box[0] + 1
-   Local $h = $box[3] - $box[1] + 1
-   Local $pix[$w][$h]
-   Local $pY
+Func ScrapeFuzzyText2(Const $type, Const $textBox)
+   Local $hHBITMAP = CaptureFrameHBITMAP("ScrapeFuzzyText2" & $gFontNames[$type], $textBox[0], $textBox[1], $textBox[2], $textBox[3])
+   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "ScrapeFuzzyText2" & $gFontNames[$type] & "Frame.bmp")
+   Local $res = DllCall($gDllHandle, "str", "ScrapeFuzzyText", "handle", $hHBITMAP, "int", $type, "uint", $textBox[4], "uint", $textBox[5], "bool", False)
+   _WinAPI_DeleteObject($hHBITMAP)
 
-   ; Get map of foreground pixels
-   GetForegroundPixels($frame, $box, $pix, $pY)
-
-   ; Scan left to right through foreground pixel map to identify individual characters
-   Local $textString = ""
-   Local $x = 0
-   Do
-	  ; Find start of char
-	  Local $charStart = -1
-	  Local $blankCol, $blankColCount = 0
-	  Do
-		 $blankCol = True
-		 For $by = 0 To $pY-1
-			If $pix[$x][$by] = 1 Then $blankCol = False
-		 Next
-
-		 If $blankCol = True Then
-			$x+=1
-			$blankColCount+=1
-
-			; add a space if multiple blank columns are detected
-			If $blankColCount=3 And StringLen($textString)>0 And $keepSpaces=$eScrapeKeepSpaces Then
-			   $textString &= " "
-			EndIf
-		 EndIf
-	  Until $blankCol = False Or $x >= $w
-
-	  If $blankCol = False Then
-		 $charStart = $x
-	  EndIf
-
-	  ; Find end of char
-	  Local $nonBlankCol
-	  Local $charEnd = $charStart+1
-
-	  If $charEnd >= $w Then
-		 $charEnd = $w-1
-	  Else
-		 Do
-			$nonBlankCol = False
-			For $by = 0 To $pY-1
-			   If $pix[$charEnd][$by] = 1 Then $nonBlankCol = True
-			Next
-
-			If $nonBlankCol = True Then
-			   $charEnd+=1
-			EndIf
-		 Until $nonBlankCol = False Or $charEnd >= $w
-		 $charEnd-=1
-	  EndIf
-
-	  If $charEnd-$charStart+1>$maxCharSize Then $charEnd=$charStart+$maxCharSize-1
-
-	  If $gScraperDebug Then DebugWrite("Char start/end " & $charStart & "/" & $charEnd & " of " & $w-1)
-
-	  ; Find match with greatest width
-	  Local $largestMatchIndex=-1
-	  Local $bestWidth = -1
-	  Local $bestWeight = 999
-	  Local $colValues[$maxCharSize]
-
-	  If $charStart <> -1 Then
-		 ; Scan through varying sized character, starting at $charWidth, down to $charWidth/2
-		 Local $charWidth = $charEnd-$charStart+1
-		 For $testWidth = $charWidth To $charWidth ;Int($charWidth/2) Step -1
-
-			; Find the first non blank row, starting from the bottom
-			Local $bottomOfChar = -1
-			For $cY = $pY-1 To 0 Step -1
-			   For $cX = 0 To $testWidth-1
-				  If $pix[$charStart+$cX][$cY] = 1 Then
-					 $bottomOfChar = $cY
-					 ExitLoop
-				  EndIf
-			   Next
-			   If $bottomOfChar <> -1 Then ExitLoop
-			Next
-
-			; Calculate colValues for this test width
-			If $gScraperDebug Then ConsoleWrite("TestWidth=" & $testWidth & " ColValues=")
-			For $cX = 0 To $testWidth-1
-			   Local $factor = 1
-			   $colValues[$cX] = 0
-			   For $cY = $bottomOfChar To 0 Step -1
-				  $colValues[$cX] += ($pix[$charStart+$cX][$cY] * $factor)
-				  $factor*=2
-			   Next
-			   If $gScraperDebug Then ConsoleWrite($colValues[$cX] & ", ")
-			Next
-			If $gScraperDebug Then ConsoleWrite(@CRLF)
-
-			; Find a match
-			Local $weight
-			Local $bestMatchIndex = FindFuzzyCharInArray($charMapArray, $colValues, $testWidth, $weight)
-
-			If $gScraperDebug Then ConsoleWrite("width=" & $testWidth & " index=" & $bestMatchIndex & " weight=" & Round($weight, 2) & "(bestweight=" & $bestWeight & ")" & @CRLF)
-			If $bestMatchIndex<>-1 And $weight<1 And $weight<$bestWeight Then
-			   $largestMatchIndex = $bestMatchIndex
-			   $bestWidth = $testWidth
-			   $bestWeight = $weight
-			EndIf
-		 Next
-	  EndIf
-
-	  ; Debug
-	  If $gScraperDebug And $charEnd<>-1 Then
-		 ConsoleWrite($charStart & " to " & $charStart+$bestWidth-1 & ": " & _
-						($largestMatchIndex<>-1 ? $charMapArray[$largestMatchIndex][0] : "`" ) & @CRLF)
-	  EndIf
-
-	  ; Got a match or not?
-	  If $largestMatchIndex <> -1 Then
-		 $textString &= $charMapArray[$largestMatchIndex][0]
-		 $x = $charStart+$bestWidth
-	  ElseIf $charEnd<>-1 Then
-		 ;$textString &= "?"
-		 $x += 1
-	  EndIf
-
-   Until $x >= $w
-
-   $textString = StringStripWS($textString, $STR_STRIPTRAILING)
-
-   ; Debug
-   If $gScraperDebug Then
-	  ConsoleWrite("RESULT: " & $textString & @CRLF)
-	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
+   If @error Then
+	  DebugWrite("ScrapeFuzzyText2() " & $gFontNames[$type] & " DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, ScrapeFuzzyText" & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
    EndIf
 
-   Return $textString
+   ;DebugWrite("My " & $type & ": " & $res[0])
+
+   Return $res[0]
 EndFunc
 
 ; Non fuzzy character matching - only good for chat box right now
@@ -710,6 +590,17 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 	  Next
 	  $thresh = $gConfidenceBarracksTroopSlot
 
+   ElseIf $actionType = $eActionTypeCamp And $slotType = $eSlotTypeTroop Then
+	  For $i=0 To 3
+		  $box[$i] = $rCampTroopBox1[$i]
+	  Next
+	  $thresh = $gConfidenceArmyCamp
+
+   ElseIf $actionType = $eActionTypeCamp And $slotType = $eSlotTypeHero Then
+	  For $i=0 To 3
+		  $box[$i] = $rCampTroopBox2[$i]
+	  Next
+	  $thresh = $gConfidenceArmyCamp
 
    ElseIf $actionType = $eActionTypeReloadButton Then
 	  For $i=0 To 3
@@ -718,7 +609,7 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 	  $thresh = $gConfidenceReloadButton
 
    Else
-	  DebugWrite("FindAllBMPs() Error, actionType not recognized: " & $actionType)
+	  DebugWrite("FindAllBMPs() Error, actionType/slotType not recognized: " & $actionType)
 	  Return
 
    EndIf
@@ -774,6 +665,14 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][3] = $box[1] + $y + $rRaidButtonOffset[3]
 		 EndIf
 
+	  ElseIf $actionType = $eActionTypeCamp Then
+		 If $x<>-1 Then
+			$index[$i][0] = $box[0] + $x
+			$index[$i][1] = $box[1] + $y
+			$index[$i][2] = $box[0] + $x
+			$index[$i][3] = $box[1] + $y
+		 EndIf
+
 	  ElseIf $actionType = $eActionTypeReloadButton Then
 		 If $x<>-1 Then
 			$index[$i][0] = $box[0] + $x + $rReloadDefensesButtonOffset[0]
@@ -782,72 +681,6 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][3] = $box[1] + $y + $rReloadDefensesButtonOffset[3]
 		 EndIf
 
-	  EndIf
-   Next
-
-   _WinAPI_DeleteObject($hHBITMAP)
-   Return $split[0]
-EndFunc
-
-Func CountBuiltTroops(Const $type, ByRef $index)
-   Local $box[4]
-   For $i=0 To 3
-	  $box[$i] = ($type = $eBuiltTroopClassNormal ? $rCampTroopBox1[$i]: $rCampTroopBox2[$i])
-   Next
-
-   Local $hHBITMAP = CaptureFrameHBITMAP("CountBuiltTroopsHeroes", $box[0], $box[1], $box[2], $box[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "CountBuiltTroops" & $gBuiltTroopClassNames[$type] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "CountBuiltTroops", "int", $type, "handle", $hHBITMAP, "double", $gConfidenceCampTroopSlot)
-   ;DebugWrite("DLL $res=" & $res[0])
-
-   If @error Then
-	  DebugWrite("LocateRaidSlots() DllCall @error=" & @error)
-	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, CountBuiltTroops" & @CRLF & _
-		 "This is catastrophic, exiting.")
-	  Exit
-   EndIf
-
-   Local $split = StringSplit($res[0], "|", 2)
-   ;DebugWrite("Num matches " & $gBuiltTroopClassNames[$type] & ": " & $split[0])
-
-   For $i = 0 To $split[0]-1
-	  Local $x = Number($split[$i*3+1])
-	  Local $y = Number($split[$i*3+2])
-	  Local $conf = Number($split[$i*3+3])
-
-	  Local $iP = ($type=$eBuiltTroopClassNormal ? $i : $eTroopKing+$i)
-
-	  If $x = -1 Then
-		 $index[$iP] = 0
-	  Else
-		 If $type = $eBuiltTroopClassNormal Then
-			Local $textBox[10] = [ _
-			   $x+$rCampSlotTroopCountTextBox[0], _
-			   $y+$rCampSlotTroopCountTextBox[1], _
-			   $x+$rCampSlotTroopCountTextBox[2], _
-			   $y+$rCampSlotTroopCountTextBox[3], _
-			   $rCampSlotTroopCountTextBox[4], _
-			   $rCampSlotTroopCountTextBox[5], _
-			   $rCampSlotTroopCountTextBox[6], _
-			   $rCampSlotTroopCountTextBox[7], _
-			   $rCampSlotTroopCountTextBox[8], _
-			   $rCampSlotTroopCountTextBox[9] ]
-
-			;DebugWrite("box: " & $textBox[0] & " " & $textBox[1] & " " & $textBox[2] & " " & $textBox[3])
-
-			Local $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
-			Local $t = ScrapeFuzzyText($hGdipBitmap, $gBarracksCharacterMaps, $textBox, $gBarracksCharMapsMaxWidth, $eScrapeDropSpaces)
-			_GDIPlus_BitmapDispose($hGdipBitmap)
-			;DebugWrite("text: " & $gTroopNames[$iP] & " " & $t)
-
-			$index[$iP] = Number(StringMid($t, 2))
-
-		 Else ; $type = $eBuiltTroopTypeHero
-			$index[$iP] = 1
-
-		 EndIf
-
-		 DebugWrite("CountBuiltTroops() " & $iP & " " & $gTroopNames[$iP] & " " & $index[$iP])
 	  EndIf
    Next
 

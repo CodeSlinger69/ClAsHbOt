@@ -15,6 +15,8 @@
 
 #include <ctime>
 #include <vector>
+#include <fstream>
+
 #include <gdiplus.h>
 #pragma comment(lib, "gdiplus.lib")
 #include "opencv2/opencv.hpp"
@@ -22,4 +24,4 @@
 #include "opencv2/highgui/highgui.hpp"
 
 using namespace cv;
-
+using namespace std;
