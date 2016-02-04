@@ -206,77 +206,74 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::C
 		int largestMatchIndex=-1;
 		int bestWidth = -1;
 		double bestWeight = 999.;
-		vector<int> colValues;
-		colValues.resize(fonts[fontIndex].maxWidth);
 
 		if (charStart != -1)
 		{
-			// Scan through varying sized character, starting at charWidth, down to charWidth/2
 			int charWidth = charEnd - charStart + 1;
-			for (int testWidth = charWidth; testWidth >= charWidth; testWidth--)  // not needed: charWidth/2
+
+			// Find the first non blank row for this char, starting from the bottom
+			int bottomOfChar = -1;
+			for (int cY = h-1; cY >= 0; cY--)
 			{
-				// Find the first non blank row for this char, starting from the bottom
-				int bottomOfChar = -1;
-				for (int cY = h-1; cY >= 0; cY--)
+				for (int cX = 0; cX < charWidth; cX++)
 				{
-					for (int cX = 0; cX < testWidth; cX++)
+					if (pix[charStart+cX][cY])
 					{
-						if (pix[charStart+cX][cY])
-						{
-							bottomOfChar = cY;
-							break;
-						}
-					}
-					if (bottomOfChar != -1)
+						bottomOfChar = cY;
 						break;
-				}
-
-				// Calculate colValues for this test width
-				if (debugOCR) 
-				{
-					char s[500];
-					sprintf_s(s, 500, "TestWidth=%d ColValues=", testWidth);
-					logger->WriteLog(s, false, false);
-				}
-
-				for (int cX = 0; cX < testWidth; cX++)
-				{
-					int powerof2 = 1;
-					colValues[cX] = 0;
-					for (int cY = bottomOfChar; cY >= 0; cY--)
-					{
-						if (pix[charStart+cX][cY])
-							colValues[cX] += powerof2;
-						powerof2 *= 2;
-					}
-
-					if (debugOCR)
-					{
-						char s[500];
-						sprintf_s(s, 500, "%d ", colValues[cX]);
-						logger->WriteLog(s, false, false);
 					}
 				}
+				if (bottomOfChar != -1)
+					break;
+			}
 
-				if (debugOCR) logger->WriteLog("", false, true);
+			// Calculate colValues for this test width
+			if (debugOCR) 
+			{
+				char s[500];
+				sprintf_s(s, 500, "charWidth=%d ColValues=", charWidth);
+				logger->WriteLog(s, false, false);
+			}
 
-				// Find a match
-				double weight;
-				int bestMatchIndex = FindFuzzyCharInArray(fontIndex, colValues, testWidth, weight);
-
-				if (bestMatchIndex!=-1 && weight<1 && weight<bestWeight)
+			vector<int> colValues;
+			colValues.resize(charWidth);
+			for (int cX = 0; cX < charWidth; cX++)
+			{
+				int powerof2 = 1;
+				colValues[cX] = 0;
+				for (int cY = bottomOfChar; cY >= 0; cY--)
 				{
-					largestMatchIndex = bestMatchIndex;
-					bestWidth = testWidth;
-					bestWeight = weight;
+					if (pix[charStart+cX][cY])
+						colValues[cX] += powerof2;
+					powerof2 *= 2;
 				}
 
 				if (debugOCR)
 				{
 					char s[500];
-					sprintf_s(s, 500, "width=%d index=%d weight=%.4f (bestweight=%.4f)", testWidth, bestMatchIndex, weight, bestWeight);
-					logger->WriteLog(s, false, true);
+					sprintf_s(s, 500, "%d ", colValues[cX]);
+					logger->WriteLog(s, false, false);
 				}
+			}
+
+			if (debugOCR) logger->WriteLog("", false, true);
+
+			// Find a match
+			double weight;
+			int bestMatchIndex = FindFuzzyCharInArray(fontIndex, colValues, charWidth, weight);
+
+			if (bestMatchIndex!=-1 && weight<1 && weight<bestWeight)
+			{
+				largestMatchIndex = bestMatchIndex;
+				bestWidth = charWidth;
+				bestWeight = weight;
+			}
+
+			if (debugOCR)
+			{
+				char s[500];
+				sprintf_s(s, 500, "width=%d index=%d weight=%.4f (bestweight=%.4f)", charWidth, bestMatchIndex, weight, bestWeight);
+				logger->WriteLog(s, false, true);
 			}
 		}
 
@@ -307,7 +304,7 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::C
 		char s[500];
 		sprintf_s(s, 500, "RESULT: %s", textString.c_str());
 		logger->WriteLog(s, false, true);
-		logger->WriteLog("-------------------------------------------------------------------------", false, true);
+		logger->WriteLog("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", false, true);
    }
 
    return textString;
