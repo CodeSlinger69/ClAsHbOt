@@ -1,16 +1,16 @@
-Func DonateTroops(ByRef $f)
+Func DonateTroops(ByRef $hBMP)
    DebugWrite("DonateTroops()")
 
    ; Open chat window
-   If OpenChatWindow($f) = False Then
-	  ResetToCoCMainScreen($f)
+   If OpenChatWindow($hBMP) = False Then
+	  ResetToCoCMainScreen($hBMP)
 	  Return False
    EndIf
 
    ; Search for donate button
    Local $donateButtons[1][4]
    If FindDonateButtons($donateButtons) = False Then
-	  ResetToCoCMainScreen($f)
+	  ResetToCoCMainScreen($hBMP)
 	  Return False
    EndIf
 
@@ -19,17 +19,17 @@ Func DonateTroops(ByRef $f)
 	  DebugWrite("DonateTroops() Processing donate request number " & $buttonLoop+1)
 
 	  ; Get the request text
-	  Local $requestText = GetRequestText($f, $donateButtons, $buttonLoop)
+	  Local $requestText = GetRequestText($hBMP, $donateButtons, $buttonLoop)
 
 	  ; Open donate troops window
-	  If OpenDonateTroopsWindow($f, $donateButtons, $buttonLoop) = False Then
-		 ResetToCoCMainScreen($f)
+	  If OpenDonateTroopsWindow($hBMP, $donateButtons, $buttonLoop) = False Then
+		 ResetToCoCMainScreen($hBMP)
 		 Return False
 	  EndIf
 
 	  ; Loop until donate troops window goes away, no match for request, or loop limit reached
 	  Local $loopLimit = 6
-	  While IsColorPresent($f, $rWindowChatDimmedColor) And $loopLimit>0
+	  While IsColorPresent($hBMP, $rWindowChatDimmedColor) And $loopLimit>0
 		 DebugWrite("DonateTroops() Donate loop " & 6-$loopLimit & " of " & 5)
 
 		 ; Locate troops that are available to donate
@@ -65,7 +65,7 @@ Func DonateTroops(ByRef $f)
 		 If ParseRequestTextTroops($requestText, $donateTroopIndex, $indexOfTroopToDonate) Then
 			If $donateTroopIndex[$indexOfTroopToDonate][0] <> -1 Then
 			   ; Click the correct donate troops button
-			   ClickDonateTroops($f, $donateTroopIndex, $indexOfTroopToDonate)
+			   ClickDonateTroops($hBMP, $donateTroopIndex, $indexOfTroopToDonate)
 			Else
 			   $loopLimit=0
 			EndIf
@@ -78,7 +78,7 @@ Func DonateTroops(ByRef $f)
 		 If ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate) Then
 			If $donateSpellIndex[$indexOfSpellToDonate][0] <> -1 Then
 			   ; Click the correct donate spell button
-			   ClickDonateSpell($f, $donateSpellIndex, $indexOfSpellToDonate)
+			   ClickDonateSpell($hBMP, $donateSpellIndex, $indexOfSpellToDonate)
 			EndIf
 		 EndIf
 
@@ -86,39 +86,39 @@ Func DonateTroops(ByRef $f)
 	  WEnd
 
 	  ; If donate troops window is still open, then close it
-	  If IsColorPresent($f, $rWindowChatDimmedColor) Then
+	  If IsColorPresent($hBMP, $rWindowChatDimmedColor) Then
 		 RandomWeightedClick($rSafeAreaButton)
 
-		 If WaitForScreen($f, 5000, $eScreenChatOpen) = False Then
+		 If WaitForScreen($hBMP, 5000, $eScreenChatOpen) = False Then
 			DebugWrite("DonateTroops() Error waiting for open chat screen")
 		 EndIf
 	  Else
 		 ; Grab new frame
-		 _GDIPlus_BitmapDispose($f)
-		 $f = CaptureFrame("DonateTroops")
+		 _WinAPI_DeleteObject($hBMP)
+		 $hBMP = CaptureFrameHBITMAP("DonateTroops")
 	  EndIf
 
    Next
 
    ; Grab new frame
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("DonateTroops")
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("DonateTroops")
 
    ; If chat window is open, then close it
-   If WhereAmI($f) = $eScreenChatOpen Then
+   If WhereAmI($hBMP) = $eScreenChatOpen Then
 	  RandomWeightedClick($rMainScreenOpenChatButton)
 
-	  If WaitForScreen($f, 5000, $eScreenMain) = False Then
+	  If WaitForScreen($hBMP, 5000, $eScreenMain) = False Then
 		 DebugWrite("DonateTroops() Error waiting for main screen")
 	  EndIf
    EndIf
 
    ; Done!
-   ResetToCoCMainScreen($f)
+   ResetToCoCMainScreen($hBMP)
 EndFunc
 
-Func OpenChatWindow(ByRef $f)
-   If IsButtonPresent($f, $rMainScreenClosedChatButton)=False And IsButtonPresent($f, $rMainScreenOpenChatButton)=False Then
+Func OpenChatWindow(ByRef $hBMP)
+   If IsButtonPresent($hBMP, $rMainScreenClosedChatButton)=False And IsButtonPresent($hBMP, $rMainScreenOpenChatButton)=False Then
 	  Return False
    EndIf
 
@@ -126,13 +126,13 @@ Func OpenChatWindow(ByRef $f)
    RandomWeightedClick($rMainScreenClosedChatButton)
 
    ; Wait for OpenChatButton button
-   If WaitForButton($f, 10000, $rMainScreenOpenChatButton) = False Then
+   If WaitForButton($hBMP, 10000, $rMainScreenOpenChatButton) = False Then
 	  DebugWrite("OpenChatWindow() Failed - timeout waiting for open chat window")
 	  Return False
    EndIf
 
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("OpenChatWindow")
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("OpenChatWindow")
    Return True
 EndFunc
 
@@ -161,22 +161,22 @@ Func FindDonateButtons(ByRef $buttons)
    EndIf
 EndFunc
 
-Func GetRequestText(Const $f, Const ByRef $buttons, Const $index)
+Func GetRequestText(Const $hBMP, Const ByRef $buttons, Const $index)
    ; Grab text of donate request
-   Local $donateTextBox[10] = [$buttons[$index][0]+$rChatTextBoxAsOffset[0], _
-							   $buttons[$index][1]+$rChatTextBoxAsOffset[1], _
-							   $buttons[$index][0]+$rChatTextBoxAsOffset[2], _
-							   $buttons[$index][1]+$rChatTextBoxAsOffset[3], _
-							   $rChatTextBoxAsOffset[4], $rChatTextBoxAsOffset[5], $rChatTextBoxAsOffset[6], _
-							   $rChatTextBoxAsOffset[7], $rChatTextBoxAsOffset[8], $rChatTextBoxAsOffset[9]]
+   Local $box[10] = [$buttons[$index][0]+$rChatTextBoxAsOffset[0], _
+				     $buttons[$index][1]+$rChatTextBoxAsOffset[1], _
+				     $buttons[$index][0]+$rChatTextBoxAsOffset[2], _
+				     $buttons[$index][1]+$rChatTextBoxAsOffset[3], _
+				     $rChatTextBoxAsOffset[4], $rChatTextBoxAsOffset[5], $rChatTextBoxAsOffset[6], _
+				     $rChatTextBoxAsOffset[7], $rChatTextBoxAsOffset[8], $rChatTextBoxAsOffset[9]]
 
-   Local $text = ScrapeExactText($f, $gChatCharacterMaps, $donateTextBox, $gChatCharMapsMaxWidth, $eScrapeDropSpaces)
-   DebugWrite("GetRequestText() Text: '" & $text & "'")
+   Local $t = ScrapeExactText($hBMP, $fontChat, $box)
+   DebugWrite("GetRequestText() Text: '" & $t & "'" & " box: " & $box[0] & " " & $box[1] & " " & $box[2] & " " & $box[3])
 
-   Return $text
+   Return $t
 EndFunc
 
-Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $buttons, Const $index)
+Func OpenDonateTroopsWindow(ByRef $hBMP, Const ByRef $buttons, Const $index)
    DebugWrite("OpenDonateTroopsWindow() Clicking Donate button")
 
    Local $button[4]
@@ -185,14 +185,14 @@ Func OpenDonateTroopsWindow(ByRef $f, Const ByRef $buttons, Const $index)
    Next
    RandomWeightedClick($button)
 
-   If WaitForColor($f, 5000, $rWindowChatDimmedColor) = False Then
+   If WaitForColor($hBMP, 5000, $rWindowChatDimmedColor) = False Then
 	  DebugWrite("OpenDonateTroopsWindow() Failed - timeout waiting for donate troops window")
 	  Return False
    EndIf
 
    DebugWrite("OpenDonateTroopsWindow() Donate troops window opened")
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("OpenDonateTroopsWindow")
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("OpenDonateTroopsWindow")
    Return True
 EndFunc
 
@@ -313,7 +313,7 @@ Func FindMatchingTroop(Const $text, Const ByRef $strings, Const ByRef $troops, C
    Return -2
 EndFunc
 
-Func ClickDonateTroops(ByRef $f, Const ByRef $donateIndex, Const $indexOfTroopToDonate)
+Func ClickDonateTroops(ByRef $hBMP, Const ByRef $donateIndex, Const $indexOfTroopToDonate)
 
    Local $DonateMaxClicks[16] = [6, 6, 6, 6,   6, 6, 6, 2,   1, 1, 6, 6,   4, 1, 2, 1]
 
@@ -325,13 +325,13 @@ Func ClickDonateTroops(ByRef $f, Const ByRef $donateIndex, Const $indexOfTroopTo
    Local $donateCount=0
 
    For $i = 1 To $DonateMaxClicks[$indexOfTroopToDonate]
-	  If IsColorPresent($f, $rWindowChatDimmedColor) Then
+	  If IsColorPresent($hBMP, $rWindowChatDimmedColor) Then
 		 RandomWeightedClick($button)
 		 $donateCount+=1
 		 Sleep($gDonateTroopClickDelay)
 
-		 _GDIPlus_BitmapDispose($f)
-		 $f = CaptureFrame("ClickDonateTroops")
+		 _WinAPI_DeleteObject($hBMP)
+		 $hBMP = CaptureFrameHBITMAP("ClickDonateTroops")
 	  EndIf
    Next
 
@@ -342,18 +342,18 @@ Func ClickDonateTroops(ByRef $f, Const ByRef $donateIndex, Const $indexOfTroopTo
    Sleep(1000)
 EndFunc
 
-Func ClickDonateSpell(ByRef $f, Const ByRef $donateIndex, Const $indexOfSpellToDonate)
+Func ClickDonateSpell(ByRef $hBMP, Const ByRef $donateIndex, Const $indexOfSpellToDonate)
    Local $button[4] = [$donateIndex[$indexOfSpellToDonate][0], _
 					   $donateIndex[$indexOfSpellToDonate][1], _
 					   $donateIndex[$indexOfSpellToDonate][2], _
 					   $donateIndex[$indexOfSpellToDonate][3]]
 
-   If IsColorPresent($f, $rWindowChatDimmedColor) Then
+   If IsColorPresent($hBMP, $rWindowChatDimmedColor) Then
 	  RandomWeightedClick($button)
 	  Sleep($gDonateTroopClickDelay)
 
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("ClickDonateSpell")
+	  _WinAPI_DeleteObject($hBMP)
+	  $hBMP = CaptureFrameHBITMAP("ClickDonateSpell")
 
 	  DebugWrite("ClickDonateSpell() Donated 1 " & $gSpellNames[$indexOfSpellToDonate])
    EndIf

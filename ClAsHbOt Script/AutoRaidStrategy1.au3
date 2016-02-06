@@ -8,8 +8,8 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
-   DebugWrite("FillBarracksStrategy1(), " & ($initialFillFlag ? "initial fill." : "top up.") )
+Func FillBarracksStrategy1(ByRef $hHMP, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
+   DebugWrite("FillBarracksStrategy1() " & ($initialFillFlag ? "initial fill" : "top up") )
    Local $giantsNeededInStrategy = 8
 
    ; How many breakers are needed?
@@ -29,12 +29,12 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 
    While $barracksCount<=4 And (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 	  ; Click nextstandard barracks button on Army Manager Window, if unsuccessful, then we are done
-	  If OpenNextAvailableStandardBarracks($f) = False Then
+	  If OpenNextAvailableStandardBarracks($hHMP) = False Then
 		 ExitLoop
 	  EndIf
 
 	  ; See if we are full up
-	  If IsColorPresent($f, $rArmyCampsFullColor) Then
+	  If IsColorPresent($hHMP, $rArmyCampsFullColor) Then
 		 $armyCampsFull = True
  		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
 	  EndIf
@@ -52,7 +52,7 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 	  ; Giants and specified breakers in each barracks on initial fill
 	  If $initialFillFlag And ($breakersToQueue>0 Or $giantsToQueue>0) Then
 		 ; Dequeue troops
-		 DequeueTroops($f)
+		 DequeueTroops($hHMP)
 
 		 For $i = $eTroopBarbarian To $eTroopLavaHound
 			$troopSlots[$i][0] = -1
@@ -75,15 +75,15 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 	  Local $troopsToFill
 	  Do
 		 If $barracksCount=1 Or $barracksCount=3 Then
-			$troopsToFill = FillBarracksWithTroops($f, $eTroopArcher, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($hHMP, $eTroopArcher, $troopSlots)
 		 Else
-			$troopsToFill = FillBarracksWithTroops($f, $eTroopBarbarian, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($hHMP, $eTroopBarbarian, $troopSlots)
 		 EndIf
 
 		 $fillTries+=1
 		 If $troopsToFill>0 And $fillTries<6 Then
-			_GDIPlus_BitmapDispose($f)
-			$f = CaptureFrame("FillBarracksStrategy1")
+			_WinAPI_DeleteObject($hHMP)
+			$hHMP = CaptureFrameHBITMAP("FillBarracksStrategy1")
 		 EndIf
 
 	  Until $troopsToFill=0 Or $fillTries>=6 Or _
@@ -94,7 +94,7 @@ Func FillBarracksStrategy1(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 EndFunc
 
 
-Func AutoRaidExecuteRaidStrategy1(ByRef $f)
+Func AutoRaidExecuteRaidStrategy1(ByRef $hBMP)
    DebugWrite("AutoRaidExecuteRaidStrategy1()")
 
    ; What troops are available?
@@ -124,7 +124,7 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $f)
 	  DebugWrite("Avaliable Breakers: " & $troopIndex[$eTroopWallBreaker][4])
 
    ; Determine attack direction
-   Local $direction = AutoRaidStrategy1GetDirection($f)
+   Local $direction = AutoRaidStrategy1GetDirection()
 
    ; Get button
    Local $breakerButton[4] = [ _
@@ -224,12 +224,12 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $f)
    DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 18, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($f, $kingDeployed, $queenDeployed, $wardenDeployed)
+   WaitForBattleEnd($hBMP, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc
 
-Func AutoRaidStrategy1GetDirection(Const $f)
+Func AutoRaidStrategy1GetDirection()
    DebugWrite("AutoRaidStrategy1GetDirection()")
 
    ; Count the storages, by top/bottom half

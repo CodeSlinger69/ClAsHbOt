@@ -1,8 +1,8 @@
 Func CollectLoot()
    ;DebugWrite("CollectLoot()")
 
-   Local $frame = CaptureFrame("CollectLoot", $gWestPoint[0], $gNorthPoint[1], $gEastPoint[0], $gSouthPoint[1])
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($frame, "CollectLootFrame.bmp")
+   Local $hHBITMAP = CaptureFrameHBITMAP("CollectLoot", $gWestPoint[0], $gNorthPoint[1], $gEastPoint[0], $gSouthPoint[1])
+   If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("CollectLootFrame.bmp", $hHBITMAP, False)
 
    ; Find all the collectors that need clicking in the frame
    Local $mX[1], $mY[1], $c[1]
@@ -42,13 +42,13 @@ Func CollectLoot()
 	  DebugWrite("CollectLoot() Found loot cart, clicking at " & $button[0] & "," & $button[1] & " confidence " & Round($conf*100, 2) & "%")
 	  RandomWeightedClick($button)
 
-	  If WaitForButton($frame, 5000, $rLootCartCollectButton) = True Then
+	  If WaitForButton($hHBITMAP, 5000, $rLootCartCollectButton) = True Then
 		 RandomWeightedClick($rLootCartCollectButton)
 		 Sleep(1000)
 	  EndIf
    EndIf
 
-   _GDIPlus_BitmapDispose($frame)
+   _WinAPI_DeleteObject($hHBITMAP)
 EndFunc
 
 Func SortArrayByClosestNeighbor(Const $matchCount, Const ByRef $x, Const ByRef $y, ByRef $sortedX, ByRef $sortedY)

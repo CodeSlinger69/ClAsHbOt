@@ -1,4 +1,4 @@
-Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
+Func AutoPush(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
    ;DebugWrite("AutoPush()")
 
    If $gAutoSnipeNotifyOnly Then
@@ -12,7 +12,7 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
    Case $eAutoQueueTraining
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Queue Training")
 
-	  ResetToCoCMainScreen($f)
+	  ResetToCoCMainScreen($hBMP)
 
 	  AutoQueueTroops(True)
 	  $timer = TimerInit()
@@ -21,7 +21,7 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
    Case $eAutoWaitForTrainingToComplete
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
-		 ResetToCoCMainScreen($f)
+		 ResetToCoCMainScreen($hBMP)
 		 AutoQueueTroops(False)
 		 $timer = TimerInit()
 	  EndIf
@@ -30,15 +30,15 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
    Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Snipable TH")
 
-	  ResetToCoCMainScreen($f)
-	  ZoomOut2($f)
+	  ResetToCoCMainScreen($hBMP)
+	  ZoomOut($hBMP)
 
-	  Local $findMatchResults = THSnipeFindMatch($f, $THCorner)
+	  Local $findMatchResults = THSnipeFindMatch($hBMP, $THCorner)
 
 	  ; Reset if there was an error
 	  If $findMatchResults=False Then
 		 DebugWrite("Auto: Error finding match, resetting.")
-		 ResetToCoCMainScreen($f)
+		 ResetToCoCMainScreen($hBMP)
 		 $gAutoStage = $eAutoQueueTraining
 		 Return
 	  EndIf
@@ -61,12 +61,12 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
    Case $eAutoExecuteSnipe
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Snipe")
 
-	  If THSnipeExecute($f, $THCorner) = False Then
-		 ResetToCoCMainScreen($f)
+	  If THSnipeExecute($hBMP, $THCorner) = False Then
+		 ResetToCoCMainScreen($hBMP)
 	  EndIf
 
 	  $gAutoStage = $eAutoQueueTraining
-	  UpdateWinnings($f)
+	  UpdateWinnings($hBMP)
 
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Snipe Complete")
 
@@ -74,37 +74,37 @@ Func AutoPush(ByRef $f, ByRef $timer, ByRef $THCorner)
 
 EndFunc
 
-Func THSnipeFindMatch(ByRef $f, ByRef $THCorner)
+Func THSnipeFindMatch(ByRef $hBMP, ByRef $THCorner)
    ; Get frame
-   ZoomOut2($f)
+   ZoomOut($hBMP)
 
    ; Make sure we are on the main screen
-   If WhereAmI($f) <> $eScreenMain Then
+   If WhereAmI($hBMP) <> $eScreenMain Then
 	  DebugWrite("THSnipeFindMatch() Find Snipable TH failed - not on main screen")
 	  Return False
    EndIf
 
    ; Click Attack
    DebugWrite("THSnipeFindMatch() Click Attack button")
-   If IsButtonPresent($f, $rMainScreenAttackNoStarsButton) Then
+   If IsButtonPresent($hBMP, $rMainScreenAttackNoStarsButton) Then
 	  RandomWeightedClick($rMainScreenAttackNoStarsButton)
-   ElseIf IsButtonPresent($f, $rMainScreenAttackWithStarsButton) Then
+   ElseIf IsButtonPresent($hBMP, $rMainScreenAttackWithStarsButton) Then
 	  RandomWeightedClick($rMainScreenAttackWithStarsButton)
    Else
 	  DebugWrite("THSnipeFindMatch() Find Match failed - could not find Attack! button")
    EndIf
 
    ; Wait for Find a Match button
-   If WaitForButton($f, 10000, $rFindMatchScreenFindAMatchNoShieldButton, $rFindMatchScreenFindAMatchWithShieldButton) = False Then
+   If WaitForButton($hBMP, 10000, $rFindMatchScreenFindAMatchNoShieldButton, $rFindMatchScreenFindAMatchWithShieldButton) = False Then
 	  DebugWrite("THSnipeFindMatch() Find Match failed - timeout waiting for Find a Match button")
 	  Return False
    EndIf
 
    ; Click Find a Match
    DebugWrite("THSnipeFindMatch() Click Find a Match button")
-   If IsButtonPresent($f, $rFindMatchScreenFindAMatchNoShieldButton) Then
+   If IsButtonPresent($hBMP, $rFindMatchScreenFindAMatchNoShieldButton) Then
 	  RandomWeightedClick($rFindMatchScreenFindAMatchNoShieldButton)
-   ElseIf IsButtonPresent($f, $rFindMatchScreenFindAMatchWithShieldButton) Then
+   ElseIf IsButtonPresent($hBMP, $rFindMatchScreenFindAMatchWithShieldButton) Then
 	  RandomWeightedClick($rFindMatchScreenFindAMatchWithShieldButton)
    EndIf
 
@@ -116,16 +116,16 @@ Func THSnipeFindMatch(ByRef $f, ByRef $THCorner)
 	  EndIf
 
 	  ; Wait for Next button
-	  If AutoWaitForNextButton($f) = False Then
+	  If AutoWaitForNextButton($hBMP) = False Then
 		 Return False
 	  EndIf
 
 	  ; Update my loot status on GUI
-	  GetMyLootNumbers($f)
+	  GetMyLootNumbers($hBMP)
 
 	  ; If snipable, then go do it
 	  Local $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadBase
-	  AutoRaidGetDisplayedLoot($f, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
+	  AutoRaidGetDisplayedLoot($thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
 
 	  If CheckForSnipableTH($THCorner, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase) Then
 		 Return $eAutoExecuteSnipe
@@ -134,17 +134,17 @@ Func THSnipeFindMatch(ByRef $f, ByRef $THCorner)
 	  ; Not snipable - click Next
 	  Sleep($gPauseBetweenNexts)
 
-	  If IsButtonPresent($f, $rWaitRaidScreenNextButton) Then
+	  If IsButtonPresent($hBMP, $rWaitRaidScreenNextButton) Then
 		 RandomWeightedClick($rWaitRaidScreenNextButton)
 		 Sleep(500)
 
 	  Else
 		 DebugWrite("THSnipeFindMatch() Next Button disappeared, resetting.")
 
-		 If IsButtonPresent($f, $rLiveRaidScreenEndBattleButton) Then
+		 If IsButtonPresent($hBMP, $rLiveRaidScreenEndBattleButton) Then
 			RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 
-			If WaitForButton($f, 5000, $rLiveRaidScreenEndBattleConfirmButton) = True Then
+			If WaitForButton($hBMP, 5000, $rLiveRaidScreenEndBattleConfirmButton) = True Then
 			   RandomWeightedClick($rLiveRaidScreenEndBattleConfirmButton)
 			   Sleep(1000)
 			EndIf
@@ -195,7 +195,7 @@ Func CheckForSnipableTH(ByRef $THCorner, Const $thLevel, Const $thLeft, Const $t
    Return False
 EndFunc
 
-Func THSnipeExecute(ByRef $f, Const $THCorner)
+Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
    ;DebugWrite("THSnipeExecute()")
 
    ; What troops are available?
@@ -225,9 +225,9 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
    Local $wardenButton[4] = [$troopIndex[$eTroopWarden][0], $troopIndex[$eTroopWarden][1], $troopIndex[$eTroopWarden][2], $troopIndex[$eTroopWarden][3]]
 
    ; Make sure something bad hasn't happened
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("THSnipeExecute1")
-   If WhereAmI($f)<>$eScreenWaitRaid And WhereAmI($f)<>$eScreenLiveRaid Then
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("THSnipeExecute1")
+   If WhereAmI($hBMP)<>$eScreenWaitRaid And WhereAmI($hBMP)<>$eScreenLiveRaid Then
 	  DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
 	  Return False
    EndIf
@@ -283,9 +283,9 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
    EndIf
 
    ; Make sure something bad hasn't happened
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("THSnipeExecute2")
-   If WhereAmI($f)<>$eScreenWaitRaid And WhereAmI($f)<>$eScreenLiveRaid Then
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("THSnipeExecute2")
+   If WhereAmI($hBMP)<>$eScreenWaitRaid And WhereAmI($hBMP)<>$eScreenLiveRaid Then
 	  DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
 	  Return False
    EndIf
@@ -316,11 +316,11 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 
    ; Wait for 21 seconds and see if heroes take care of the TH
    If $kingDeployed Or $queenDeployed Or $wardenDeployed Then
-	  If WaitForColor($f, 21000, $rFirstStarColor) = True Then
+	  If WaitForColor($hBMP, 21000, $rFirstStarColor) = True Then
 		 DebugWrite("THSnipeExecute() Star detected, ending battle")
 
-		 AutoRaidEndBattle($f)
-		 WaitForBattleEnd($f, True, True, True)
+		 AutoRaidEndBattle($hBMP)
+		 WaitForBattleEnd($hBMP, True, True, True)
 
 		 Return True
 	  EndIf
@@ -339,7 +339,7 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
    Local $waveCount = 0
 
    ; Loop until we get a star
-   While IsColorPresent($f, $rFirstStarColor) = False
+   While IsColorPresent($hBMP, $rFirstStarColor) = False
 	  $waveCount+=1
 	  DebugWrite("THSnipeExecute() Town hall snipe, wave " & $waveCount)
 
@@ -353,7 +353,7 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 	  EndIf
 
 	  ; Make sure something bad hasn't happened
-	  If WhereAmI($f)<>$eScreenWaitRaid And WhereAmI($f)<>$eScreenLiveRaid Then
+	  If WhereAmI($hBMP)<>$eScreenWaitRaid And WhereAmI($hBMP)<>$eScreenLiveRaid Then
 		 DebugWrite("THSnipeExecute() Not on wait raid or live raid screen, resetting.")
 		 Return False
 	  EndIf
@@ -374,9 +374,9 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 	  Sleep(500)
 
 	  ; Get new frame and check for star
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("THSnipeExecute1")
-	  If IsColorPresent($f, $rFirstStarColor) = True Then ExitLoop
+	  _WinAPI_DeleteObject($hBMP)
+	  $hBMP = CaptureFrameHBITMAP("THSnipeExecute1")
+	  If IsColorPresent($hBMP, $rFirstStarColor) = True Then ExitLoop
 
 	  ; Was the Auto check box unticked?
 	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
@@ -399,9 +399,9 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 	  Sleep(500)
 
 	  ; Get new frame and check for star
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("THSnipeExecute2")
-	  If IsColorPresent($f, $rFirstStarColor) = True Then ExitLoop
+	  _WinAPI_DeleteObject($hBMP)
+	  $hBMP = CaptureFrameHBITMAP("THSnipeExecute2")
+	  If IsColorPresent($hBMP, $rFirstStarColor) = True Then ExitLoop
 
 	  ; Was the Auto check box unticked?
 	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
@@ -415,15 +415,15 @@ Func THSnipeExecute(ByRef $f, Const $THCorner)
 
 	  ; Wait for timer
 	  Local $rand = Random(1000, 3000, 1)
-	  If WaitForColor($f, $waveDelay+$rand, $rFirstStarColor) = True Then ExitLoop
+	  If WaitForColor($hBMP, $waveDelay+$rand, $rFirstStarColor) = True Then ExitLoop
    WEnd
 
    ; End battle
    If $kingDeployed=True Or $queenDeployed=True Then
-	  AutoRaidEndBattle($f)
+	  AutoRaidEndBattle($hBMP)
    EndIf
 
-   WaitForBattleEnd($f, False, False, False)
+   WaitForBattleEnd($hBMP, False, False, False)
    Return True
 EndFunc
 

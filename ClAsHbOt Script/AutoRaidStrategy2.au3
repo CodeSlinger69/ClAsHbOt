@@ -8,8 +8,8 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy2(ByRef $f, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
-   DebugWrite("FillBarracksStrategy2(), " & ($initialFillFlag ? "initial fill." : "top up.") )
+Func FillBarracksStrategy2(ByRef $hHMP, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
+   DebugWrite("FillBarracksStrategy2() " & ($initialFillFlag ? "initial fill" : "top up") )
 
    ; How many breakers are needed?
    Local $breakersToQueue = Number(GUICtrlRead($GUI_AutoRaidBreakerCountEdit)) - $builtTroopCounts[$eTroopWallBreaker][4]
@@ -25,20 +25,20 @@ Func FillBarracksStrategy2(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
    While $barracksCount<=6 And (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then try clicking dark
 	  If $barracksCount<=4 Then
-		 If OpenNextAvailableStandardBarracks($f) = False Then
+		 If OpenNextAvailableStandardBarracks($hHMP) = False Then
 			$barracksCount = 5
 		 EndIf
 	  EndIf
 
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then we are done
 	  If $barracksCount>=5 Then
-		 If OpenNextAvailableDarkBarracks($f) = False Then
+		 If OpenNextAvailableDarkBarracks($hHMP) = False Then
 			ExitLoop
 		 EndIf
 	  EndIf
 
 	  ; See if we are full up
-	  If IsColorPresent($f, $rArmyCampsFullColor) Then
+	  If IsColorPresent($hHMP, $rArmyCampsFullColor) Then
 		 $armyCampsFull = True
 		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
 	  EndIf
@@ -56,7 +56,7 @@ Func FillBarracksStrategy2(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 	  ; Specified breakers in standard barracks on initial fill
 	  If $initialFillFlag And $breakersToQueue>0 And $barracksCount<=4 Then
 		 ; Dequeue troops
-		 DequeueTroops($f)
+		 DequeueTroops($hHMP)
 
 		 For $i = $eTroopBarbarian To $eTroopLavaHound
 			$troopSlots[$i][0] = -1
@@ -75,18 +75,18 @@ Func FillBarracksStrategy2(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
 	  Local $troopsToFill
 	  Do
 		 If $barracksCount=1 Or $barracksCount=3 Then
-			$troopsToFill = FillBarracksWithTroops($f, $eTroopArcher, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($hHMP, $eTroopArcher, $troopSlots)
 		 ElseIf $barracksCount=2 Or $barracksCount=4 Then
-			$troopsToFill = FillBarracksWithTroops($f, $eTroopBarbarian, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($hHMP, $eTroopBarbarian, $troopSlots)
 		 Else
-			$troopsToFill = FillBarracksWithTroops($f, $eTroopMinion, $troopSlots)
+			$troopsToFill = FillBarracksWithTroops($hHMP, $eTroopMinion, $troopSlots)
 		 EndIf
 
 		 $fillTries+=1
 
 		 If $troopsToFill>0 And $fillTries<6 Then
-			_GDIPlus_BitmapDispose($f)
-			$f = CaptureFrame("FillBarracksStrategy2")
+			_WinAPI_DeleteObject($hHMP)
+			$hHMP = CaptureFrameHBITMAP("FillBarracksStrategy2")
 		 EndIf
 	  Until $troopsToFill=0 Or $fillTries>=6 Or _
 		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED)
@@ -95,7 +95,7 @@ Func FillBarracksStrategy2(ByRef $f, Const $initialFillFlag, Const ByRef $builtT
    WEnd
 EndFunc
 
-Func AutoRaidExecuteRaidStrategy2(ByRef $f)
+Func AutoRaidExecuteRaidStrategy2(ByRef $hBMP)
    DebugWrite("AutoRaidExecuteRaidStrategy2()")
 
    ; Get raid troop slots
@@ -117,7 +117,7 @@ Func AutoRaidExecuteRaidStrategy2(ByRef $f)
    LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
 
    ; Determine attack direction
-   Local $direction = AutoRaidStrategy0GetDirection($f)
+   Local $direction = AutoRaidStrategy0GetDirection()
 
    ;
    ; Deploy troops
@@ -179,7 +179,7 @@ Func AutoRaidExecuteRaidStrategy2(ByRef $f)
    DeployAndMonitorHeroes($troopIndex, $deployStart, $direction, 10, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    ; Wait for the end
-   WaitForBattleEnd($f, $kingDeployed, $queenDeployed, $wardenDeployed)
+   WaitForBattleEnd($hBMP, $kingDeployed, $queenDeployed, $wardenDeployed)
 
    Return True
 EndFunc

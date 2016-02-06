@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Logger.h"
+#include "ImageMatchDLL.h"
 #include "OCR.h"
 
 shared_ptr<OCR> ocr;
@@ -27,6 +28,7 @@ OCR::OCR(const char* scriptDir, const bool dOCR)
     // Read the file
 	Font newFont;
 	bool classInProgress = false;
+	string fontTypeInProgress;
 
 	string line;
     while (getline(f, line))
@@ -41,6 +43,9 @@ OCR::OCR(const char* scriptDir, const bool dOCR)
 			{
 				fonts.push_back(newFont);
 				classInProgress = false;
+				char s[500];
+				sprintf_s(s, 500, "Loaded %d font characters for font type %s.", newFont.maps.size(), fontTypeInProgress.c_str());
+				logger->WriteLog(s);
 			}
 		}
 
@@ -51,31 +56,28 @@ OCR::OCR(const char* scriptDir, const bool dOCR)
 			newFont.maps.clear();
 			newFont.maxWidth = 0;
 
-			if (elems[1].find("fontMyStuff")!=string::npos) 
-				newFont.fType = fontMyStuff;
+			// Find font type
+			bool foundFontType = false;
+			for (int i = 0; i < fontTypeCount; i++)
+			{
+				if (elems[1].find(fontTypes[i])!=string::npos)
+				{
+					newFont.fType = (fontType) i;
+					foundFontType = true;
+				}
+			}
 
-			else if (elems[1].find("fontRaidTroopCountUnselected")!=string::npos) 
-				newFont.fType = fontRaidTroopCountUnselected;
-
-			else if (elems[1].find("fontRaidTroopCountSelected")!=string::npos) 
-				newFont.fType = fontRaidTroopCountSelected;
-
-			else if (elems[1].find("fontRaidLoot")!=string::npos) 
-				newFont.fType = fontRaidLoot;
-
-			else if (elems[1].find("fontBarracksStatus")!=string::npos) 
-				newFont.fType = fontBarracksStatus;
-
-			else if (elems[1].find("fontBattleEndWinnings")!=string::npos) 
-				newFont.fType = fontBattleEndWinnings;
-
-			else if (elems[1].find("fontBattleEndBonus")!=string::npos) 
-				newFont.fType = fontBattleEndBonus;
-
-			else if (elems[1].find("fontChat")!=string::npos) 
-				newFont.fType = fontChat;
-			
-			classInProgress = true;
+			if (!foundFontType)
+			{
+				char s[500];
+				sprintf_s(s, 500, "Font type %s is unrecognized.", elems[1].c_str());
+				logger->WriteLog(s);
+			}
+			else
+			{
+				classInProgress = true;
+				fontTypeInProgress = elems[1];
+			}
 		}
 
 		// Add char/hexvals to ongoing class definition
@@ -92,6 +94,16 @@ OCR::OCR(const char* scriptDir, const bool dOCR)
 		}
 	}
 
+	// Store last font class that was being worked on
+	if (classInProgress)
+	{
+		fonts.push_back(newFont);
+		classInProgress = false;
+		char s[500];
+		sprintf_s(s, 500, "Loaded %d font characters for font type %s.", newFont.maps.size(), fontTypeInProgress.c_str());
+		logger->WriteLog(s);
+	}
+
 	// Handle read error
     if (f.bad())
 	{
@@ -103,9 +115,11 @@ OCR::OCR(const char* scriptDir, const bool dOCR)
 	}
 
 	f.close();
+
+	logger->WriteLog("Fonts loaded");
 }
 
-string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::Color colorCenter, const int colorRadius, const bool keepSpaces)
+string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
 {
 	// Get index into font list
 	int fontIndex = -1;
@@ -125,16 +139,14 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::C
 	// Separate foreground pixels
 	//
 	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
-	int w = pBitmap->GetWidth();
-	int h = pBitmap->GetHeight();
 
 	vector< vector<bool> > pix;
-	int left, top, right, bottom;
+	int left=fontR.left, top=fontR.top, right=fontR.right, bottom=fontR.bottom;
 
-	GetForegroundPixels(pBitmap, colorCenter, colorRadius, pix, left, top, right, bottom);
+	GetForegroundPixels(pBitmap, fontR.color, fontR.radius, pix, left, top, right, bottom);
 
-	w = right-left+1;
-	h = bottom-top+1;
+	int w = right-left+1;
+	int h = bottom-top+1;
 
 	delete pBitmap;
 
@@ -211,7 +223,7 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::C
 		{
 			int charWidth = charEnd - charStart + 1;
 
-			// Find the first non blank row for this char, starting from the bottom
+			// Find the first non blank row, starting from the bottom
 			int bottomOfChar = -1;
 			for (int cY = h-1; cY >= 0; cY--)
 			{
@@ -227,7 +239,7 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::C
 					break;
 			}
 
-			// Calculate colValues for this test width
+			// Calculate colValues
 			if (debugOCR) 
 			{
 				char s[500];
@@ -311,126 +323,175 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::C
 }
 
 // Non fuzzy character matching - only good for chat box right now
-/*
-Func ScrapeExactText(Const $frame, Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
-   Local $w = $box[2] - $box[0] + 1
-   Local $h = $box[3] - $box[1] + 1
-   Local $pix[$w][$h]
-   Local $pY
+string OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
+{
+	// Get index into font list
+	int fontIndex = -1;
+	for (unsigned int i = 0; i<fonts.size(); i++)
+		if (fonts[i].fType == fontT)
+			fontIndex = i;
 
-   ; Get map of foreground pixels
-   GetForegroundPixels($frame, $box, $pix, $pY)
+	if (fontIndex == -1) 
+	{
+		char s[500];
+		sprintf_s(s, 500, "Error finding font record for type: %d", fontT);
+		logger->WriteLog(s);
+		return string("");
+	}
 
-   ; Scan left to right through foreground pixel map to identify individual characters
-   Local $textString = ""
-   Local $x = 0
-   Do
-	  Local $charStart = -1, $charEnd = -1
+	//
+	// Separate foreground pixels
+	//
+	Gdiplus::Bitmap* pBitmap = Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL);
 
-	  ; Find start of char
-	  Local $blankCol, $blankColCount = 0
-	  Do
-		 $blankCol = True
-		 For $by = 0 To $pY-1
-			If $pix[$x][$by] = 1 Then $blankCol = False
-		 Next
+	vector< vector<bool> > pix;
+	int left=fontR.left, top=fontR.top, right=fontR.right, bottom=fontR.bottom;
 
-		 If $blankCol = True Then
-			$x+=1
-			$blankColCount+=1
+	GetForegroundPixels(pBitmap, fontR.color, fontR.radius, pix, left, top, right, bottom);
 
-			; add a space if multiple blank columns are detected
-			If $blankColCount=3 And StringLen($textString)>0 And $keepSpaces=$eScrapeKeepSpaces Then $textString &= " "
-		 EndIf
-	  Until $blankCol = False Or $x > $w-1
+	int w = right-left+1;
+	int h = bottom-top+1;
 
-	  If $blankCol = False Then
-		 $charStart = $x
-		 $charEnd = $charStart
-	  EndIf
+	delete pBitmap;
 
-	  ; Find end of char
-	  If $charStart <> -1 Then
-		 $charEnd = ($charStart+$maxCharSize > $w-1) ? $w-1 : $charStart+$maxCharSize
-	  EndIf
+	// Scan left to right through foreground pixel map to identify individual characters
+	string textString("");
+	int x = 0;
+	do
+	{
+	   	// Find start of char
+		int charStart = -1;
+		bool blankCol = true;
+		int blankColCount = 0;
+		do
+		{
+			for (int by=0; by<h; by++)
+				if (pix[x][by])
+					blankCol = false;
 
-	  ; Find exact match with greatest width
-	  Local $largestMatchIndex=-1
-	  If $charStart <> -1 Then
-		 Local $testWidth
-		 For $testWidth = 1 To $charEnd-$charStart+1
-			; Find the first non blank row, starting from the bottom
-			Local $cX, $cY, $bottomOfChar = -1
-			For $cY = $pY-1 To 0 Step -1
-			   For $cX = $charStart To $charStart+$testWidth-1
-				  If $pix[$cX][$cY] = 1 Then
-					 $bottomOfChar = $cY
-					 ExitLoop
-				  EndIf
-			   Next
-			   If $bottomOfChar <> -1 Then ExitLoop
-			Next
+			if (blankCol)
+			{
+				x++;
+				blankColCount++;
 
-			; Calculate colValues for this character
-			Local $colValues[$testWidth]
-			For $cX = $charStart To $charStart+$testWidth-1
-			   Local $factor = 1
-			   $colValues[$cX-$charStart] = 0
-			   For $cY = $bottomOfChar To 0 Step -1
-				  $colValues[$cX-$charStart] += ($pix[$cX][$cY] * $factor)
-				  $factor*=2
-			   Next
-			Next
+				// add a space if multiple blank columns are detected
+				if (blankColCount==3 && keepSpaces)
+					textString.append(" ");
+			}
+		}
+		while (blankCol && x < w);
 
-			; Find a match
-			Local $bestMatchIndex = FindExactCharInArray($charMapArray, $colValues, $testWidth)
-			If $bestMatchIndex <> -1 Then $largestMatchIndex = $bestMatchIndex
-		 Next
-	  EndIf
+		if (!blankCol)
+			charStart = x;
 
-	  ; Debug
-	  If $gScraperDebug And $charEnd<>-1 Then
-		 ConsoleWrite($charStart & " to " & _
-						($largestMatchIndex<>-1 ? $charStart+$charMapArray[$largestMatchIndex][1]-1 : $charStart) & ": " & _
-						($largestMatchIndex<>-1 ? $charMapArray[$largestMatchIndex][0] : "`" ) & " : ")
-		 For $cX = $charStart To ($largestMatchIndex<>-1 ? $charStart+$charMapArray[$largestMatchIndex][1]-1 : $charStart)
-			ConsoleWrite($colValues[$cX-$charStart] & ", ")
-		 Next
-		 ConsoleWrite(@CRLF)
-	  EndIf
+		// Find end of char
+		int charEnd = -1;
+		if (charStart != -1)
+			charEnd = (charStart + fonts[fontIndex].maxWidth > w-1) ? w-1 : charStart + fonts[fontIndex].maxWidth;
 
-	  ; Got a match or not?
-	  If $largestMatchIndex <> -1 Then
-		 $textString &= $charMapArray[$largestMatchIndex][0]
-		 $x = $charStart+$charMapArray[$largestMatchIndex][1]
-	  ElseIf $charEnd<>-1 Then
-		 ;$textString &= "?"
-		 $x += 1
-	  EndIf
+		// Find exact match with greatest width
+		int largestMatchIndex = -1;
+		vector<int> colValues;
+		if (charStart != -1)
+		{
+			for (int testWidth = 1; testWidth <= charEnd-charStart+1; testWidth++)
+			{
+				// Find the first non blank row, starting from the bottom
+				int bottomOfChar = -1;
+				for (int cY = h-1; cY >= 0; cY--)
+				{
+					for (int cX = 0; cX < testWidth; cX++)
+					{
+						if (pix[charStart+cX][cY])
+						{
+							bottomOfChar = cY;
+							break;
+						}
+					}
+					if (bottomOfChar != -1)
+						break;
+				}
 
-   Until $x > $w-1
+				// Calculate colValues for this character
+				colValues.resize(testWidth);
+				for (int cX = 0; cX < testWidth; cX++)
+				{
+					int powerof2 = 1;
+					colValues[cX] = 0;
+					for (int cY = bottomOfChar; cY >= 0; cY--)
+					{
+						if (pix[charStart+cX][cY])
+							colValues[cX] += powerof2;
+						powerof2 *= 2;
+					}
 
-   $textString = StringStripWS($textString, $STR_STRIPTRAILING)
+					if (debugOCR)
+					{
+						char s[500];
+						sprintf_s(s, 500, "%d ", colValues[cX]);
+						logger->WriteLog(s, false, false);
+					}
+				}
 
-   ; Debug
-   If $gScraperDebug Then
-	  ConsoleWrite("RESULT: " & $textString & @CRLF)
-	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
-   EndIf
+				// Find a match
+				int bestMatchIndex = FindExactCharInArray(fontIndex, colValues, testWidth);
+				if (bestMatchIndex != -1)
+					largestMatchIndex = bestMatchIndex;
+			}
+		}
 
-   Return $textString
-EndFunc
-*/
+		int largestSize = largestMatchIndex != -1 ? fonts[fontIndex].maps[largestMatchIndex].hexVal.size() : 0;
+
+		// Debug
+		if (debugOCR && charEnd != -1)
+		{
+			char s[500];
+			sprintf_s(s, 500, "%d to %d: %s", charStart, charStart+largestSize-1, largestMatchIndex!=-1 ? fonts[fontIndex].maps[largestMatchIndex].s.c_str() : "`");
+			logger->WriteLog(s, false, true);
+
+			for (int cX = charStart; cX <= (largestMatchIndex!=-1 ? charStart+largestSize-1 : charStart); cX++)
+			{
+				sprintf_s(s, 500, "%d ", colValues[cX-charStart]);
+				logger->WriteLog(s, false, false);
+			}
+			logger->WriteLog("", false, true);
+		}
+
+		// Got a match or not?
+		if (largestMatchIndex != -1)
+		{
+			textString += fonts[fontIndex].maps[largestMatchIndex].s;
+			x = charStart + largestSize;
+		}
+		else if (charEnd != -1)
+		{
+			//textString += "?"
+			x++;
+		}
+	}
+	while (x < w);
+
+	if (debugOCR)
+	{
+		char s[500];
+		sprintf_s(s, 500, "RESULT: %s", textString.c_str());
+		logger->WriteLog(s, false, true);
+		logger->WriteLog("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", false, true);
+   }
+
+	return textString;
+}
+
 
 void OCR::GetForegroundPixels(Gdiplus::Bitmap* pBmp, const Gdiplus::Color cC, const int cR, vector< vector<bool> > &pix, int &left, int &top, int &right, int &bottom)
 {
 	// Determine actual left/right boundaries of foreground pixels
-	left = -1;
-	right = -1;
-	for (int x = 0; x < (int) pBmp->GetWidth(); x++)
+	int actualLeft = -1;
+	int actualRight = -1;
+	for (int x = left; x <= right; x++)
 	{
 		bool blankCol = true;
-		for (int y = 0; y < (int) pBmp->GetHeight(); y++)
+		for (int y = top; y <= bottom; y++)
 		{
 			Gdiplus::Color pixelColor;
 			pBmp->GetPixel(x, y, &pixelColor);
@@ -440,14 +501,17 @@ void OCR::GetForegroundPixels(Gdiplus::Bitmap* pBmp, const Gdiplus::Color cC, co
 				break;
 			}
 		}
-		if (!blankCol && left == -1) left = x;
-		if (!blankCol && x > right) right = x;
+		if (!blankCol && actualLeft == -1) actualLeft = x;
+		if (!blankCol && x > actualRight) actualRight = x;
 	}
 
+	left = actualLeft;
+	right = actualRight;
+
 	// Determine actual top/bottom boundaries of foreground pixels
-	top = -1;
-	bottom = -1;
-	for (int y = 0;  y < (int) pBmp->GetHeight(); y++)
+	int actualTop = -1;
+	int actualBottom = -1;
+	for (int y = top;  y <= bottom; y++)
 	{
 		bool blankRow = true;
 		for (int x = left; x <= right; x++)
@@ -460,9 +524,12 @@ void OCR::GetForegroundPixels(Gdiplus::Bitmap* pBmp, const Gdiplus::Color cC, co
 				break;
 			}
 		}
-		if (!blankRow && top == -1) top = y;
-		if (!blankRow && y > bottom) bottom = y;
+		if (!blankRow && actualTop == -1) actualTop = y;
+		if (!blankRow && y > actualBottom) actualBottom = y;
 	}
+
+	top = actualTop;
+	bottom = actualBottom;
 
 	// Resize the 2D vector
 	for (int x = 0; x <= right-left+1; x++)
@@ -552,35 +619,36 @@ int OCR::FindFuzzyCharInArray(const int fontIndex, const vector<int> nums, const
 	return bestMatch;
 }
 
+int OCR::FindExactCharInArray(const int fontIndex, const vector<int> nums, const int width)
+{
+	// Loop through each row in the $charMapArray array
+	int bestMatch = -1;
+	for (int i = 0; i < (int) fonts[fontIndex].maps.size(); i++)
+	{
+		// If number of columns match, then check the colvalues
+		if (width == fonts[fontIndex].maps[i].hexVal.size())
+		{
+			// Loop through each column in the passed in array of numbers
+			bool match=true;
+			for (int c = 0; c < width; c++)
+			{
+				if (nums[c] != fonts[fontIndex].maps[i].hexVal[c])
+				{
+					match = false;
+					break;
+				}
+			}
 
-/*
-Func FindExactCharInArray(Const ByRef $charMapArray, Const ByRef $nums, Const $count)
-   ; Loop through each row in the $charMapArray array
-   Local $bestMatch = -1
-   For $i = 0 To UBound($charMapArray)-1
+			if (match)
+			{
+				bestMatch = i;
+				break;
+			}
+		}
+	}
 
-	  ; If number of columns match, then check the colvalues
-	  If $count = $charMapArray[$i][1] Then
-
-		 ; Loop through each column in the passed in array of numbers
-		 Local $c, $match=True
-		 For $c = 0 To $count-1
-			If $nums[$c] <> $charMapArray[$i][$c+2] Then
-			   $match = False
-			   ExitLoop
-			EndIf
-		 Next
-
-		 If $match Then
-			$bestMatch = $i
-			ExitLoop
-		 EndIf
-	  EndIf
-   Next
-
-   Return $bestMatch
-EndFunc
-*/
+	return bestMatch;
+}
 
 int OCR::CalcHammingDistance(const int x, const int y)
 {
@@ -621,11 +689,6 @@ bool OCR::InColorSphere(const Gdiplus::Color c, const Gdiplus::Color cC, const i
 	return dist < cR;
 }
 
-vector<string> &OCR::split(const string &s, const char delim, vector<string> &elems) {
-    stringstream ss(s);
-    string item;
-    while (getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
+const char* OCR::fontTypes[fontTypeCount] = { 
+	"MyStuff", "RaidTroopCountUnselected", "RaidTroopCountSelected", "RaidLoot", "BarracksStatus",
+	"BattleEndWinnings", "BattleEndBonus", "Chat" };

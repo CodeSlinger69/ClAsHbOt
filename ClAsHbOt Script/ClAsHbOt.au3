@@ -18,7 +18,6 @@ Opt("GUIOnEventMode", 1)
 ; AutoIt includes
 #include <ScreenCapture.au3>
 #include <Date.au3>
-#include <GDIPlus.au3>
 #include <Math.au3>
 #include <Array.au3>
 #include <WinAPI.au3>
@@ -30,7 +29,6 @@ Opt("GUIOnEventMode", 1)
 ; CoC Bot Includes
 #include <Globals.au3>
 #include <Version.au3>
-#include <ClAsHbOtDlL.au3>
 #include <CharMaps.au3>
 #include <RegionDefs.au3>
 #include <GUI.au3>
@@ -58,12 +56,11 @@ Main()
 Func Main()
    ReadSettings()
 
-   DLLLoad()
-
    StartBlueStacks()
 
    InitScraper()
 
+;Local $hHBITMAP = CaptureFrameHBITMAP("Debug")
 ;MsgBox($MB_OK, "", "Attach debugger!")
 ;ZoomOut2()
 ;$gScraperDebug = True
@@ -83,6 +80,8 @@ Func Main()
 ;TestStorage()
 ;TestFindAllStorages()
 ;TestCollectMyLoot()
+;TestReloadDefenses()
+;_WinAPI_DeleteObject($hHBITMAP)
 ;Exit
 
    InitGUI()
@@ -100,10 +99,10 @@ Func MainApplicationLoop()
 
    While 1
 	  ; Get frame
-	  Local $frame = CaptureFrame("MainApplicationLoop, Stage " & $gAutoStage)
+	  Local $hBITMAP = CaptureFrameHBITMAP("MainApplicationLoop, Stage " & $gAutoStage)
 
 	  ; Update status on GUI
-	  GetMyLootNumbers($frame)
+	  GetMyLootNumbers($hBITMAP)
 
 	  ; Does loot tracking need updating?
 	  If $gAutoNeedToCollectStartingLoot Then
@@ -128,9 +127,9 @@ Func MainApplicationLoop()
 
 		 $gKeepOnlineClicked = False
 
-		 If WhereAmI($frame)=$eScreenAndroidHome Then ResetToCoCMainScreen($frame)
+		 If WhereAmI($hBITMAP)=$eScreenAndroidHome Then ResetToCoCMainScreen($hBITMAP)
 
-		 CheckForAndroidMessageBox($frame)
+		 CheckForAndroidMessageBox($hBITMAP)
 		 $lastOnlineCheckTimer = TimerInit()
 		 UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 	  EndIf
@@ -143,13 +142,13 @@ Func MainApplicationLoop()
 		 ; Donate Troops
 		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And _
 			$gPossibleKick < 2 And _
-			($gDonateTroopsClicked Or IsColorPresent($frame, $rNewChatMessagesColor)) Then
+			($gDonateTroopsClicked Or IsColorPresent($hBITMAP, $rNewChatMessagesColor)) Then
 
 			$gDonateTroopsClicked = False
 
-			ResetToCoCMainScreen($frame)
+			ResetToCoCMainScreen($hBITMAP)
 
-			If WhereAmI($frame)=$eScreenMain Then DonateTroops($frame)
+			If WhereAmI($hBITMAP)=$eScreenMain Then DonateTroops($hBITMAP)
 		 EndIf
 
 		 ; Collect loot
@@ -159,13 +158,13 @@ Func MainApplicationLoop()
 
 			$gCollectLootClicked = False
 
-			If WhereAmI($frame) = $eScreenMain Then
-			   ZoomOut2($frame)
+			If WhereAmI($hBITMAP) = $eScreenMain Then
+			   ZoomOut($hBITMAP)
 			Else
-			   ResetToCoCMainScreen($frame)
+			   ResetToCoCMainScreen($hBITMAP)
 			EndIf
 
-			If WhereAmI($frame)=$eScreenMain Then CollectLoot()
+			If WhereAmI($hBITMAP)=$eScreenMain Then CollectLoot()
 			$lastCollectLootTimer = TimerInit()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 		 EndIf
@@ -177,13 +176,13 @@ Func MainApplicationLoop()
 
 			$gReloadDefensesClicked = False
 
-			If WhereAmI($frame) = $eScreenMain Then
-			   ZoomOut2($frame)
+			If WhereAmI($hBITMAP) = $eScreenMain Then
+			   ZoomOut($hBITMAP)
 			Else
-			   ResetToCoCMainScreen($frame)
+			   ResetToCoCMainScreen($hBITMAP)
 			EndIf
 
-			If WhereAmI($frame)=$eScreenMain Then ReloadDefenses($frame)
+			If WhereAmI($hBITMAP)=$eScreenMain Then ReloadDefenses($hBITMAP)
 			$lastReloadDefensesTimer = TimerInit()
 			UpdateCountdownTimers($lastOnlineCheckTimer, $lastCollectLootTimer, $lastReloadDefensesTimer, $lastTrainingCheckTimer, $lastDefenseFarmTimer)
 		 EndIf
@@ -196,15 +195,15 @@ Func MainApplicationLoop()
 
 		 $gFindMatchClicked = False
 
-		 If WhereAmI($frame) = $eScreenMain Then
-			ZoomOut2($frame)
+		 If WhereAmI($hBITMAP) = $eScreenMain Then
+			ZoomOut($hBITMAP)
 		 Else
-			ResetToCoCMainScreen($frame)
+			ResetToCoCMainScreen($hBITMAP)
 		 EndIf
 
-		 If WhereAmI($frame)=$eScreenMain Then
+		 If WhereAmI($hBITMAP)=$eScreenMain Then
 			Local $dummy
-			If AutoRaidFindMatch($frame, False, $dummy) = True Then
+			If AutoRaidFindMatch($hBITMAP, False, $dummy) = True Then
 			   _GUICtrlButton_SetCheck($GUI_FindMatchCheckBox, $BST_UNCHECKED)
 			   _GUICtrlButton_Enable($GUI_AutoPushCheckBox, True)
 			   _GUICtrlButton_Enable($GUI_AutoRaidCheckBox, True)
@@ -215,46 +214,46 @@ Func MainApplicationLoop()
 	  ; Auto Push
 	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
-		 IsButtonPresent($frame, $rAndroidMessageButton1) = False And _
-		 IsButtonPresent($frame, $rAndroidMessageButton2) = False Then
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton1) = False And _
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton2) = False Then
 
 		 $gAutoPushClicked = False
-		 CheckForAndroidMessageBox($frame)
+		 CheckForAndroidMessageBox($hBITMAP)
 
-		 AutoPush($frame, $lastTrainingCheckTimer, $snipeTHCorner)
+		 AutoPush($hBITMAP, $lastTrainingCheckTimer, $snipeTHCorner)
 	  EndIf
 
 	  ; Auto Raid / AutoPush, Dump Cups
 	  If (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED) And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
-		 IsButtonPresent($frame, $rAndroidMessageButton1) = False And _
-		 IsButtonPresent($frame, $rAndroidMessageButton2) = False Then
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton1) = False And _
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton2) = False Then
 
-		 DumpCups($frame)
+		 DumpCups($hBITMAP)
 	  EndIf
 
 	  ; Auto Raid, Attack
 	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
-		 IsButtonPresent($frame, $rAndroidMessageButton1) = False And _
-		 IsButtonPresent($frame, $rAndroidMessageButton2) = False Then
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton1) = False And _
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton2) = False Then
 
 		 $gAutoRaidClicked = False
-		 CheckForAndroidMessageBox($frame)
+		 CheckForAndroidMessageBox($hBITMAP)
 
-		 AutoRaid($frame, $lastTrainingCheckTimer, $snipeTHCorner)
+		 AutoRaid($hBITMAP, $lastTrainingCheckTimer, $snipeTHCorner)
 	  EndIf
 
 	  ; Defense Farm
 	  If _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED And _
 		 $gPossibleKick < 2 And _
-		 IsButtonPresent($frame, $rAndroidMessageButton1) = False And _
-		 IsButtonPresent($frame, $rAndroidMessageButton2) = False Then
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton1) = False And _
+		 IsButtonPresent($hBITMAP, $rAndroidMessageButton2) = False Then
 
 		 $gDefenseFarmClicked = False
 
-		 DefenseFarm($frame, $lastDefenseFarmTimer)
+		 DefenseFarm($hBITMAP, $lastDefenseFarmTimer)
 	  EndIf
 
 	  ; Pause for 5 seconds
@@ -278,7 +277,7 @@ Func MainApplicationLoop()
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED And TimerDiff($lastReloadDefensesTimer) >= $gReloadDefensesInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED And TimerDiff($lastDefenseFarmTimer) >= $gDefenseFarmOfflineTime Then ExitLoop
-		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And IsColorPresent($frame, $rNewChatMessagesColor) Then ExitLoop
+		 If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED And IsColorPresent($hBITMAP, $rNewChatMessagesColor) Then ExitLoop
 
 		 Sleep(400)
 	  WEnd
@@ -295,7 +294,7 @@ Func MainApplicationLoop()
 	  EndIf
 
 
-	  _GDIPlus_BitmapDispose($frame)
+	  _WinAPI_DeleteObject($hBITMAP)
    WEnd
 EndFunc
 
@@ -359,47 +358,51 @@ Func millisecondToMMSS(Const $ms)
    Return $m & ":" & StringRight("00" & $s, 2);
 EndFunc
 
-Func GetMyLootNumbers($frame)
+Func GetMyLootNumbers(ByRef $hBMP)
    ;DebugWrite("GetMyLootNumbers()")
 
    ; My loot is only scrapable on some screens
-   If WhereAmI($frame)=$eScreenMain Or WhereAmI($frame)=$eScreenWaitRaid Or WhereAmI($frame)=$eScreenLiveRaid Then
+   If WhereAmI($hBMP)=$eScreenMain Or WhereAmI($hBMP)=$eScreenWaitRaid Or WhereAmI($hBMP)=$eScreenLiveRaid Then
+
+	  ; Grab frame for OCR
+	  If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("GetMyLootNumbersFrame.bmp", $hBMP, False)
+
 	  Local $MyGold = 0
-	  If IsTextBoxPresent($frame, $rMyGoldTextBox) = True Then
-		 $MyGold = Number(ScrapeFuzzyText2($fontMyStuff, $rMyGoldTextBox))
+	  If IsTextBoxPresent($hBMP, $rMyGoldTextBox) = True Then
+		 $MyGold = Number(ScrapeFuzzyText($hBMP, $fontMyStuff, $rMyGoldTextBox))
 		 GUICtrlSetData($GUI_MyGold, $MyGold)
 	  EndIf
 
 	  Local $MyElix = 0
-	  If IsTextBoxPresent($frame, $rMyElixTextBox) = True Then
-		 $MyElix = Number(ScrapeFuzzyText2($fontMyStuff, $rMyElixTextBox))
+	  If IsTextBoxPresent($hBMP, $rMyElixTextBox) = True Then
+		 $MyElix = Number(ScrapeFuzzyText($hBMP, $fontMyStuff, $rMyElixTextBox))
 		 GUICtrlSetData($GUI_MyElix, $MyElix)
 	  EndIf
 
 	  Local $MyDark = 0
-	  If IsTextBoxPresent($frame, $rMyGemsTextBoxWithDE) = True Then
-		 $MyDark = Number(ScrapeFuzzyText2($fontMyStuff, $rMyDarkTextBox))
+	  If IsTextBoxPresent($hBMP, $rMyGemsTextBoxWithDE) = True Then
+		 $MyDark = Number(ScrapeFuzzyText($hBMP, $fontMyStuff, $rMyDarkTextBox))
 		 GUICtrlSetData($GUI_MyDark, $MyDark)
 	  EndIf
 
 	  Local $MyGems = 0
-	  If IsTextBoxPresent($frame, $rMyGemsTextBoxNoDE) = True Then
-		 $MyGems = Number(ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxNoDE))
+	  If IsTextBoxPresent($hBMP, $rMyGemsTextBoxNoDE) = True Then
+		 $MyGems = Number(ScrapeFuzzyText($hBMP, $fontMyStuff, $rMyGemsTextBoxNoDE))
 		 GUICtrlSetData($GUI_MyGems, $MyGems)
-	  ElseIf IsTextBoxPresent($frame, $rMyGemsTextBoxWithDE) = True Then
-		 $MyGems = Number(ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxWithDE))
+	  ElseIf IsTextBoxPresent($hBMP, $rMyGemsTextBoxWithDE) = True Then
+		 $MyGems = Number(ScrapeFuzzyText($hBMP, $fontMyStuff, $rMyGemsTextBoxWithDE))
 		 GUICtrlSetData($GUI_MyGems, $MyGems)
 	  EndIf
 
 	  ; My cups and my town hall can only be scraped from the main screen
-	  If WhereAmI($frame) = $eScreenMain Then
-		 Local $MyCups = Number(ScrapeFuzzyText2($fontMyStuff, $rMyCupsTextBox))
+	  If WhereAmI($hBMP) = $eScreenMain Then
+		 Local $MyCups = Number(ScrapeFuzzyText($hBMP, $fontMyStuff, $rMyCupsTextBox))
 		 GUICtrlSetData($GUI_MyCups, $MyCups)
 
 		 ; Only search for my town hall level if we don't already know it
 		 Local $GUIMyTownHall = GUICtrlRead($GUI_MyTownHall)
 		 If $GUIMyTownHall = 0 Then
-			ZoomOut2($frame)
+			ZoomOut($hBMP)
 
 			RandomWeightedClick($rSafeAreaButton)
 			Sleep(500)
@@ -418,9 +421,9 @@ Func GetMyLootNumbers($frame)
 EndFunc
 
 Func CaptureAutoBeginLoot()
-   Local $frame = CaptureFrame("CaptureAutoBeginLoot")
-   GetMyLootNumbers($frame)
-   _GDIPlus_BitmapDispose($frame)
+   Local $hBITMAP = CaptureFrameHBITMAP("CaptureAutoBeginLoot")
+   GetMyLootNumbers($hBITMAP)
+   _WinAPI_DeleteObject($hBITMAP)
 
    Local $n = GUICtrlRead($GUI_MyGold)
    If $n <> "-" Then $gAutoRaidBeginLoot[0] = $n

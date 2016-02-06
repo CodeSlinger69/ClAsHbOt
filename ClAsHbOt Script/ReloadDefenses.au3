@@ -1,7 +1,7 @@
-Func ReloadDefenses(ByRef $f)
+Func ReloadDefenses(ByRef $hBMP)
    ;DebugWrite("ReloadDefenses()")
 
-   If ResetToCoCMainScreen($f) = False Then
+   If ResetToCoCMainScreen($hBMP) = False Then
 	  DebugWrite("ReloadDefenses() Not on main screen, exiting")
 	  Return
    EndIf
@@ -23,7 +23,7 @@ Func ReloadDefenses(ByRef $f)
    Sleep(500)
 
    ; Wait for reload bar
-   Local $buttonIndex[4][4]
+   Local $buttonIndex[5][4]
 
    If WaitForReloadBar($buttonIndex) = False Then
 	  DebugWrite("ReloadDefenses() Could not find Reload button bar, exiting")
@@ -32,8 +32,15 @@ Func ReloadDefenses(ByRef $f)
 
    DebugWrite("ReloadDefenses() Found Reload button bar")
 
+   For $i = 0 To 4
+	  If $buttonIndex[$i][0] <> -1 Then
+		 DebugWrite("ReloadDefenses() Found " & $gReloadButtonNames[$i] & " button " & _
+			$buttonIndex[$i][0] & ", " & $buttonIndex[$i][1] & ", " & $buttonIndex[$i][2] & ", " & $buttonIndex[$i][3])
+	  EndIf
+   Next
+
    ; See if each reload button is present
-   For $i = 1 To 3
+   For $i = 1 To 4
 	  If $buttonIndex[$i][0] <> -1 Then
 		 ; Click button
 		 Local $button[4]
@@ -44,12 +51,13 @@ Func ReloadDefenses(ByRef $f)
 		 RandomWeightedClick($button)
 
 		 ; Wait for Reload confirmation window
-		 If WaitForButton($f, 5000, $rReloadDefensesOkayButton) = False Then
+		 If WaitForButton($hBMP, 5000, $rReloadDefensesOkayButton) = False Then
 			DebugWrite("ReloadDefenses() Failed - timeout waiting for Reload Confirmation window, resetting")
-			_GDIPlus_BitmapDispose($f)
-			$f = CaptureFrame("ReloadDefenses")
-			ResetToCoCMainScreen($f)
+			_WinAPI_DeleteObject($hBMP)
+			$hBMP = CaptureFrameHBITMAP("ReloadDefenses")
+			ResetToCoCMainScreen($hBMP)
 			Return
+
 		 Else
 			Sleep(500)
 
@@ -60,9 +68,9 @@ Func ReloadDefenses(ByRef $f)
 			; Wait for reload bar
 			If WaitForReloadBar($buttonIndex) = False Then
 			   DebugWrite("ReloadDefenses() Reload button bar did not reappear, resetting")
-			   _GDIPlus_BitmapDispose($f)
-			   $f = CaptureFrame("ReloadDefenses")
-			   ResetToCoCMainScreen($f)
+			   _WinAPI_DeleteObject($hBMP)
+			   $hBMP = CaptureFrameHBITMAP("ReloadDefenses")
+			   ResetToCoCMainScreen($hBMP)
 			   Return
 			EndIf
 		 EndIf
@@ -74,30 +82,23 @@ Func ReloadDefenses(ByRef $f)
    RandomWeightedClick($rSafeAreaButton)
    Sleep(500)
 
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("ReloadDefenses")
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("ReloadDefenses")
 EndFunc
 
 Func WaitForReloadBar(ByRef $index)
    Local $t = TimerInit()
-   For $i=0 To 3
-	  $index[$i][0] = -1
-	  $index[$i][1] = -1
-	  $index[$i][2] = -1
-	  $index[$i][3] = -1
-   Next
-   Local $matchCount = LocateSlots($eActionTypeReloadButton, $eSlotTypeTroop, $index)
 
-   While TimerDiff($t)<5000 And $index[0][0]=-1
+   Do
 	  Sleep(500)
-	  For $i=0 To 3
+	  For $i=0 To 4
 		 $index[$i][0] = -1
 		 $index[$i][1] = -1
 		 $index[$i][2] = -1
 		 $index[$i][3] = -1
 	  Next
-	  $matchCount = LocateSlots($eActionTypeReloadButton, $eSlotTypeTroop, $index)
-   WEnd
+	  LocateSlots($eActionTypeReloadButton, $eSlotTypeTroop, $index)
+   Until TimerDiff($t)>=5000 Or $index[0][0]<>-1
 
    If $index[0][0] = -1 Then
 	  Return False

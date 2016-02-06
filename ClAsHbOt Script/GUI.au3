@@ -411,7 +411,6 @@ Func GUICloseButton()
    SaveSettings()
    ExitGUI()
    ExitScraper()
-   DLLUnload()
 
    Exit
 EndFunc

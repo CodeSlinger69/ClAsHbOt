@@ -5,3 +5,4 @@ EXPORTS
    FindAllBMPs
    LocateSlots
    ScrapeFuzzyText
+   ScrapeExactText

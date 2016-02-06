@@ -1,12 +1,12 @@
-Func DefenseFarm(ByRef $f, ByRef $timer)
+Func DefenseFarm(ByRef $hBMP, ByRef $timer)
    ; If we are waiting for the timer to expire, then make sure we are offline
    If TimerDiff($timer)<$gDefenseFarmOfflineTime Then
-	  If WhereAmI($f)<>$eScreenAndroidHome Then
+	  If WhereAmI($hBMP)<>$eScreenAndroidHome Then
 		 DebugWrite("DefenseFarm() Not on Android Home screen, doing work")
-		 DefenseFarmDoWork($f)
+		 DefenseFarmDoWork($hBMP)
 
-		 If GoOffline($f) = False Then
-			ResetToCoCMainScreen($f)
+		 If GoOffline($hBMP) = False Then
+			ResetToCoCMainScreen($hBMP)
 		 Else
 			DebugWrite("DefenseFarm() On Android Home screen, waiting " & Round($gDefenseFarmOfflineTime/1000/60) & " minutes")
 			$timer = TimerInit()
@@ -16,20 +16,20 @@ Func DefenseFarm(ByRef $f, ByRef $timer)
    ; Otherwise, start up the game and do work
    Else
 	  DebugWrite("DefenseFarm() Starting Clash of Clans app and dumping cups")
-	  DefenseFarmDoWork($f)
+	  DefenseFarmDoWork($hBMP)
 	  $timer = TimerInit()
 
    EndIf
 EndFunc
 
-Func DefenseFarmDoWork(ByRef $f)
-   ResetToCoCMainScreen($f)
+Func DefenseFarmDoWork(ByRef $hBMP)
+   ResetToCoCMainScreen($hBMP)
 
-   If WhereAmI($f)<>$eScreenMain Then Return
+   If WhereAmI($hBMP)<>$eScreenMain Then Return
 
    If _GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED Then
 	  DebugWrite("DefenseFarmDoWork() Donating troops")
-	  DonateTroops($f)
+	  DonateTroops($hBMP)
    EndIf
 
    If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED Then
@@ -39,27 +39,27 @@ Func DefenseFarmDoWork(ByRef $f)
 
    If _GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED Then
 	  DebugWrite("DefenseFarmDoWork() Reloading defenses")
-	  ReloadDefenses($f)
+	  ReloadDefenses($hBMP)
    EndIf
 
    DebugWrite("DefenseFarmDoWork() Dumping cups")
-   DumpCups($f)
+   DumpCups($hBMP)
 EndFunc
 
-Func GoOffline(ByRef $f)
+Func GoOffline(ByRef $hBMP)
    ; Return to main clash screen
    DebugWrite("GoOffline() Exiting Clash of Clans app")
-   ResetToCoCMainScreen($f)
+   ResetToCoCMainScreen($hBMP)
 
-   If WhereAmI($f)<>$eScreenMain Then
+   If WhereAmI($hBMP)<>$eScreenMain Then
 	  DebugWrite("GoOffline() Error, could not return to main screen")
 	  Return False
    EndIf
 
    ; Dismiss guard if present
-   If IsButtonPresent($f, $rVillageGuardActiveInfoButton) Then
+   If IsButtonPresent($hBMP, $rVillageGuardActiveInfoButton) Then
 	  DebugWrite("GoOffline() Dismissing Village Guard")
-	  If DismissGuard($f) = False Then
+	  If DismissGuard($hBMP) = False Then
 		 Return False
 	  EndIf
    EndIf
@@ -73,11 +73,11 @@ Func GoOffline(ByRef $f)
    ; Attacking Disabled and can interfere with clicking Confirm Exit, as this function can
    ; be called from AutoRaid or DumpCups when a Attacking Disabled is detected.
    Local $t = TimerInit()
-   Local $p1 = IsButtonPresent($f, $rConfirmExitButton)
+   Local $p1 = IsButtonPresent($hBMP, $rConfirmExitButton)
    While TimerDiff($t)<10000 And $p1=False
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("GoOffline" & Round((10000-TimerDiff($t))/1000))
-	  $p1 = IsButtonPresent($f, $rConfirmExitButton)
+	  _WinAPI_DeleteObject($hBMP)
+	  $hBMP = CaptureFrameHBITMAP("GoOffline" & Round((10000-TimerDiff($t))/1000))
+	  $p1 = IsButtonPresent($hBMP, $rConfirmExitButton)
 	  Sleep(500)
    WEnd
 
@@ -91,7 +91,7 @@ Func GoOffline(ByRef $f)
    RandomWeightedClick($rConfirmExitButton)
 
    ; Wait for Android home screen
-   If WaitForScreen($f, 10000, $eScreenAndroidHome) = False Then
+   If WaitForScreen($hBMP, 10000, $eScreenAndroidHome) = False Then
 	  DebugWrite("GoOffline() Error, timeout waiting for Android home screen")
 	  Return False
    EndIf
@@ -101,12 +101,12 @@ Func GoOffline(ByRef $f)
    Return True
 EndFunc
 
-Func DismissGuard(ByRef $f)
+Func DismissGuard(ByRef $hBMP)
    ; Click Guard info button
    RandomWeightedClick($rVillageGuardActiveInfoButton)
 
    ; Wait for Village Guard info screen
-   If WaitForButton($f, 5000, $rVillageGuardRemoveButton) = False Then
+   If WaitForButton($hBMP, 5000, $rVillageGuardRemoveButton) = False Then
 	  DebugWrite("DismissGuard() Error, timeout waiting for Village Guard info screen")
 	  Return
    EndIf
@@ -115,7 +115,7 @@ Func DismissGuard(ByRef $f)
    RandomWeightedClick($rVillageGuardRemoveButton)
 
    ; Wait for Remove Guard confirmation screen
-   If WaitForButton($f, 5000, $rVillageGuardRemoveConfirmationButton) = False Then
+   If WaitForButton($hBMP, 5000, $rVillageGuardRemoveConfirmationButton) = False Then
 	  DebugWrite("DismissGuard() Error, timeout waiting for Village Guard info screen")
 	  Return
    EndIf
@@ -125,7 +125,7 @@ Func DismissGuard(ByRef $f)
    Sleep(500)
 
    ; Wait for main screen
-   If WaitForScreen($f, 5000, $eScreenMain) = False Then
+   If WaitForScreen($hBMP, 5000, $eScreenMain) = False Then
 	  DebugWrite("DismissGuard() Error, timeout waiting for main screen")
    EndIf
 

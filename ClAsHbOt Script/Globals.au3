@@ -11,8 +11,10 @@ Global $gDebugSaveScreenCaptures = False
 Global $gDebugSaveUnknownStorageFrames = False
 Global $gDebugLogCallsToCaptureFrame = False
 
-; Dll
-Global $gDllHandle = 0
+; DLLs
+Global $gImageMatchDllHandle = 0
+Global $gUser32DllHandle = 0
+Global $gGdi32DllHandle = 0
 
 ; Scraper Globals
 ; These enums need to be kept in sync with the DLL
@@ -31,6 +33,7 @@ Global $gSearchTypeNames[10] = [ "TownHall", "LootCart", "ClashIcon", "PlayStore
 								 "GoldStorage", "ElixStorage", "DarkStorage", "LootCollector", "LootBubble" ]
 Global $gFontNames[10] = [ "MyStuff", "RaidTroopCountUnselected", "RaidTroopCountSelected", "RaidLoot", "BarracksStatus", _
 						   "BattleEndWinnings", "BattleEndBonus", "Chat" ]
+Global $gHDC = 0, $gMemDC = 0
 
 ; Raiding variables
 Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)
@@ -82,7 +85,7 @@ Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freez
    "Earthquake", "Haste"]
 
 ; Reload button names
-Global $gReloadButtonNames[4] = ["Info", "Gold", "Elixir", "Dark Elixir"]
+Global $gReloadButtonNames[5] = ["Info", "Gold", "Elixir", "Elixir w/ Eagle", "Dark Elixir"]
 
 ; Known screen/window types
 Global Enum $eScreenAndroidHome, $eScreenMain, $eScreenChatOpen, $eScreenFindMatch, _

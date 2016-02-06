@@ -1,9 +1,9 @@
-Func CheckForAndroidMessageBox(ByRef $f)
+Func CheckForAndroidMessageBox(ByRef $hBMP)
    ;DebugWrite("CheckForAndroidMessageBox()")
 
    Local $boxPresent = False
 
-   If IsButtonPresent($f, $rAndroidMessageButton1) Then
+   If IsButtonPresent($hBMP, $rAndroidMessageButton1) Then
 	  DebugWrite("CheckForAndroidMessageBox() Clicking short Android Msg Box")
 
 	  RandomWeightedClick($rAndroidMessageButton1)
@@ -12,7 +12,7 @@ Func CheckForAndroidMessageBox(ByRef $f)
 	  $boxPresent = True
    EndIf
 
-   If IsButtonPresent($f, $rAndroidMessageButton2) Then
+   If IsButtonPresent($hBMP, $rAndroidMessageButton2) Then
 	  DebugWrite("CheckForAndroidMessageBox() Clicking long Android Msg Box")
 
 	  RandomWeightedClick($rAndroidMessageButton2)
@@ -23,19 +23,19 @@ Func CheckForAndroidMessageBox(ByRef $f)
 
    ; Wait for main screen
    If $boxPresent = True Then
-	  If WaitForScreen($f, 15000, $eScreenMain) Then ZoomOut2($f)
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("CheckForAndroidMessageBox")
+	  If WaitForScreen($hBMP, 15000, $eScreenMain) Then ZoomOut($hBMP)
+	  _WinAPI_DeleteObject($hBMP)
+	  $hBMP = CaptureFrameHBITMAP("CheckForAndroidMessageBox")
    EndIf
 EndFunc
 
-Func ResetToCoCMainScreen(ByRef $f)
+Func ResetToCoCMainScreen(ByRef $hBMP)
    Local $countdown = 5000
 
-   CheckForAndroidMessageBox($f)
+   CheckForAndroidMessageBox($hBMP)
 
    ; Get our current screen
-   Local $s = WhereAmI($f)
+   Local $s = WhereAmI($hBMP)
 
    Switch $s
 
@@ -83,12 +83,12 @@ Func ResetToCoCMainScreen(ByRef $f)
 
    ; Android message box is open
    Case $eScreenAndroidMessageBox
-	  If IsButtonPresent($f, $rAndroidMessageButton1) Then
+	  If IsButtonPresent($hBMP, $rAndroidMessageButton1) Then
 		 DebugWrite("ResetToCoCMainScreen() On Android Message Screen (1) - clicking message box")
 		 RandomWeightedClick($rAndroidMessageButton1)
 	  EndIf
 
-	  If IsButtonPresent($f, $rAndroidMessageButton2) Then
+	  If IsButtonPresent($hBMP, $rAndroidMessageButton2) Then
 		 DebugWrite("ResetToCoCMainScreen() On Android Message Screen (2) - clicking message box")
 		 RandomWeightedClick($rAndroidMessageButton2)
 	  EndIf
@@ -104,9 +104,9 @@ Func ResetToCoCMainScreen(ByRef $f)
 	  RandomWeightedClick($rSafeAreaButton)
 	  Sleep(1000)
 
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("ResetToCoCMainScreen")
-	  If WhereAmI($f)=$eScreenChatOpen Then
+	  _WinAPI_DeleteObject($hBMP)
+	  $hBMP = CaptureFrameHBITMAP("ResetToCoCMainScreen")
+	  If WhereAmI($hBMP)=$eScreenChatOpen Then
 		 DebugWrite("ResetToCoCMainScreen() On Chat Open Screen - closing chat")
 		 RandomWeightedClick($rMainScreenOpenChatButton)
 	  EndIf
@@ -167,80 +167,80 @@ Func ResetToCoCMainScreen(ByRef $f)
 
 
    ; Wait for main screen to appear
-   If WaitForScreen($f, $countdown, $eScreenMain) Then
-	  ZoomOut2($f)
+   If WaitForScreen($hBMP, $countdown, $eScreenMain) Then
+	  ZoomOut($hBMP)
 	  Return True
    EndIf
 
    ; Check for Village was Attacked screen
-   If WhereAmI($f) = $eScreenVillageWasAttacked Then
+   If WhereAmI($hBMP) = $eScreenVillageWasAttacked Then
 	  DebugWrite("ResetToCoCMainScreen() On Village Was Attacked Screen - clicking Okay button")
 	  RandomWeightedClick($rWindowVillageWasAttackedOkayButton)
    EndIf
 
    ; Wait for main screen to appear
-   If WaitForScreen($f, $countdown, $eScreenMain) Then
-	  ZoomOut2($f)
+   If WaitForScreen($hBMP, $countdown, $eScreenMain) Then
+	  ZoomOut($hBMP)
 	  Return True
    EndIf
 
    Return False
 EndFunc
 
-Func WhereAmI(Const $f)
-   If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "WhereAmIFrame.bmp")
+Func WhereAmI(Const $hBMP)
+   If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("WhereAmIFrame.bmp", $hBMP, False)
 
    Local $left, $top, $conf
 
    ; $eScreenAndroidMessageBox
-   If IsButtonPresent($f, $rAndroidMessageButton1) Then Return $eScreenAndroidMessageBox
-   If IsButtonPresent($f, $rAndroidMessageButton2) Then Return $eScreenAndroidMessageBox
+   If IsButtonPresent($hBMP, $rAndroidMessageButton1) Then Return $eScreenAndroidMessageBox
+   If IsButtonPresent($hBMP, $rAndroidMessageButton2) Then Return $eScreenAndroidMessageBox
 
    ; $ScreenMain
-   If IsButtonPresent($f, $rMainScreenAttackNoStarsButton) Or IsButtonPresent($f, $rMainScreenAttackWithStarsButton) Then Return $eScreenMain
+   If IsButtonPresent($hBMP, $rMainScreenAttackNoStarsButton) Or IsButtonPresent($hBMP, $rMainScreenAttackWithStarsButton) Then Return $eScreenMain
 
    ; $ScreenChatOpen
-   If IsButtonPresent($f, $rMainScreenOpenChatButton) Then Return $eScreenChatOpen
+   If IsButtonPresent($hBMP, $rMainScreenOpenChatButton) Then Return $eScreenChatOpen
 
    ; $WindowChatDimmed
-   If IsColorPresent($f, $rWindowChatDimmedColor) Then Return $eScreenChatDimmed
+   If IsColorPresent($hBMP, $rWindowChatDimmedColor) Then Return $eScreenChatDimmed
 
    ; $ScreenFindMatch
-   If IsButtonPresent($f, $rFindMatchScreenFindAMatchNoShieldButton) Or _
-	  IsButtonPresent($f, $rFindMatchScreenFindAMatchWithShieldButton) Then Return $eScreenFindMatch
+   If IsButtonPresent($hBMP, $rFindMatchScreenFindAMatchNoShieldButton) Or _
+	  IsButtonPresent($hBMP, $rFindMatchScreenFindAMatchWithShieldButton) Then Return $eScreenFindMatch
 
    ; $ScreenWaitRaid (with "Next")
-   If IsButtonPresent($f, $rWaitRaidScreenNextButton) Then Return $eScreenWaitRaid
+   If IsButtonPresent($hBMP, $rWaitRaidScreenNextButton) Then Return $eScreenWaitRaid
 
    ; $ScreenLiveRaid (live attack)
-   If IsButtonPresent($f, $rLiveRaidScreenEndBattleButton) And IsButtonPresent($f, $rWaitRaidScreenNextButton)=False Then Return $eScreenLiveRaid
+   If IsButtonPresent($hBMP, $rLiveRaidScreenEndBattleButton) And IsButtonPresent($hBMP, $rWaitRaidScreenNextButton)=False Then Return $eScreenLiveRaid
 
    ; $ScreenEndBattle
-   If IsButtonPresent($f, $rBattleHasEndedScreenReturnHomeButton) Then Return $eScreenEndBattle
+   If IsButtonPresent($hBMP, $rBattleHasEndedScreenReturnHomeButton) Then Return $eScreenEndBattle
 
    ; $ScreenLiveReplayEndBattle
-   If IsButtonPresent($f, $rLiveReplayEndScreenReturnHomeButton) Then Return $eScreenLiveReplayEndBattle
+   If IsButtonPresent($hBMP, $rLiveReplayEndScreenReturnHomeButton) Then Return $eScreenLiveReplayEndBattle
 
    ; $WindowVillageWasAttacked
-   If IsButtonPresent($f, $rWindowVillageWasAttackedOkayButton) Then Return $eScreenVillageWasAttacked
+   If IsButtonPresent($hBMP, $rWindowVillageWasAttackedOkayButton) Then Return $eScreenVillageWasAttacked
 
    ; $eWindowArmyManager
-   If IsButtonPresent($f, $rArmyManagerWindowCloseButton) Then Return $eWindowArmyManager
+   If IsButtonPresent($hBMP, $rArmyManagerWindowCloseButton) Then Return $eWindowArmyManager
 
    ; $eShopOrLayout
-   If IsButtonPresent($f, $rShopOrLayoutWindowsCloseButton) Then Return $eShopOrLayout
+   If IsButtonPresent($hBMP, $rShopOrLayoutWindowsCloseButton) Then Return $eShopOrLayout
 
    ; $eProfile
-   If IsButtonPresent($f, $rProfileWindowCloseButton) Then Return $eProfile
+   If IsButtonPresent($hBMP, $rProfileWindowCloseButton) Then Return $eProfile
 
    ; $eAchievements
-   If IsButtonPresent($f, $rAchievementsWindowCloseButton) Then Return $eAchievements
+   If IsButtonPresent($hBMP, $rAchievementsWindowCloseButton) Then Return $eAchievements
 
    ; $eSettings
-   If IsButtonPresent($f, $rSettingsWindowCloseButton) Then Return $eSettings
+   If IsButtonPresent($hBMP, $rSettingsWindowCloseButton) Then Return $eSettings
 
    ; $eStarBonus
-   If IsButtonPresent($f, $rStarBonusWindowOkayButton) Then Return $eStarBonus
+   If IsButtonPresent($hBMP, $rStarBonusWindowOkayButton) Then Return $eStarBonus
 
    ; $ScreenAndroidHome
    FindBestBMP($eSearchClashIcon, $left, $top, $conf)
@@ -265,17 +265,17 @@ Func WhereAmI(Const $f)
 
 EndFunc
 
-Func ZoomOut2(ByRef $f)
+Func ZoomOut(ByRef $hBMP)
    ; Virtual key codes: https://msdn.microsoft.com/en-us/library/dd375731(VS.85).aspx
    Local $VK_DOWN = 0x28
 
    ; Zoom out for 5 seconds, or until black strip appears on top of screen, indicating full zoom out
    ; If we can't zoom out within 5 seconds, then something is wrong; stop bot and display message box.
    Local $t = TimerInit()
-   Local $p = IsColorPresent($f, $rZoomedOutFullColor)
+   Local $p = IsColorPresent($hBMP, $rZoomedOutFullColor)
 
-   If WhereAmI($f)<>$eScreenMain Then Return
-   If IsColorPresent($f, $rZoomedOutFullColor) Then Return
+   If WhereAmI($hBMP)<>$eScreenMain Then Return
+   If IsColorPresent($hBMP, $rZoomedOutFullColor) Then Return
 
    While TimerDiff($t)<5000 And $p=False
 
@@ -283,15 +283,15 @@ Func ZoomOut2(ByRef $f)
 	  Sleep(100)
 	  _SendMessage($gBlueStacksHwnd, $WM_KEYUP, $VK_DOWN, 0)
 
-	  _GDIPlus_BitmapDispose($f)
-	  $f = CaptureFrame("ZoomOut2")
-	  $p = IsColorPresent($f, $rZoomedOutFullColor)
+	  _WinAPI_DeleteObject($hBMP)
+	  $hBMP = CaptureFrameHBITMAP("ZoomOut")
+	  $p = IsColorPresent($hBMP, $rZoomedOutFullColor)
    WEnd
 
    If $p=False Then
 	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "Error zooming out", "Error zooming out.  This is a catastropic error, the bot will now halt.")
-	  If $gDebugSaveScreenCaptures Then SaveDebugImage($f, "ZoomOutErrorFrame.bmp")
-	  _GDIPlus_BitmapDispose($f)
+	  If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("ZoomOutErrorFrame.bmp", $hBMP, False)
+	  _WinAPI_DeleteObject($hBMP)
 	  Exit
    EndIf
 
@@ -300,23 +300,23 @@ Func ZoomOut2(ByRef $f)
    Sleep(250)
 EndFunc
 
-Func WaitForScreen(ByRef $f, Const $wait, Const $s1, Const $s2=-1)
+Func WaitForScreen(ByRef $hBMP, Const $wait, Const $s1, Const $s2=-1)
    Local $t = TimerInit()
-   Local $s = WhereAmI($f)
+   Local $s = WhereAmI($hBMP)
    Local $lastTimeRem = Round($wait/1000)
 
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("WaitForScreen " & $lastTimeRem)
-   $s = WhereAmI($f)
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("WaitForScreen " & $lastTimeRem)
+   $s = WhereAmI($hBMP)
 
    While TimerDiff($t)<$wait And $s<>$s1 And $s<>$s2
 	  Local $timeRem = Round(($wait-TimerDiff($t))/1000)
 
 	  If $timeRem<>$lastTimeRem Then
 		 $lastTimeRem = $timeRem
-		 _GDIPlus_BitmapDispose($f)
-		 $f = CaptureFrame("WaitForScreen " & $timeRem)
-		 $s = WhereAmI($f)
+		 _WinAPI_DeleteObject($hBMP)
+		 $hBMP = CaptureFrameHBITMAP("WaitForScreen " & $timeRem)
+		 $s = WhereAmI($hBMP)
 	  EndIf
 
 	  Sleep(100)

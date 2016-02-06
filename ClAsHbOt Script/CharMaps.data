@@ -1,5 +1,5 @@
 // MyGold MyElixir MyDark MyGems MyCups
-Class fontMyStuff
+Class MyStuff
 0 510 1023 1023 771 771 771 899 1023 1023 252
 1 256 511 1023 992
 2 543 1567 1599 1651 1635 2019 1986
@@ -12,7 +12,7 @@ Class fontMyStuff
 9 480 995 2035 1587 1586 1910 2046 1020
 
 // Raid Troop Counts - Unselected slot
-Class fontRaidTroopCountUnselected
+Class RaidTroopCountUnselected
 0 508 2047 2047 1795 1539 1539 1539 2047 2047 1022 252
 1 1024 2046 2047 4094
 2 1055 3135 3135 3187 3171 4067 4035 1922
@@ -26,7 +26,7 @@ Class fontRaidTroopCountUnselected
 x 1 455 511 252 124 124 495 387 257
 
 // Raid Troop Counts - Selected slot
-Class fontRaidTroopCountSelected
+Class RaidTroopCountSelected
 0 1022 2047 1799 1027 1027 3075 3075 2047 2046 1022 504
 1 2047 2047 2047
 2 1039 1055 1055 1073 1057 1121 1985 1921
@@ -41,7 +41,7 @@ Class fontRaidTroopCountSelected
 x 1 195 126 60 60 102 195
 
 // Raid Loot
-Class fontRaidLoot
+Class RaidLoot
 0 510 1023 1023 771 769 769 771 1023 1022 252
 1 256 511 511 384
 2 527 543 1599 1587 1635 2019 1986
@@ -54,7 +54,7 @@ Class fontRaidLoot
 9 480 993 995 563 562 566 1022 508
 
 // Barracks Status
-Class fontBarracksStatus
+Class BarracksStatus
 T 384 384 511 511 511 384 384
 r 127 127 68 68 110 127 49
 a 15 79 73 65 127 127
@@ -79,7 +79,7 @@ x 65 119 60 28 62 99
 / 3 15 60 112 448 256
 
 // Battle End Winnings
-Class fontBattleEndWinnings
+Class BattleEndWinnings
 0 8184 16382 32767 32767 65535 63495 61447 61447 61447 61447 65535 65535 65535 16382 8188
 1 24576 57344 65535 65535 65534 65534
 2 126 57471 57599 57855 57855 50119 116679 130951 130823 130822 65030
@@ -95,7 +95,7 @@ Class fontBattleEndWinnings
 
 // Battle End Bonus
 // CHECK FOR REWORK - might still need "74" font
-Class fontBattleEndBonus
+Class BattleEndBonus
 0 508 2047 2047 1795 1539 1539 1539 2047 2047 1022 252
 1 512 1023 1023 2047
 2 1055 3135 3135 3187 3171 4067 4034 1922
@@ -111,7 +111,7 @@ Class fontBattleEndBonus
 // Chat window
 // No difference between Upper oh and zero// assuming upper oh
 // No difference between lower ell and upper I assuming lower ell
-Class fontChat
+Class Chat
 a 55 41 41 63 31
 b 255 51 33 51 30
 c 63 33 33 51 50

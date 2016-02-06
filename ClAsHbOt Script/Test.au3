@@ -1,62 +1,62 @@
 Func TestMyStuff()
-   Local $frame = CaptureFrame("TestMyStuff")
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestMyStuff")
 
-   DebugWrite("My Gold: " & ScrapeFuzzyText2($fontMyStuff, $rMyGoldTextBox))
-   DebugWrite("My Elix: " & ScrapeFuzzyText2($fontMyStuff, $rMyElixTextBox))
-   If IsTextBoxPresent($frame, $rMyGemsTextBoxWithDE) = True Then
-	  DebugWrite("My Dark: " & ScrapeFuzzyText2($fontMyStuff, $rMyDarkTextBox))
+   DebugWrite("My Gold: " & ScrapeFuzzyText($hHBITMAP, $fontMyStuff, $rMyGoldTextBox))
+   DebugWrite("My Elix: " & ScrapeFuzzyText($hHBITMAP, $fontMyStuff, $rMyElixTextBox))
+   If IsTextBoxPresent($hHBITMAP, $rMyGemsTextBoxWithDE) = True Then
+	  DebugWrite("My Dark: " & ScrapeFuzzyText($hHBITMAP, $fontMyStuff, $rMyDarkTextBox))
    EndIf
-   If IsTextBoxPresent($frame, $rMyGemsTextBoxNoDE) = True Then
-	  DebugWrite("My Gems: " & ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxNoDE))
+   If IsTextBoxPresent($hHBITMAP, $rMyGemsTextBoxNoDE) = True Then
+	  DebugWrite("My Gems: " & ScrapeFuzzyText($hHBITMAP, $fontMyStuff, $rMyGemsTextBoxNoDE))
    Else
-	  DebugWrite("My Gems: " & ScrapeFuzzyText2($fontMyStuff, $rMyGemsTextBoxWithDE))
+	  DebugWrite("My Gems: " & ScrapeFuzzyText($hHBITMAP, $fontMyStuff, $rMyGemsTextBoxWithDE))
    EndIf
-   DebugWrite("My Cups: " & ScrapeFuzzyText2($fontMyStuff, $rMyCupsTextBox))
+   DebugWrite("My Cups: " & ScrapeFuzzyText($hHBITMAP, $fontMyStuff, $rMyCupsTextBox))
 
-   _GDIPlus_BitmapDispose($frame)
+   _WinAPI_DeleteObject($hHBITMAP)
 EndFunc
 
 Func TestRaidLoot()
-   Local $frame = CaptureFrame("TestRaidLoot")
    Local $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadBase
-   AutoRaidGetDisplayedLoot($frame, $thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
+   AutoRaidGetDisplayedLoot($thLevel, $thLeft, $thTop, $gold, $elix, $dark, $cups, $deadbase)
    DebugWrite("TestRaidLoot() " & $gold & " / " & $elix & " / " & $dark &  " / " & $cups & " / " & $thLevel & " / " & $deadBase)
-   _GDIPlus_BitmapDispose($frame)
 EndFunc
 
 Func TestEndBattleLoot()
-   Local $frame = CaptureFrame("TestEndBattleLoot")
-   Local $goldWin = Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleGoldTextBox))
-   Local $elixWin = Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleElixTextBox))
-   Local $darkWin = IsTextBoxPresent($frame, $rEndBattleDarkTextBox) ? Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleDarkTextBox)) : 0
-   Local $cupsWin = IsTextBoxPresent($frame, $rEndBattleCupsWithDETextBox) ? _
-					Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleCupsWithDETextBox)) : _
-					Number(ScrapeFuzzyText2($fontBattleEndWinnings, $rEndBattleCupsNoDETextBox))
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestEndBattleLoot")
+   Local $goldWin = Number(ScrapeFuzzyText($hHBITMAP, $fontBattleEndWinnings, $rEndBattleGoldTextBox))
+   Local $elixWin = Number(ScrapeFuzzyText($hHBITMAP, $fontBattleEndWinnings, $rEndBattleElixTextBox))
+   Local $darkWin = IsTextBoxPresent($hHBITMAP, $rEndBattleDarkTextBox) ? _
+				    Number(ScrapeFuzzyText($hHBITMAP, $fontBattleEndWinnings, $rEndBattleDarkTextBox)) : 0
+   Local $cupsWin = IsTextBoxPresent($hHBITMAP, $rEndBattleCupsWithDETextBox) ? _
+					Number(ScrapeFuzzyText($hHBITMAP, $fontBattleEndWinnings, $rEndBattleCupsWithDETextBox)) : _
+					Number(ScrapeFuzzyText($hHBITMAP, $fontBattleEndWinnings, $rEndBattleCupsNoDETextBox))
    DebugWrite("Gold: " & $goldWin)
    DebugWrite("Elix: " & $elixWin)
    DebugWrite("Dark: " & $darkWin)
    DebugWrite("Cups: " & $cupsWin)
-   _GDIPlus_BitmapDispose($frame)
+
+   _WinAPI_DeleteObject($hHBITMAP)
 EndFunc
 
 Func TestEndBattleBonus()
-   Local $frame = CaptureFrame("TestEndBattleLoot")
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestEndBattleLoot")
    Local $goldBonus = 0
    Local $elixBonus = 0
    Local $darkBonus = 0
-   If IsTextBoxPresent($frame, $rEndBattleBonusGoldTextBox) Or _
-	  IsTextBoxPresent($frame, $rEndBattleBonusElixTextBox) Or _
-	  IsTextBoxPresent($frame, $rEndBattleBonusDarkTextBox) Then
+   If IsTextBoxPresent($hHBITMAP, $rEndBattleBonusGoldTextBox) Or _
+	  IsTextBoxPresent($hHBITMAP, $rEndBattleBonusElixTextBox) Or _
+	  IsTextBoxPresent($hHBITMAP, $rEndBattleBonusDarkTextBox) Then
 
-	  $goldBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusGoldTextBox)
+	  $goldBonus = ScrapeFuzzyText($hHBITMAP, $fontBattleEndBonus, $rEndBattleBonusGoldTextBox)
 	  $goldBonus = StringLeft($goldBonus, 1) = "+" ? Number(StringMid($goldBonus, 2)) : 0
-	  $elixBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusElixTextBox)
+	  $elixBonus = ScrapeFuzzyText($hHBITMAP, $fontBattleEndBonus, $rEndBattleBonusElixTextBox)
 	  $elixBonus = StringLeft($elixBonus, 1) = "+" ? Number(StringMid($elixBonus, 2)) : 0
-	  $darkBonus = ScrapeFuzzyText2($fontBattleEndBonus, $rEndBattleBonusDarkTextBox)
+	  $darkBonus = ScrapeFuzzyText($hHBITMAP, $fontBattleEndBonus, $rEndBattleBonusDarkTextBox)
 	  $darkBonus = StringLeft($darkBonus, 1) = "+" ? Number(StringMid($darkBonus, 2)) : 0
 	  DebugWrite("Bonus this match: " & $goldBonus & " / " & $elixBonus & " / " & $darkBonus)
    EndIf
-   _GDIPlus_BitmapDispose($frame)
+   _WinAPI_DeleteObject($hHBITMAP)
 EndFunc
 
 Func TestStorage()
@@ -129,7 +129,6 @@ Func TestFindAllStorages()
 EndFunc
 
 Func TestRaidTroopsCount()
-
    ; Troops
    Local $troopIndex[$eTroopCount][5]
    For $i = 0 To UBound($troopIndex)-1
@@ -147,6 +146,10 @@ Func TestRaidTroopsCount()
    RandomWeightedClick($rRaidSlotsButton2)
    Sleep(200)
    LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
+
+   For $i=0 To $eTroopCount-1
+	  If $troopIndex[$i][0]<>-1 Then DebugWrite("Slots " & $gTroopNames[$i] & ": " & $troopIndex[$i][0] & " " & $troopIndex[$i][1] & " " & $troopIndex[$i][2] & " " & $troopIndex[$i][3])
+   Next
 
    UpdateRaidSlotCounts($troopIndex)
 
@@ -180,8 +183,10 @@ Func TestRaidTroopsCount()
 EndFunc
 
 Func TestBarracksStatus()
-   Local $queueStatus = ScrapeFuzzyText2($fontBarracksStatus, $rBarracksWindowTextBox)
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestBarracksStatus")
+   Local $queueStatus = ScrapeFuzzyText($hHBITMAP, $fontBarracksStatus, $rBarracksWindowTextBox)
    DebugWrite("Barracks queue status: " & $queueStatus)
+   _WinAPI_DeleteObject($hHBITMAP)
 EndFunc
 
 Func TestBarracksTroopSlots()
@@ -270,16 +275,16 @@ Func TestDeployBoxCalcs()
 EndFunc
 
 Func TestDonate()
-   Local $frame = CaptureFrame("TestDonate")
-   If IsButtonPresent($frame, $rMainScreenOpenChatButton)=False Then OpenChatWindow($frame)
+   Local $hBITMAP = CaptureFrameHBITMAP("TestDonate")
+   If IsButtonPresent($hBITMAP, $rMainScreenOpenChatButton)=False Then OpenChatWindow($hBITMAP)
 
    Local $donateButtons[1][4]
    FindDonateButtons($donateButtons)
 
    For $i = 0 To UBound($donateButtons)-1
-	  Local $requestText = GetRequestText($frame, $donateButtons, $i)
+	  Local $requestText = GetRequestText($hBITMAP, $donateButtons, $i)
 
-	  OpenDonateTroopsWindow($frame, $donateButtons, $i)
+	  OpenDonateTroopsWindow($hBITMAP, $donateButtons, $i)
 
 	  Local $donateTroopIndex[$gTroopCountExcludingHeroes][4]
 	  For $j = 0 To $gTroopCountExcludingHeroes-1
@@ -314,11 +319,11 @@ Func TestDonate()
 	  DebugWrite("Spell Donate index: " & $indexOfSpellToDonate)
 
 	  ; If donate troops window is still open, then close it
-	  If IsColorPresent($frame, $rWindowChatDimmedColor) Then
+	  If IsColorPresent($hBITMAP, $rWindowChatDimmedColor) Then
 		 DebugWrite("TestDonate() Clicking Safe Area button")
 		 RandomWeightedClick($rSafeAreaButton)
 
-		 If WaitForScreen($frame, 5000, $eScreenChatOpen) = False Then
+		 If WaitForScreen($hBITMAP, 5000, $eScreenChatOpen) = False Then
 			DebugWrite("DonateTroops() Error waiting for open chat screen")
 		 EndIf
 	  EndIf
@@ -326,16 +331,16 @@ Func TestDonate()
    Next
 
    ; If chat window is open, then close it
-   If WhereAmI($frame) = $eScreenChatOpen Then
+   If WhereAmI($hBITMAP) = $eScreenChatOpen Then
 	  DebugWrite("TestDonate() Clicking Open Chat Window button " & $rMainScreenOpenChatButton[0] & $rMainScreenOpenChatButton[1] & $rMainScreenOpenChatButton[2] & $rMainScreenOpenChatButton[3])
 	  RandomWeightedClick($rMainScreenOpenChatButton)
 
-	  If WaitForScreen($frame, 5000, $eScreenMain) = False Then
+	  If WaitForScreen($hBITMAP, 5000, $eScreenMain) = False Then
 		 DebugWrite("DonateTroops() Error waiting for main screen")
 	  EndIf
    EndIf
 
-   _GDIPlus_BitmapDispose($frame)
+   _WinAPI_DeleteObject($hBITMAP)
 EndFunc
 
 Func TestTownHall()
@@ -357,8 +362,6 @@ Func TestCollectors()
 EndFunc
 
 Func TestCollectMyLoot()
-   Local $frame = CaptureFrame("TestCollectMyLoot")
-
    Local $mX[1], $mY[1], $c[1]
    Local $matchCount = FindAllBMPs($eSearchTypeLootBubble, 17, $mX, $mY, $c)
    For $i = 0 To $matchCount-1
@@ -376,8 +379,6 @@ Func TestCollectMyLoot()
 	  Sleep(1000)
    EndIf
 
-   _GDIPlus_BitmapDispose($frame)
-
    ; Check for loot cart
    Local $x, $y, $conf
    FindBestBMP($eSearchTypeLootCart, $x, $y, $conf)
@@ -387,3 +388,37 @@ Func TestCollectMyLoot()
    EndIf
 EndFunc
 
+Func TestReloadDefenses()
+   ; Find town hall
+   RandomWeightedClick($rSafeAreaButton)
+   Sleep(500)
+   Local $conf, $x, $y
+   Local $th = FindBestBMP($eSearchTypeTownHall, $x, $y, $conf)
+   If $th = -1 Then
+	  DebugWrite("ReloadDefenses() Could not find Town Hall, exiting")
+	  Return
+   EndIf
+
+   ; Click on town hall
+   Local $button[4] = [ $x + 6, $y + 15, $x + 16, $y + 25 ]
+   DebugWrite("ReloadDefenses() Clicking Town Hall " & $button[0] & ", " & $button[1] & ", " & $button[2] & ", " & $button[3])
+   RandomWeightedClick($button)
+   Sleep(500)
+
+   ; Wait for reload bar
+   Local $buttonIndex[4][4]
+
+   If WaitForReloadBar($buttonIndex) = False Then
+	  DebugWrite("ReloadDefenses() Could not find Reload button bar, exiting")
+	  Return
+   EndIf
+
+   For $i = 1 To 3
+	  If $buttonIndex[$i][0] <> -1 Then DebugWrite("ReloadDefenses() Found " & $gReloadButtonNames[$i] & " button")
+   Next
+
+   ; Deselect Town Hall
+   RandomWeightedClick($rSafeAreaButton)
+   Sleep(500)
+
+EndFunc

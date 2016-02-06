@@ -1,20 +1,88 @@
 Func InitScraper()
    _GDIPlus_Startup()
+
+   ; ImageMatch DLL
+   $gImageMatchDllHandle = DllOpen("ImageMatch.dll")
+
+   If $gImageMatchDllHandle = -1 Then
+	  DebugWrite("InitScraper() Error loading DLL")
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "DLL Open Error", "Error opening ImageMatch.dll.  Exiting.")
+	  Exit
+   EndIf
+   DebugWrite("InitScraper() ImageMatch.dll loaded")
+
+   ; ImageMatch DLL Initialize
+   Local $res = DllCall($gImageMatchDllHandle, "str", "Initialize", "str", @ScriptDir, "bool", $gDebug, "bool", $gScraperDebug)
+   If @error Then
+	  DebugWrite("DLLLoad() DllCall Initialize @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error initializing DLL." & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
+
+   If $res[0] <> "Success" Then
+	  DebugWrite("DLLLoad() Error initializing DLL")
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "DLL Open Error", "Error initializing ImageMatch.dll. $res=" & $res[0] & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
+   EndIf
+   DebugWrite("InitScraper() ImageMatch.dll initialized: " & $res[0])
+
+   ; user32.dll
+   $gUser32DllHandle = DllOpen("user32.dll")
+   If $gUser32DllHandle = -1 Then
+	  DebugWrite("InitScraper() Error loading user32.dll")
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "DLL Open Error", "Error opening user32.dll.  Exiting.")
+	  Exit
+   EndIf
+   DebugWrite("InitScraper() user32.dll loaded")
+
+   ; gdi32.dll
+   $gGdi32DllHandle = DllOpen("gdi32.dll")
+   If $gGdi32DllHandle = -1 Then
+	  DebugWrite("InitScraper() Error loading gdi32.dll")
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "DLL Open Error", "Error opening gdi32.dll.  Exiting.")
+	  Exit
+   EndIf
+   DebugWrite("InitScraper() gdi32.dll loaded")
+
+   ; win api handles that only need to be opened once
+   $gHDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
+   $gMemDC = _WinAPI_CreateCompatibleDC($gHDC)
+
 EndFunc
 
 Func ExitScraper()
+
+   _WinAPI_DeleteDC($gMemDC)
+   _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $gHDC)
+
+   DllClose($gUser32DllHandle)
+   DebugWrite("ExitScraper() user32.dll unloaded")
+
+   DllClose($gGdi32DllHandle)
+   DebugWrite("ExitScraper() gdi32.dll unloaded")
+
+   DllClose($gImageMatchDllHandle)
+   DebugWrite("ExitScraper() ImageMatch.dll unloaded")
+
    _GDIPlus_Shutdown()
+
    DebugWrite("ExitScraper() Scraper shut down")
 EndFunc
 
-Func ScrapeFuzzyText2(Const $type, Const $textBox)
-   Local $hHBITMAP = CaptureFrameHBITMAP("ScrapeFuzzyText2" & $gFontNames[$type], $textBox[0], $textBox[1], $textBox[2], $textBox[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "ScrapeFuzzyText2" & $gFontNames[$type] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "ScrapeFuzzyText", "handle", $hHBITMAP, "int", $type, "uint", $textBox[4], "uint", $textBox[5], "bool", False)
-   _WinAPI_DeleteObject($hHBITMAP)
+Func ScrapeFuzzyText(Const $hBMP, Const $type, Const $textBox)
+
+   ; struct: left, top, right, bottom, color, radius
+   Local $box = DllStructCreate("STRUCT; uint; uint; uint; uint; uint; uint; ENDSTRUCT")
+   For $i=0 To 5
+	  DllStructSetData($box, $i+1, $textBox[$i])
+   Next
+
+   Local $res = DllCall($gImageMatchDllHandle, "str", "ScrapeFuzzyText", "handle", $hBMP, "int", $type, "struct", $box, "bool", False)
 
    If @error Then
-	  DebugWrite("ScrapeFuzzyText2() " & $gFontNames[$type] & " DllCall @error=" & @error)
+	  DebugWrite("ScrapeFuzzyText() " & $gFontNames[$type] & " DllCall @error=" & @error)
 	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, ScrapeFuzzyText" & @CRLF & _
 		 "This is catastrophic, exiting.")
 	  Exit
@@ -25,273 +93,69 @@ Func ScrapeFuzzyText2(Const $type, Const $textBox)
    Return $res[0]
 EndFunc
 
-; Non fuzzy character matching - only good for chat box right now
-Func ScrapeExactText(Const $frame, Const ByRef $charMapArray, Const ByRef $box, Const $maxCharSize, Const $keepSpaces)
-   Local $w = $box[2] - $box[0] + 1
-   Local $h = $box[3] - $box[1] + 1
-   Local $pix[$w][$h]
-   Local $pY
+Func ScrapeExactText(Const $hBMP, Const $type, Const $textBox)
 
-   ; Get map of foreground pixels
-   GetForegroundPixels($frame, $box, $pix, $pY)
+   ; struct: left, top, right, bottom, color, radius
+   Local $box = DllStructCreate("STRUCT; uint; uint; uint; uint; uint; uint; ENDSTRUCT")
+   For $i=0 To 5
+	  DllStructSetData($box, $i+1, $textBox[$i])
+   Next
 
-   ; Scan left to right through foreground pixel map to identify individual characters
-   Local $textString = ""
-   Local $x = 0
-   Do
-	  Local $charStart = -1, $charEnd = -1
+   Local $res = DllCall($gImageMatchDllHandle, "str", "ScrapeExactText", "handle", $hBMP, "int", $type, "struct", $box, "bool", False)
 
-	  ; Find start of char
-	  Local $blankCol, $blankColCount = 0
-	  Do
-		 $blankCol = True
-		 For $by = 0 To $pY-1
-			If $pix[$x][$by] = 1 Then $blankCol = False
-		 Next
-
-		 If $blankCol = True Then
-			$x+=1
-			$blankColCount+=1
-
-			; add a space if multiple blank columns are detected
-			If $blankColCount=3 And StringLen($textString)>0 And $keepSpaces=$eScrapeKeepSpaces Then $textString &= " "
-		 EndIf
-	  Until $blankCol = False Or $x > $w-1
-
-	  If $blankCol = False Then
-		 $charStart = $x
-		 $charEnd = $charStart
-	  EndIf
-
-	  ; Find end of char
-	  If $charStart <> -1 Then
-		 $charEnd = ($charStart+$maxCharSize > $w-1) ? $w-1 : $charStart+$maxCharSize
-	  EndIf
-
-	  ; Find exact match with greatest width
-	  Local $largestMatchIndex=-1
-	  If $charStart <> -1 Then
-		 Local $testWidth
-		 For $testWidth = 1 To $charEnd-$charStart+1
-			; Find the first non blank row, starting from the bottom
-			Local $cX, $cY, $bottomOfChar = -1
-			For $cY = $pY-1 To 0 Step -1
-			   For $cX = $charStart To $charStart+$testWidth-1
-				  If $pix[$cX][$cY] = 1 Then
-					 $bottomOfChar = $cY
-					 ExitLoop
-				  EndIf
-			   Next
-			   If $bottomOfChar <> -1 Then ExitLoop
-			Next
-
-			; Calculate colValues for this character
-			Local $colValues[$testWidth]
-			For $cX = $charStart To $charStart+$testWidth-1
-			   Local $factor = 1
-			   $colValues[$cX-$charStart] = 0
-			   For $cY = $bottomOfChar To 0 Step -1
-				  $colValues[$cX-$charStart] += ($pix[$cX][$cY] * $factor)
-				  $factor*=2
-			   Next
-			Next
-
-			; Find a match
-			Local $bestMatchIndex = FindExactCharInArray($charMapArray, $colValues, $testWidth)
-			If $bestMatchIndex <> -1 Then $largestMatchIndex = $bestMatchIndex
-		 Next
-	  EndIf
-
-	  ; Debug
-	  If $gScraperDebug And $charEnd<>-1 Then
-		 ConsoleWrite($charStart & " to " & _
-						($largestMatchIndex<>-1 ? $charStart+$charMapArray[$largestMatchIndex][1]-1 : $charStart) & ": " & _
-						($largestMatchIndex<>-1 ? $charMapArray[$largestMatchIndex][0] : "`" ) & " : ")
-		 For $cX = $charStart To ($largestMatchIndex<>-1 ? $charStart+$charMapArray[$largestMatchIndex][1]-1 : $charStart)
-			ConsoleWrite($colValues[$cX-$charStart] & ", ")
-		 Next
-		 ConsoleWrite(@CRLF)
-	  EndIf
-
-	  ; Got a match or not?
-	  If $largestMatchIndex <> -1 Then
-		 $textString &= $charMapArray[$largestMatchIndex][0]
-		 $x = $charStart+$charMapArray[$largestMatchIndex][1]
-	  ElseIf $charEnd<>-1 Then
-		 ;$textString &= "?"
-		 $x += 1
-	  EndIf
-
-   Until $x > $w-1
-
-   $textString = StringStripWS($textString, $STR_STRIPTRAILING)
-
-   ; Debug
-   If $gScraperDebug Then
-	  ConsoleWrite("RESULT: " & $textString & @CRLF)
-	  ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
+   If @error Then
+	  DebugWrite("ScrapeExactText2() " & $gFontNames[$type] & " DllCall @error=" & @error)
+	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, ScrapeExactText" & @CRLF & _
+		 "This is catastrophic, exiting.")
+	  Exit
    EndIf
 
-   Return $textString
+   ;DebugWrite("My " & $type & ": " & $res[0])
+
+   Return $res[0]
 EndFunc
 
-Func GetForegroundPixels(Const $frame, Const ByRef $box, ByRef $pix, ByRef $rows)
-   $rows = 0
+Func IsTextBoxPresent(Const $hBMP, Const ByRef $textBox)
+   Local $original  = _WinAPI_SelectObject($gMemDC, $hBMP)
+   Local $res = DllCall($gGdi32DllHandle, "int", "GetPixel", "int", $gMemDC, "int" , $textBox[6], "int", $textBox[7])
+   _WinAPI_SelectObject($gMemDC, $original)
 
-   If $gScraperDebug Then ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
-
-   For $y = $box[1] To $box[3]
-
-	  ; See if this line contains valid pixels
-	  Local $BlankLine = True
-	  For $x = $box[0] To $box[2]
-		 Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $x, $y)
-		 If InColorSphere($pixelColor, $box[4], $box[5]) = True Then
-			$BlankLine = False
-			ExitLoop
-		 EndIf
-	  Next
-
-	  If $BlankLine = False Then
-		 For $x = $box[0] To $box[2]
-			Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $x, $y)
-
-			If InColorSphere($pixelColor, $box[4], $box[5]) = True Then
-			   $pix[$x-$box[0]][$rows] = 1
-			Else
-			   $pix[$x-$box[0]][$rows] = 0
-			EndIf
-		 Next
-
-		 If $gScraperDebug Then
-			For $x = $box[0] To $box[2]
-			   If $pix[$x-$box[0]][$rows] = 1 Then
-				  ConsoleWrite("x")
-			   Else
-				  ConsoleWrite(" ")
-			   EndIf
-			Next
-			ConsoleWrite(@CRLF)
-		 EndIf
-
-		 $rows+=1
-	  EndIf
-   Next
-
-   If $gScraperDebug Then ConsoleWrite("-------------------------------------------------------------------------" & @CRLF)
+   Return InColorSphere($res[0], $textBox[8], $textBox[9])
 EndFunc
 
-Func FindFuzzyCharInArray(Const ByRef $charMapArray, Const ByRef $nums, Const $width, ByRef $bestWeightedHD)
-   ; Loop through each row in the $charMapArray array
-   Local $bestMatch = -1
-   $bestWeightedHD = 9999
-   For $i = 0 To UBound($charMapArray)-1
+Func IsButtonPresent(Const $hBMP, Const ByRef $buttonBox)
+   Local $original  = _WinAPI_SelectObject($gMemDC, $hBMP)
+   Local $res = DllCall($gGdi32DllHandle, "int", "GetPixel", "int", $gMemDC, "int" , $buttonBox[4], "int", $buttonBox[5])
+   _WinAPI_SelectObject($gMemDC, $original)
 
-	  If $charMapArray[$i][1] >= $width-1 And $charMapArray[$i][1] <= $width+1 Then
-
-		 ; Loop through each column in the passed in array of numbers
-		 Local $c, $totalHD = 0, $pixels = 0
-		 For $c = 0 To ($width < $charMapArray[$i][1] ? $width-1 : $charMapArray[$i][1]-1)
-			$totalHD += CalcHammingDistance($nums[$c], $charMapArray[$i][$c+2])
-			$pixels += BitCount($nums[$c])
-		 Next
-
-		 Local $weightedHD = $totalHD / $pixels
-
-		 If $weightedHD < $bestWeightedHD Then
-			$bestWeightedHD = $weightedHD
-			$bestMatch = $i
-		 EndIf
-	  EndIf
-   Next
-
-   ; Debug
-   ;DebugWrite("Best " & $bestMatch & " " & $bestWeightedHD & @CRLF)
-
-   Return $bestMatch
+   Return InColorSphere($res[0], $buttonBox[6], $buttonBox[7])
 EndFunc
 
-Func FindExactCharInArray(Const ByRef $charMapArray, Const ByRef $nums, Const $count)
-   ; Loop through each row in the $charMapArray array
-   Local $bestMatch = -1
-   For $i = 0 To UBound($charMapArray)-1
+Func IsColorPresent(Const $hBMP, Const ByRef $colorLocation)
+   Local $original  = _WinAPI_SelectObject($gMemDC, $hBMP)
+   Local $res = DllCall($gGdi32DllHandle, "int", "GetPixel", "int", $gMemDC, "int" , $colorLocation[0], "int", $colorLocation[1])
+   _WinAPI_SelectObject($gMemDC, $original)
 
-	  ; If number of columns match, then check the colvalues
-	  If $count = $charMapArray[$i][1] Then
-
-		 ; Loop through each column in the passed in array of numbers
-		 Local $c, $match=True
-		 For $c = 0 To $count-1
-			If $nums[$c] <> $charMapArray[$i][$c+2] Then
-			   $match = False
-			   ExitLoop
-			EndIf
-		 Next
-
-		 If $match Then
-			$bestMatch = $i
-			ExitLoop
-		 EndIf
-	  EndIf
-   Next
-
-   Return $bestMatch
+   Return InColorSphere($res[0], $colorLocation[2], $colorLocation[3])
 EndFunc
 
-Func CalcHammingDistance(Const $x, Const $y)
-   Local $dist = 0, $val = BitXOR($x, $y)
-
-   While $val <> 0
-	  $dist += 1
-	  $val = BitAND($val, $val-1)
-   WEnd
-
-   Return $dist;
-EndFunc
-
-Func BitCount($n)
-   Local $c = 0
-
-   While $n <> 0
-	  $c += 1
-	  $n = BitAND($n, $n-1)
-   WEnd
-
-   Return $c
-EndFunc
-
-Func IsTextBoxPresent(Const $frame, Const ByRef $textBox)
-   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $textBox[6], $textBox[7])
-   Return InColorSphere($pixelColor, $textBox[8], $textBox[9])
-EndFunc
-
-Func IsButtonPresent(Const $frame, Const ByRef $buttonBox)
-   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $buttonBox[4], $buttonBox[5])
-   Return InColorSphere($pixelColor, $buttonBox[6], $buttonBox[7])
-EndFunc
-
-Func IsColorPresent(Const $frame, Const ByRef $colorLocation)
-   Local $pixelColor = _GDIPlus_BitmapGetPixel($frame, $colorLocation[0], $colorLocation[1])
-   Return InColorSphere($pixelColor, $colorLocation[2], $colorLocation[3])
-EndFunc
-
-Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
+Func WaitForButton(ByRef $hBMP, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
    Local $t = TimerInit()
-   Local $p1 = IsButtonPresent($f, $b1)
-   Local $p2 = $b2=0 ? False : IsButtonPresent($f, $b2)
-   Local $p3 = $b3=0 ? False : IsButtonPresent($f, $b3)
+   Local $p1 = IsButtonPresent($hBMP, $b1)
+   Local $p2 = $b2=0 ? False : IsButtonPresent($hBMP, $b2)
+   Local $p3 = $b3=0 ? False : IsButtonPresent($hBMP, $b3)
    Local $lastTimeRem = Round($wait/1000)
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("WaitForButton " & $lastTimeRem)
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("WaitForButton " & $lastTimeRem)
 
    While TimerDiff($t)<$wait And $p1=False And $p2=False And $p3=False
-	  If IsButtonPresent($f, $rAndroidMessageButton1) Or IsButtonPresent($f, $rAndroidMessageButton2) Then
+	  If IsButtonPresent($hBMP, $rAndroidMessageButton1) Or IsButtonPresent($hBMP, $rAndroidMessageButton2) Then
 		 Return SetError($eErrorAndroidMessageBox, 0, False)
 	  EndIf
 
-	  If IsColorPresent($f, $rWaitForPersonalBreakPoint1Color) And _
-		 IsColorPresent($f, $rWaitForPersonalBreakPoint2Color) And _
-		 IsColorPresent($f, $rWaitForPersonalBreakPoint3Color) Then
+	  If IsColorPresent($hBMP, $rWaitForPersonalBreakPoint1Color) And _
+		 IsColorPresent($hBMP, $rWaitForPersonalBreakPoint2Color) And _
+		 IsColorPresent($hBMP, $rWaitForPersonalBreakPoint3Color) Then
 
 		 Return SetError($eErrorAttackingDisabled, 0, False)
 	  EndIf
@@ -299,12 +163,12 @@ Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
 	  Local $timeRem = Round(($wait-TimerDiff($t))/1000)
 	  If $timeRem<>$lastTimeRem Then
 		 $lastTimeRem = $timeRem
-		 _GDIPlus_BitmapDispose($f)
-		 $f = CaptureFrame("WaitForButton " & $lastTimeRem)
+		 _WinAPI_DeleteObject($hBMP)
+		 $hBMP = CaptureFrameHBITMAP("WaitForButton " & $lastTimeRem)
 
-		 $p1 = IsButtonPresent($f, $b1)
-		 $p2 = $b2=0 ? False : IsButtonPresent($f, $b2)
-		 $p3 = $b3=0 ? False : IsButtonPresent($f, $b3)
+		 $p1 = IsButtonPresent($hBMP, $b1)
+		 $p2 = $b2=0 ? False : IsButtonPresent($hBMP, $b2)
+		 $p3 = $b3=0 ? False : IsButtonPresent($hBMP, $b3)
 	  EndIf
 
 	  Sleep(100)
@@ -317,23 +181,23 @@ Func WaitForButton(ByRef $f, Const $wait, Const $b1, Const $b2=0, Const $b3=0)
    EndIf
 EndFunc
 
-Func WaitForColor(ByRef $f, Const $wait, Const $c1, Const $c2=0, Const $c3=0)
+Func WaitForColor(ByRef $hBMP, Const $wait, Const $c1, Const $c2=0, Const $c3=0)
    Local $t = TimerInit()
-   Local $p1 = IsColorPresent($f, $c1)
-   Local $p2 = $c2=0 ? False : IsColorPresent($f, $c2)
-   Local $p3 = $c3=0 ? False : IsColorPresent($f, $c3)
+   Local $p1 = IsColorPresent($hBMP, $c1)
+   Local $p2 = $c2=0 ? False : IsColorPresent($hBMP, $c2)
+   Local $p3 = $c3=0 ? False : IsColorPresent($hBMP, $c3)
    Local $lastTimeRem = Round($wait/1000)
-   _GDIPlus_BitmapDispose($f)
-   $f = CaptureFrame("WaitForColor " & $lastTimeRem)
+   _WinAPI_DeleteObject($hBMP)
+   $hBMP = CaptureFrameHBITMAP("WaitForColor " & $lastTimeRem)
 
    While TimerDiff($t)<$wait And $p1=False And $p2=False And $p3=False
-	  If IsButtonPresent($f, $rAndroidMessageButton1) Or IsButtonPresent($f, $rAndroidMessageButton2) Then
+	  If IsButtonPresent($hBMP, $rAndroidMessageButton1) Or IsButtonPresent($hBMP, $rAndroidMessageButton2) Then
 		 Return SetError($eErrorAndroidMessageBox, 0, False)
 	  EndIf
 
-	  If IsColorPresent($f, $rWaitForPersonalBreakPoint1Color) And _
-		 IsColorPresent($f, $rWaitForPersonalBreakPoint2Color) And _
-		 IsColorPresent($f, $rWaitForPersonalBreakPoint3Color) Then
+	  If IsColorPresent($hBMP, $rWaitForPersonalBreakPoint1Color) And _
+		 IsColorPresent($hBMP, $rWaitForPersonalBreakPoint2Color) And _
+		 IsColorPresent($hBMP, $rWaitForPersonalBreakPoint3Color) Then
 
 		 Return SetError($eErrorAttackingDisabled, 0, False)
 	  EndIf
@@ -341,11 +205,11 @@ Func WaitForColor(ByRef $f, Const $wait, Const $c1, Const $c2=0, Const $c3=0)
 	  Local $timeRem = Round(($wait-TimerDiff($t))/1000)
 	  If $timeRem<>$lastTimeRem Then
 		 $lastTimeRem = $timeRem
-		 _GDIPlus_BitmapDispose($f)
-		 $f = CaptureFrame("WaitForColor " & $timeRem)
-		 $p1 = IsColorPresent($f, $c1)
-		 $p2 = $c2=0 ? False : IsColorPresent($f, $c2)
-		 $p3 = $c3=0 ? False : IsColorPresent($f, $c3)
+		 _WinAPI_DeleteObject($hBMP)
+		 $hBMP = CaptureFrameHBITMAP("WaitForColor " & $timeRem)
+		 $p1 = IsColorPresent($hBMP, $c1)
+		 $p2 = $c2=0 ? False : IsColorPresent($hBMP, $c2)
+		 $p3 = $c3=0 ? False : IsColorPresent($hBMP, $c3)
 	  EndIf
 
 	  Sleep(100)
@@ -359,9 +223,10 @@ Func WaitForColor(ByRef $f, Const $wait, Const $c1, Const $c2=0, Const $c3=0)
 EndFunc
 
 Func InColorSphere(Const $color, Const $center, Const $radius)
-   Local $r = BitShift(BitAND($color, 0x00FF0000), 16)
+   ; Colors from $gMemDC using gdi32.dll PixelColor are in BGR format
+   Local $b = BitShift(BitAND($color, 0x00FF0000), 16)
    Local $g = BitShift(BitAND($color, 0x0000FF00), 8)
-   Local $b = BitAND($color, 0x000000FF)
+   Local $r = BitAND($color, 0x000000FF)
 
    Local $rC = BitShift(BitAND($center, 0x00FF0000), 16)
    Local $gC = BitShift(BitAND($center, 0x0000FF00), 8)
@@ -444,14 +309,15 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf)
    EndIf
 
    Local $hHBITMAP = CaptureFrameHBITMAP("FindBestBMP" & $gSearchTypeNames[$searchType], $box[0], $box[1], $box[2], $box[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindBestBMP" & $gSearchTypeNames[$searchType] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "FindBestBMP", "int", $searchType, "handle", $hHBITMAP, "double", $thresh)
+   If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("FindBestBMP" & $gSearchTypeNames[$searchType] & "Frame.bmp", $hHBITMAP, False)
+   Local $res = DllCall($gImageMatchDllHandle, "str", "FindBestBMP", "int", $searchType, "handle", $hHBITMAP, "double", $thresh)
    ;DebugWrite("FindBestBMP() $res[0]=" & $res[0])
 
    If @error Then
 	  DebugWrite("FindBestBMP() " & $gSearchTypeNames[$searchType] & " DllCall @error=" & @error)
 	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, FindBestBMP" & @CRLF & _
 		 "This is catastrophic, exiting.")
+	  _WinAPI_DeleteObject($hHBITMAP)
 	  Exit
    EndIf
 
@@ -519,14 +385,15 @@ Func FindAllBMPs(Const $searchType, Const $maxMatch, ByRef $matchX, ByRef $match
    EndIf
 
    Local $hHBITMAP = CaptureFrameHBITMAP("FindAllBMPs" & $gSearchTypeNames[$searchType], $box[0], $box[1], $box[2], $box[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, "FindAllBMPs" & $gSearchTypeNames[$searchType] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "FindAllBMPs", "int", $searchType, "handle", $hHBITMAP, "double", $thresh, "int", $maxMatch)
+   If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("FindAllBMPs" & $gSearchTypeNames[$searchType] & "Frame.bmp", $hHBITMAP, False)
+   Local $res = DllCall($gImageMatchDllHandle, "str", "FindAllBMPs", "int", $searchType, "handle", $hHBITMAP, "double", $thresh, "int", $maxMatch)
    ;DebugWrite("FindAllBMPs() $res[0]=" & $res[0])
 
    If @error Then
 	  DebugWrite("FindAllBMPs() DllCall @error=" & @error)
 	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, FindAllBMPs" & @CRLF & _
 		 "This is catastrophic, exiting.")
+	  _WinAPI_DeleteObject($hHBITMAP)
 	  Exit
    EndIf
 
@@ -549,16 +416,16 @@ Func FindAllBMPs(Const $searchType, Const $maxMatch, ByRef $matchX, ByRef $match
 EndFunc
 
 Func FindTopOfDonateBox()
-   Local $frame = CaptureFrame("FindTopOfDonateBox")
+   Local $hHBITMAP = CaptureFrameHBITMAP("FindTopOfDonateBox")
    Local $topDonateBox = -1
    For $i = 0 To 300
 	  Local $c[4] = [650, $i, 0xFFFFFF, 0]
-	  If IsColorPresent($frame, $c) Then
+	  If IsColorPresent($hHBITMAP, $c) Then
 		 $topDonateBox = $i
 		 ExitLoop
 	  EndIf
    Next
-   _GDIPlus_BitmapDispose($frame)
+   _WinAPI_DeleteObject($hHBITMAP)
 
    Return $topDonateBox
 EndFunc
@@ -616,9 +483,11 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 
    Local $hHBITMAP = CaptureFrameHBITMAP("LocateSlots" & $gActionTypeNames[$actionType] & $gSlotTypeNames[$slotType], _
 	  $box[0], $box[1], $box[2], $box[3])
-   If $gDebugSaveScreenCaptures Then SaveDebugHBITMAP($hHBITMAP, _
-	  "LocateSlots" & $gActionTypeNames[$actionType] & $gSlotTypeNames[$slotType] & "Frame.bmp")
-   Local $res = DllCall($gDllHandle, "str", "LocateSlots", "int", $actionType, "int", $slotType, "handle", $hHBITMAP, "double", $thresh)
+   If $gDebugSaveScreenCaptures Then _
+	  _ScreenCapture_SaveImage("LocateSlots" & $gActionTypeNames[$actionType] & $gSlotTypeNames[$slotType] & "Frame.bmp", $hHBITMAP, False)
+   Local $res = DllCall($gImageMatchDllHandle, "str", "LocateSlots", "int", $actionType, "int", $slotType, "handle", $hHBITMAP, "double", $thresh)
+   _WinAPI_DeleteObject($hHBITMAP)
+
    ;DebugWrite("DLL $res=" & $res[0])
 
    If @error Then
@@ -684,50 +553,8 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 	  EndIf
    Next
 
-   _WinAPI_DeleteObject($hHBITMAP)
    Return $split[0]
 EndFunc
-
-Func CaptureFrame(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
-   Local $backgroundMode = _GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox)
-
-   If $gDebugLogCallsToCaptureFrame = True Then
-	  DebugWrite("CaptureFrame() from " & $fromFunc & ($backgroundMode ? " (background)" : " (foreground)"))
-   EndIf
-
-   Local $hGdipBitmap
-
-   If $backgroundMode Then
-	  Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
-	  Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
-	  Local $hHBITMAP = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1, $y2-$y1)
-	  Local $bmpOriginal  = _WinAPI_SelectObject($memDC, $hHBITMAP)
-
-	  DllCall("user32.dll", "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $memDC, "int", 0)
-	  _WinAPI_SelectObject($memDC, $hHBITMAP)
-	  _WinAPI_BitBlt($memDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $hDC, $x1, $y1, $SRCCOPY)
-
-	  $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
-	  If $hGdipBitmap=0 Then
-		 DebugWrite("RefreshFrame() Error creating bitmap @error=" & @error & " @extended=" & @extended)
-	  EndIf
-
-	  _WinAPI_DeleteObject($hHBITMAP)
-	  _WinAPI_SelectObject($memDC, $bmpOriginal)
-	  _WinAPI_DeleteDC($memDC)
-	  _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $hDC)
-
-   Else
-	  Local $cPos = GetClientPos()
-	  Local $hHBITMAP = _ScreenCapture_Capture("", $cPos[0]+$x1, $cPos[1]+$y1, $cPos[0]+$x2, $cPos[1]+$y2)
-	  $hGdipBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
-	  _WinAPI_DeleteObject($hHBITMAP)
-
-   EndIf
-
-   Return $hGdipBitmap
-EndFunc
-
 
 Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
    Local $backgroundMode = _GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox)
@@ -739,18 +566,13 @@ Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $
    Local $hHBITMAP
 
    If $backgroundMode Then
-	  Local $hDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
-	  Local $memDC = _WinAPI_CreateCompatibleDC($hDC)
-	  $hHBITMAP = _WinAPI_CreateCompatibleBitmap($hDC, $x2-$x1, $y2-$y1)
-	  Local $bmpOriginal  = _WinAPI_SelectObject($memDC, $hHBITMAP)
+	  $hHBITMAP = _WinAPI_CreateCompatibleBitmap($gHDC, $x2-$x1, $y2-$y1)
+	  Local $bmpOriginal  = _WinAPI_SelectObject($gMemDC, $hHBITMAP)
 
-	  DllCall("user32.dll", "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $memDC, "int", 0)
-	  _WinAPI_SelectObject($memDC, $hHBITMAP)
-	  _WinAPI_BitBlt($memDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $hDC, $x1, $y1, $SRCCOPY)
+	  DllCall($gUser32DllHandle, "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $gMemDC, "int", 0)
+	  _WinAPI_BitBlt($gMemDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $gHDC, $x1, $y1, $SRCCOPY)
 
-	  _WinAPI_SelectObject($memDC, $bmpOriginal)
-	  _WinAPI_DeleteDC($memDC)
-	  _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $hDC)
+	  _WinAPI_SelectObject($gMemDC, $bmpOriginal)
 
    Else
 	  Local $cPos = GetClientPos()
@@ -761,30 +583,29 @@ Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $
    Return $hHBITMAP
 EndFunc
 
-Func SaveDebugImage(Const $hGdipBitmap, Const $filename)
-   _GDIPlus_ImageSaveToFile($hGdipBitmap, $filename)
-EndFunc
-
-Func SaveDebugHBITMAP(Const $hHBITMAP, Const $filename)
-   _ScreenCapture_SaveImage($filename, $hHBITMAP, False)
-EndFunc
-
 Func TestBackgroundScrape()
-   Local $frame = CaptureFrame("TestBackGroundScrape")
-   Local $w = _GDIPlus_ImageGetWidth($frame)
-   Local $h = _GDIPlus_ImageGetHeight($frame)
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestBackGroundScrape")
+
+   Local $tBitmap = DllStructCreate("int bmType; int bmWidth; int bmHeight; int bmWidthBytes; ushort bmPlanes; ushort bmBitsPixel; ptr bmBits")
+   _WinAPI_GetObject($hHBITMAP, DllStructGetSize($tBitmap), DllStructGetPtr($tBitmap))
+   Local $w = DllStructGetData($tBitmap, "bmWidth")
+   Local $h = DllStructGetData($tBitmap, "bmHeight")
+
+   Local $original  = _WinAPI_SelectObject($gMemDC, $hHBITMAP)
 
    Local $notBlackPixel = False
    For $i = 1 To 100
-	  Local $pix = _GDIPlus_BitmapGetPixel($frame, Random(0, $w-1, 1), Random(0, $h-1, 1))
-	  ;DebugWrite($i & " 0x" & Hex(BitAND($pix, 0xffffff)))
-	  If  BitAND($pix, 0xffffff) <> 0x000000 Then
+	  Local $res = DllCall($gGdi32DllHandle, "int", "GetPixel", "int", $gMemDC, "int" , Random(0, $w-1, 1), "int", Random(0, $h-1, 1))
+	  ;DebugWrite($i & " 0x" & Hex(BitAND($res[0], 0xffffff)))
+	  If  BitAND($res[0], 0xffffff) <> 0x000000 Then
 		 $notBlackPixel = True
 		 ExitLoop
 	  EndIf
    Next
 
-   _GDIPlus_BitmapDispose($frame)
+   _WinAPI_SelectObject($gMemDC, $original)
+   $tBitmap = 0
+   _WinAPI_DeleteObject($hHBITMAP)
 
    If $notBlackPixel = False Then
 	  _GUICtrlButton_SetCheck($GUI_BackgroundModeCheckBox, False)

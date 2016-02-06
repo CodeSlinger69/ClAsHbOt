@@ -1,11 +1,11 @@
-Func DumpCups(ByRef $f)
+Func DumpCups(ByRef $hBMP)
    ;DebugWrite("DumpCups()")
 
    ; Cups I currently have
-   GetMyLootNumbers($f)
+   GetMyLootNumbers($hBMP)
    Local $myCups = Number(GUICtrlRead($GUI_MyCups))
    If $myCups = 0 Then
-	  GetMyLootNumbers($f)
+	  GetMyLootNumbers($hBMP)
 	  $myCups = Number(GUICtrlRead($GUI_MyCups))
 	  If $myCups = 0 Then Return
    EndIf
@@ -16,7 +16,7 @@ Func DumpCups(ByRef $f)
    If $myCups < $cupsThreshold Then Return
 
    ; Make sure we are on the main Clash screen
-   If WhereAmI($f) <> $eScreenMain Then
+   If WhereAmI($hBMP) <> $eScreenMain Then
 	  DebugWrite("DumpCups() Error, not on Clash main screen")
 	  Return
    EndIf
@@ -30,19 +30,20 @@ Func DumpCups(ByRef $f)
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
 		 $myCups > $cupsThreshold
 
+	  ZoomOut($hBMP)
 	  DebugWrite("DumpCups() Dumping cups, current=" & $myCups & ", threshold=" & $cupsThreshold)
-	  If DoCupsDump($f)=False Then ExitLoop
+	  If DoCupsDump($hBMP)=False Then ExitLoop
 
 	  ; Get new cups count
-	  GetMyLootNumbers($f)
+	  GetMyLootNumbers($hBMP)
 	  $myCups = GUICtrlRead($GUI_MyCups)
    WEnd
 EndFunc
 
-Func DoCupsDump(ByRef $f)
+Func DoCupsDump(ByRef $hBMP)
    ; Get first available match
    Local $dummy
-   If AutoRaidFindMatch($f, True, $dummy) = False Then
+   If AutoRaidFindMatch($hBMP, True, $dummy) = False Then
 	  Return False
    EndIf
 
@@ -136,7 +137,7 @@ Func DoCupsDump(ByRef $f)
    RandomWeightedClick($rLiveRaidScreenEndBattleButton)
 
    ; Wait for confirmation button
-   If WaitForButton($f, 5000, $rLiveRaidScreenEndBattleConfirmButton) = False Then
+   If WaitForButton($hBMP, 5000, $rLiveRaidScreenEndBattleConfirmButton) = False Then
 	  DebugWrite("DoCupsDump() Error getting end battle confirmation button")
 	  Return False
    EndIf
@@ -147,7 +148,7 @@ Func DoCupsDump(ByRef $f)
    Sleep(500)
 
    ; Wait for battle end screen
-   If WaitForScreen($f, 5000, $eScreenEndBattle) = False Then
+   If WaitForScreen($hBMP, 5000, $eScreenEndBattle) = False Then
 	  DebugWrite("DoCupsDump() Error getting end battle screen")
 	  Return False
    EndIf
@@ -157,7 +158,7 @@ Func DoCupsDump(ByRef $f)
    RandomWeightedClick($rBattleHasEndedScreenReturnHomeButton)
 
    ; Wait for main screen to reappear
-   If WaitForScreen($f, 5000, $eScreenMain) = False Then
+   If WaitForScreen($hBMP, 5000, $eScreenMain) = False Then
 	  DebugWrite("DoCupsDump() Error waiting for main screen")
 	  Return False
    EndIf

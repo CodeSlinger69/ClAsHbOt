@@ -54,15 +54,23 @@ char* __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, doub
 	return returnString;
 }
 
-char*__stdcall ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const Gdiplus::Color foregroundColor, const unsigned int colorRadius, const bool keepSpaces)
+char*__stdcall ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
 {
-	string s = ocr->ScrapeFuzzyText(hBmp, fontT, foregroundColor, colorRadius, keepSpaces);
+	string s = ocr->ScrapeFuzzyText(hBmp, fontT, fontR, keepSpaces);
 
 	sprintf_s(returnString, MAXSTRING, "%s", s.c_str());
 
 	return returnString;
 }
 
+char*__stdcall ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
+{
+	string s = ocr->ScrapeExactText(hBmp, fontT, fontR, keepSpaces);
+
+	sprintf_s(returnString, MAXSTRING, "%s", s.c_str());
+
+	return returnString;
+}
 
 void PrepareReturnString(const vector<MATCHPOINTS> matches)
 {
@@ -80,4 +88,13 @@ void PrepareReturnString(const vector<MATCHPOINTS> matches)
 	{
 		sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", 0, -1, -1, 0.0);
 	}
+}
+
+void split(const string &s, const char delim, vector<string> &elems)
+{
+    stringstream ss(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
 }
