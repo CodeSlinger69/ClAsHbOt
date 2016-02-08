@@ -14,9 +14,9 @@ std::string utf8_encode(const std::wstring &wstr);
 std::wstring utf8_decode(const std::string &str);
 BOOL WINAPI CrashRptHandler(LPVOID lpvState);
 
-extern "C" char* __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR);
+extern "C" bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR);
 extern "C" bool __stdcall FindBestBMP(searchType type, HBITMAP hBmp, double threshold, MATCHPOINTS* matchResult, char* matchedBMP);
-extern "C" char* __stdcall FindAllBMPs(searchType type, HBITMAP hBmp, double threshold, int maxMatch);
-extern "C" char* __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, double threshold);
-extern "C" char* __stdcall ScrapeFuzzyText(HBITMAP hBmp, fontType fontT, FontRegion fontR, bool keepSpaces);
-extern "C" char* __stdcall ScrapeExactText(HBITMAP hBmp, fontType fontT, FontRegion fontR, bool keepSpaces);
+extern "C" bool __stdcall FindAllBMPs(searchType type, HBITMAP hBmp, double threshold, int maxMatch, MATCHPOINTS* matchResults, unsigned int* matchCount);
+extern "C" bool __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, double threshold, MATCHPOINTS* matchResults);
+extern "C" bool __stdcall ScrapeFuzzyText(HBITMAP hBmp, fontType fontT, FontRegion fontR, bool keepSpaces, char* scrapedString);
+extern "C" bool __stdcall ScrapeExactText(HBITMAP hBmp, fontType fontT, FontRegion fontR, bool keepSpaces, char* scrapedString);

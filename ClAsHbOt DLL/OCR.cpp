@@ -119,9 +119,10 @@ OCR::OCR(const char* scriptDir, const bool dOCR)
 	logger->WriteLog("Fonts loaded");
 }
 
-string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
+bool OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
 {
 	string textString("");
+	sprintf_s(scrapedString, MAXSTRING, "");
 
 	// Get index into font list
 	int fontIndex = -1;
@@ -134,7 +135,7 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion
 		char s[500];
 		sprintf_s(s, 500, "Error finding font record for type: %d", fontT);
 		logger->WriteLog(s);
-		return textString;
+		return false;
 	}
 
 	//
@@ -319,15 +320,17 @@ string OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion
 		sprintf_s(s, 500, "RESULT: %s", textString.c_str());
 		logger->WriteLog(s, false, true);
 		logger->WriteLog("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", false, true);
-   }
+	}
 
-   return textString;
+	sprintf_s(scrapedString, MAXSTRING, "%s", textString.c_str());
+	return true;
 }
 
 // Non fuzzy character matching - only good for chat box right now
-string OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
+bool OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
 {
 	string textString("");
+	sprintf_s(scrapedString, MAXSTRING, "");
 
 	// Get index into font list
 	int fontIndex = -1;
@@ -340,7 +343,7 @@ string OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion
 		char s[500];
 		sprintf_s(s, 500, "Error finding font record for type: %d", fontT);
 		logger->WriteLog(s);
-		return textString;
+		return false;
 	}
 
 	//
@@ -481,9 +484,10 @@ string OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion
 		sprintf_s(s, 500, "RESULT: %s", textString.c_str());
 		logger->WriteLog(s, false, true);
 		logger->WriteLog("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", false, true);
-   }
+	}
 
-	return textString;
+	sprintf_s(scrapedString, MAXSTRING, "%s", textString.c_str());
+	return true;
 }
 
 

@@ -234,31 +234,43 @@ Func AutoRaidStrategy1GetDirection()
 
    ; Count the storages, by top/bottom half
    Local $allMatchY[1], $totalMatches=0
-   Local $matchX[1], $matchY[1], $conf[1]
+   Local $matchX[1], $matchY[1], $conf[1], $matchCount
 
-   Local $matchCount = FindAllBMPs($eSearchTypeGoldStorage, 4, $matchX, $matchY, $conf)
-   $totalMatches += $matchCount
-   DebugWrite("Found " & $matchCount & " gold storages, total = " & $totalMatches)
-   ReDim $allMatchY[$totalMatches]
-   For $i = 0 To $matchCount-1
-	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
-   Next
+   Local $res = FindAllBMPs($eSearchTypeGoldStorage, 4, $matchX, $matchY, $conf, $matchCount)
+   If $res Then
+	  $totalMatches += $matchCount
+	  DebugWrite("Found " & $matchCount & " gold storages, total = " & $totalMatches)
+	  ReDim $allMatchY[$totalMatches]
+	  For $i = 0 To $matchCount-1
+		 $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
+	  Next
+   Else
+	  DebugWrite("Error searching for gold storages")
+   EndIf
 
-   Local $matchCount = FindAllBMPs($eSearchTypeElixStorage, 4, $matchX, $matchY, $conf)
-   $totalMatches += $matchCount
-   DebugWrite("Found " & $matchCount & " elix storages, total = " & $totalMatches)
-   ReDim $allMatchY[$totalMatches]
-   For $i = 0 To $matchCount-1
-	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
-   Next
+   Local $res = FindAllBMPs($eSearchTypeElixStorage, 4, $matchX, $matchY, $conf, $matchCount)
+   If $res Then
+	  $totalMatches += $matchCount
+	  DebugWrite("Found " & $matchCount & " elix storages, total = " & $totalMatches)
+	  ReDim $allMatchY[$totalMatches]
+	  For $i = 0 To $matchCount-1
+		 $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
+	  Next
+   Else
+	  DebugWrite("Error searching for elix storages")
+   EndIf
 
-   Local $matchCount = FindAllBMPs($eSearchTypeDarkStorage, 4, $matchX, $matchY, $conf)
+   Local $res = FindAllBMPs($eSearchTypeDarkStorage, 4, $matchX, $matchY, $conf, $matchCount)
+   If $res Then
    $totalMatches += $matchCount
-   DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
-   ReDim $allMatchY[$totalMatches]
-   For $i = 0 To $matchCount-1
-	  $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
-   Next
+	  DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
+	  ReDim $allMatchY[$totalMatches]
+	  For $i = 0 To $matchCount-1
+		 $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
+	  Next
+   Else
+	  DebugWrite("Error searching for dark storages")
+   EndIf
 
    ; Count em
    Local $storagesTopBot = 0

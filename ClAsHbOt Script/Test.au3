@@ -98,32 +98,32 @@ Func TestStorage()
 EndFunc
 
 Func TestFindAllStorages()
-   Local $x[1], $y[1], $c[1]
+   Local $x[1], $y[1], $c[1], $matchCount
 
    Local $t = TimerInit()
-   Local $count = FindAllBMPs($eSearchTypeGoldStorage, 4, $x, $y, $c)
+   Local $res = FindAllBMPs($eSearchTypeGoldStorage, 4, $x, $y, $c, $matchCount)
    DebugWrite("Gold: " & Round(TimerDiff($t)) & "ms")
 
-   DebugWrite("Gold Match Count: " & $count)
-   For $i = 0 To $count-1
+   DebugWrite("Gold Match $res=" & $res & " Count: " & $matchCount)
+   For $i = 0 To $matchCount-1
 	  DebugWrite("Gold Match " & $i & ": " & $x[$i] & "," & $y[$i] & ", confidence " & Round($c[$i]*100, 2) & "%")
    Next
 
    Local $t = TimerInit()
-   Local $count = FindAllBMPs($eSearchTypeElixStorage, 4, $x, $y, $c)
+   Local $res = FindAllBMPs($eSearchTypeElixStorage, 4, $x, $y, $c, $matchCount)
    DebugWrite("Elix: " & Round(TimerDiff($t)) & "ms")
 
-   DebugWrite("Elix Match Count: " & $count)
-   For $i = 0 To $count-1
+   DebugWrite("Elix Match $res=" & $res & " Count: " & $matchCount)
+   For $i = 0 To $matchCount-1
 	  DebugWrite("Elix Match " & $i & ": " & $x[$i] & "," & $y[$i] & ", confidence " & Round($c[$i]*100, 2) & "%")
    Next
 
    Local $t = TimerInit()
-   Local $count = FindAllBMPs($eSearchTypeDarkStorage, 1, $x, $y, $c)
+   Local $res = FindAllBMPs($eSearchTypeDarkStorage, 1, $x, $y, $c, $matchCount)
    DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
 
-   DebugWrite("Dark Match Count: " & $count)
-   For $i = 0 To $count-1
+   DebugWrite("Dark Match $res=" & $res & " Count: " & $matchCount)
+   For $i = 0 To $matchCount-1
 	  DebugWrite("Dark Match " & $i & ": " & $x[$i] & "," & $y[$i] & ", confidence " & Round($c[$i]*100, 2) & "%")
    Next
 EndFunc
@@ -295,8 +295,19 @@ Func TestDonate()
 	  Next
 	  LocateSlots($eActionTypeDonate, $eSlotTypeTroop, $donateTroopIndex)
 
-	  Local $donateSpellIndex[$eSpellCount][4]
-	  For $j = 0 To $eSpellCount-1
+	  Local $indexOfTroopToDonate
+	  If ParseRequestTextTroops($requestText, $donateTroopIndex, $indexOfTroopToDonate) Then
+		 DebugWrite("Troop Donate index: " & $indexOfTroopToDonate)
+		 If $indexOfTroopToDonate<> -1 Then
+			DebugWrite("Troop Donate Box: " & $donateTroopIndex[$indexOfTroopToDonate][0] _
+			   & " " & $donateTroopIndex[$indexOfTroopToDonate][1] _
+			   & " " & $donateTroopIndex[$indexOfTroopToDonate][2] _
+			   & " " & $donateTroopIndex[$indexOfTroopToDonate][3] )
+		 EndIf
+	  EndIf
+
+	  Local $donateSpellIndex[$eSpellHaste-$eSpellPoison+1][4]
+	  For $j = 0 To UBound($donateSpellIndex)-1
 		 $donateSpellIndex[$j][0] = -1
 		 $donateSpellIndex[$j][1] = -1
 		 $donateSpellIndex[$j][2] = -1
@@ -304,19 +315,10 @@ Func TestDonate()
 	  Next
 	  LocateSlots($eActionTypeDonate, $eSlotTypeSpell, $donateSpellIndex)
 
-	  Local $indexOfTroopToDonate
-	  ParseRequestTextTroops($requestText, $donateTroopIndex, $indexOfTroopToDonate)
-	  DebugWrite("Troop Donate index: " & $indexOfTroopToDonate)
-	  If $indexOfTroopToDonate<> -1 Then
-		 DebugWrite("Troop Donate Box: " & $donateTroopIndex[$indexOfTroopToDonate][0] _
-			& " " & $donateTroopIndex[$indexOfTroopToDonate][1] _
-			& " " & $donateTroopIndex[$indexOfTroopToDonate][2] _
-			& " " & $donateTroopIndex[$indexOfTroopToDonate][3] )
-	  EndIf
-
 	  Local $indexOfSpellToDonate
-	  ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate)
-	  DebugWrite("Spell Donate index: " & $indexOfSpellToDonate)
+	  If ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate) Then
+		 DebugWrite("Spell Donate index: " & $eSpellPoison+$indexOfSpellToDonate)
+	  EndIf
 
 	  ; If donate troops window is still open, then close it
 	  If IsColorPresent($hBITMAP, $rWindowChatDimmedColor) Then
@@ -332,7 +334,7 @@ Func TestDonate()
 
    ; If chat window is open, then close it
    If WhereAmI($hBITMAP) = $eScreenChatOpen Then
-	  DebugWrite("TestDonate() Clicking Open Chat Window button " & $rMainScreenOpenChatButton[0] & $rMainScreenOpenChatButton[1] & $rMainScreenOpenChatButton[2] & $rMainScreenOpenChatButton[3])
+	  DebugWrite("TestDonate() Clicking Open Chat Window button " & $rMainScreenOpenChatButton[0] & " " & $rMainScreenOpenChatButton[1] & " " & $rMainScreenOpenChatButton[2] & " " & $rMainScreenOpenChatButton[3])
 	  RandomWeightedClick($rMainScreenOpenChatButton)
 
 	  If WaitForScreen($hBITMAP, 5000, $eScreenMain) = False Then
@@ -357,19 +359,19 @@ Func TestTownHall()
 EndFunc
 
 Func TestCollectors()
-   Local $matchX[1], $matchY[1], $c[1]
-   Local $matchCount = FindAllBMPs($eSearchTypeLootCollector, 17, $matchX, $matchY, $c)
+   Local $matchX[1], $matchY[1], $conf[1], $matchCount
+   Local $res = FindAllBMPs($eSearchTypeLootCollector, 17, $matchX, $matchY, $conf, $matchCount)
 
    For $i = 0 To $matchCount-1
-	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & " confidence " & Round($c[$i]*100, 2) & "%")
+	  DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & " confidence " & Round($conf[$i]*100, 2) & "%")
    Next
 EndFunc
 
 Func TestCollectMyLoot()
-   Local $mX[1], $mY[1], $c[1]
-   Local $matchCount = FindAllBMPs($eSearchTypeLootBubble, 17, $mX, $mY, $c)
+   Local $mX[1], $mY[1], $conf[1], $matchCount
+   Local $res = FindAllBMPs($eSearchTypeLootBubble, 17, $mX, $mY, $conf, $matchCount)
    For $i = 0 To $matchCount-1
-	  DebugWrite("Found collectors " & $i & " " & $mX[$i] & "," & $mY[$i] & " confidence " & Round($c[$i]*100, 2) & "%")
+	  DebugWrite("Found collectors " & $i & " " & $mX[$i] & "," & $mY[$i] & " confidence " & Round($conf[$i]*100, 2) & "%")
    Next
 
    ; Do the collecting
@@ -407,14 +409,14 @@ Func TestReloadDefenses()
    Sleep(500)
 
    ; Wait for reload bar
-   Local $buttonIndex[4][4]
+   Local $buttonIndex[5][4]
 
    If WaitForReloadBar($buttonIndex) = False Then
 	  DebugWrite("ReloadDefenses() Could not find Reload button bar, exiting")
 	  Return
    EndIf
 
-   For $i = 1 To 3
+   For $i = 0 To 3
 	  If $buttonIndex[$i][0] <> -1 Then DebugWrite("ReloadDefenses() Found " & $gReloadButtonNames[$i] & " button")
    Next
 

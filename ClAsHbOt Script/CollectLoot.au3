@@ -5,11 +5,11 @@ Func CollectLoot()
    If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("CollectLootFrame.bmp", $hHBITMAP, False)
 
    ; Find all the collectors that need clicking in the frame
-   Local $mX[1], $mY[1], $c[1]
-   Local $matchCount = FindAllBMPs($eSearchTypeLootBubble, 17, $mX, $mY, $c)
+   Local $mX[1], $mY[1], $conf[1], $matchCount
+   Local $res = FindAllBMPs($eSearchTypeLootBubble, 17, $mX, $mY, $conf, $matchCount)
 
    ; Do the collecting
-   If $matchCount > 0 Then
+   If $res And $matchCount > 0 Then
 	  ; Sort the matches
 	  Local $sortedX[$matchCount], $sortedY[$matchCount]
 	  SortArrayByClosestNeighbor($matchCount, $mX, $mY, $sortedX, $sortedY)

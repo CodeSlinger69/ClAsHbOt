@@ -877,7 +877,7 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 
 		 ; Check for health color to verify deploy
 		 Local $hHBITMAP = CaptureFrameHBITMAP("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
-		 If IsColorPresent($hHBITMAP, $kingColor) Then
+		 If IsColorPresent($hHBITMAP, $queenColor) Then
 			$queenDeployTime = TimerInit()
 			$queenDeployed = True
 			DebugWrite("deployed", False, True)

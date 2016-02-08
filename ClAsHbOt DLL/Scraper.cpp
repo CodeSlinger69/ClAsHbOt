@@ -162,7 +162,7 @@ bool Scraper::FindBestBMP(const searchType type, HBITMAP hBmp, const double thre
 	return false;
 }
 
-void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, vector<MATCHPOINTS> &matches)
+bool Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, vector<MATCHPOINTS> &matches)
 {
 	// Convert HBITMAP to Mat
 	unique_ptr<Gdiplus::Bitmap> pBitmap;
@@ -186,7 +186,7 @@ void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 		if (imageGroups[i].iType == iType)
 			iTypeIndex = i;
 	if (iTypeIndex == -1)
-		return;
+		return false;
 
 	// Scan through each Mat in this image group
 	int count = 0;
@@ -243,9 +243,11 @@ void Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 		if (count >= maxMatch)
 			break;
 	}
+
+	return true;
 }
 
-void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, vector<MATCHPOINTS> &matches)
+bool Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, vector<MATCHPOINTS> &matches)
 {
 	// Convert HBITMAP to Mat
 	unique_ptr<Gdiplus::Bitmap> pBitmap;
@@ -270,7 +272,7 @@ void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP 
 		if (imageGroups[i].iType == iType)
 			iTypeIndex = i;
 	if (iTypeIndex == -1)
-		return;
+		return false;
 
 	// Scan through each Mat in this image group
 	for (int i=0; i<(int) imageGroups[iTypeIndex].mats.size(); i++)
@@ -297,6 +299,8 @@ void Scraper::LocateSlots(const actionType aType, const slotType sType, HBITMAP 
 
 		matches.push_back(match);
 	}
+
+	return true;
 }
 
 Mat Scraper::FindMatch(const Mat haystack, const Mat needle)

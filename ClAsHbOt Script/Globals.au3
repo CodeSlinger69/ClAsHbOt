@@ -1,4 +1,4 @@
-Global $gVersion = "20160207"
+Global $gVersion = "20160208"
 Global $gAutoItVersionRequired = "3.3.14.2"
 
 ; Debug - this is overwritten in ReadSettings(), however this needs to be defined here, as there can

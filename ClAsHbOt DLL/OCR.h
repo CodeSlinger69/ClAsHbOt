@@ -29,8 +29,8 @@ struct Font
 class OCR {
 public:
 	OCR(const char* scriptDir, const bool dOCR);
-	string ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces);
-	string ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces);
+	bool ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString);
+	bool ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString);
  
 private:
 	string fontDataPath;

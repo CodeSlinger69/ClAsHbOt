@@ -137,10 +137,10 @@ Func OpenChatWindow(ByRef $hBMP)
 EndFunc
 
 Func FindDonateButtons(ByRef $buttons)
-   Local $mX[1], $mY[1], $conf[1]
-   Local $matchCount = FindAllBMPs($eSearchDonateButton, 4, $mX, $mY, $conf)
+   Local $mX[1], $mY[1], $conf[1], $matchCount
+   Local $res = FindAllBMPs($eSearchDonateButton, 4, $mX, $mY, $conf, $matchCount)
 
-   If $matchCount <= 0 Then
+   If $matchCount <= 0 Or $res = False Then
 	  DebugWrite("FindDonateButton() Donate button not found.")
 	  Return False
 
@@ -273,7 +273,7 @@ Func ParseRequestTextSpells(Const ByRef $text, Const ByRef $avail, ByRef $index)
    ; If there is no specific request match, then return default as specified in .ini file
    If $index < 0 Then
 	  For $i = $eSpellPoison To $eSpellHaste
-		 If StringInStr($gSpellNames[$i], $gSpellDefaultDonate) And $avail[$i][0]<>-1 Then
+		 If StringInStr($gSpellNames[$i], $gSpellDefaultDonate) And $avail[$i-$eSpellPoison][0]<>-1 Then
 			DebugWrite("ParseRequestTextSpells() Default spell match for " & $gSpellNames[$i] & ", available")
 			$index = $i
 			ExitLoop

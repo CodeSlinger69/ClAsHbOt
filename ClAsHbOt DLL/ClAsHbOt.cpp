@@ -7,10 +7,10 @@
 #include "ClAsHbOt.h"
 
 char returnString[MAXSTRING];
-string version("20160207");
+string version("20160208");
 string scriptdir("");
 
-char* __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
+bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
 {
 	scriptdir = scriptDir;
 
@@ -39,8 +39,7 @@ char* __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
 		s.append(buff);
 
 		logger->WriteLog(s);
-		sprintf_s(returnString, MAXSTRING, "%s", s.c_str());
-		return returnString;
+		return false;
 	}
 
 	string logFilePath(scriptdir + "\\ClashBotLog.txt");
@@ -60,7 +59,7 @@ char* __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
 
 	logger->WriteLog("Initialization complete");
 	sprintf_s(returnString, MAXSTRING, "Success");
-	return returnString;
+	return true;
 }
 
 bool __stdcall FindBestBMP(searchType type, HBITMAP hBmp, double threshold, MATCHPOINTS* matchResult, char* matchedBMP)
@@ -72,42 +71,60 @@ bool __stdcall FindBestBMP(searchType type, HBITMAP hBmp, double threshold, MATC
 	return scraper->FindBestBMP(type, hBmp, threshold, matchResult, matchedBMP);
 }
 
-char* __stdcall FindAllBMPs(searchType type, HBITMAP hBmp, double threshold, int maxMatch)
+bool __stdcall FindAllBMPs(searchType type, HBITMAP hBmp, double threshold, int maxMatch, MATCHPOINTS* matchResults, unsigned int* matchCount)
 {
 	vector<MATCHPOINTS> matches;
 
-	scraper->FindAllBMPs(type, hBmp, threshold, maxMatch, matches);
-	PrepareReturnString(matches);
+	if (scraper->FindAllBMPs(type, hBmp, threshold, maxMatch, matches))
+	{
+	
+		for (int i = 0; i < (int) matches.size(); i++)
+		{
+			matchResults[i].x = matches[i].x;
+			matchResults[i].y = matches[i].y;
+			matchResults[i].val = matches[i].val;
+		}
 
-	return returnString;
+		*matchCount = matches.size();
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
-char* __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, double threshold)
+bool __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, double threshold, MATCHPOINTS* matchResults)
 {
 	vector<MATCHPOINTS> matches;
 
-	scraper->LocateSlots(aType, sType, hBmp, threshold, matches);
-	PrepareReturnString(matches);
+	if (scraper->LocateSlots(aType, sType, hBmp, threshold, matches))
+	{
+	
+		for (int i = 0; i < (int) matches.size(); i++)
+		{
+			matchResults[i].x = matches[i].x;
+			matchResults[i].y = matches[i].y;
+			matchResults[i].val = matches[i].val;
+		}
 
-	return returnString;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
-char*__stdcall ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
+bool __stdcall ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
 {
-	string s = ocr->ScrapeFuzzyText(hBmp, fontT, fontR, keepSpaces);
-
-	sprintf_s(returnString, MAXSTRING, "%s", s.c_str());
-
-	return returnString;
+	return ocr->ScrapeFuzzyText(hBmp, fontT, fontR, keepSpaces, scrapedString);
 }
 
-char*__stdcall ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces)
+bool __stdcall ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
 {
-	string s = ocr->ScrapeExactText(hBmp, fontT, fontR, keepSpaces);
-
-	sprintf_s(returnString, MAXSTRING, "%s", s.c_str());
-
-	return returnString;
+	return ocr->ScrapeExactText(hBmp, fontT, fontR, keepSpaces, scrapedString);
 }
 
 void PrepareReturnString(const vector<MATCHPOINTS> matches)

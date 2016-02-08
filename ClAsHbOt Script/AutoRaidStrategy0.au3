@@ -165,18 +165,20 @@ EndFunc
 
 Func AutoRaidStrategy0GetDirection()
    ; Count the collectors, by top/bottom half
-   Local $matchX[1], $matchY[1], $conf[1]
-   Local $matchCount = FindAllBMPs($eSearchTypeLootCollector, 17, $matchX, $matchY, $conf)
+   Local $matchX[1], $matchY[1], $conf[1], $matchCount
+   Local $res = FindAllBMPs($eSearchTypeLootCollector, 17, $matchX, $matchY, $conf, $matchCount)
    Local $collectorsOnTop = 0, $collectorsOnBot = 0
 
-   For $i = 0 To $matchCount-1
-	  ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & " confidence " & Round($conf*100, 2) & "%")
-	  If $matchY[$i]+21 < $gScreenCenter[1] Then
-		 $collectorsOnTop += 1
-	  Else
-		 $collectorsOnBot += 1
-	  EndIf
-   Next
+   If $res Then
+	  For $i = 0 To $matchCount-1
+		 ;DebugWrite("Match " & $i & ": " & $matchX[$i] & "," & $matchY[$i] & " confidence " & Round($conf*100, 2) & "%")
+		 If $matchY[$i]+21 < $gScreenCenter[1] Then
+			$collectorsOnTop += 1
+		 Else
+			$collectorsOnBot += 1
+		 EndIf
+	  Next
+   EndIf
 
    DebugWrite("AutoRaidStrategy0GetDirection() Collectors found top: " & $collectorsOnTop & ", bottom: " & $collectorsOnBot)
 
