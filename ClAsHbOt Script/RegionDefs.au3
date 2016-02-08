@@ -98,7 +98,7 @@ Global $rZoomedOutFullColor[4] = [$gScreenCenter[0], 1, 0x000000, 0]
 
 ; Bounding Boxes
 ; Left, Top, Right, Bottom
-Global $rRaidTroopBox[4] = [37, 634, 826, 726]
+Global $rRaidTroopBox[4] = [37, 621, 826, 726]
 Global $rRaidButtonOffset[4] = [0, -17, 62, 21]
 Global $rCampTroopBox1[4] = [126, 197, 740, 275] ; main troops
 Global $rCampTroopBox2[4] = [420, 442, 615, 525] ; heroes

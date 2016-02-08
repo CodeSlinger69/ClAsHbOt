@@ -786,6 +786,24 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
    Local $wardenDeployDelay = 3000 ; 3 seconds after queen or king
    Local $royaltyDeploySide = Random()
 
+   Local $kingColor[4] = [ _
+	  $index[$eTroopKing][0] - $rRaidTroopBox[0] + $rKingQueenHealthGreenColor[0], _
+	  $index[$eTroopKing][1] - $rRaidTroopBox[1] + $rKingQueenHealthGreenColor[1], _
+	  $rKingQueenHealthGreenColor[2], _
+	  $rKingQueenHealthGreenColor[3]]
+
+   Local $queenColor[4] = [ _
+	  $index[$eTroopQueen][0] - $rRaidTroopBox[0] + $rKingQueenHealthGreenColor[0], _
+	  $index[$eTroopQueen][1] - $rRaidTroopBox[1] + $rKingQueenHealthGreenColor[1], _
+	  $rKingQueenHealthGreenColor[2], _
+	  $rKingQueenHealthGreenColor[3]]
+
+   Local $wardenColor[4] = [ _
+	  $index[$eTroopWarden][0] - $rRaidTroopBox[0] + $rWardenHealthGreenColor[0], _
+	  $index[$eTroopWarden][1] - $rRaidTroopBox[1] + $rWardenHealthGreenColor[1], _
+	  $rWardenHealthGreenColor[2], _
+	  $rWardenHealthGreenColor[3]]
+
    While (($kingPoweredUp=False And $index[$eTroopKing][0]<>-1) Or _
 	      ($queenPoweredUp=False And $index[$eTroopQueen][0]<>-1) Or _
 	      ($wardenPoweredUp=False And $index[$eTroopWarden][0]<>-1)) And _
@@ -797,15 +815,9 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 
 	  ; Get King's health color, and power up if needed
 	  If $kingDeployed And $kingPoweredUp = False Then
-		 Local $kingColor[4] = [ _
-			$index[$eTroopKing][0] - $rRaidTroopBox[0] + $rKingQueenHealthGreenColor[0], _
-			$index[$eTroopKing][1] - $rRaidTroopBox[1] + $rKingQueenHealthGreenColor[1], _
-			$rKingQueenHealthGreenColor[2], _
-			$rKingQueenHealthGreenColor[3]]
-
 		 If IsColorPresent($hHBITMAP, $kingColor) = False Then
 			;GrabFrameToFile("PreKingPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
-			DebugWrite("Powering up King")
+			DebugWrite("Powering up Barbarian King")
 			RandomWeightedClick($kingButton)
 			$kingPoweredUp = True
 		 EndIf
@@ -813,15 +825,9 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 
 	  ; Get Queen's health color, and power up if needed
 	  If $queenDeployed And $queenPoweredUp = False Then
-		 Local $queenColor[4] = [ _
-			$index[$eTroopQueen][0] - $rRaidTroopBox[0] + $rKingQueenHealthGreenColor[0], _
-			$index[$eTroopQueen][1] - $rRaidTroopBox[1] + $rKingQueenHealthGreenColor[1], _
-			$rKingQueenHealthGreenColor[2], _
-			$rKingQueenHealthGreenColor[3]]
-
 		 If IsColorPresent($hHBITMAP, $queenColor) = False Then
 			;GrabFrameToFile("PreQueenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
-			DebugWrite("Powering up Queen")
+			DebugWrite("Powering up Archer Queen")
 			RandomWeightedClick($queenButton)
 			$queenPoweredUp = True
 		 EndIf
@@ -829,15 +835,9 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 
 	  ; Get Warden's health color, and power up if needed
 	  If $wardenDeployed And $wardenPoweredUp = False Then
-		 Local $wardenColor[4] = [ _
-			$index[$eTroopWarden][0] - $rRaidTroopBox[0] + $rWardenHealthGreenColor[0], _
-			$index[$eTroopWarden][1] - $rRaidTroopBox[1] + $rWardenHealthGreenColor[1], _
-			$rWardenHealthGreenColor[2], _
-			$rWardenHealthGreenColor[3]]
-
 		 If IsColorPresent($hHBITMAP, $wardenColor) = False Then
 			;GrabFrameToFile("PreWardenPowerUpFrame" & _Date_Time_GetTickCount() & ".bmp")
-			DebugWrite("Powering up Warden")
+			DebugWrite("Powering up Grand Warden")
 			RandomWeightedClick($wardenButton)
 			$wardenPoweredUp = True
 		 EndIf
@@ -847,42 +847,66 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 
 	  ; Deploy King if not already deployed
 	  If $kingButton[0]<>-1 And $kingDeployed=False Then
-		 DebugWrite("Deploying Barbarian King")
+		 DebugWrite("Deploying Barbarian King...", True, False)
 		 RandomWeightedClick($kingButton)
 		 Sleep(500)
 
 		 RandomWeightedClick($deployBox)
 		 Sleep(500)
 
-		 $kingDeployTime = TimerInit()
-		 $kingDeployed = True
+		 ; Check for health color to verify deploy
+		 Local $hHBITMAP = CaptureFrameHBITMAP("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
+		 If IsColorPresent($hHBITMAP, $kingColor) Then
+			$kingDeployTime = TimerInit()
+			$kingDeployed = True
+			DebugWrite("deployed", False, True)
+		 Else
+			DebugWrite("failed, will retry", False, True)
+		 EndIf
+		 _WinAPI_DeleteObject($hHBITMAP)
 	  EndIf
 
 	  ; Deploy Queen after specified amount of time after king deploy, if not already deployed
 	  If $queenButton[0]<>-1 And $queenDeployed=False And TimerDiff($kingDeployTime)>$queenDeployDelay Then
-		 DebugWrite("Deploying Archer Queen")
+		 DebugWrite("Deploying Archer Queen...", True, False)
 		 RandomWeightedClick($queenButton)
 		 Sleep(500)
 
 		 RandomWeightedClick($deployBox)
 		 Sleep(500)
 
-		 $queenDeployTime = TimerInit()
-		 $queenDeployed = True
+		 ; Check for health color to verify deploy
+		 Local $hHBITMAP = CaptureFrameHBITMAP("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
+		 If IsColorPresent($hHBITMAP, $kingColor) Then
+			$queenDeployTime = TimerInit()
+			$queenDeployed = True
+			DebugWrite("deployed", False, True)
+		 Else
+			DebugWrite("failed, will retry", False, True)
+		 EndIf
+		 _WinAPI_DeleteObject($hHBITMAP)
 	  EndIf
 
 	  ; Deploy Warden after specified amount of time after queen and/or king deploy, if not already deployed
 	  If $wardenButton[0]<>-1 And $wardenDeployed=False And _
 		 (TimerDiff($kingDeployTime)>$wardenDeployDelay Or TimerDiff($queenDeployTime)>$wardenDeployDelay) Then
-		 DebugWrite("Deploying Grand Warden")
+		 DebugWrite("Deploying Grand Warden...", True, False)
 		 RandomWeightedClick($wardenButton)
 		 Sleep(500)
 
 		 RandomWeightedClick($deployBox)
 		 Sleep(500)
 
-		 $wardenDeployTime = TimerInit()
-		 $wardenDeployed = True
+		 ; Check for health color to verify deploy
+		 Local $hHBITMAP = CaptureFrameHBITMAP("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
+		 If IsColorPresent($hHBITMAP, $wardenColor) Then
+			$wardenDeployTime = TimerInit()
+			$wardenDeployed = True
+			DebugWrite("deployed", False, True)
+		 Else
+			DebugWrite("failed, will retry", False, True)
+		 EndIf
+		 _WinAPI_DeleteObject($hHBITMAP)
 	  EndIf
 
 	  Sleep(500)

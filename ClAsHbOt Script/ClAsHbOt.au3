@@ -452,10 +452,15 @@ Func CaptureAutoEndLoot()
 	  " Cups:" & $netCups)
 EndFunc
 
-Func DebugWrite($text)
+Func DebugWrite($text, $withDateTime = True, $withCR = True)
    If $gDebug Then
-	  ConsoleWrite(_NowDate() & " " & _NowTime() & " " & $text & @CRLF)
-	  FileWrite("ClashBotLog.txt", _NowDate() & " " & _NowTime(5) & " " & $text & @CRLF)
+	  If $withDateTime Then ConsoleWrite(_NowDate() & " " & _NowTime(5) & " ")
+	  ConsoleWrite($text)
+	  If $withCR Then ConsoleWrite(@CRLF)
+
+	  If $withDateTime Then FileWrite("ClashBotLog.txt", _NowDate() & " " & _NowTime(5) & " ")
+	  FileWrite("ClashBotLog.txt", $text)
+	  If $withCR Then FileWrite("ClashBotLog.txt", @CRLF)
    EndIf
 EndFunc
 
