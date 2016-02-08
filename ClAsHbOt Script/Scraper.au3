@@ -358,8 +358,8 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
    EndIf
 
    ; Get result
-   $left = DllStructGetData($matchPoint, 1)
-   $top = DllStructGetData($matchPoint, 2)
+   $left = DllStructGetData($matchPoint, 1) + $box[0]
+   $top = DllStructGetData($matchPoint, 2) + $box[1]
    $conf = DllStructGetData($matchPoint, 3)
    $value = DllStructGetData($matchedBMP, 1)
    $matchPoint = 0
