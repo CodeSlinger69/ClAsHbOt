@@ -9,9 +9,8 @@ Func ReloadDefenses(ByRef $hBMP)
    ; Find town hall
    RandomWeightedClick($rSafeAreaButton)
    Sleep(500)
-   Local $conf, $x, $y
-   Local $th = FindBestBMP($eSearchTypeTownHall, $x, $y, $conf)
-   If $th = -1 Then
+   Local $conf, $x, $y, $thLevel
+   If FindBestBMP($eSearchTypeTownHall, $x, $y, $conf, $thLevel) = False Then
 	  DebugWrite("ReloadDefenses() Could not find Town Hall, exiting")
 	  Return
    EndIf

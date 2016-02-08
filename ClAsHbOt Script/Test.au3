@@ -60,38 +60,38 @@ Func TestEndBattleBonus()
 EndFunc
 
 Func TestStorage()
-   Local $x, $y, $conf, $matchIndex
+   Local $x, $y, $conf, $value, $matchIndex
    Local $usageAdj = 10
 
    Local $t = TimerInit()
-   Local $s = FindBestBMP($eSearchTypeGoldStorage, $x, $y, $conf)
+   Local $res = FindBestBMP($eSearchTypeGoldStorage, $x, $y, $conf, $value)
    DebugWrite("Gold: " & Round(TimerDiff($t)) & "ms")
-   DebugWrite("Gold Match: " & $s)
-   If $s <> "" Then
-	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
-	  Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
+   DebugWrite("Gold Match: " & $value)
+   If $res Then
+	  Local $level = Number(StringMid($value, StringInStr($value, "GoldStorageL")+12, 2))
+	  Local $usage = Number(StringMid($value, StringInStr($value, "GoldStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
    Local $t = TimerInit()
-   Local $s = FindBestBMP($eSearchTypeElixStorage, $x, $y, $conf)
+   Local $res = FindBestBMP($eSearchTypeElixStorage, $x, $y, $conf, $value)
    DebugWrite("Elix: " & Round(TimerDiff($t)) & "ms")
-   DebugWrite("Elix Match: " & $s)
-   If $s <> "" Then
-	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
-	  Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
+   DebugWrite("Elix Match: " & $value)
+   If $res Then
+	  Local $level = Number(StringMid($value, StringInStr($value, "ElixStorageL")+12, 2))
+	  Local $usage = Number(StringMid($value, StringInStr($value, "ElixStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
    Local $t = TimerInit()
-   Local $s = FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf)
+   Local $res = FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf, $value)
    DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
-   DebugWrite("Dark Match: " & $s)
-   If $s <> "" Then
-	  Local $level = Number(StringMid($s, StringInStr($s, "DarkStorageL")+12, 1))
-	  Local $usage = Number(StringMid($s, StringInStr($s, "DarkStorageL")+14, 2))
+   DebugWrite("Dark Match: " & $value)
+   If $res Then
+	  Local $level = Number(StringMid($value, StringInStr($value, "DarkStorageL")+12, 1))
+	  Local $usage = Number(StringMid($value, StringInStr($value, "DarkStorageL")+14, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
@@ -344,12 +344,16 @@ Func TestDonate()
 EndFunc
 
 Func TestTownHall()
-   Local $left, $top, $conf
+   Local $left, $top, $conf, $value
    Local $t = TimerInit()
-   Local $th = FindBestBMP($eSearchTypeTownHall, $left, $top, $conf)
+   Local $res = FindBestBMP($eSearchTypeTownHall, $left, $top, $conf, $value)
    DebugWrite("TownHall: " & Round(TimerDiff($t)) & "ms")
 
-   DebugWrite("Likely TH Level " & $th & " @ " & $left & "," & $top & " confidence " & Round($conf*100, 2) & "%")
+   If $res Then
+	  DebugWrite("Town Hall found, likely level " & $value & " @ " & $left & "," & $top & " confidence " & Round($conf*100, 2) & "%")
+   Else
+	  DebugWrite("Town Hall not found")
+   EndIf
 EndFunc
 
 Func TestCollectors()
@@ -380,10 +384,8 @@ Func TestCollectMyLoot()
    EndIf
 
    ; Check for loot cart
-   Local $x, $y, $conf
-   FindBestBMP($eSearchTypeLootCart, $x, $y, $conf)
-
-   If $x <> -1 Then
+   Local $x, $y, $conf, $value
+   If FindBestBMP($eSearchTypeLootCart, $x, $y, $conf, $value) Then
 	  DebugWrite("Found loot cart: " & $x & "," & $y & " confidence " & Round($conf*100, 2) & "%")
    EndIf
 EndFunc
@@ -392,9 +394,8 @@ Func TestReloadDefenses()
    ; Find town hall
    RandomWeightedClick($rSafeAreaButton)
    Sleep(500)
-   Local $conf, $x, $y
-   Local $th = FindBestBMP($eSearchTypeTownHall, $x, $y, $conf)
-   If $th = -1 Then
+   Local $conf, $x, $y, $value
+   If FindBestBMP($eSearchTypeTownHall, $x, $y, $conf, $value) = False Then
 	  DebugWrite("ReloadDefenses() Could not find Town Hall, exiting")
 	  Return
    EndIf

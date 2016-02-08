@@ -12,7 +12,7 @@ Global $gDebugSaveUnknownStorageFrames = False
 Global $gDebugLogCallsToCaptureFrame = False
 
 ; DLLs
-Global $gImageMatchDllHandle = 0
+Global $gClAsHbOtDllHandle = 0
 Global $gUser32DllHandle = 0
 Global $gGdi32DllHandle = 0
 
@@ -26,6 +26,7 @@ Global Enum $eSearchTypeTownHall, $eSearchTypeLootCart, $eSearchClashIcon, $eSea
 			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeDarkStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble
 Global Enum $fontMyStuff, $fontRaidTroopCountUnselected, $fontRaidTroopCountSelected, $fontRaidLoot, $fontBarracksStatus, _
 			$fontBattleEndWinnings, $fontBattleEndBonus, $fontChat
+Global $gMAXSTRING = 500
 Global $gActionTypeNames[5] = [ "Raid", "Donate", "Barracks", "Camp", "ReloadButton" ]
 Global $gSlotTypeNames[3] = [ "Troop", "Spell", "Hero" ]
 Global $gBuiltTroopClassNames[2] = [ "Normal", "Heroes" ]

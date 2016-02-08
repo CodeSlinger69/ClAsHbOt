@@ -24,7 +24,6 @@ Opt("GUIOnEventMode", 1)
 #include <File.au3>
 #include <WindowsConstants.au3>
 #include <SendMessage.au3>
-#include <BlockInputEx.au3>
 
 ; CoC Bot Includes
 #include <Globals.au3>
@@ -58,10 +57,10 @@ Func Main()
 
    StartBlueStacks()
 
+;MsgBox($MB_OK, "", "Attach debugger!")
    InitScraper()
 
 ;Local $hHBITMAP = CaptureFrameHBITMAP("Debug")
-;MsgBox($MB_OK, "", "Attach debugger!")
 ;ZoomOut2()
 ;$gScraperDebug = True
 ;$gDebugSaveScreenCaptures = True
@@ -406,10 +405,8 @@ Func GetMyLootNumbers(ByRef $hBMP)
 
 			RandomWeightedClick($rSafeAreaButton)
 			Sleep(500)
-			Local $top, $left, $conf
-			Local $MyTownHall = FindBestBMP($eSearchTypeTownHall, $left, $top, $conf)
-
-			If $MyTownHall = -1 Then
+			Local $top, $left, $conf, $MyTownHall
+			If FindBestBMP($eSearchTypeTownHall, $left, $top, $conf, $MyTownHall) = False Then
 				  DebugWrite("Could not detect Town Hall level")
 				  $MyTownHall = InputBox("Town Hall level not found", "Please enter the Town Hall level of your village.")
 			EndIf

@@ -62,9 +62,8 @@ Func ResetToCoCMainScreen(ByRef $hBMP)
    ; Android Home Screen - start CoC
    Case $eScreenAndroidHome
 	  DebugWrite("ResetToCoCMainScreen() On Android Home Screen - Starting Clash of Clans")
-	  Local $left, $top, $conf
-	  FindBestBMP($eSearchClashIcon, $left, $top, $conf)
-	  If $left <> -1 Then
+	  Local $left, $top, $conf, $value
+	  If FindBestBMP($eSearchClashIcon, $left, $top, $conf, $value) Then
 		 Local $button[4] = [$left, $top, $left+$rScreenAndroidHomeCoCIconButton[2], $top+$rScreenAndroidHomeCoCIconButton[3]]
 		 RandomWeightedClick($button)
 		 $countdown = 30000
@@ -73,9 +72,8 @@ Func ResetToCoCMainScreen(ByRef $hBMP)
    ; Clash screen in Play Store
    Case $eScreenPlayStore
 	  DebugWrite("ResetToCoCMainScreen() On Clash Play Store Screen - Starting Clash of Clans")
-	  Local $left, $top, $conf
-	  FindBestBMP($eSearchPlayStoreOpenButton, $left, $top, $conf)
-	  If $left <> -1 Then
+	  Local $left, $top, $conf, $value
+	  If FindBestBMP($eSearchPlayStoreOpenButton, $left, $top, $conf, $value) Then
 		 Local $button[4] = [$left, $top, $left+$rScreenPlayStoreOpenButton[2], $top+$rScreenPlayStoreOpenButton[3]]
 		 RandomWeightedClick($button)
 		 $countdown = 30000
@@ -190,7 +188,7 @@ EndFunc
 Func WhereAmI(Const $hBMP)
    If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("WhereAmIFrame.bmp", $hBMP, False)
 
-   Local $left, $top, $conf
+   Local $left, $top, $conf, $value
 
    ; $eScreenAndroidMessageBox
    If IsButtonPresent($hBMP, $rAndroidMessageButton1) Then Return $eScreenAndroidMessageBox
@@ -243,12 +241,10 @@ Func WhereAmI(Const $hBMP)
    If IsButtonPresent($hBMP, $rStarBonusWindowOkayButton) Then Return $eStarBonus
 
    ; $ScreenAndroidHome
-   FindBestBMP($eSearchClashIcon, $left, $top, $conf)
-   If $left <> -1 Then Return $eScreenAndroidHome
+   If FindBestBMP($eSearchClashIcon, $left, $top, $conf, $value) Then Return $eScreenAndroidHome
 
    ; $eScreenPlayStore
-   FindBestBMP($eSearchPlayStoreOpenButton, $left, $top, $conf)
-   If $left <> -1 Then Return $eScreenPlayStore
+   If FindBestBMP($eSearchPlayStoreOpenButton, $left, $top, $conf, $value) Then Return $eScreenPlayStore
 
    ; $Unknown
    #cs

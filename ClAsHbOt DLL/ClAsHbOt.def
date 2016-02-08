@@ -1,0 +1,8 @@
+LIBRARY   ImageMatch
+EXPORTS
+   Initialize
+   FindBestBMP
+   FindAllBMPs
+   LocateSlots
+   ScrapeFuzzyText
+   ScrapeExactText

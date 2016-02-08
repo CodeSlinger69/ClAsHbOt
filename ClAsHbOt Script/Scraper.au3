@@ -1,18 +1,31 @@
 Func InitScraper()
    _GDIPlus_Startup()
 
-   ; ImageMatch DLL
-   $gImageMatchDllHandle = DllOpen("ImageMatch.dll")
-
-   If $gImageMatchDllHandle = -1 Then
-	  DebugWrite("InitScraper() Error loading DLL")
-	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "DLL Open Error", "Error opening ImageMatch.dll.  Exiting.")
+   ; Check if Visual C++ 2010 SP1 runtimes are installed
+   Local $GUID = "{F0C3E5D1-1ADE-321E-8167-68EF0DE699A5}"
+   Local $INSTALLSTATE_ABSENT=2, $INSTALLSTATE_ADVERTISED=1, $INSTALLSTATE_DEFAULT=5, $INSTALLSTATE_INVALIDARG=-2, $INSTALLSTATE_UNKNOWN=-1
+   Local $res = DLLCall("msi.dll", "int", "MsiQueryProductState", "str", $GUID)
+   If $res[0] <> $INSTALLSTATE_DEFAULT Then
+	  DebugWrite("InitScraper() Visual C++ 2010 SP1 runtimes not installed")
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "InitScraper Error", "Visual C++ 2010 SP1 runtimes do not appear to be installed. " & _
+		 "Please install from the 'redist' folder, or download from Microsoft here: https://www.microsoft.com/en-us/download/details.aspx?id=8328" & _
+		 @CRLF & @CRLF & "Exiting.")
 	  Exit
    EndIf
-   DebugWrite("InitScraper() ImageMatch.dll loaded")
+   DebugWrite("InitScraper() Visual C++ 2010 SP1 runtimes are installed")
 
-   ; ImageMatch DLL Initialize
-   Local $res = DllCall($gImageMatchDllHandle, "str", "Initialize", "str", @ScriptDir, "bool", $gDebug, "bool", $gScraperDebug)
+   ; ClAsHbOt DLL
+   $gClAsHbOtDllHandle = DllOpen("ClAsHbOt.dll")
+
+   If $gClAsHbOtDllHandle = -1 Then
+	  DebugWrite("InitScraper() Error loading DLL")
+	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "DLL Open Error", "Error opening ClAsHbOt.dll.  Exiting.")
+	  Exit
+   EndIf
+   DebugWrite("InitScraper() ClAsHbOt.dll loaded")
+
+   ; ClAsHbOt DLL Initialize
+   Local $res = DllCall($gClAsHbOtDllHandle, "str", "Initialize", "str", @ScriptDir, "bool", $gDebug, "bool", $gScraperDebug)
    If @error Then
 	  DebugWrite("DLLLoad() DllCall Initialize @error=" & @error)
 	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error initializing DLL." & @CRLF & _
@@ -63,7 +76,7 @@ Func ExitScraper()
    DllClose($gGdi32DllHandle)
    DebugWrite("ExitScraper() gdi32.dll unloaded")
 
-   DllClose($gImageMatchDllHandle)
+   DllClose($gClAsHbOtDllHandle)
    DebugWrite("ExitScraper() ImageMatch.dll unloaded")
 
    _GDIPlus_Shutdown()
@@ -79,7 +92,7 @@ Func ScrapeFuzzyText(Const $hBMP, Const $type, Const $textBox)
 	  DllStructSetData($box, $i+1, $textBox[$i])
    Next
 
-   Local $res = DllCall($gImageMatchDllHandle, "str", "ScrapeFuzzyText", "handle", $hBMP, "int", $type, "struct", $box, "bool", False)
+   Local $res = DllCall($gClAsHbOtDllHandle, "str", "ScrapeFuzzyText", "handle", $hBMP, "int", $type, "struct", $box, "bool", False)
 
    If @error Then
 	  DebugWrite("ScrapeFuzzyText() " & $gFontNames[$type] & " DllCall @error=" & @error)
@@ -101,7 +114,7 @@ Func ScrapeExactText(Const $hBMP, Const $type, Const $textBox)
 	  DllStructSetData($box, $i+1, $textBox[$i])
    Next
 
-   Local $res = DllCall($gImageMatchDllHandle, "str", "ScrapeExactText", "handle", $hBMP, "int", $type, "struct", $box, "bool", False)
+   Local $res = DllCall($gClAsHbOtDllHandle, "str", "ScrapeExactText", "handle", $hBMP, "int", $type, "struct", $box, "bool", False)
 
    If @error Then
 	  DebugWrite("ScrapeExactText2() " & $gFontNames[$type] & " DllCall @error=" & @error)
@@ -264,7 +277,16 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
-Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf)
+Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef $value)
+   ; $value parameter returns town hall level in town hall search,
+   ; matched bitmap file name for other searches
+
+   ; Default
+   $left = -1
+   $top = -1
+   $conf = 0
+   $value = -1
+
    ; Get frame
    Local $box[4], $thresh
    If $searchType = $eSearchTypeTownHall Then
@@ -304,49 +326,55 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf)
 
    Else
 	  DebugWrite("FindBestBMP() Error, searchType not recognized: " & $searchType)
-	  Return
+	  Return False
 
    EndIf
 
+   ; Grab frame
    Local $hHBITMAP = CaptureFrameHBITMAP("FindBestBMP" & $gSearchTypeNames[$searchType], $box[0], $box[1], $box[2], $box[3])
    If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("FindBestBMP" & $gSearchTypeNames[$searchType] & "Frame.bmp", $hHBITMAP, False)
-   Local $res = DllCall($gImageMatchDllHandle, "str", "FindBestBMP", "int", $searchType, "handle", $hHBITMAP, "double", $thresh)
-   ;DebugWrite("FindBestBMP() $res[0]=" & $res[0])
 
+   ; Call DLL
+   Local $matchPoint = DllStructCreate("STRUCT; int; int; double; ENDSTRUCT")
+   Local $matchedBMP = DllStructCreate("char[" & $gMAXSTRING & "]")
+
+   Local $res = DllCall($gClAsHbOtDllHandle, "boolean", "FindBestBMP", _
+	  "int", $searchType, "handle", $hHBITMAP, "double", $thresh, _
+	  "ptr", DllStructGetPtr($matchPoint), "ptr", DllStructGetPtr($matchedBMP))
+
+   _WinAPI_DeleteObject($hHBITMAP)
+
+   ;For $i=0 To UBound($res)-1
+	;  DebugWrite("$res[" & $i & "]: " & $res[$i])
+   ;Next
+
+   ; DLL error?
    If @error Then
 	  DebugWrite("FindBestBMP() " & $gSearchTypeNames[$searchType] & " DllCall @error=" & @error)
 	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ImageMatch DLL Error", "Error with DLL, FindBestBMP" & @CRLF & _
 		 "This is catastrophic, exiting.")
-	  _WinAPI_DeleteObject($hHBITMAP)
+	  $matchPoint = 0
 	  Exit
    EndIf
 
-   Local $split = StringSplit($res[0], "|", 2)
-   If $split[1]<> -1 Then
-	  $left = Number($split[1] + $box[0])
-	  $top = Number($split[2] + $box[1])
-	  $conf = Number($split[3])
-	  ;DebugWrite("FindBestBMP() " & $gSearchTypeNames[$SearchType] & " " & $left & "," & $top & " conf: " & $conf)
-   Else
-	  $left = -1
-	  $top = -1
-	  $conf = Number($split[3])
-   EndIf
+   ; Get result
+   $left = DllStructGetData($matchPoint, 1)
+   $top = DllStructGetData($matchPoint, 2)
+   $conf = DllStructGetData($matchPoint, 3)
+   $value = DllStructGetData($matchedBMP, 1)
+   $matchPoint = 0
+   $matchedBMP = 0
 
-   _WinAPI_DeleteObject($hHBITMAP)
+   If $res[0] = False Then Return False
 
    If $searchType = $eSearchTypeTownHall Then
-	  If $split[1] = -1 Then
-		 Return -1
-	  Else
-		 Local $a = StringInStr($split[0], "TH")
-		 Local $b = StringInStr($split[0], ".bmp")
-		 Local $c = StringMid($split[0], $a+2, $b-$a-2)
-		 Return Number($c)
-	  EndIf
-   Else
-	  Return $split[0]
+	  Local $a = StringInStr($value, "TH")
+	  Local $b = StringInStr($value, ".bmp")
+	  Local $c = StringMid($value, $a+2, $b-$a-2)
+	  $value = Number($c)
    EndIf
+
+   Return True
 EndFunc
 
 Func FindAllBMPs(Const $searchType, Const $maxMatch, ByRef $matchX, ByRef $matchY, ByRef $confs)
@@ -386,7 +414,7 @@ Func FindAllBMPs(Const $searchType, Const $maxMatch, ByRef $matchX, ByRef $match
 
    Local $hHBITMAP = CaptureFrameHBITMAP("FindAllBMPs" & $gSearchTypeNames[$searchType], $box[0], $box[1], $box[2], $box[3])
    If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("FindAllBMPs" & $gSearchTypeNames[$searchType] & "Frame.bmp", $hHBITMAP, False)
-   Local $res = DllCall($gImageMatchDllHandle, "str", "FindAllBMPs", "int", $searchType, "handle", $hHBITMAP, "double", $thresh, "int", $maxMatch)
+   Local $res = DllCall($gClAsHbOtDllHandle, "str", "FindAllBMPs", "int", $searchType, "handle", $hHBITMAP, "double", $thresh, "int", $maxMatch)
    ;DebugWrite("FindAllBMPs() $res[0]=" & $res[0])
 
    If @error Then
@@ -485,7 +513,7 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 	  $box[0], $box[1], $box[2], $box[3])
    If $gDebugSaveScreenCaptures Then _
 	  _ScreenCapture_SaveImage("LocateSlots" & $gActionTypeNames[$actionType] & $gSlotTypeNames[$slotType] & "Frame.bmp", $hHBITMAP, False)
-   Local $res = DllCall($gImageMatchDllHandle, "str", "LocateSlots", "int", $actionType, "int", $slotType, "handle", $hHBITMAP, "double", $thresh)
+   Local $res = DllCall($gClAsHbOtDllHandle, "str", "LocateSlots", "int", $actionType, "int", $slotType, "handle", $hHBITMAP, "double", $thresh)
    _WinAPI_DeleteObject($hHBITMAP)
 
    ;DebugWrite("DLL $res=" & $res[0])

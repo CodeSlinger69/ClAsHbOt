@@ -34,10 +34,8 @@ Func CollectLoot()
    EndIf
 
    ; Check for loot cart
-   Local $x, $y, $conf
-   FindBestBMP($eSearchTypeLootCart, $x, $y, $conf)
-
-   If $x <> -1 Then
+   Local $x, $y, $conf, $value
+   If FindBestBMP($eSearchTypeLootCart, $x, $y, $conf, $value) Then
 	  Local $button[4] = [$x, $y, $x + 15, $y + 15]
 	  DebugWrite("CollectLoot() Found loot cart, clicking at " & $button[0] & "," & $button[1] & " confidence " & Round($conf*100, 2) & "%")
 	  RandomWeightedClick($button)

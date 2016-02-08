@@ -312,7 +312,7 @@ Func AutoRaidGetDisplayedLoot(ByRef $thLevel, ByRef $thLeft, ByRef $thTop, _
 
    ; Get Town Hall level
    Local $conf
-   $thLevel = FindBestBMP($eSearchTypeTownHall, $thLeft, $thTop, $conf)
+   FindBestBMP($eSearchTypeTownHall, $thLeft, $thTop, $conf, $thLevel)
 
    Local $townHallIndiator = $thLevel<>-1 ? $thLevel : "-"
    Local $deadBaseIndicator = _GUICtrlButton_GetCheck($GUI_AutoRaidDeadBases) = $BST_CHECKED ? ($deadBase=True ? "T" : "F") : "-"
@@ -324,18 +324,16 @@ EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
 Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   Local $x, $y, $conf
    Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
-   Local $s = FindBestBMP($eSearchTypeGoldStorage, $x, $y, $conf)
-
-   If $s = "" Then
+   Local $x, $y, $conf, $value
+   If FindBestBMP($eSearchTypeGoldStorage, $x, $y, $conf, $value) = False Then
 	  DebugWrite("AdjustLootForStorages() Could not find gold storage match.")
    Else
-	  Local $level = Number(StringMid($s, StringInStr($s, "GoldStorageL")+12, 2))
-	  Local $usage = Number(StringMid($s, StringInStr($s, "GoldStorageL")+15, 2))
+	  Local $level = Number(StringMid($value, StringInStr($value, "GoldStorageL")+12, 2))
+	  Local $usage = Number(StringMid($value, StringInStr($value, "GoldStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
 	  DebugWrite("AdjustLootForStorages() Found gold storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
 	  $adjGold = $gold - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
@@ -343,13 +341,11 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Elixir
-   Local $s = FindBestBMP($eSearchTypeElixStorage, $x, $y, $conf)
-
-   If $s = "" Then
+   If FindBestBMP($eSearchTypeElixStorage, $x, $y, $conf, $value) = False Then
 	  DebugWrite("AdjustLootForStorages() Could not find elixir storage match.")
    Else
-	  Local $level = Number(StringMid($s, StringInStr($s, "ElixStorageL")+12, 2))
-	  Local $usage = Number(StringMid($s, StringInStr($s, "ElixStorageL")+15, 2))
+	  Local $level = Number(StringMid($value, StringInStr($value, "ElixStorageL")+12, 2))
+	  Local $usage = Number(StringMid($value, StringInStr($value, "ElixStorageL")+15, 2))
 	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
 	  DebugWrite("AdjustLootForStorages() Found elix storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
 	  $adjElix = $elix - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
@@ -357,7 +353,7 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    EndIf
 
    ; Dark - Just temporarily, to fill out saved bitmaps
-   Local $s = FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf)
+   FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf, $value)
 
 EndFunc
 
