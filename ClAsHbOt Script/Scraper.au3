@@ -365,13 +365,17 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
    $matchPoint = 0
    $matchedBMP = 0
 
-   If $res[0] = False Then Return False
-
-   If $searchType = $eSearchTypeTownHall Then
+   If $searchType = $eSearchTypeTownHall And $res[0] = False Then
+	  $value = -1
+	  Return False
+   ElseIf $searchType = $eSearchTypeTownHall And $res[0] = True Then
 	  Local $a = StringInStr($value, "TH")
 	  Local $b = StringInStr($value, ".bmp")
 	  Local $c = StringMid($value, $a+2, $b-$a-2)
 	  $value = Number($c)
+	  Return True
+   Else
+	  Return $res[0]
    EndIf
 
    Return True
