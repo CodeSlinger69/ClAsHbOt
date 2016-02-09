@@ -57,9 +57,9 @@ Func Main()
 
    StartBlueStacks()
 
-;MsgBox($MB_OK, "", "Attach debugger!")
    InitScraper()
 
+;MsgBox($MB_OK, "", "Attach debugger!")
 ;Local $hHBITMAP = CaptureFrameHBITMAP("Debug")
 ;ZoomOut2()
 ;$gScraperDebug = True
@@ -81,7 +81,17 @@ Func Main()
 ;TestCollectMyLoot()
 ;TestReloadDefenses()
 ;_WinAPI_DeleteObject($hHBITMAP)
-;Exit
+
+
+#cs
+; Testing base strength
+Local $strength
+Local $hHBITMAP = CaptureFrameHBITMAP("TestBaseStrength")
+Local $res = DllCall($gClAsHbOtDllHandle, "boolean", "CalcBaseStrength", _
+	  "handle", $hHBITMAP, "uint*", $strength)
+_WinAPI_DeleteObject($hHBITMAP)
+Exit
+#ce
 
    InitGUI()
 

@@ -119,10 +119,9 @@ OCR::OCR(const char* scriptDir, const bool dOCR)
 	logger->WriteLog("Fonts loaded");
 }
 
-bool OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
+bool OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, string& textString)
 {
-	string textString("");
-	sprintf_s(scrapedString, MAXSTRING, "");
+	textString = "";
 
 	// Get index into font list
 	int fontIndex = -1;
@@ -322,15 +321,13 @@ bool OCR::ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion f
 		logger->WriteLog("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", false, true);
 	}
 
-	sprintf_s(scrapedString, MAXSTRING, "%s", textString.c_str());
 	return true;
 }
 
 // Non fuzzy character matching - only good for chat box right now
-bool OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
+bool OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, string& textString)
 {
-	string textString("");
-	sprintf_s(scrapedString, MAXSTRING, "");
+	textString = "";
 
 	// Get index into font list
 	int fontIndex = -1;
@@ -486,7 +483,6 @@ bool OCR::ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion f
 		logger->WriteLog("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", false, true);
 	}
 
-	sprintf_s(scrapedString, MAXSTRING, "%s", textString.c_str());
 	return true;
 }
 

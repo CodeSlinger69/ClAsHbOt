@@ -1,7 +1,8 @@
 #pragma once
 
 enum imageType { townHall, lootCart, clashIcon, playStoreOpenButton, donateButton, goldStorage, elixStorage, darkStorage, raidTroopSlot, 
-				 raidSpellSlot, armyCampTroop, barracksTroopSlot, donateTroopSlot, donateSpellSlot, reloadButton, collector, lootBubble };
+				 raidSpellSlot, armyCampTroop, barracksTroopSlot, donateTroopSlot, donateSpellSlot, reloadButton, collector, lootBubble,
+				 wall };
 enum searchType { searchTownHall, searchLootCart, searchClashIcon, searchPlayStoreOpenButton, searchDonateButton, 
 				  searchGoldStorage, searchElixStorage, searchDarkStorage, searchLootCollector, searchLootBubble };
 enum actionType { actionRaid, actionDonate, actionBarracks, actionCamp, actionReloadButton };
@@ -33,13 +34,16 @@ public:
 	Scraper(const char* scriptDir);
 	bool FindBestBMP(const searchType type, HBITMAP hBmp, const double threshold, MATCHPOINTS* match, char* matchedBMP);
 	bool FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS> &matches);
+	bool FindAllBMPs(const Mat mat, HBITMAP hBmp, const double threshold, const int maxMatch, vector<MATCHPOINTS> &matches);
 	bool LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS> &matches);
+	Mat GetMat(const imageType iType, const string imageName);
+
 
 private:
 	string imageDataPath;
 	string scriptPath;  // no terminating backslash
 
-	static const int imageClassCount = 17;
+	static const int imageClassCount = 18;
 	static const char* imageClasses[imageClassCount];
 	vector<ImageGroup> imageGroups;
 

@@ -6,7 +6,6 @@
 #include "OCR.h"
 #include "ClAsHbOt.h"
 
-char returnString[MAXSTRING];
 string version("20160208");
 string scriptdir("");
 
@@ -58,7 +57,6 @@ bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
 	ocr.reset(new OCR(scriptDir, debugOCR));
 
 	logger->WriteLog("Initialization complete");
-	sprintf_s(returnString, MAXSTRING, "Success");
 	return true;
 }
 
@@ -119,30 +117,21 @@ bool __stdcall LocateSlots(actionType aType, slotType sType, HBITMAP hBmp, doubl
 
 bool __stdcall ScrapeFuzzyText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
 {
-	return ocr->ScrapeFuzzyText(hBmp, fontT, fontR, keepSpaces, scrapedString);
+	string s;
+
+	bool r = ocr->ScrapeFuzzyText(hBmp, fontT, fontR, keepSpaces, s);
+	sprintf_s(scrapedString, MAXSTRING, s.c_str());
+
+	return r;
 }
 
 bool __stdcall ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontRegion fontR, const bool keepSpaces, char* scrapedString)
 {
-	return ocr->ScrapeExactText(hBmp, fontT, fontR, keepSpaces, scrapedString);
-}
+	string s;
+	bool r = ocr->ScrapeExactText(hBmp, fontT, fontR, keepSpaces, s);
+	sprintf_s(scrapedString, MAXSTRING, s.c_str());
 
-void PrepareReturnString(const vector<MATCHPOINTS> matches)
-{
-	if (!matches.empty())
-	{
-		sprintf_s(returnString, MAXSTRING, "%d", matches.size());
-		for (int i=0; i<(int) matches.size(); i++)
-		{
-			char curMatch[MAXSTRING];
-			sprintf_s(curMatch, MAXSTRING, "|%d|%d|%.4f", matches.at(i).x, matches.at(i).y, matches.at(i).val);
-			strcat_s(returnString, MAXSTRING, curMatch);
-		}
-	}
-	else
-	{
-		sprintf_s(returnString, MAXSTRING, "%d|%d|%d|%.4f", 0, -1, -1, 0.0);
-	}
+	return r;
 }
 
 void split(const string &s, const char delim, vector<string> &elems)

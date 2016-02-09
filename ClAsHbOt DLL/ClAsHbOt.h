@@ -3,11 +3,9 @@
 #include "OCR.h"
 
 #define MAXSTRING 500
-extern char returnString[MAXSTRING];
 extern string version;
 extern string scriptdir;
 
-void PrepareReturnString(const std::vector<MATCHPOINTS> matches);
 void split(const string &s, const char delim, vector<string> &elems);
 int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
 std::string utf8_encode(const std::wstring &wstr);
