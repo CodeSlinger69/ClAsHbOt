@@ -6,7 +6,7 @@
 #include "OCR.h"
 #include "ClAsHbOt.h"
 
-string version("20160208");
+string version("20160211");
 string scriptdir("");
 
 bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
