@@ -458,7 +458,6 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][1] = $box[1] + $y + $rDonateButtonOffset[1]
 			$index[$i][2] = $box[0] + $x + $rDonateButtonOffset[2]
 			$index[$i][3] = $box[1] + $y + $rDonateButtonOffset[3]
-
 			;DebugWrite("Donate " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
 				;  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
 		 EndIf

@@ -273,7 +273,7 @@ Func ParseRequestTextSpells(Const ByRef $text, Const ByRef $avail, ByRef $index)
    ; If there is no specific request match, then return default as specified in .ini file
    If $index < 0 Then
 	  For $i = $eSpellPoison To $eSpellHaste
-		 If StringInStr($gSpellNames[$i], $gSpellDefaultDonate) And $avail[$i-$eSpellPoison][0]<>-1 Then
+		 If StringInStr($gSpellNames[$i], $gSpellDefaultDonate) And $avail[$i][0]<>-1 Then
 			DebugWrite("ParseRequestTextSpells() Default spell match for " & $gSpellNames[$i] & ", available")
 			$index = $i
 			ExitLoop

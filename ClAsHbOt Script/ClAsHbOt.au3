@@ -81,17 +81,7 @@ Func Main()
 ;TestCollectMyLoot()
 ;TestReloadDefenses()
 ;_WinAPI_DeleteObject($hHBITMAP)
-
-
-#cs
-; Testing base strength
-Local $strength
-Local $hHBITMAP = CaptureFrameHBITMAP("TestBaseStrength")
-Local $res = DllCall($gClAsHbOtDllHandle, "boolean", "CalcBaseStrength", _
-	  "handle", $hHBITMAP, "uint*", $strength)
-_WinAPI_DeleteObject($hHBITMAP)
-Exit
-#ce
+;Exit
 
    InitGUI()
 

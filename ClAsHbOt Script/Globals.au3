@@ -112,7 +112,7 @@ Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 
 ; Confidence Levels
 Global $gConfidenceTownHall = 0.94
-Global $gConfidenceCollectLoot = 0.95
+Global $gConfidenceCollectLoot = 0.935
 Global $gConfidenceArmyCamp = 0.94
 Global $gConfidenceBarracks = 0.95
 Global $gConfidenceCollector = 0.92

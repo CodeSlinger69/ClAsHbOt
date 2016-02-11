@@ -24,7 +24,7 @@ BarracksTroopSlot Barracks\BarracksBarbarian.bmp Barracks\BarracksArcher.bmp Bar
 
 DonateTroopSlot Donate\DonateBarbarian.bmp Donate\DonateArcher.bmp Donate\DonateGiant.bmp Donate\DonateGoblin.bmp Donate\DonateWallBreaker.bmp Donate\DonateBalloon.bmp Donate\DonateWizard.bmp Donate\DonateHealer.bmp Donate\DonateDragon.bmp Donate\DonatePekka.bmp Donate\DonateMinion.bmp Donate\DonateHogRider.bmp Donate\DonateValkyrie.bmp Donate\DonateGolem.bmp Donate\DonateWitch.bmp Donate\DonateLavaHound.bmp
 
-DonateSpellSlot Donate\DonatePoisonSpell.bmp Donate\DonateEarthquakeSpell.bmp Donate\DonateHasteSpell.bmp
+DonateSpellSlot Donate\DonateDummySpell.bmp Donate\DonateDummySpell.bmp Donate\DonateDummySpell.bmp Donate\DonateDummySpell.bmp Donate\DonateDummySpell.bmp Donate\DonatePoisonSpell.bmp Donate\DonateEarthquakeSpell.bmp Donate\DonateHasteSpell.bmp
 
 ReloadButton Reload\InfoButton.bmp Reload\GoldButton.bmp Reload\ElixButton1.bmp Reload\ElixButton2.bmp Reload\DarkButton.bmp
 

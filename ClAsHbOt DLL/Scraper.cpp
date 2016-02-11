@@ -209,7 +209,9 @@ bool Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 			// Fill results array with lo vals, so we don't match this same location
 			floodFill(result, maxLoc, 0, 0, Scalar(0.1), Scalar(1.0));
 
-			if (maxVal >= threshold && maxVal > 0)
+			bool beachSideOfSWLine = BeachSideOfSWLine((westPoint.x+maxLoc.x), (northPoint.y+maxLoc.y));
+
+			if (maxVal >= threshold && maxVal > 0 && (type!=searchLootBubble || !beachSideOfSWLine))
 			{
 				// Check if this point is within 10 pixels of an existing match to avoid dupes
 				bool alreadyFound = false;
@@ -242,67 +244,6 @@ bool Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 
 		if (count >= maxMatch)
 			break;
-	}
-
-	return true;
-}
-
-bool Scraper::FindAllBMPs(const Mat mat, HBITMAP hBmp, const double threshold, const int maxMatch, vector<MATCHPOINTS> &matches)
-{
-	// Convert HBITMAP to Mat
-	unique_ptr<Gdiplus::Bitmap> pBitmap;
-	pBitmap.reset(Gdiplus::Bitmap::FromHBITMAP(hBmp, NULL));
-	Mat img = CGdiPlus::CopyBmpToMat(pBitmap.get());
-	pBitmap.reset();
-
-	cvtColor( img, img, CV_BGRA2BGR );
-
-	// Get matches for this image and Mat
-	Mat result( FindMatch(img, mat) );
-
-	// Parse through matches in result set
-	int count = 0;
-	while (count < maxMatch)
-	{
-		double minVal, maxVal;
-		Point minLoc, maxLoc;
-		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
-
-		// Fill haystack with pure green so we don't match this same location
-		rectangle(img, maxLoc, cv::Point(maxLoc.x + mat.cols, maxLoc.y + mat.rows), CV_RGB(0,255,0), 2);
-
-		// Fill results array with lo vals, so we don't match this same location
-		floodFill(result, maxLoc, 0, 0, Scalar(0.1), Scalar(1.0));
-
-		if (maxVal >= threshold && maxVal > 0)
-		{
-			// Check if this point is within 5 pixels of an existing match to avoid dupes
-			bool alreadyFound = false;
-
-			for (int k=0; k<count; k++)
-			{
-				if (DistanceBetweenTwoPoints((double) maxLoc.x, (double) maxLoc.y, (double) matches.at(k).x, (double) matches.at(k).y) < 5.0)
-				{
-					alreadyFound = true;
-					break;
-				}
-			}
-
-			// Add matched location to the vector
-			if (alreadyFound == false)
-			{
-				MATCHPOINTS match;
-				match.val = maxVal;
-				match.x = maxLoc.x;
-				match.y = maxLoc.y;
-				matches.push_back(match);
-				count++;
-			}
-		}
-		else
-		{
-			break;
-		}
 	}
 
 	return true;
@@ -390,7 +331,10 @@ Mat Scraper::GetMat(const imageType iType, const string imageName)
 
 Mat Scraper::FindMatch(const Mat haystack, const Mat needle)
 {
-	Mat result;
+	Mat result = Mat();
+
+	if (needle.cols > haystack.cols || needle.rows > haystack.rows)
+		return result;
 
 	// Create the result matrix
 	int result_cols =  haystack.cols - needle.cols + 1;

@@ -34,7 +34,6 @@ public:
 	Scraper(const char* scriptDir);
 	bool FindBestBMP(const searchType type, HBITMAP hBmp, const double threshold, MATCHPOINTS* match, char* matchedBMP);
 	bool FindAllBMPs(const searchType type, HBITMAP hBmp, const double threshold, const int maxMatch, std::vector<MATCHPOINTS> &matches);
-	bool FindAllBMPs(const Mat mat, HBITMAP hBmp, const double threshold, const int maxMatch, vector<MATCHPOINTS> &matches);
 	bool LocateSlots(const actionType aType, const slotType sType, HBITMAP hBmp, const double threshold, std::vector<MATCHPOINTS> &matches);
 	Mat GetMat(const imageType iType, const string imageName);
 

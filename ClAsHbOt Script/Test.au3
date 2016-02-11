@@ -306,7 +306,7 @@ Func TestDonate()
 		 EndIf
 	  EndIf
 
-	  Local $donateSpellIndex[$eSpellHaste-$eSpellPoison+1][4]
+	  Local $donateSpellIndex[$eSpellCount][4]
 	  For $j = 0 To UBound($donateSpellIndex)-1
 		 $donateSpellIndex[$j][0] = -1
 		 $donateSpellIndex[$j][1] = -1
@@ -317,7 +317,7 @@ Func TestDonate()
 
 	  Local $indexOfSpellToDonate
 	  If ParseRequestTextSpells($requestText, $donateSpellIndex, $indexOfSpellToDonate) Then
-		 DebugWrite("Spell Donate index: " & $eSpellPoison+$indexOfSpellToDonate)
+		 DebugWrite("Spell Donate index: " & $indexOfSpellToDonate)
 	  EndIf
 
 	  ; If donate troops window is still open, then close it
@@ -373,17 +373,6 @@ Func TestCollectMyLoot()
    For $i = 0 To $matchCount-1
 	  DebugWrite("Found collectors " & $i & " " & $mX[$i] & "," & $mY[$i] & " confidence " & Round($conf[$i]*100, 2) & "%")
    Next
-
-   ; Do the collecting
-   If $matchCount > 0 Then
-	  ; Sort the matches
-	  Local $sortedX[$matchCount], $sortedY[$matchCount]
-	  SortArrayByClosestNeighbor($matchCount, $mX, $mY, $sortedX, $sortedY)
-
-	  DebugWrite("CollectLoot() Found " & $matchCount & " collectors")
-
-	  Sleep(1000)
-   EndIf
 
    ; Check for loot cart
    Local $x, $y, $conf, $value
