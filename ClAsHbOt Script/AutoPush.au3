@@ -111,7 +111,9 @@ Func THSnipeFindMatch(ByRef $hBMP, ByRef $THCorner)
 
    ; Loop with Next until we find a snipable TH
    While 1
-	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
+	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _
+		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED And _
+		 _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_UNCHECKED Then
 		 Return False
 	  EndIf
 
