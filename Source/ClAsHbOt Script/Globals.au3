@@ -1,5 +1,4 @@
 Global $gVersion = "20160215"
-Global $gAutoItVersionRequired = "3.3.14.2"
 
 ; Debug - this is overwritten in ReadSettings(), however this needs to be defined here, as there can
 ;   be a need to write debug statements prior to ReadSettings() being called.

@@ -8,7 +8,7 @@ Func InitScraper()
    If $res[0] <> $INSTALLSTATE_DEFAULT Then
 	  DebugWrite("InitScraper() Visual C++ 2010 SP1 runtimes not installed")
 	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "InitScraper Error", "Visual C++ 2010 SP1 runtimes do not appear to be installed. " & _
-		 "Please install from the 'redist' folder, or download from Microsoft here: https://www.microsoft.com/en-us/download/details.aspx?id=8328" & _
+		 "Please install from the 'Helpers/redist' folder, or download from Microsoft here: https://www.microsoft.com/en-us/download/details.aspx?id=8328" & _
 		 @CRLF & @CRLF & "Exiting.")
 	  Exit
    EndIf

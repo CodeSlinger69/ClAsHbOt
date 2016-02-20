@@ -12,6 +12,16 @@ Massive rework todo
 - Battle end bonus char maps - "74" needed?
 #ce
 
+; For compiling
+#pragma compile(Icon, "cube.ico")
+#pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
+#pragma compile(ProductName, ClAsHbOt)
+#pragma compile(ProductVersion, 2016.02.15)
+#pragma compile(FileVersion, 2016.02.15)
+#pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
+#pragma compile(Out, ClAsHbOt.exe)
+
+
 Opt("MustDeclareVars", 1)
 Opt("GUIOnEventMode", 1)
 
