@@ -72,13 +72,15 @@ Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroo
 			$eTroopBalloon, $eTroopWizard, $eTroopHealer, $eTroopDragon, $eTroopPekka, _
 			$eTroopMinion, $eTroopHogRider, $eTroopValkyrie, $eTroopGolem, $eTroopWitch, _
 			$eTroopLavaHound, _
-			$eTroopKing, $eTroopQueen, $eTroopWarden, $eTroopCount
-Global $gTroopCountExcludingHeroes = $eTroopCount-3
+			$eTroopKing, $eTroopQueen, $eTroopWarden, _
+			$eTroopKingGrayed, $eTroopCount
+Global $gTroopCountExcludingHeroes = $eTroopCount-4
 Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", _
 									 "Balloon", "Wizard", "Healer", "Dragon", "Pekka", _
 									 "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", _
 									 "Lava Hound", _
-									 "Barbarian King", "Archer Queen", "Grand Warden"]
+									 "Barbarian King", "Archer Queen", "Grand Warden", _
+									 "Barbarian King Grayed"]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _
    $eSpellEarthquake, $eSpellHaste, $eSpellCount
 Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freeze", "Poison", _

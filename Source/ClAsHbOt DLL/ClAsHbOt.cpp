@@ -6,7 +6,7 @@
 #include "OCR.h"
 #include "ClAsHbOt.h"
 
-string version("20160211");
+string version("20160215");
 string scriptdir("");
 
 bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
@@ -42,7 +42,7 @@ bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
 	}
 
 	string logFilePath(scriptdir + "\\ClashBotLog.txt");
-	nResult = crAddFile2(logFilePath.c_str(), NULL, NULL, CR_AF_MAKE_FILE_COPY|CR_AF_ALLOW_DELETE);
+	nResult = crAddFile2(logFilePath.c_str(), NULL, NULL, CR_AF_MAKE_FILE_COPY|CR_AF_ALLOW_DELETE|CR_AF_MISSING_FILE_OK);
 	assert(nResult==0);
 
 	string iniFilePath(scriptdir + "\\CoC Bot.ini");

@@ -1,8 +1,7 @@
 #pragma once
 
 enum imageType { townHall, lootCart, clashIcon, playStoreOpenButton, donateButton, goldStorage, elixStorage, darkStorage, raidTroopSlot, 
-				 raidSpellSlot, armyCampTroop, barracksTroopSlot, donateTroopSlot, donateSpellSlot, reloadButton, collector, lootBubble,
-				 wall };
+				 raidSpellSlot, armyCampTroop, barracksTroopSlot, donateTroopSlot, donateSpellSlot, reloadButton, collector, lootBubble };
 enum searchType { searchTownHall, searchLootCart, searchClashIcon, searchPlayStoreOpenButton, searchDonateButton, 
 				  searchGoldStorage, searchElixStorage, searchDarkStorage, searchLootCollector, searchLootBubble };
 enum actionType { actionRaid, actionDonate, actionBarracks, actionCamp, actionReloadButton };
