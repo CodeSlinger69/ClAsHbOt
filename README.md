@@ -1,6 +1,7 @@
 ![](/WikiImages/Icon.png?raw=true)
+
 Welcome to my automatic farming bot for Clash of Clans.
-THIS IS THE ONLY FULLY OPEN SOURCE CoC BOT ON THE INTERNET! (Even includes complete DLL source code.) Also the easiest to use...just a few choices to be made and you are off and running.
+THIS IS THE ONLY FULLY OPEN SOURCE Clash of Clans BOT ON THE INTERNET! (The only one that includes complete source code for its compiled DLL.) Also the easiest to use...just a few choices to be made and you are off and running.
 
 Download: [ClAsHbOt.2016-02-15.7z](https://github.com/CodeSlinger69/ClAsHbOt/releases/download/20160215/ClAsHbOt.2016-02-15.7z)
 
