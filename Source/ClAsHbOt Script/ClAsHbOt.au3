@@ -3,21 +3,19 @@ ClAsHbOt!
 
 Atutomatic farming bot for Clash of Clans, with a few other features.
 
-Dec 10 Update To Do
-- Finish collecting storage images
-  - Dark: 5.50, Gold: 10.75
-- Test BAM and loonion strategies
-
-Massive rework todo
+To Do
+- Storage images; Dark: 5.50, Gold: 10.75
 - Battle end bonus char maps - "74" needed?
 #ce
+
+Global $gVersion = "20160220"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
 #pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
 #pragma compile(ProductName, ClAsHbOt)
-#pragma compile(ProductVersion, 2016.02.15)
-#pragma compile(FileVersion, 2016.02.15)
+#pragma compile(ProductVersion, 2016.02.20)
+#pragma compile(FileVersion, 2016.02.20)
 #pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
 #pragma compile(Out, ClAsHbOt.exe)
 

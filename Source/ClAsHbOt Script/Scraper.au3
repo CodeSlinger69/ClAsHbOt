@@ -223,6 +223,13 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
 	  Exit
    EndIf
 
+   ; Save storage frame?
+   If $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage Then
+	  If $gDebugSaveUnknownStorageFrames Then
+		 _ScreenCapture_SaveImage($gSearchTypeNames[$searchType] & "Unknown" & TimeStamp() & ".bmp", $hHBITMAP, False)
+	  EndIf
+   EndIf
+
    ; Get result
    $left = DllStructGetData($matchPoint, 1) + $box[0]
    $top = DllStructGetData($matchPoint, 2) + $box[1]

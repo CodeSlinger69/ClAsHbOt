@@ -2,7 +2,7 @@
 ; Present indicator x, y, color, radius
 Global $rMyGoldTextBox[10] =       [690,  24, 802,  36, 0xffffff, 9, 825,  30, 0xE7C438, 6]
 Global $rMyElixTextBox[10] =       [690,  75, 802,  87, 0xffffff, 9, 825,  81, 0xDC54D1, 6]
-Global $rMyDarkTextBox[10] =       [735, 124, 802, 136, 0xffffff, 9, 825, 132, 0x594561, 6]
+Global $rMyDarkTextBox[10] =       [720, 124, 802, 136, 0xffffff, 9, 825, 132, 0x594561, 6]
 Global $rMyGemsTextBoxNoDE[10] =   [735, 123, 802, 135, 0xffffff, 9, 825, 129, 0xD8ED79, 6]
 Global $rMyGemsTextBoxWithDE[10] = [735, 172, 802, 184, 0xffffff, 9, 825, 178, 0xD8Ed7D, 6]
 Global $rMyCupsTextBox[10] =       [ 71,  75, 120,  87, 0xffffff, 9, 0, 0, 0, 0]

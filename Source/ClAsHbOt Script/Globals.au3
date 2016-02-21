@@ -1,8 +1,6 @@
-Global $gVersion = "20160215"
-
 ; Debug - this is overwritten in ReadSettings(), however this needs to be defined here, as there can
 ;   be a need to write debug statements prior to ReadSettings() being called.
-Global $gDebug = True
+Global $gDebug = False
 
 ; Debugging switches used during development/testing
 Global $gScraperDebug = False
