@@ -1,6 +1,10 @@
 Func ReadSettings()
    ; Debug
-   $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", True))
+   $gDebug = _Boolean(IniRead($gIniFile, "Debug", "Global Debug", False))
+   $gScraperDebug = _Boolean(IniRead($gIniFile, "Debug", "Scraper Debug", False))
+   $gDebugSaveScreenCaptures = _Boolean(IniRead($gIniFile, "Debug", "Save Screen Captures", False))
+   $gDebugSaveUnknownStorageFrames = _Boolean(IniRead($gIniFile, "Debug", "Save Unknown Storage Frames", False))
+   $gDebugLogCallsToCaptureFrame = _Boolean(IniRead($gIniFile, "Debug", "Log Calls to Capture Frame", False))
 
    ; Mouse
    Global $gDeployTroopClickDelay = IniRead($gIniFile, "Mouse", "Deploy Troop Click Delay", 60) ; Delay between mouse clicks for raiding

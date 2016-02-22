@@ -8,14 +8,14 @@ To Do
 - Battle end bonus char maps - "74" needed?
 #ce
 
-Global $gVersion = "20160220"
+Global $gVersion = "20160222"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
 #pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
 #pragma compile(ProductName, ClAsHbOt)
-#pragma compile(ProductVersion, 2016.02.20)
-#pragma compile(FileVersion, 2016.02.20)
+#pragma compile(ProductVersion, 2016.02.22)
+#pragma compile(FileVersion, 2016.02.22)
 #pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
 #pragma compile(Out, ClAsHbOt.exe)
 

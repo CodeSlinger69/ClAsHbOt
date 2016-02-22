@@ -208,8 +208,6 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
 	  "int", $searchType, "handle", $hHBITMAP, "double", $thresh, _
 	  "ptr", DllStructGetPtr($matchPoint), "ptr", DllStructGetPtr($matchedBMP))
 
-   _WinAPI_DeleteObject($hHBITMAP)
-
    ;For $i=0 To UBound($res)-1
 	;  DebugWrite("$res[" & $i & "]: " & $res[$i])
    ;Next
@@ -224,11 +222,14 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
    EndIf
 
    ; Save storage frame?
-   If $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage Then
-	  If $gDebugSaveUnknownStorageFrames Then
-		 _ScreenCapture_SaveImage($gSearchTypeNames[$searchType] & "Unknown" & TimeStamp() & ".bmp", $hHBITMAP, False)
-	  EndIf
+   If ($searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage) And _
+	  $res[0] = False And _
+	  $gDebugSaveUnknownStorageFrames Then
+
+	  _ScreenCapture_SaveImage($gSearchTypeNames[$searchType] & "Unknown" & TimeStamp() & ".bmp", $hHBITMAP, False)
    EndIf
+
+   _WinAPI_DeleteObject($hHBITMAP)
 
    ; Get result
    $left = DllStructGetData($matchPoint, 1) + $box[0]

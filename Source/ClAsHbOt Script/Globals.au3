@@ -1,8 +1,7 @@
-; Debug - this is overwritten in ReadSettings(), however this needs to be defined here, as there can
+; Debug - these are overwritten in ReadSettings(), however $gDebug needs to be defined here, as there can
 ;   be a need to write debug statements prior to ReadSettings() being called.
-Global $gDebug = False
-
-; Debugging switches used during development/testing
+Global $gDebug = True
+; Debugging switches used during development/testing, not needed for general use
 Global $gScraperDebug = False
 Global $gDebugSaveScreenCaptures = False
 Global $gDebugSaveUnknownStorageFrames = False
@@ -79,6 +78,12 @@ Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "
 									 "Lava Hound", _
 									 "Barbarian King", "Archer Queen", "Grand Warden", _
 									 "Barbarian King Grayed"]
+Global $gTroopSpace[$eTroopCount] = [ 1, 1, 5, 1, 2, _
+									  5, 4, 14, 20, 25, _
+									  2, 5, 8, 30, 12, _
+									  30, _
+									  0, 0, 0, _
+									  0 ]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _
    $eSpellEarthquake, $eSpellHaste, $eSpellCount
 Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freeze", "Poison", _

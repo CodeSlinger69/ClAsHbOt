@@ -281,7 +281,7 @@ Func QueueTroopsEvenly(Const $troop, Const ByRef $troopSlots, Const $troopsToQue
 EndFunc
 
 Func FillBarracksWithTroops(Const $hBMP, Const $troop, Const ByRef $troopSlots)
-   Local $troopsToFill = 999
+   Local $spaceToFill = 999
 
    ; Get number of troops already queued in this barracks
    Local $queueStatus = ScrapeFuzzyText($hBMP, $fontBarracksStatus, $rBarracksWindowTextBox)
@@ -296,23 +296,23 @@ Func FillBarracksWithTroops(Const $hBMP, Const $troop, Const ByRef $troopSlots)
 	  ;DebugWrite("Barracks queue status split: " & $queueStatSplit[1] & " " & $queueStatSplit[2])
 
 	  If $queueStatSplit[0] = 2 Then
-		 $troopsToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
+		 $spaceToFill = Number($queueStatSplit[2]) - Number($queueStatSplit[1])
 
 		 ; How long to click and hold?
 		 Local $fillTime
-		 If $troopsToFill>60 Then
+		 If $spaceToFill/$gTroopSpace[$troop] > 60 Then
 			$fillTime = 3500 + Random(-250, 250, 1)
-		 ElseIf $troopsToFill>25 Then
+		 ElseIf $spaceToFill/$gTroopSpace[$troop] > 25 Then
 			$fillTime = 2700 + Random(-250, 250, 1)
-		 ElseIf $troopsToFill>10 Then
+		 ElseIf $spaceToFill/$gTroopSpace[$troop] > 10 Then
 			$fillTime = 2300 + Random(-250, 250, 1)
 		 Else
 			$fillTime = 1800 + Random(-250, 250, 1)
 		 EndIf
 
 		 ; Click and hold to fill up queue
-		 If $troopsToFill>0 Then
-			DebugWrite("FillBarracksWithTroops() Adding " & $troopsToFill & " " & $gTroopNames[$troop])
+		 If $spaceToFill >= $gTroopSpace[$troop] Then
+			DebugWrite("FillBarracksWithTroops() Adding " & Int($spaceToFill/$gTroopSpace[$troop]) & " " & $gTroopNames[$troop])
 			Local $button[4] = [$troopSlots[$troop][0], $troopSlots[$troop][1], $troopSlots[$troop][2], $troopSlots[$troop][3]]
 
 			Local $xClick, $yClick
@@ -324,5 +324,5 @@ Func FillBarracksWithTroops(Const $hBMP, Const $troop, Const ByRef $troopSlots)
 	  EndIf
    EndIf
 
-   Return $troopsToFill
+   Return $spaceToFill >= $gTroopSpace[$troop] ? $spaceToFill : 0
 EndFunc
