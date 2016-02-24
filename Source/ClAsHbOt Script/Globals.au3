@@ -70,20 +70,20 @@ Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroo
 			$eTroopMinion, $eTroopHogRider, $eTroopValkyrie, $eTroopGolem, $eTroopWitch, _
 			$eTroopLavaHound, _
 			$eTroopKing, $eTroopQueen, $eTroopWarden, _
-			$eTroopKingGrayed, $eTroopCount
-Global $gTroopCountExcludingHeroes = $eTroopCount-4
+			$eTroopKingGrayed, $eTroopQueenGrayed, $eTroopWardenGrayed, $eTroopCount
+Global $gTroopCountExcludingHeroes = $eTroopCount-6
 Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", _
 									 "Balloon", "Wizard", "Healer", "Dragon", "Pekka", _
 									 "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", _
 									 "Lava Hound", _
 									 "Barbarian King", "Archer Queen", "Grand Warden", _
-									 "Barbarian King Grayed"]
+									 "Barbarian King Grayed", "Archer Queen Grayed", "Grand Warden Grayed"]
 Global $gTroopSpace[$eTroopCount] = [ 1, 1, 5, 1, 2, _
 									  5, 4, 14, 20, 25, _
 									  2, 5, 8, 30, 12, _
 									  30, _
 									  0, 0, 0, _
-									  0 ]
+									  0, 0, 0 ]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _
    $eSpellEarthquake, $eSpellHaste, $eSpellCount
 Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freeze", "Poison", _
@@ -117,7 +117,7 @@ Global $gAutoRaidBeginLoot[4] = [-1, -1, -1, -1]  ; gold, elix, dark, cups
 ; Confidence Levels
 Global $gConfidenceTownHall = 0.94
 Global $gConfidenceCollectLoot = 0.935
-Global $gConfidenceArmyCamp = 0.94
+Global $gConfidenceArmyCamp = 0.985
 Global $gConfidenceBarracks = 0.95
 Global $gConfidenceCollector = 0.92
 Global $gConfidenceRaidTroopSlot = 0.98
@@ -125,7 +125,7 @@ Global $gConfidenceDonateTroopSlot = 0.9875
 Global $gConfidenceBarracksTroopSlot = 0.99
 Global $gConfidenceTrainTroopsButton = 0.99
 Global $gConfidenceDonateButton = 0.98
-Global $gConfidenceStorages = 0.94
+Global $gConfidenceStorages = 0.93
 Global $gConfidenceLootCart = 0.93
 Global $gConfidenceReloadButton = 0.99
 Global $gConfidenceClashIcon = 0.99

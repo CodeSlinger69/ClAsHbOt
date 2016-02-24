@@ -172,7 +172,7 @@ Func AutoRaidExecuteRaidStrategy2(ByRef $hBMP)
    ; Deploy minions
    If $troopIndex[$eTroopMinion][4] > 0 Then
 	  DebugWrite("Deploying Minions (" & $troopIndex[$eTroopMinion][4] & ")")
-	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, $gMaxDeployBoxes)
+	  DeployTroopsToSides($eTroopMinion, $troopIndex, $eAutoRaidDeployRemaining, $direction, 6)
    EndIf
 
    ; Deploy and monitor heroes

@@ -6,6 +6,7 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 To Do
 - Storage images; Dark: 5.50, Gold: 10.75
 - Battle end bonus char maps - "74" needed?
+- Capture "grayed" raid slot images for L1-L4 queen and warden
 #ce
 
 Global $gVersion = "20160222"
@@ -61,13 +62,20 @@ Opt("GUIOnEventMode", 1)
 Main()
 
 Func Main()
+
+; Uncomment next line when testing DLL, and have a need to attach a debugger
+;MsgBox($MB_OK, "", "Attach debugger!")
+
+; Uncomment next line to run .au3 script from "source" directory, for development/debugging
+;FileChangeDir("..\..\ClAsHbOt")
+
    ReadSettings()
 
    StartBlueStacks()
 
    InitScraper()
 
-;MsgBox($MB_OK, "", "Attach debugger!")
+; Uncomment lines below to quickly test various features of the bot
 ;Local $hHBITMAP = CaptureFrameHBITMAP("Debug")
 ;ZoomOut2()
 ;$gScraperDebug = True

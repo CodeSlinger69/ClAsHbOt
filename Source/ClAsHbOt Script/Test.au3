@@ -206,7 +206,7 @@ EndFunc
 
 Func TestBuiltTroops()
    Local $builtTroopCounts[$eTroopCount][5]
-   For $i = 0 To $eTroopCount-1
+   For $i = 0 To UBound($builtTroopCounts)-1
 	  $builtTroopCounts[$i][0] = -1
 	  $builtTroopCounts[$i][1] = -1
 	  $builtTroopCounts[$i][2] = -1
@@ -218,7 +218,7 @@ Func TestBuiltTroops()
    LocateSlots($eActionTypeCamp, $eSlotTypeHero, $builtTroopCounts)
    UpdateArmyCampSlotCounts($builtTroopCounts)
 
-   For $i = $eTroopBarbarian To $eTroopWarden
+   For $i = 0 To $eTroopCount-1
 	  If $builtTroopCounts[$i][4]>0 Then DebugWrite("Built troops count " & $gTroopNames[$i] & "=" & $builtTroopCounts[$i][4])
    Next
 EndFunc

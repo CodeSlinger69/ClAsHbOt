@@ -879,13 +879,18 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 
 		 ; Check for health bar to verify deploy
 		 Local $hHBITMAP = CaptureFrameHBITMAP("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
-		 If IsColorPresent($hHBITMAP, $queenColor) Then
+		 Local $troopIndex[$eTroopCount][5]
+		 $troopIndex[$eTroopQueenGrayed][0] = -1
+		 LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
+
+		 If IsColorPresent($hHBITMAP, $queenColor) Or $troopIndex[$eTroopQueenGrayed][0] <> -1 Then
 			$queenDeployTime = TimerInit()
 			$queenDeployed = True
 			DebugWrite("deployed", False, True)
 		 Else
 			DebugWrite("failed, will retry", False, True)
 		 EndIf
+
 		 _WinAPI_DeleteObject($hHBITMAP)
 	  EndIf
 
@@ -901,13 +906,18 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 
 		 ; Check for health bar to verify deploy
 		 Local $hHBITMAP = CaptureFrameHBITMAP("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
-		 If IsColorPresent($hHBITMAP, $wardenColor) Then
+		 Local $troopIndex[$eTroopCount][5]
+		 $troopIndex[$eTroopWardenGrayed][0] = -1
+		 LocateSlots($eActionTypeRaid, $eSlotTypeTroop, $troopIndex)
+
+		 If IsColorPresent($hHBITMAP, $wardenColor) Or $troopIndex[$eTroopWardenGrayed][0] <> -1 Then
 			$wardenDeployTime = TimerInit()
 			$wardenDeployed = True
 			DebugWrite("deployed", False, True)
 		 Else
 			DebugWrite("failed, will retry", False, True)
 		 EndIf
+
 		 _WinAPI_DeleteObject($hHBITMAP)
 	  EndIf
 

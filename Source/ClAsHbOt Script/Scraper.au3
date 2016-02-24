@@ -25,7 +25,7 @@ Func InitScraper()
    DebugWrite("InitScraper() ClAsHbOt.dll loaded")
 
    ; ClAsHbOt DLL Initialize
-   Local $res = DllCall($gClAsHbOtDllHandle, "boolean", "Initialize", "str", @ScriptDir, "bool", $gDebug, "bool", $gScraperDebug)
+   Local $res = DllCall($gClAsHbOtDllHandle, "boolean", "Initialize", "str", @WorkingDir, "bool", $gDebug, "bool", $gScraperDebug)
    If @error Then
 	  DebugWrite("DLLLoad() DllCall Initialize @error=" & @error)
 	  MsgBox(BitOR($MB_ICONERROR, $MB_OK), "ClAsHbOt DLL Error", "Error initializing DLL." & @CRLF & _
@@ -39,7 +39,7 @@ Func InitScraper()
 		 "This is catastrophic, exiting.")
 	  Exit
    EndIf
-   DebugWrite("InitScraper() ImageMatch.dll initialized: " & $res[0])
+   DebugWrite("InitScraper() ClAsHbOt.dll initialized: " & $res[0])
 
    ; user32.dll
    $gUser32DllHandle = DllOpen("user32.dll")
@@ -456,8 +456,10 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][1] = $box[1] + $y + $rRaidButtonOffset[1]
 			$index[$i][2] = $box[0] + $x + $rRaidButtonOffset[2]
 			$index[$i][3] = $box[1] + $y + $rRaidButtonOffset[3]
-			;DebugWrite("Raid " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
-			 ;  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+			If $gDebug Then
+			   DebugWrite("Raid slot " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
+				  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+			EndIf
 		 EndIf
 
 	  ElseIf $actionType = $eActionTypeDonate Then
@@ -466,8 +468,10 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][1] = $box[1] + $y + $rDonateButtonOffset[1]
 			$index[$i][2] = $box[0] + $x + $rDonateButtonOffset[2]
 			$index[$i][3] = $box[1] + $y + $rDonateButtonOffset[3]
-			;DebugWrite("Donate " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
-				;  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+			If $gDebug Then
+			   DebugWrite("Donate slot " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
+				  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+			EndIf
 		 EndIf
 
 	  ElseIf $actionType = $eActionTypeBarracks Then
@@ -476,6 +480,10 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][1] = $box[1] + $y + $rRaidButtonOffset[1]
 			$index[$i][2] = $box[0] + $x + $rRaidButtonOffset[2]
 			$index[$i][3] = $box[1] + $y + $rRaidButtonOffset[3]
+			If $gDebug Then
+			   DebugWrite("Barracks slot " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
+				  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+			EndIf
 		 EndIf
 
 	  ElseIf $actionType = $eActionTypeCamp Then
@@ -484,6 +492,12 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][1] = $box[1] + $y
 			$index[$i][2] = $box[0] + $x
 			$index[$i][3] = $box[1] + $y
+			If $gDebug Then
+			   Local $name = ( ($slotType=$eSlotTypeTroop Or $slotType=$eSlotTypeHero) ? $gTroopNames[$i] : _
+							   ($slotType=$eSlotTypeSpell) ? $gSpellNames[$i] : "" )
+			   DebugWrite("Camp slot " & $gSlotTypeNames[$slotType] & " " & $name & " found, confidence " & Round($conf*100, 2) & "%" & _
+				  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+			EndIf
 		 EndIf
 
 	  ElseIf $actionType = $eActionTypeReloadButton Then
@@ -492,6 +506,10 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 			$index[$i][1] = $box[1] + $y + $rReloadDefensesButtonOffset[1]
 			$index[$i][2] = $box[0] + $x + $rReloadDefensesButtonOffset[2]
 			$index[$i][3] = $box[1] + $y + $rReloadDefensesButtonOffset[3]
+			If $gDebug Then
+			   DebugWrite("Reload button slot found, confidence " & Round($conf*100, 2) & "%" & _
+				  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
+			EndIf
 		 EndIf
 
 	  EndIf
