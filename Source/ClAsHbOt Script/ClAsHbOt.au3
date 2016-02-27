@@ -5,7 +5,6 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 
 To Do
 - Storage images; Dark: 5.50, Gold: 10.75
-- Battle end bonus char maps - "74" needed?
 - Capture "grayed" raid slot images for L1-L4 queen and warden
 #ce
 
