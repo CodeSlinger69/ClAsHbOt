@@ -877,7 +877,7 @@ Func DeployAndMonitorHeroes(Const ByRef $index, Const $deployStart, Const $direc
 		 RandomWeightedClick($deployBox)
 		 Sleep(500)
 
-		 ; Check for health bar to verify deploy
+		 ; Check for health bar (L5+) or grayed button (L1-L4) to verify deploy
 		 Local $hHBITMAP = CaptureFrameHBITMAP("DeployAndMonitorHeroes", $rRaidTroopBox[0], $rRaidTroopBox[1], $rRaidTroopBox[2], $rRaidTroopBox[3])
 		 Local $troopIndex[$eTroopCount][5]
 		 $troopIndex[$eTroopQueenGrayed][0] = -1
