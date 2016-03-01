@@ -51,6 +51,8 @@ Func AutoQueueTroops(Const ByRef $initialFill)
 		 FillBarracksStrategy2($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
 	  Case 3
 		 FillBarracksStrategy3($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
+	  Case 4
+		 FillBarracksStrategy4($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
 	  EndSwitch
    EndIf
 

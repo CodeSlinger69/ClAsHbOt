@@ -56,6 +56,8 @@ Func AutoRaid(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
 		 AutoRaidExecuteRaidStrategy2($hBMP)  ; BAM
 	  Case 3
 		 AutoRaidExecuteRaidStrategy3($hBMP)  ; Loonian
+	  Case 4
+		 AutoRaidExecuteRaidStrategy4($hBMP)  ; HoBarch
 	  EndSwitch
 
 	  $gAutoStage = $eAutoQueueTraining

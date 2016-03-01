@@ -20,10 +20,11 @@ Func FillBarracksStrategy3(ByRef $hHMP, Const $initialFillFlag, Const ByRef $bui
 	  If $barracksCount<=4 Then
 		 If OpenNextAvailableStandardBarracks($hHMP) = False Then
 			$barracksCount = 5
+			ContinueLoop
 		 EndIf
 	  EndIf
 
-	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then we are done
+	  ; Click next dark barracks button on Army Manager Window, if unsuccessful, then we are done
 	  If $barracksCount>=5 Then
 		 If OpenNextAvailableDarkBarracks($hHMP) = False Then
 			ExitLoop

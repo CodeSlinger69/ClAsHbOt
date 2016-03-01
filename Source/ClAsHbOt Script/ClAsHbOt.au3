@@ -8,7 +8,7 @@ To Do
 - Capture "grayed" raid slot images for L1-L4 queen and warden
 #ce
 
-Global $gVersion = "20160222"
+Global $gVersion = "20160222+"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
@@ -51,6 +51,7 @@ Opt("GUIOnEventMode", 1)
 #include <AutoRaidStrategy1.au3>
 #include <AutoRaidStrategy2.au3>
 #include <AutoRaidStrategy3.au3>
+#include <AutoRaidStrategy4.au3>
 #include <Mouse.au3>
 #include <BlueStacks.au3>
 #include <Screen.au3>
