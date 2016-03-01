@@ -128,10 +128,10 @@ Func AutoRaidExecuteRaidStrategy1(ByRef $hBMP)
 
    ; Get button
    Local $breakerButton[4] = [ _
-	  $rRaidTroopBox[0] + $troopIndex[$eTroopWallBreaker][0], _
-	  $rRaidTroopBox[1] + $troopIndex[$eTroopWallBreaker][1], _
-	  $rRaidTroopBox[0] + $troopIndex[$eTroopWallBreaker][2], _
-	  $rRaidTroopBox[1] + $troopIndex[$eTroopWallBreaker][3]]
+	  $troopIndex[$eTroopWallBreaker][0], _
+	  $troopIndex[$eTroopWallBreaker][1], _
+	  $troopIndex[$eTroopWallBreaker][2], _
+	  $troopIndex[$eTroopWallBreaker][3]]
 
    ;
    ; Deploy troops
