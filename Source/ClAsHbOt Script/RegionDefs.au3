@@ -44,7 +44,7 @@ Global $rMainScreenAttackWithStarsButton[8] = [16, 625, 108, 680, 72, 670, 0xD46
 Global $rFindMatchScreenFindAMatchNoShieldButton[8] = [137, 519, 354, 617, 278, 610, 0xEFC628, 6]
 Global $rFindMatchScreenFindAMatchWithShieldButton[8] = [138, 476, 354, 572, 279, 566, 0xEFC82F, 6]
 Global $rFindMatchScreenCloseWindowButton[8] = [784, 17, 825, 55, 804, 48, 0xC80408, 6]
-Global $rWaitRaidScreenNextButton[8] = [682, 543, 830, 610, 696, 597, 0xD84400, 6]
+Global $rWaitRaidScreenNextButton[8] = [700, 543, 848, 610, 730, 593, 0xD84800, 6]
 Global $rLiveRaidScreenEndBattleButton[8] = [16, 578, 123, 609, 64, 605, 0xC00000, 0]
 Global $rLiveRaidScreenEndBattleConfirmButton[8] = [444, 402, 582, 455, 491, 447, 0x5FAC10, 0]
 Global $rMainScreenOpenChatButton[8] = [322, 353, 345, 408, 339, 406, 0xD44B16, 6]
@@ -66,8 +66,8 @@ Global $rArmyManagerWindowDark1Button[8] =     [490, 555, 545, 605, 497, 563, 0x
 Global $rArmyManagerWindowDark2Button[8] =     [551, 555, 606, 605, 558, 563, 0x888070, 0]
 Global $rArmyManagerWindowSpells1Button[8] =   [634, 555, 689, 605, 641, 563, 0x888070, 0]
 Global $rArmyManagerWindowSpells2Button[8] =   [695, 555, 751, 605, 702, 563, 0x888070, 0]
-Global $rRaidSlotsButton1[4] = [37, 639, 101, 680]
-Global $rRaidSlotsButton2[4] = [109, 639, 174, 680]
+Global $rRaidSlotsButton1[4] = [35, 639, 93, 680]
+Global $rRaidSlotsButton2[4] = [109, 639, 164, 680]
 Global $rVillageGuardActiveInfoButton[8] = [459, 7, 475, 23, 448, 40, 0x4C2088, 6]
 Global $rVillageGuardRemoveButton[8] = [476, 251, 583, 284, 526, 279, 0xC00000, 0]
 Global $rVillageGuardRemoveConfirmationButton[8] = [444, 400, 582, 456, 512, 450, 0x60AE10, 0]
@@ -98,7 +98,7 @@ Global $rZoomedOutFullColor[4] = [$gScreenCenter[0], 1, 0x000000, 0]
 
 ; Bounding Boxes
 ; Left, Top, Right, Bottom
-Global $rRaidTroopBox[4] = [37, 621, 826, 726]
+Global $rRaidTroopBox[4] = [10, 621, 849, 726]
 Global $rRaidButtonOffset[4] = [0, -17, 62, 21]
 Global $rCampTroopBox1[4] = [126, 197, 740, 275] ; main troops
 Global $rCampTroopBox2[4] = [420, 442, 615, 525] ; heroes

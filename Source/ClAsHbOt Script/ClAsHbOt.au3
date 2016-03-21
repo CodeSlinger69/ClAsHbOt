@@ -5,17 +5,17 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 
 To Do
 - Storage images; Dark: 5.50, Gold: 10.75
-- Capture "grayed" raid slot images for L1-L4 queen and warden
+- Capture "grayed" raid slot images for L1-L4 warden
 #ce
 
-Global $gVersion = "20160222+"
+Global $gVersion = "20160321"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
 #pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
 #pragma compile(ProductName, ClAsHbOt)
-#pragma compile(ProductVersion, 2016.02.22)
-#pragma compile(FileVersion, 2016.02.22)
+#pragma compile(ProductVersion, 2016.03.21)
+#pragma compile(FileVersion, 2016.03.21)
 #pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
 #pragma compile(Out, ClAsHbOt.exe)
 

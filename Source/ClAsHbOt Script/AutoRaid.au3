@@ -195,8 +195,10 @@ Func AutoRaidFindMatch(ByRef $hBMP, Const $returnFirstMatch, ByRef $THCorner)
 EndFunc
 
 Func AutoWaitForNextButton(ByRef $hBMP)
+   Sleep(1000)
    _WinAPI_DeleteObject($hBMP)
-   $hBMP = CaptureFrameHBITMAP("AutoRaidFindMatch")
+   $hBMP = CaptureFrameHBITMAP("AutoWaitForNextButton")
+   If $gDebugSaveScreenCaptures Then _ScreenCapture_SaveImage("AutoWaitForNextButtonFrame.bmp", $hBMP, False)
 
    If WaitForButton($hBMP, 30000, $rWaitRaidScreenNextButton) = False Then
 	  If @error = $eErrorAttackingDisabled Then
