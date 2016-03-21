@@ -9,9 +9,9 @@ Global $rMyCupsTextBox[10] =       [ 71,  75, 120,  87, 0xffffff, 9, 0, 0, 0, 0]
 
 Global $rGoldTextBox[10] =       [50,  70, 125,  82, 0xfffbcc, 9, 34,  76, 0xF1EA51, 6]
 Global $rElixTextBox[10] =       [50,  99, 125, 111, 0xffe8fd, 9, 34, 105, 0xE049D0, 6]
-Global $rDarkTextBox[10] =       [50, 127, 125, 139, 0xf3f3f3, 9, 34, 133, 0x574360, 6]
-Global $rCupsTextBoxNoDE[10] =   [50, 138, 125, 150, 0xffffff, 9, 34, 144, 0xCB9928, 6]
-Global $rCupsTextBoxWithDE[10] = [50, 169, 125, 181, 0xffffff, 9, 34, 175, 0xC38F23, 6]
+Global $rDarkTextBox[10] =       [50, 127, 125, 139, 0xf3f3f3, 9, 34, 133, 0x504060, 6]
+Global $rCupsTextBoxNoDE[10] =   [50, 138, 125, 150, 0xffffff, 9, 34, 144, 0xCB9928, 6] ; need to update for 3/21 release
+Global $rCupsTextBoxWithDE[10] = [50, 169, 125, 181, 0xffffff, 9, 34, 175, 0xC69624, 6]
 
 Global $rBarracksTroopBox[10] = [170, 321, 697, 529]
 Global $rBarracksButtonOffset[4] = [0, 5, 87, 56]

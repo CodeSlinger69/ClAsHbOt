@@ -3,6 +3,10 @@ ClAsHbOt!
 
 Atutomatic farming bot for Clash of Clans, with a few other features.
 
+3/21/2016 todo
+- Get new color for $rCupsTextBoxNoDE
+
+
 To Do
 - Storage images; Dark: 5.50, Gold: 10.75
 - Capture "grayed" raid slot images for L1-L4 warden
