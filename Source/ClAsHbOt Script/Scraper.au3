@@ -476,10 +476,10 @@ Func LocateSlots(Const $actionType, Const $slotType, ByRef $index)
 
 	  ElseIf $actionType = $eActionTypeBarracks Then
 		 If $x<>-1 Then
-			$index[$i][0] = $box[0] + $x + $rRaidButtonOffset[0]
-			$index[$i][1] = $box[1] + $y + $rRaidButtonOffset[1]
-			$index[$i][2] = $box[0] + $x + $rRaidButtonOffset[2]
-			$index[$i][3] = $box[1] + $y + $rRaidButtonOffset[3]
+			$index[$i][0] = $box[0] + $x + $rBarracksButtonOffset[0]
+			$index[$i][1] = $box[1] + $y + $rBarracksButtonOffset[1]
+			$index[$i][2] = $box[0] + $x + $rBarracksButtonOffset[2]
+			$index[$i][3] = $box[1] + $y + $rBarracksButtonOffset[3]
 			If $gDebug Then
 			   DebugWrite("Barracks slot " & $gSlotTypeNames[$slotType] & " " & (($slotType=$eSlotTypeTroop) ? $gTroopNames[$i] : $gSpellNames[$i]) & " found, confidence " & Round($conf*100, 2) & "%" & _
 				  " box: " & $index[$i][0] & "," & $index[$i][1] & "," & $index[$i][2] & "," & $index[$i][3])
