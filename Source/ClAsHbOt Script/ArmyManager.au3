@@ -17,6 +17,28 @@ Func AutoQueueTroops(Const ByRef $initialFill)
 	  Return
    EndIf
 
+   ; Read status on Army Overview window
+   Local $remainingToQueue = 999
+   Local $armyOverviewStatus = ScrapeFuzzyText($hHBITMAP, $fontArmyOverviewStatus, $rArmyOverviewWindowTextBox)
+   DebugWrite("AutoQueueTroops() Army Overview status: " & $armyOverviewStatus)
+
+   Local $stringLoc = StringInStr($armyOverviewStatus, "Troops:")
+   If ($stringLoc <> 0) Then
+	  $armyOverviewStatus = StringMid($armyOverviewStatus, $stringLoc+7)
+	  ;DebugWrite("Army Overview status separated: " & $queueStatus)
+
+	  Local $armyOverviewStatSplit = StringSplit($armyOverviewStatus, "/")
+	  ;DebugWrite("Army Overview status split: " & $queueStatSplit[1] & " " & $queueStatSplit[2])
+
+	  If $armyOverviewStatSplit[0] = 2 Then
+		 $remainingToQueue = Number($armyOverviewStatSplit[2]) - Number($armyOverviewStatSplit[1])
+	  EndIf
+   EndIf
+
+   DebugWrite("AutoQueueTroops() Remaining to queue: " & $remainingToQueue)
+   Local $armyCampsFull = ($remainingToQueue=0 ? True : False)
+   If $armyCampsFull Then DebugWrite("Army Camps full.")
+
    ; Count how many troops are already built
    Local $builtTroopCounts[$eTroopCount][5]
    For $i = 0 To $eTroopCount-1
@@ -37,26 +59,22 @@ Func AutoQueueTroops(Const ByRef $initialFill)
    If $heroWait>0 And $heroCount>=$heroWait Then DebugWrite("Heroes ready.")
 
    ; Fill
-   Local $armyCampsFull = False
-
    If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED Then
-	  FillBarracksStrategy0($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
+	  FillBarracksStrategy0($hHBITMAP, $initialFill, $builtTroopCounts)
    Else
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
-		 FillBarracksStrategy0($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy0($hHBITMAP, $initialFill, $builtTroopCounts)
 	  Case 1
-		 FillBarracksStrategy1($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy1($hHBITMAP, $initialFill, $builtTroopCounts)
 	  Case 2
-		 FillBarracksStrategy2($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy2($hHBITMAP, $initialFill, $builtTroopCounts)
 	  Case 3
-		 FillBarracksStrategy3($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy3($hHBITMAP, $initialFill, $builtTroopCounts)
 	  Case 4
-		 FillBarracksStrategy4($hHBITMAP, $initialFill, $builtTroopCounts, $armyCampsFull)
+		 FillBarracksStrategy4($hHBITMAP, $initialFill, $builtTroopCounts)
 	  EndSwitch
    EndIf
-
-   If $armyCampsFull Then DebugWrite("Army Camps full.")
 
    ; Close army manager window
    CloseArmyManagerWindow($hHBITMAP)

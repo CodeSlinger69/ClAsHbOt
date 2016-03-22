@@ -16,6 +16,7 @@ Global $rCupsTextBoxWithDE[10] = [50, 169, 125, 181, 0xffffff, 9, 34, 175, 0xC69
 Global $rBarracksTroopBox[10] = [170, 321, 697, 529]
 Global $rBarracksButtonOffset[4] = [0, 5, 87, 56]
 Global $rBarracksWindowTextBox[10] = [126, 178, 270, 190, 0xffffff, 9, 0, 0, 0, 0]
+Global $rArmyOverviewWindowTextBox[10] = [143, 175, 275, 190, 0x494949, 60, 0, 0, 0, 0]
 Global $rRaidSlotTroopCountTextBox[10] = [0, 0, 0, 0, 0xffffff, 9, 0, 0, 0, 0]
 Global $rCampSlotTroopCountTextBox[10] = [4, -17, 50, -5, 0xffffff, 9, 0, 0, 0, 0]
 Global $rEndBattleGoldTextBox[10] = [320, 319, 440, 337, 0xffffff, 9, 0, 0, 0, 0]
@@ -82,11 +83,10 @@ Global $rReloadDefensesOkayButton[8] = [442, 400, 584, 458, 513, 445, 0x5CAC10, 
 
 ; Pixel color regions
 ; x, y, color, radius
-Global $rArmyCampsFullColor[4] = [415, 188, 0xF19294, 6]
 Global $rKingQueenHealthGreenColor[4] = [10, -8, 0x66EA09, 90]
 Global $rWardenHealthGreenColor[4] = [10, -11, 0x4ED505, 90]
 Global $rWindowChatDimmedColor[4] = [177, 22, 0x383628, 6]
-Global $rNewChatMessagesColor[4] = [42, 350, 0xD60818, 6]
+Global $rNewChatMessagesColor[4] = [37, 356, 0xFFFFFF, 6]
 Global $rDeadBaseIndicatorColor[4] = [26, 28, 0x606260, 6]
 Global $rFirstStarColor[4] = [715, 599, 0xC8C9C1, 6]
 Global $rWaitForPersonalBreakPoint1Color[4] = [164, 194, 0xff1919, 0] ; "You must wait until after your personal break..."

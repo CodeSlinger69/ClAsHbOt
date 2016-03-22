@@ -7,7 +7,7 @@
 ; Deploy and power up Heroes
 ;
 
-Func FillBarracksStrategy0(ByRef $hHMP, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy0(ByRef $hHMP, Const $initialFillFlag, Const ByRef $builtTroopCounts)
    DebugWrite("FillBarracksStrategy0() " & ($initialFillFlag ? "initial fill" : "top up") )
 
    ; How many breakers are needed?
@@ -25,12 +25,6 @@ Func FillBarracksStrategy0(ByRef $hHMP, Const $initialFillFlag, Const ByRef $bui
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then we are done
 	  If OpenNextAvailableStandardBarracks($hHMP) = False Then
 		 ExitLoop
-	  EndIf
-
-	  ; See if we are full up
-	  If IsColorPresent($hHMP, $rArmyCampsFullColor) Then
-		 $armyCampsFull = True
-		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
 	  EndIf
 
 	  ; Find the slots for the troops

@@ -6,7 +6,7 @@
 ;
 ; Note: Train 20 balloons, rest minions
 
-Func FillBarracksStrategy3(ByRef $hHMP, Const $initialFillFlag, Const ByRef $builtTroopCounts, ByRef $armyCampsFull)
+Func FillBarracksStrategy3(ByRef $hHMP, Const $initialFillFlag, Const ByRef $builtTroopCounts)
    DebugWrite("FillBarracksStrategy3() " & ($initialFillFlag ? "initial fill" : "top up") )
 
    Local $numberOfBalloons = 20
@@ -29,12 +29,6 @@ Func FillBarracksStrategy3(ByRef $hHMP, Const $initialFillFlag, Const ByRef $bui
 		 If OpenNextAvailableDarkBarracks($hHMP) = False Then
 			ExitLoop
 		 EndIf
-	  EndIf
-
-	  ; See if we are full up
-	  If IsColorPresent($hHMP, $rArmyCampsFullColor) Then
-		 $armyCampsFull = True
-		 DebugWrite("Barracks " & $barracksCount & " is showing full.")
 	  EndIf
 
 	  ; Find the slots for the troops

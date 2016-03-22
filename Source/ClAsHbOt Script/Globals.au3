@@ -21,7 +21,7 @@ Global Enum $eBuiltTroopClassNormal, $eBuiltTroopClassHero
 Global Enum $eSearchTypeTownHall, $eSearchTypeLootCart, $eSearchClashIcon, $eSearchPlayStoreOpenButton, $eSearchDonateButton, _
 			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeDarkStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble
 Global Enum $fontMyStuff, $fontRaidTroopCountUnselected, $fontRaidTroopCountSelected, $fontRaidLoot, $fontBarracksStatus, _
-			$fontBattleEndWinnings, $fontBattleEndBonus, $fontChat
+			$fontBattleEndWinnings, $fontBattleEndBonus, $fontChat, $fontArmyOverviewStatus
 Global $gMAXSTRING = 500
 Global $gActionTypeNames[5] = [ "Raid", "Donate", "Barracks", "Camp", "ReloadButton" ]
 Global $gSlotTypeNames[3] = [ "Troop", "Spell", "Hero" ]
@@ -29,11 +29,11 @@ Global $gBuiltTroopClassNames[2] = [ "Normal", "Heroes" ]
 Global $gSearchTypeNames[10] = [ "TownHall", "LootCart", "ClashIcon", "PlayStoreOpenButton", "DonateButton", _
 								 "GoldStorage", "ElixStorage", "DarkStorage", "LootCollector", "LootBubble" ]
 Global $gFontNames[10] = [ "MyStuff", "RaidTroopCountUnselected", "RaidTroopCountSelected", "RaidLoot", "BarracksStatus", _
-						   "BattleEndWinnings", "BattleEndBonus", "Chat" ]
+						   "BattleEndWinnings", "BattleEndBonus", "Chat", "ArmyOverviewStatus" ]
 Global $gHDC = 0, $gMemDC = 0
 
 ; Raiding variables
-Global $gMaxRaidDuration = 210000 ; 3 minutes, 30 seconds (as measured in millseconds)
+Global $gMaxRaidDuration = 180000 ; 3 minutes (as measured in millseconds)
 
 ; For detecting rest period
 Global $gPossibleKick = 0
