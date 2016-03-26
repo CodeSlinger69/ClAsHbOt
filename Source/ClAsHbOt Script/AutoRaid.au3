@@ -328,7 +328,6 @@ EndFunc
 
 ; Based on loot calculation information here: http://clashofclans.wikia.com/wiki/Raids
 Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adjGold, ByRef $adjElix)
-   Local $usageAdj = 10
    Local $myTHLevel = GUICtrlRead($GUI_MyTownHall)
 
    ; Gold
@@ -338,7 +337,6 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    Else
 	  Local $level = Number(StringMid($value, StringInStr($value, "GoldStorageL")+12, 2))
 	  Local $usage = Number(StringMid($value, StringInStr($value, "GoldStorageL")+15, 2))
-	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
 	  DebugWrite("AdjustLootForStorages() Found gold storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
 	  $adjGold = $gold - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
 	  $adjGold = ($adjGold<0 ? 0 : Round($adjGold))
@@ -350,14 +348,13 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
    Else
 	  Local $level = Number(StringMid($value, StringInStr($value, "ElixStorageL")+12, 2))
 	  Local $usage = Number(StringMid($value, StringInStr($value, "ElixStorageL")+15, 2))
-	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj) ; number in the filename is lower bound of range, adjust for better filtering
 	  DebugWrite("AdjustLootForStorages() Found elix storage level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
 	  $adjElix = $elix - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
 	  $adjElix = ($adjElix<0 ? 0 : Round($adjElix))
    EndIf
 
    ; Dark - Just temporarily, to fill out saved bitmaps
-   FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf, $value)
+   ;FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf, $value)
 
 EndFunc
 

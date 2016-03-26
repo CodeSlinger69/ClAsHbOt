@@ -20,7 +20,7 @@ Func FillBarracksStrategy4(ByRef $hHMP, Const $initialFillFlag, Const ByRef $bui
    EndIf
 
    ; Loop through each standard barracks window and queue troops
-   Local $barracksCount = ($initialFillFlag ? 1 : 5)
+   Local $barracksCount = 1
 
    While $barracksCount<=6 And (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
 

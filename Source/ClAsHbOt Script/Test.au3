@@ -61,7 +61,6 @@ EndFunc
 
 Func TestStorage()
    Local $x, $y, $conf, $value, $matchIndex
-   Local $usageAdj = 10
 
    Local $t = TimerInit()
    Local $res = FindBestBMP($eSearchTypeGoldStorage, $x, $y, $conf, $value)
@@ -70,7 +69,6 @@ Func TestStorage()
    If $res Then
 	  Local $level = Number(StringMid($value, StringInStr($value, "GoldStorageL")+12, 2))
 	  Local $usage = Number(StringMid($value, StringInStr($value, "GoldStorageL")+15, 2))
-	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
@@ -81,7 +79,6 @@ Func TestStorage()
    If $res Then
 	  Local $level = Number(StringMid($value, StringInStr($value, "ElixStorageL")+12, 2))
 	  Local $usage = Number(StringMid($value, StringInStr($value, "ElixStorageL")+15, 2))
-	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 
@@ -92,7 +89,6 @@ Func TestStorage()
    If $res Then
 	  Local $level = Number(StringMid($value, StringInStr($value, "DarkStorageL")+12, 1))
 	  Local $usage = Number(StringMid($value, StringInStr($value, "DarkStorageL")+14, 2))
-	  $usage = ($usage+$usageAdj>100 ? 100 : $usage+$usageAdj)
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
 EndFunc

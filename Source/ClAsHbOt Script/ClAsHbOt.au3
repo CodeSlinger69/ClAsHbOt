@@ -5,11 +5,12 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 
 3/21/2016 todo
 - Get new color for $rCupsTextBoxNoDE
-
+- Storage images; Dark: All   Elix: 12.00, 10.00   Gold: L10.ALL
+- Uncomment line 357 in AutoRaid.au3
 
 To Do
-- Storage images; Dark: 5.50, Gold: 10.75
 - Capture "grayed" raid slot images for L1-L4 warden
+
 #ce
 
 Global $gVersion = "20160321"
