@@ -7,11 +7,10 @@ Global $rMyGemsTextBoxNoDE[10] =   [735, 123, 802, 135, 0xffffff, 9, 825, 129, 0
 Global $rMyGemsTextBoxWithDE[10] = [735, 172, 802, 184, 0xffffff, 9, 825, 178, 0xD8Ed7D, 6]
 Global $rMyCupsTextBox[10] =       [ 71,  75, 120,  87, 0xffffff, 9, 0, 0, 0, 0]
 
-Global $rGoldTextBox[10] =       [50,  70, 125,  82, 0xfffbcc, 9, 34,  76, 0xF1EA51, 25]
-Global $rElixTextBox[10] =       [50,  99, 125, 111, 0xffe8fd, 9, 34, 105, 0xE049D0, 25]
-Global $rDarkTextBox[10] =       [50, 127, 125, 139, 0xf3f3f3, 9, 34, 133, 0x504060, 25]
-Global $rCupsTextBoxNoDE[10] =   [50, 138, 125, 150, 0xffffff, 9, 34, 144, 0xCB9928, 25] ; need to test for 3/21 release
-Global $rCupsTextBoxWithDE[10] = [50, 169, 125, 181, 0xffffff, 9, 34, 175, 0xC69624, 25]
+Global $rGoldTextBox[10] = [50,  70, 125,  82, 0xfffbcc, 9, 34,  76, 0xF1EA51, 25]
+Global $rElixTextBox[10] = [50,  99, 125, 111, 0xffe8fd, 9, 34, 105, 0xE049D0, 25]
+Global $rDarkTextBox[10] = [50, 127, 125, 139, 0xf3f3f3, 9, 34, 133, 0x504060, 25]
+Global $rCupsTextBox[10] = [50, 169, 125, 181, 0xffffff, 9, 34, 175, 0xC69624, 25]
 
 Global $rBarracksTroopBox[10] = [170, 321, 697, 529]
 Global $rBarracksButtonOffset[4] = [0, 5, 87, 56]

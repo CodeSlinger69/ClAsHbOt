@@ -303,14 +303,8 @@ Func AutoRaidGetDisplayedLoot(ByRef $thLevel, ByRef $thLeft, ByRef $thTop, _
 
    $gold = Number(ScrapeFuzzyText($hHBITMAP, $fontRaidLoot, $rGoldTextBox))
    $elix = Number(ScrapeFuzzyText($hHBITMAP, $fontRaidLoot, $rElixTextBox))
-
-   If IsTextBoxPresent($hHBITMAP, $rDarkTextBox)=False Then
-	  $dark = 0
-	  $cups = Number(ScrapeFuzzyText($hHBITMAP, $fontRaidLoot, $rCupsTextBoxNoDE))
-   Else
-	  $dark = Number(ScrapeFuzzyText($hHBITMAP, $fontRaidLoot, $rDarkTextBox))
-	  $cups = Number(ScrapeFuzzyText($hHBITMAP, $fontRaidLoot, $rCupsTextBoxWithDE))
-   EndIf
+   $dark = Number(ScrapeFuzzyText($hHBITMAP, $fontRaidLoot, $rDarkTextBox))
+   $cups = Number(ScrapeFuzzyText($hHBITMAP, $fontRaidLoot, $rCupsTextBox))
 
    $deadBase = IsColorPresent($hHBITMAP, $rDeadBaseIndicatorColor)
 

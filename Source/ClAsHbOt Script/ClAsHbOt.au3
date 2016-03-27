@@ -4,9 +4,8 @@ ClAsHbOt!
 Atutomatic farming bot for Clash of Clans, with a few other features.
 
 3/21/2016 todo
-- Get new color for $rCupsTextBoxNoDE
-- Storage images; Dark: All   Elix: 12.00, 10.00   Gold: L10.ALL
-- Uncomment line 357 in AutoRaid.au3
+- Storage images; Dark: All   Elix: 12.00   Gold: L10.76
+- Uncomment line 357 in AutoRaid.au3 once Dark storages are captured/processed
 
 To Do
 - Capture "grayed" raid slot images for L1-L4 warden
