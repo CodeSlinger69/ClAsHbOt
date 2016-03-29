@@ -116,8 +116,7 @@ bool Scraper::FindBestBMP(const searchType type, HBITMAP hBmp, const double thre
 		type==searchClashIcon ? clashIcon :
 		type==searchPlayStoreOpenButton ? playStoreOpenButton :
 		type==searchGoldStorage ? goldStorage : 
-		type==searchElixStorage ? elixStorage :
-		type==searchDarkStorage ? darkStorage : (imageType) 0;
+		type==searchElixStorage ? elixStorage : (imageType) 0;
 
 	int iTypeIndex = -1;
 	for (int i = 0; i < (int) imageGroups.size(); i++)
@@ -176,7 +175,6 @@ bool Scraper::FindAllBMPs(const searchType type, HBITMAP hBmp, const double thre
 	imageType iType = 
 		type==searchGoldStorage ? goldStorage : 
 		type==searchElixStorage ? elixStorage :
-		type==searchDarkStorage ? darkStorage : 
 		type==searchLootCollector ? collector : 
 		type==searchLootBubble ? lootBubble : 
 		type==searchDonateButton ? donateButton : (imageType) 0;
@@ -368,6 +366,6 @@ const Point Scraper::eastPoint = Point(787, 337);
 const Point Scraper::southPoint = Point(429, 605);
 
 const char* Scraper::imageClasses[imageClassCount] = { 
-	"TownHall", "LootCart", "ClashIcon", "PlayStoreOpenButton", "DonateButton", "GoldStorage", "ElixStorage", "DarkStorage", 
+	"TownHall", "LootCart", "ClashIcon", "PlayStoreOpenButton", "DonateButton", "GoldStorage", "ElixStorage", 
 	"RaidTroopSlot", "RaidSpellSlot", "ArmyCampTroop", "BarracksTroopSlot", "DonateTroopSlot", "DonateSpellSlot", 
 	"ReloadButton", "Collector", "LootBubble", "Wall" };

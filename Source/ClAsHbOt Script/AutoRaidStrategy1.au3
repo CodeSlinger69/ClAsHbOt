@@ -254,18 +254,6 @@ Func AutoRaidStrategy1GetDirection()
 	  DebugWrite("Error searching for elix storages")
    EndIf
 
-   Local $res = FindAllBMPs($eSearchTypeDarkStorage, 4, $matchX, $matchY, $conf, $matchCount)
-   If $res Then
-   $totalMatches += $matchCount
-	  DebugWrite("Found " & $matchCount & " dark storages, total = " & $totalMatches)
-	  ReDim $allMatchY[$totalMatches]
-	  For $i = 0 To $matchCount-1
-		 $allMatchY[$totalMatches-$matchCount+$i] = $matchY[$i]
-	  Next
-   Else
-	  DebugWrite("Error searching for dark storages")
-   EndIf
-
    ; Count em
    Local $storagesTopBot = 0
    For $i = 0 To UBound($allMatchY)-1

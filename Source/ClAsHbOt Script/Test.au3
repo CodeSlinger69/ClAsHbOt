@@ -81,16 +81,6 @@ Func TestStorage()
 	  Local $usage = Number(StringMid($value, StringInStr($value, "ElixStorageL")+15, 2))
 	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
    EndIf
-
-   Local $t = TimerInit()
-   Local $res = FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf, $value)
-   DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
-   DebugWrite("Dark Match: " & $value)
-   If $res Then
-	  Local $level = Number(StringMid($value, StringInStr($value, "DarkStorageL")+12, 1))
-	  Local $usage = Number(StringMid($value, StringInStr($value, "DarkStorageL")+14, 2))
-	  DebugWrite("Level " & $level & ", average " & $usage & "% full, confidence " & Round($conf*100, 2) & "%")
-   EndIf
 EndFunc
 
 Func TestFindAllStorages()
@@ -112,15 +102,6 @@ Func TestFindAllStorages()
    DebugWrite("Elix Match $res=" & $res & " Count: " & $matchCount)
    For $i = 0 To $matchCount-1
 	  DebugWrite("Elix Match " & $i & ": " & $x[$i] & "," & $y[$i] & ", confidence " & Round($c[$i]*100, 2) & "%")
-   Next
-
-   Local $t = TimerInit()
-   Local $res = FindAllBMPs($eSearchTypeDarkStorage, 1, $x, $y, $c, $matchCount)
-   DebugWrite("Dark: " & Round(TimerDiff($t)) & "ms")
-
-   DebugWrite("Dark Match $res=" & $res & " Count: " & $matchCount)
-   For $i = 0 To $matchCount-1
-	  DebugWrite("Dark Match " & $i & ": " & $x[$i] & "," & $y[$i] & ", confidence " & Round($c[$i]*100, 2) & "%")
    Next
 EndFunc
 

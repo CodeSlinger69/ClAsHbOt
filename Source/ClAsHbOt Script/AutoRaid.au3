@@ -346,10 +346,6 @@ Func AdjustLootForStorages(Const $townHall, Const $gold, Const $elix, ByRef $adj
 	  $adjElix = $elix - CalculateLootInStorage($myTHLevel, $townHall, $level, $usage/100)
 	  $adjElix = ($adjElix<0 ? 0 : Round($adjElix))
    EndIf
-
-   ; Dark - Just temporarily, to fill out saved bitmaps
-   ;FindBestBMP($eSearchTypeDarkStorage, $x, $y, $conf, $value)
-
 EndFunc
 
 Func CalculateLootInStorage(Const $myTHLevel, Const $targetTHLevel, Const $level, Const $usage)

@@ -183,7 +183,7 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
 	  $box[3] = $gBlueStacksHeight
 	  $thresh = $gConfidencePlayStoreOpenButton
 
-   ElseIf $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage Then
+   ElseIf $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Then
 	  $box[0] = $gScreenCenter[0]-150
 	  $box[1] = $gScreenCenter[1]-150
 	  $box[2] = $gScreenCenter[0]+150
@@ -222,7 +222,7 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
    EndIf
 
    ; Save storage frame?
-   If ($searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage) And _
+   If ($searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage) And _
 	  $res[0] = False And _
 	  $gDebugSaveUnknownStorageFrames Then
 
@@ -257,7 +257,7 @@ EndFunc
 
 Func FindAllBMPs(Const $searchType, Const $maxMatch, ByRef $matchX, ByRef $matchY, ByRef $confs, ByRef $matchCount)
    Local $box[4], $thresh
-   If $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Or $searchType=$eSearchTypeDarkStorage Then
+   If $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Then
 	  $box[0] = $gScreenCenter[0]-150
 	  $box[1] = $gScreenCenter[1]-150
 	  $box[2] = $gScreenCenter[0]+150
