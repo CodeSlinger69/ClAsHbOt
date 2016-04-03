@@ -5,7 +5,6 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 
 3/21/2016 update todo
 - Storage images; Gold: L10.76
-- Capture bowler images on Donate screen
 
 Other To Do
 - Capture "grayed" raid slot images for L1-L4 warden
