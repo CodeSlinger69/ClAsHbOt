@@ -4,22 +4,22 @@ ClAsHbOt!
 Atutomatic farming bot for Clash of Clans, with a few other features.
 
 3/21/2016 update todo
-- Storage images; Dark: All   Elix: 12.00   Gold: L10.76
-- Capture bowler images on Army Overview screen, Raid Bar and Dark Barracks screen
+- Storage images; Gold: L10.76
+- Capture bowler images on Donate screen
 
 Other To Do
 - Capture "grayed" raid slot images for L1-L4 warden
 
 #ce
 
-Global $gVersion = "20160328"
+Global $gVersion = "20160403"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
 #pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
 #pragma compile(ProductName, ClAsHbOt)
-#pragma compile(ProductVersion, 2016.03.28)
-#pragma compile(FileVersion, 2016.03.28)
+#pragma compile(ProductVersion, 2016.04.03)
+#pragma compile(FileVersion, 2016.04.03)
 #pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
 #pragma compile(Out, ClAsHbOt.exe)
 

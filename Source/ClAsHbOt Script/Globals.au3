@@ -68,20 +68,20 @@ Global $gAutoNeedToCollectStartingLoot = False, $gAutoNeedToCollectEndingLoot = 
 Global Enum $eTroopBarbarian, $eTroopArcher, $eTroopGiant, $eTroopGoblin, $eTroopWallBreaker, _
 			$eTroopBalloon, $eTroopWizard, $eTroopHealer, $eTroopDragon, $eTroopPekka, _
 			$eTroopMinion, $eTroopHogRider, $eTroopValkyrie, $eTroopGolem, $eTroopWitch, _
-			$eTroopLavaHound, _
+			$eTroopLavaHound, $eTroopBowler, _
 			$eTroopKing, $eTroopQueen, $eTroopWarden, _
 			$eTroopKingGrayed, $eTroopQueenGrayed, $eTroopWardenGrayed, $eTroopCount
 Global $gTroopCountExcludingHeroes = $eTroopCount-6
 Global $gTroopNames[$eTroopCount] = ["Barbarian", "Archer", "Giant", "Goblin", "Wall Breaker", _
 									 "Balloon", "Wizard", "Healer", "Dragon", "Pekka", _
 									 "Minion", "Hog Rider", "Valkyrie", "Golem", "Witch", _
-									 "Lava Hound", _
+									 "Lava Hound", "Bowler", _
 									 "Barbarian King", "Archer Queen", "Grand Warden", _
 									 "Barbarian King Grayed", "Archer Queen Grayed", "Grand Warden Grayed"]
 Global $gTroopSpace[$eTroopCount] = [ 1, 1, 5, 1, 2, _
 									  5, 4, 14, 20, 25, _
 									  2, 5, 8, 30, 12, _
-									  30, _
+									  30, 8, _
 									  0, 0, 0, _
 									  0, 0, 0 ]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _

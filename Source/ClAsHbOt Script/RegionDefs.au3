@@ -14,7 +14,7 @@ Global $rCupsTextBox[10] = [50, 169, 125, 181, 0xffffff, 9, 34, 175, 0xC69624, 2
 
 Global $rBarracksTroopBox[10] = [170, 321, 697, 529]
 Global $rBarracksButtonOffset[4] = [0, 5, 87, 56]
-Global $rBarracksWindowTextBox[10] = [126, 178, 270, 190, 0xffffff, 9, 0, 0, 0, 0]
+Global $rBarracksWindowTextBox[10] = [126, 178, 290, 190, 0xffffff, 9, 0, 0, 0, 0]
 Global $rArmyOverviewWindowTextBox[10] = [143, 175, 275, 190, 0x494949, 60, 0, 0, 0, 0]
 Global $rRaidSlotTroopCountTextBox[10] = [0, 0, 0, 0, 0xffffff, 9, 0, 0, 0, 0]
 Global $rCampSlotTroopCountTextBox[10] = [4, -17, 50, -5, 0xffffff, 9, 0, 0, 0, 0]
