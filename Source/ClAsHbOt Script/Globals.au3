@@ -19,7 +19,7 @@ Global Enum $eActionTypeRaid, $eActionTypeDonate, $eActionTypeBarracks, $eAction
 Global Enum $eSlotTypeTroop, $eSlotTypeSpell, $eSlotTypeHero
 Global Enum $eBuiltTroopClassNormal, $eBuiltTroopClassHero
 Global Enum $eSearchTypeTownHall, $eSearchTypeLootCart, $eSearchClashIcon, $eSearchPlayStoreOpenButton, $eSearchDonateButton, _
-			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeDarkStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble
+			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble
 Global Enum $fontMyStuff, $fontRaidTroopCountUnselected, $fontRaidTroopCountSelected, $fontRaidLoot, $fontBarracksStatus, _
 			$fontBattleEndWinnings, $fontBattleEndBonus, $fontChat, $fontArmyOverviewStatus
 Global $gMAXSTRING = 500
