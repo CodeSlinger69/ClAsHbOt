@@ -84,6 +84,10 @@ Global $gTroopSpace[$eTroopCount] = [ 1, 1, 5, 1, 2, _
 									  30, 8, _
 									  0, 0, 0, _
 									  0, 0, 0 ]
+Global $gDonateMaxClicks[$gTroopCountExcludingHeroes] = [ 6, 6, 6, 6, 6, _
+														  6, 6, 2, 1, 1, _
+														  6, 6, 4, 1, 2, _
+														  1, 4 ]
 Global Enum $eSpellLightning, $eSpellHeal, $eSpellRage, $eSpellJump, $eSpellFreeze, $eSpellPoison, _
    $eSpellEarthquake, $eSpellHaste, $eSpellCount
 Global $gSpellNames[$eSpellCount] = ["Lightning", "Heal", "Rage", "Jump", "Freeze", "Poison", _

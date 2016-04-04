@@ -315,8 +315,6 @@ EndFunc
 
 Func ClickDonateTroops(ByRef $hBMP, Const ByRef $donateIndex, Const $indexOfTroopToDonate)
 
-   Local $DonateMaxClicks[16] = [6, 6, 6, 6,   6, 6, 6, 2,   1, 1, 6, 6,   4, 1, 2, 1]
-
    Local $button[4] = [$donateIndex[$indexOfTroopToDonate][0], _
 					   $donateIndex[$indexOfTroopToDonate][1], _
 					   $donateIndex[$indexOfTroopToDonate][2], _
@@ -324,7 +322,7 @@ Func ClickDonateTroops(ByRef $hBMP, Const ByRef $donateIndex, Const $indexOfTroo
 
    Local $donateCount=0
 
-   For $i = 1 To $DonateMaxClicks[$indexOfTroopToDonate]
+   For $i = 1 To $gDonateMaxClicks[$indexOfTroopToDonate]
 	  If IsColorPresent($hBMP, $rWindowChatDimmedColor) Then
 		 RandomWeightedClick($button)
 		 $donateCount+=1
