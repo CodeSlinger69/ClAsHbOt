@@ -301,6 +301,7 @@ Func TestDonate()
 	  If IsColorPresent($hBITMAP, $rWindowChatDimmedColor) Then
 		 DebugWrite("TestDonate() Clicking Safe Area button")
 		 RandomWeightedClick($rSafeAreaButton)
+		 Sleep(500)
 
 		 If WaitForScreen($hBITMAP, 5000, $eScreenChatOpen) = False Then
 			DebugWrite("DonateTroops() Error waiting for open chat screen")

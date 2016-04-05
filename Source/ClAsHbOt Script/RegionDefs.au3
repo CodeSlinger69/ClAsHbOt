@@ -27,7 +27,7 @@ Global $rEndBattleBonusGoldTextBox[10] = [590, 370, 670, 383, 0xffffff, 9, 684, 
 Global $rEndBattleBonusElixTextBox[10] = [590, 401, 670, 414, 0xffffff, 9, 684, 407, 0xE656D2, 0]
 Global $rEndBattleBonusDarkTextBox[10] = [590, 432, 670, 445, 0xffffff, 9, 684, 438, 0x5C4A66, 0]
 
-Global $rChatTextBoxAsOffset[10] = [-75, -49, 190, -35, 0xffffff, 140, 0, 0, 0, 0]
+Global $rChatTextBoxAsOffset[10] = [-80, -54, 185, -40, 0xffffff, 140, 0, 0, 0, 0]
 
 ; Buttons
 ; Left, Top, Right, Bottom,
@@ -49,7 +49,7 @@ Global $rLiveRaidScreenEndBattleButton[8] = [16, 578, 123, 609, 64, 605, 0xC0000
 Global $rLiveRaidScreenEndBattleConfirmButton[8] = [444, 402, 582, 455, 491, 447, 0x5FAC10, 0]
 Global $rMainScreenOpenChatButton[8] = [322, 353, 345, 408, 329, 382, 0xFFFFFF, 6]
 Global $rMainScreenClosedChatButton[8] = [7, 353, 31, 408, 19, 381, 0xFFFFFF, 6]
-Global $rChatWindowDonateButton[8] = [0, 0, 105, 40, 0, 0, 0, 0]
+Global $rChatWindowDonateButton[8] = [5, 5, 100, 35, 0, 0, 0, 0]
 Global $rBattleHasEndedScreenReturnHomeButton[8] = [360, 549, 498, 604, 428, 599, 0x60B010, 6]
 Global $rLiveReplayEndScreenReturnHomeButton[8] = [14, 624, 110, 680, 71, 654, 0x0971C0, 6]
 Global $rWindowVillageWasAttackedOkayButton[8] = [360, 494, 500, 549, 429, 539, 0x5FAC10, 6]

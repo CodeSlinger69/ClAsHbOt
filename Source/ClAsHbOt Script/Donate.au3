@@ -88,6 +88,7 @@ Func DonateTroops(ByRef $hBMP)
 	  ; If donate troops window is still open, then close it
 	  If IsColorPresent($hBMP, $rWindowChatDimmedColor) Then
 		 RandomWeightedClick($rSafeAreaButton)
+		 Sleep(500)
 
 		 If WaitForScreen($hBMP, 5000, $eScreenChatOpen) = False Then
 			DebugWrite("DonateTroops() Error waiting for open chat screen")
