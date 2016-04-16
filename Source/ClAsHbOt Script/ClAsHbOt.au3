@@ -11,14 +11,14 @@ Other To Do
 
 #ce
 
-Global $gVersion = "20160403"
+Global $gVersion = "20160415"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
 #pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
 #pragma compile(ProductName, ClAsHbOt)
-#pragma compile(ProductVersion, 2016.04.03)
-#pragma compile(FileVersion, 2016.04.03)
+#pragma compile(ProductVersion, 2016.04.15)
+#pragma compile(FileVersion, 2016.04.15)
 #pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
 #pragma compile(Out, ClAsHbOt.exe)
 

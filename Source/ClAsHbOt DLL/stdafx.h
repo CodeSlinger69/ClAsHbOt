@@ -24,7 +24,6 @@
 //#include "opencv2/highgui/highgui.hpp" // debugging
 
 #include "CGdiPlus.h"
-#include "CrashRpt.h"
 
 using namespace cv;
 using namespace std;

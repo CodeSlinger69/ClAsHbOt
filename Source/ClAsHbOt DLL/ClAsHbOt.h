@@ -10,7 +10,6 @@ void split(const string &s, const char delim, vector<string> &elems);
 int GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
 std::string utf8_encode(const std::wstring &wstr);
 std::wstring utf8_decode(const std::string &str);
-BOOL WINAPI CrashRptHandler(LPVOID lpvState);
 
 extern "C" bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR);
 extern "C" bool __stdcall FindBestBMP(searchType type, HBITMAP hBmp, double threshold, MATCHPOINTS* matchResult, char* matchedBMP);

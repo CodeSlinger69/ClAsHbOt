@@ -6,7 +6,7 @@
 #include "OCR.h"
 #include "ClAsHbOt.h"
 
-string version("20160328");
+string version("20160415");
 string scriptdir("");
 
 bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
@@ -15,41 +15,6 @@ bool __stdcall Initialize(char* scriptDir, bool debugGlobal, bool debugOCR)
 
 	// Setup logger
 	logger.reset(new Logger(scriptDir, debugGlobal));
-
-	// Install CrashRpt
-	CR_INSTALL_INFO info;
-	memset(&info, 0, sizeof(CR_INSTALL_INFO));
-	info.cb = sizeof(CR_INSTALL_INFO);
-	info.pszAppName = ("ClAsHbOt DLL");
-	info.pszAppVersion = (version.c_str());
-	string ver("CrashRpt ClAsHbOt DLL " + version + " Error Report");
-	info.pszEmailSubject = (ver.c_str());
-	info.pszEmailTo = ("mirustestaaa@yahoo.com");
-	info.pfnCrashCallback = CrashRptHandler;
-
-	int nResult = crInstall(&info);
-	assert(nResult==0);
-
-	if (nResult != 0)
-	{
-		char buff[256];
-		crGetLastErrorMsgA(buff, 256);
-		string s("Error in CrashRpt setup: ");
-		s.append(buff);
-
-		logger->WriteLog(s);
-		return false;
-	}
-
-	string logFilePath(scriptdir + "\\ClashBotLog.txt");
-	nResult = crAddFile2(logFilePath.c_str(), NULL, NULL, CR_AF_MAKE_FILE_COPY|CR_AF_ALLOW_DELETE|CR_AF_MISSING_FILE_OK);
-	assert(nResult==0);
-
-	string iniFilePath(scriptdir + "\\CoC Bot.ini");
-	nResult = crAddFile2(iniFilePath.c_str(), NULL, NULL, CR_AF_MAKE_FILE_COPY|CR_AF_ALLOW_DELETE);
-	assert(nResult==0);
-
-	logger->WriteLog("CrashRpt installed successfully");
 
 	// Setup GdiPlus and persistent objects
 	CGdiPlus::Init();
@@ -192,13 +157,4 @@ std::wstring utf8_decode(const std::string &str)
     std::wstring wstrTo( size_needed, 0 );
     MultiByteToWideChar                  (CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
     return wstrTo;
-}
-
-BOOL WINAPI CrashRptHandler(LPVOID lpvState)
-{
-    UNREFERENCED_PARAMETER(lpvState);
-
-    logger->WriteLog("Crash detected and caught, terminating DLL");
-
-    return true;
 }

@@ -1,19 +1,6 @@
 Func InitScraper()
    _GDIPlus_Startup()
 
-   ; Check if Visual C++ 2010 SP1 runtimes are installed
-   Local $GUID = "{F0C3E5D1-1ADE-321E-8167-68EF0DE699A5}"
-   Local $INSTALLSTATE_ABSENT=2, $INSTALLSTATE_ADVERTISED=1, $INSTALLSTATE_DEFAULT=5, $INSTALLSTATE_INVALIDARG=-2, $INSTALLSTATE_UNKNOWN=-1
-   Local $res = DLLCall("msi.dll", "int", "MsiQueryProductState", "str", $GUID)
-   If $res[0] <> $INSTALLSTATE_DEFAULT Then
-	  DebugWrite("InitScraper() Visual C++ 2010 SP1 runtimes not installed")
-	  MsgBox(BitOr($MB_OK, $MB_ICONERROR), "InitScraper Error", "Visual C++ 2010 SP1 runtimes do not appear to be installed. " & _
-		 "Please install from the 'Helpers/redist' folder, or download from Microsoft here: https://www.microsoft.com/en-us/download/details.aspx?id=8328" & _
-		 @CRLF & @CRLF & "Exiting.")
-	  Exit
-   EndIf
-   DebugWrite("InitScraper() Visual C++ 2010 SP1 runtimes are installed")
-
    ; ClAsHbOt DLL
    $gClAsHbOtDllHandle = DllOpen("ClAsHbOt.dll")
 
