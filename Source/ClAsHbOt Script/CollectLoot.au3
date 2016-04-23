@@ -27,7 +27,7 @@ Func CollectLoot()
 		 RandomWeightedClick($button)
 
 		 ;DebugWrite("Loot: " & $sortedX[$i] & "," & $sortedY[$i])
-		 ;Sleep(Random(100, 500, 1))
+		 Sleep(Random(100, 500, 1))
 	  Next
 
 	  Sleep(1000)

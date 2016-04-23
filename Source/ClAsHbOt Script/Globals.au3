@@ -19,9 +19,10 @@ Global Enum $eActionTypeRaid, $eActionTypeDonate, $eActionTypeBarracks, $eAction
 Global Enum $eSlotTypeTroop, $eSlotTypeSpell, $eSlotTypeHero
 Global Enum $eBuiltTroopClassNormal, $eBuiltTroopClassHero
 Global Enum $eSearchTypeTownHall, $eSearchTypeLootCart, $eSearchClashIcon, $eSearchPlayStoreOpenButton, $eSearchDonateButton, _
-			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble
+			$eSearchTypeGoldStorage, $eSearchTypeElixStorage, $eSearchTypeLootCollector, $eSearchTypeLootBubble, _
+			$eSearchTypeDropZone
 Global Enum $fontMyStuff, $fontRaidTroopCountUnselected, $fontRaidTroopCountSelected, $fontRaidLoot, $fontBarracksStatus, _
-			$fontBattleEndWinnings, $fontBattleEndBonus, $fontChat, $fontArmyOverviewStatus
+			$fontBattleEndWinnings, $fontBattleEndBonus, $fontChat, $fontArmyOverviewStatus, $fontArmyOverviewTimeRemaining
 Global $gMAXSTRING = 500
 Global $gActionTypeNames[5] = [ "Raid", "Donate", "Barracks", "Camp", "ReloadButton" ]
 Global $gSlotTypeNames[3] = [ "Troop", "Spell", "Hero" ]
@@ -34,6 +35,7 @@ Global $gHDC = 0, $gMemDC = 0
 
 ; Raiding variables
 Global $gMaxRaidDuration = 180000 ; 3 minutes (as measured in millseconds)
+Global $gTroopTrainingCheckInterval = 180000
 
 ; For detecting rest period
 Global $gPossibleKick = 0
@@ -134,6 +136,7 @@ Global $gConfidenceLootCart = 0.93
 Global $gConfidenceReloadButton = 0.99
 Global $gConfidenceClashIcon = 0.99
 Global $gConfidencePlayStoreOpenButton = 0.99
+Global $gConfidenceDropZone = 0.95
 
 ; Deploy locations
 Global $gMaxDeployBoxes = 19

@@ -14,7 +14,8 @@ Func AutoPush(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
 
 	  ResetToCoCMainScreen($hBMP)
 
-	  AutoQueueTroops(True)
+	  Local $dummy
+	  AutoQueueTroops(True, $dummy)
 	  $timer = TimerInit()
 
    ; Stage Wait For Training To Complete
@@ -22,7 +23,9 @@ Func AutoPush(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 ResetToCoCMainScreen($hBMP)
-		 AutoQueueTroops(False)
+
+		 Local $dummy
+		 AutoQueueTroops(False, $dummy)
 		 $timer = TimerInit()
 	  EndIf
 
@@ -112,8 +115,7 @@ Func THSnipeFindMatch(ByRef $hBMP, ByRef $THCorner)
    ; Loop with Next until we find a snipable TH
    While 1
 	  If _GUICtrlButton_GetCheck($GUI_FindMatchCheckBox) = $BST_UNCHECKED And _
-		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED And _
-		 _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_UNCHECKED Then
+		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_UNCHECKED Then
 		 Return False
 	  EndIf
 
@@ -197,6 +199,7 @@ Func CheckForSnipableTH(ByRef $THCorner, Const $thLevel, Const $thLeft, Const $t
    Return False
 EndFunc
 
+
 Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
    ;DebugWrite("THSnipeExecute()")
 
@@ -248,9 +251,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
    EndIf
 
    ; Was the Auto check box unticked?
-   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-	  Return False
-   EndIf
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Deploy Queen
    If $troopIndex[$eTroopQueen][4] > 0 Then
@@ -264,9 +265,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
    EndIf
 
    ; Was the Auto check box unticked?
-   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-	  Return False
-   EndIf
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Deploy Warden
    If $troopIndex[$eTroopWarden][4] > 0 And ($kingDeployed Or $queenDeployed) Then
@@ -280,9 +279,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
    EndIf
 
    ; Was the Auto check box unticked?
-   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-	  Return False
-   EndIf
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Make sure something bad hasn't happened
    _WinAPI_DeleteObject($hBMP)
@@ -312,9 +309,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
    EndIf
 
    ; Was the Auto check box unticked?
-   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-	  Return False
-   EndIf
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
    ; Wait for 21 seconds and see if heroes take care of the TH
    If $kingDeployed Or $queenDeployed Or $wardenDeployed Then
@@ -329,9 +324,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
    EndIf
 
    ; Was the Auto check box unticked?
-   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-	  Return False
-   EndIf
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
 
    ; If heroes didn't take care of it, then send barchers in waves, check star color region for success
@@ -350,9 +343,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
 	  DebugWrite("THSnipeExecute() Troops available: Barbarians=" & $availableBarbs & " Archers=" & $availableArchs)
 
 	  ; Was the Auto check box unticked?
-	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-		 Return False
-	  EndIf
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
 	  ; Make sure something bad hasn't happened
 	  If WhereAmI($hBMP)<>$eScreenWaitRaid And WhereAmI($hBMP)<>$eScreenLiveRaid Then
@@ -381,9 +372,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
 	  If IsColorPresent($hBMP, $rFirstStarColor) = True Then ExitLoop
 
 	  ; Was the Auto check box unticked?
-	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-		 Return False
-	  EndIf
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
 	  ; Deploy archers to boxes
 	  If $availableArchs>0 Then
@@ -406,9 +395,7 @@ Func THSnipeExecute(ByRef $hBMP, Const $THCorner)
 	  If IsColorPresent($hBMP, $rFirstStarColor) = True Then ExitLoop
 
 	  ; Was the Auto check box unticked?
-	  If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then
-		 Return False
-	  EndIf
+	  If _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED Then Return False
 
 	  ; Get counts of available troops
 	  UpdateRaidSlotCounts($troopIndex)

@@ -5,26 +5,48 @@ Func AutoRaid(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
 
    ; Stage Queue Training
    Case $eAutoQueueTraining
+	  If WhereAmI($hBMP) <> $eScreenMain Then Return
+
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Queue Training")
+	  DebugWrite("AutoRaid() Stage: Queue Training")
 
-	  ResetToCoCMainScreen($hBMP)
-
-	  AutoQueueTroops(True)
+	  AutoQueueTroops(True, $gTroopTrainingCheckInterval)
 	  $timer = TimerInit()
+
+	  ; Go Offline
+	  If $gTroopTrainingCheckInterval > 0 Then
+		 If GoOffline($hBMP) = False Then
+			ResetToCoCMainScreen($hBMP)
+		 Else
+			DebugWrite("AutoRaid() On Android Home screen, waiting " & millisecondToMMSS($gTroopTrainingCheckInterval))
+			$timer = TimerInit()
+		 EndIf
+	  EndIf
 
    ; Stage Wait For Training To Complete
    Case $eAutoWaitForTrainingToComplete
+	  If WhereAmI($hBMP) <> $eScreenMain Then Return
+
+	  DebugWrite("AutoRaid() Stage: Wait For Training")
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
-		 ResetToCoCMainScreen($hBMP)
+		 AutoQueueTroops(False, $gTroopTrainingCheckInterval)
 
-		 AutoQueueTroops(False)
-		 $timer = TimerInit()
+		 ; Go Offline
+		 If $gTroopTrainingCheckInterval > 0 Then
+			If GoOffline($hBMP) = False Then
+			   ResetToCoCMainScreen($hBMP)
+			Else
+			   DebugWrite("AutoRaid() On Android Home screen, waiting " & millisecondToMMSS($gTroopTrainingCheckInterval))
+			   $timer = TimerInit()
+			EndIf
+		 EndIf
 	  EndIf
 
    ; Stage Find Match
    Case $eAutoFindMatch
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Find Match")
+	  DebugWrite("AutoRaid() Stage: Find Match")
 
 	  ResetToCoCMainScreen($hBMP)
 	  ZoomOut($hBMP)
@@ -46,6 +68,7 @@ Func AutoRaid(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
    ; Stage Execute Raid
    Case $eAutoExecuteRaid
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute Raid")
+	  DebugWrite("AutoRaid() Stage: Execute Raid")
 
 	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
 	  Case 0
@@ -66,6 +89,7 @@ Func AutoRaid(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
 
    Case $eAutoExecuteSnipe
 	  GUICtrlSetData($GUI_AutoStatus, "Auto: Execute TH Snipe")
+	  DebugWrite("AutoRaid() Stage: Execute TH Snipe")
 
 	  THSnipeExecute($hBMP, $THCorner)
 	  $gAutoStage = $eAutoQueueTraining

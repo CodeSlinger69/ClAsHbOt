@@ -1,7 +1,7 @@
 #pragma once
 
 enum fontType { fontMyStuff, fontRaidTroopCountUnselected, fontRaidTroopCountSelected, fontRaidLoot, fontBarracksStatus,
-				fontBattleEndWinnings, fontBattleEndBonus, fontChat, fontArmyOverviewStatus };
+				fontBattleEndWinnings, fontBattleEndBonus, fontChat, fontArmyOverviewStatus, fontArmyOverviewTimeRemaining };
 
 struct FontRegion
 {
@@ -36,7 +36,7 @@ private:
 	string fontDataPath;
 	bool debugOCR;
 
-	static const int fontTypeCount = 9;
+	static const int fontTypeCount = 10;
 	static const char* fontTypes[fontTypeCount];
 	vector<Font> fonts;
 

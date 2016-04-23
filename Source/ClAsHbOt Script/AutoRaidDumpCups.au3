@@ -24,9 +24,7 @@ Func DumpCups(ByRef $hBMP)
    GUICtrlSetData($GUI_AutoStatus, "Auto: Dumping Cups")
 
    ; Dump 'em
-   While (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED Or _
-		  _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED Or _
-		  _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox) = $BST_CHECKED) And _
+   While _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox) = $BST_CHECKED And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups) = $BST_CHECKED And _
 		 $myCups > $cupsThreshold
 
@@ -80,7 +78,7 @@ Func DoCupsDump(ByRef $hBMP)
 	  Return False
    EndIf
 
-   If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_DefenseFarmCheckBox)=$BST_UNCHECKED Then
+   If _GUICtrlButton_GetCheck($GUI_AutoRaidDumpCups)=$BST_UNCHECKED Then
 	  Return False
    EndIf
 

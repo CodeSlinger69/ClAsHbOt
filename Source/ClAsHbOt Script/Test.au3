@@ -392,3 +392,85 @@ Func TestReloadDefenses()
    Sleep(500)
 
 EndFunc
+
+Func TestArmyOverviewStatus()
+   Local $hBITMAP = CaptureFrameHBITMAP("TestArmyOverview")
+
+   Local $remainingToQueue = 999
+   Local $armyOverviewStatus = ScrapeFuzzyText($hBITMAP, $fontArmyOverviewStatus, $rArmyOverviewWindowTextBox)
+   DebugWrite("AutoQueueTroops() Army Overview status: " & $armyOverviewStatus)
+
+   Local $stringLoc = StringInStr($armyOverviewStatus, "Troops:")
+   If ($stringLoc <> 0) Then
+	  $armyOverviewStatus = StringMid($armyOverviewStatus, $stringLoc+7)
+	  ;DebugWrite("Army Overview status separated: " & $queueStatus)
+
+	  Local $armyOverviewStatSplit = StringSplit($armyOverviewStatus, "/")
+	  ;DebugWrite("Army Overview status split: " & $queueStatSplit[1] & " " & $queueStatSplit[2])
+
+	  If $armyOverviewStatSplit[0] = 2 Then
+		 $remainingToQueue = Number($armyOverviewStatSplit[2]) - Number($armyOverviewStatSplit[1])
+	  EndIf
+   EndIf
+
+   DebugWrite("AutoQueueTroops() Remaining to queue: " & $remainingToQueue)
+   Local $armyCampsFull = ($remainingToQueue=0 ? True : False)
+   If $armyCampsFull Then DebugWrite("Army Camps full.")
+
+   _WinAPI_DeleteObject($hBITMAP)
+EndFunc
+
+Func TestArmyOverviewTroopTimeRemaining()
+   Local $waitTime = 0
+
+   Local $hBITMAP = CaptureFrameHBITMAP("TestArmyOverviewTroopTimeRemaining")
+
+   If IsTextBoxPresent($hBITMAP, $rArmyOverviewTroopTimeRemainingTextBox) = False Then
+	  DebugWrite("TroopTimeRemaining text not present")
+   Else
+
+	  Local $troopTimeRemainingStr = ScrapeFuzzyText($hBITMAP, $fontArmyOverviewTimeRemaining, $rArmyOverviewTroopTimeRemainingTextBox)
+	  DebugWrite("TroopTimeRemaining string scrape: " & $troopTimeRemainingStr)
+
+	  If StringInStr($troopTimeRemainingStr, "s") Then
+		 DebugWrite("TroopTimeRemaining < 1 minute left")
+	  Else
+		 $waitTime = Number($troopTimeRemainingStr) * 60 * 1000
+		 $waitTime += Random(60*1, 60*5, 1) * 1000 ; Add between 1 and 5 minutes of additional random wait time
+	  EndIf
+   EndIf
+
+   DebugWrite("Closing CoC and waiting " & millisecondToMMSS($waitTime))
+
+   _WinAPI_DeleteObject($hBITMAP)
+EndFunc
+
+#include <GDIPlus.au3>
+Func TestDropZones()
+   Local $mX[1], $mY[1], $conf[1], $matchCount
+   Local $res = FindAllBMPs($eSearchTypeDropZone, 22*22, $mX, $mY, $conf, $matchCount)
+
+   ; Display matched points on image
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestDropZones")
+   _GDIPlus_Startup()
+   Local $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
+   Local $hGraphic = _GDIPlus_ImageGetGraphicsContext($hBitmap)
+   Local $hPen = _GDIPlus_PenCreate(0x880000FF, 10) ;color format AARRGGBB (hex)
+
+
+   For $i = 0 To $matchCount-1
+	  DebugWrite("Found drop zones " & $i & " " & $mX[$i] & "," & $mY[$i] & " confidence " & Round($conf[$i]*100, 2) & "%")
+	  _GDIPlus_GraphicsDrawEllipse($hGraphic, $mX[$i], $mY[$i], 10, 10, $hPen)
+   Next
+
+    _GDIPlus_ImageSaveToFile($hBitmap, "TestDropZonesFrame.bmp")
+
+   _GDIPlus_PenDispose($hPen)
+   _GDIPlus_GraphicsDispose($hGraphic)
+   _GDIPlus_ImageDispose($hBitmap)
+   _GDIPlus_Shutdown()
+
+   _WinAPI_DeleteObject($hHBITMAP)
+
+EndFunc
+

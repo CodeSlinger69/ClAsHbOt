@@ -271,6 +271,13 @@ Func FindAllBMPs(Const $searchType, Const $maxMatch, ByRef $matchX, ByRef $match
 	  Next
 	  $thresh = $gConfidenceDonateButton
 
+   ElseIf $searchType = $eSearchTypeDropZone Then
+	  $box[0] = $gWestPoint[0]
+	  $box[1] = $gNorthPoint[1]
+	  $box[2] = $gEastPoint[0]
+	  $box[3] = $gSouthPoint[1]
+	  $thresh = $gConfidenceDropZone
+
    Else
 	  DebugWrite("FindAllBMPs() Error, searchType not recognized: " & $searchType)
 	  Return

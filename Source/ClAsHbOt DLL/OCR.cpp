@@ -689,4 +689,4 @@ bool OCR::InColorSphere(const Gdiplus::Color c, const Gdiplus::Color cC, const i
 
 const char* OCR::fontTypes[fontTypeCount] = { 
 	"MyStuff", "RaidTroopCountUnselected", "RaidTroopCountSelected", "RaidLoot", "BarracksStatus",
-	"BattleEndWinnings", "BattleEndBonus", "Chat", "ArmyOverviewStatus" };
+	"BattleEndWinnings", "BattleEndBonus", "Chat", "ArmyOverviewStatus", "ArmyOverviewTimeRemaining" };

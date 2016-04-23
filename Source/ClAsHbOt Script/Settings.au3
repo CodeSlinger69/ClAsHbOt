@@ -34,8 +34,6 @@ Func ReadSettings()
    DebugWrite("Setting Interval Collect Loot = " & $gCollectLootInterval)
    Global $gReloadDefensesInterval = IniRead($gIniFile, "Interval", "Reload Defenses", 1200000)
    DebugWrite("Setting Interval Reload Defenses = " & $gReloadDefensesInterval)
-   Global $gTroopTrainingCheckInterval = IniRead($gIniFile, "Interval", "Troop Training Check", 180000)
-   DebugWrite("Setting Interval Troop Training Check = " & $gTroopTrainingCheckInterval)
    Global $gPauseBetweenNexts = IniRead($gIniFile, "Interval", "Pause Between Nexts", 2000)  ; 2 seconds to avoid client out of sync errors
    DebugWrite("Setting Interval Pause Between Nexts = " & $gPauseBetweenNexts)
 

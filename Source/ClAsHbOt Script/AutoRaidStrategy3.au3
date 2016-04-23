@@ -14,7 +14,7 @@ Func FillBarracksStrategy3(ByRef $hHMP, Const $initialFillFlag, Const ByRef $bui
    ; Loop through each standard barracks window and queue troops
    Local $barracksCount = ($initialFillFlag ? 1 : 5)
 
-   While $barracksCount<=5 And (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
+   While $barracksCount<=5 And _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
 
 	  ; Click next standard barracks button on Army Manager Window, if unsuccessful, then try clicking dark
 	  If $barracksCount<=4 Then
@@ -72,8 +72,7 @@ Func FillBarracksStrategy3(ByRef $hHMP, Const $initialFillFlag, Const ByRef $bui
 			_WinAPI_DeleteObject($hHMP)
 			$hHMP = CaptureFrameHBITMAP("FillBarracksStrategy3")
 		 EndIf
-	  Until $troopsToFill=0 Or $fillTries>=6 Or _
-		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED And _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_UNCHECKED)
+	  Until $troopsToFill=0 Or $fillTries>=6 Or _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_UNCHECKED
 
 	  $barracksCount+=1
    WEnd

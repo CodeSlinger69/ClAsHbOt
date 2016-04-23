@@ -1,9 +1,9 @@
-Func AutoQueueTroops(Const ByRef $initialFill)
+Func AutoQueueTroops(Const ByRef $initialFill, ByRef $buildTimeRemaining)
    DebugWrite("AutoQueueTroops()")
 
    Local $hHBITMAP = CaptureFrameHBITMAP("AutoQueueTroops")
 
-   If ResetToCoCMainScreen($hHBITMAP) = False Then
+   If WhereAmI($hHBITMAP) <> $eScreenMain Then
 	  DebugWrite("AutoQueueTroops() Not on main screen, exiting")
 	  _WinAPI_DeleteObject($hHBITMAP)
 	  Return
@@ -53,28 +53,53 @@ Func AutoQueueTroops(Const ByRef $initialFill)
    LocateSlots($eActionTypeCamp, $eSlotTypeHero, $builtTroopCounts)
    UpdateArmyCampSlotCounts($builtTroopCounts)
 
+   ; Get time remaining for troop build
+   $buildTimeRemaining = 0
+
+   If IsTextBoxPresent($hHBITMAP, $rArmyOverviewTroopTimeRemainingTextBox) = False Then
+	  DebugWrite("AutoQueueTroops: TroopTimeRemaining text not present, wait time = 0")
+   Else
+	  Local $troopTimeRemainingStr = ScrapeFuzzyText($hHBITMAP, $fontArmyOverviewTimeRemaining, $rArmyOverviewTroopTimeRemainingTextBox)
+	  DebugWrite("AutoQueueTroops: TroopTimeRemaining string scrape: " & $troopTimeRemainingStr)
+
+	  If StringInStr($troopTimeRemainingStr, "s") Then
+		 DebugWrite("AutoQueueTroops: TroopTimeRemaining < 1 minute left, wait time = 0")
+	  Else
+		 $buildTimeRemaining = Number($troopTimeRemainingStr) * 60 * 1000
+		 $buildTimeRemaining += Random(60*1, 60*5, 1) * 1000 ; Add between 1 and 5 minutes of additional random wait time
+		 DebugWrite("AutoQueueTroops: Will wait " & millisecondToMMSS($buildTimeRemaining) & " for troop build")
+	  EndIf
+   EndIf
+
    ; Check if we are waiting for heroes
    Local $heroWait = _GUICtrlComboBox_GetCurSel($GUI_AutoRaidWaitForHeroesCombo)
    Local $heroCount = $builtTroopCounts[$eTroopKing][4] + $builtTroopCounts[$eTroopQueen][4] + $builtTroopCounts[$eTroopWarden][4]
-   If $heroWait>0 And $heroCount>=$heroWait Then DebugWrite("Heroes ready.")
+   If $heroWait>0 Then
+	  If $heroCount>=$heroWait Then
+		 DebugWrite("Heroes ready.")
+	  Else
+		 DebugWrite("Waiting for heroes, " & $heroCount & " of " & $heroWait & " are ready")
+
+		 If $buildTimeRemaining = 0 Then
+			$buildTimeRemaining = Random(60*3, 60*8, 1) * 1000 ; Between 3 and 8 random minutes
+			DebugWrite("AutoQueueTroops: Will wait " & millisecondToMMSS($buildTimeRemaining) & " for hero regeneration")
+		 EndIf
+	  EndIf
+   EndIf
 
    ; Fill
-   If _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox) = $BST_CHECKED Then
+   Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
+   Case 0
 	  FillBarracksStrategy0($hHBITMAP, $initialFill, $builtTroopCounts)
-   Else
-	  Switch _GUICtrlComboBox_GetCurSel($GUI_AutoRaidStrategyCombo)
-	  Case 0
-		 FillBarracksStrategy0($hHBITMAP, $initialFill, $builtTroopCounts)
-	  Case 1
-		 FillBarracksStrategy1($hHBITMAP, $initialFill, $builtTroopCounts)
-	  Case 2
-		 FillBarracksStrategy2($hHBITMAP, $initialFill, $builtTroopCounts)
-	  Case 3
-		 FillBarracksStrategy3($hHBITMAP, $initialFill, $builtTroopCounts)
-	  Case 4
-		 FillBarracksStrategy4($hHBITMAP, $initialFill, $builtTroopCounts)
-	  EndSwitch
-   EndIf
+   Case 1
+	  FillBarracksStrategy1($hHBITMAP, $initialFill, $builtTroopCounts)
+   Case 2
+	  FillBarracksStrategy2($hHBITMAP, $initialFill, $builtTroopCounts)
+   Case 3
+	  FillBarracksStrategy3($hHBITMAP, $initialFill, $builtTroopCounts)
+   Case 4
+	  FillBarracksStrategy4($hHBITMAP, $initialFill, $builtTroopCounts)
+   EndSwitch
 
    ; Close army manager window
    CloseArmyManagerWindow($hHBITMAP)
@@ -88,8 +113,8 @@ Func AutoQueueTroops(Const ByRef $initialFill)
    Else
 	  If $initialFill Then
 		 $gAutoStage = $eAutoWaitForTrainingToComplete
-		 GUICtrlSetData($GUI_AutoStatus, "Auto: Waiting For Training (0:00)")
 	  EndIf
+	  GUICtrlSetData($GUI_AutoStatus, "Auto: Waiting For Troops " & millisecondToMMSS($buildTimeRemaining))
 
    EndIf
 
@@ -266,8 +291,7 @@ Func DequeueTroops(ByRef $hBMP)
    Local $dequeueTries = 6
 
    While IsButtonPresent($hBMP, $rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
-		 (_GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED Or _
-		  _GUICtrlButton_GetCheck($GUI_AutoPushCheckBox)=$BST_CHECKED)
+		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
 
 	  DebugWrite("Dequeueing troops.")
 	  Local $xClick, $yClick
