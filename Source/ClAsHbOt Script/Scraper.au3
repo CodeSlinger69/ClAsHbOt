@@ -47,14 +47,14 @@ Func InitScraper()
    DebugWrite("InitScraper() gdi32.dll loaded")
 
    ; win api handles that only need to be opened once
-   $gHDC = _WinAPI_GetWindowDC($gBlueStacksControlHwnd)
+   $gHDC = _WinAPI_GetWindowDC($gEmulatorControlHwnd)
    $gMemDC = _WinAPI_CreateCompatibleDC($gHDC)
 
 EndFunc
 
 Func ExitScraper()
    _WinAPI_DeleteDC($gMemDC)
-   _WinAPI_ReleaseDC($gBlueStacksControlHwnd, $gHDC)
+   _WinAPI_ReleaseDC($gEmulatorControlHwnd, $gHDC)
 
    DllClose($gUser32DllHandle)
    DebugWrite("ExitScraper() user32.dll unloaded")
@@ -159,15 +159,15 @@ Func FindBestBMP(Const $searchType, ByRef $left, ByRef $top, ByRef $conf, ByRef 
    ElseIf $searchType=$eSearchClashIcon Then
 	  $box[0] = 0
 	  $box[1] = 0
-	  $box[2] = $gBlueStacksWidth
-	  $box[3] = $gBlueStacksHeight
+	  $box[2] = $gEmulatorData[$gSelectedEmulator][3]
+	  $box[3] = $gEmulatorData[$gSelectedEmulator][4]
 	  $thresh = $gConfidenceClashIcon
 
    ElseIf $searchType=$eSearchPlayStoreOpenButton Then
 	  $box[0] = 0
 	  $box[1] = 0
-	  $box[2] = $gBlueStacksWidth
-	  $box[3] = $gBlueStacksHeight
+	  $box[2] = $gEmulatorData[$gSelectedEmulator][3]
+	  $box[3] = $gEmulatorData[$gSelectedEmulator][4]
 	  $thresh = $gConfidencePlayStoreOpenButton
 
    ElseIf $searchType=$eSearchTypeGoldStorage Or $searchType=$eSearchTypeElixStorage Then
@@ -645,14 +645,13 @@ Func GetClientPos()
    Local $cPos[4]
 
    ; Get absolute coordinates of client area
-   Local $hWnd = WinGetHandle($gTitle)
-   Local $cSize = WinGetClientSize($gTitle)
+   Local $cSize = WinGetClientSize($gEmulatorData[$gSelectedEmulator][1])
 
    Local $tPoint = DllStructCreate("int X;int Y")
    DllStructSetData($tPoint, "X", 0)
    DllStructSetData($tPoint, "Y", 0)
 
-   _WinAPI_ClientToScreen($hWnd, $tPoint)
+   _WinAPI_ClientToScreen($gEmulatorHwnd, $tPoint)
    $cPos[0] = DllStructGetData($tPoint, "X")
    $cPos[1] = DllStructGetData($tPoint, "Y")
    $cPos[2] = $cPos[0]+$cSize[0]-1
@@ -661,23 +660,71 @@ Func GetClientPos()
    Return $cPos
 EndFunc
 
-Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $y2=$gBlueStacksHeight)
+Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gEmulatorData[$gSelectedEmulator][3], $y2=$gEmulatorData[$gSelectedEmulator][4])
    Local $backgroundMode = _GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox)
 
    If $gDebugLogCallsToCaptureFrame = True Then
 	  DebugWrite("CaptureFrameHBITMAP() from " & $fromFunc & ($backgroundMode ? " (background)" : " (foreground)"))
    EndIf
 
+   ; Adjust for this emulator
+   $x1 += $gEmulatorData[$gSelectedEmulator][5]
+   $y1 += $gEmulatorData[$gSelectedEmulator][6]
+   $x2 += $gEmulatorData[$gSelectedEmulator][5]
+   $y2 += $gEmulatorData[$gSelectedEmulator][6]
+
    Local $hHBITMAP
 
    If $backgroundMode Then
-	  $hHBITMAP = _WinAPI_CreateCompatibleBitmap($gHDC, $x2-$x1, $y2-$y1)
-	  Local $bmpOriginal  = _WinAPI_SelectObject($gMemDC, $hHBITMAP)
+	  ; BlueStacks
+	  If $gSelectedEmulator = $eEmulatorBlueStacks1 Then
+		 $hHBITMAP = _WinAPI_CreateCompatibleBitmap($gHDC, $x2-$x1, $y2-$y1)
+		 Local $bmpOriginal  = _WinAPI_SelectObject($gMemDC, $hHBITMAP)
 
-	  DllCall($gUser32DllHandle, "int", "PrintWindow", "hwnd", $gBlueStacksControlHwnd, "handle", $gMemDC, "int", 0)
-	  _WinAPI_BitBlt($gMemDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $gHDC, $x1, $y1, $SRCCOPY)
+		 DllCall($gUser32DllHandle, "int", "PrintWindow", "hwnd", $gEmulatorControlHwnd, "handle", $gMemDC, "int", 0)
+		 _WinAPI_BitBlt($gMemDC, 0, 0, $x2-$x1+1, $y2-$y1+1, $gHDC, $x1, $y1, $SRCCOPY)
 
-	  _WinAPI_SelectObject($gMemDC, $bmpOriginal)
+		 _WinAPI_SelectObject($gMemDC, $bmpOriginal)
+
+	  ; MEmu
+	  Else
+		 Local $ts = TimeStamp()
+		 Local $fnRGBA = "screen" & $ts & ".rgba"
+		 Local $fnBMP = "screen" & $ts & ".bmp"
+		 Local $t = TimerInit()
+
+		 AdbSendShellCommand("screencap """ & $gAdbScreenCapPathAndroid & "/" & $fnRGBA & """")
+		 ;DebugWrite("Shell cmd: " & "screencap """ & $gAdbScreenCapPathAndroid & "/" & $fnRGBA & """")
+		 ;DebugWrite("Output: " & $o)
+		 ;DebugWrite($gAdbScreenCapPathAndroid & "/" & $fnRGBA)
+		 ;DebugWrite($gAdbScreenCapPathHost & "\" & $fnRGBA)
+
+		 ; Wait for screenshot in host folder
+		 While TimerDiff($t) < 3000 And Not FileExists($gAdbScreenCapPathHost & "\" & $fnRGBA)
+			Sleep(25)
+		 WEnd
+		 ;DebugWrite("Time: " & TimerDiff($t))
+		 If TimerDiff($t) >= 3000 Then Return 0
+
+		 ; Convert to .bmp and Crop via OpenCV
+		 Local $res = DllCall($gClAsHbOtDllHandle, "boolean", "ConvertRGBAtoBMP", "str", $gAdbScreenCapPathHost & "\" & $fnRGBA, "str", $gAdbScreenCapPathHost & "\" & $fnBMP, _
+			"int", $x1-$gEmulatorData[$gSelectedEmulator][5], "int", $y1-$gEmulatorData[$gSelectedEmulator][6], _
+			"int", $x2-$gEmulatorData[$gSelectedEmulator][5], "int", $y2-$gEmulatorData[$gSelectedEmulator][6])
+		 ;DebugWrite("Res: " & $res[0])
+		 If @error Then DebugWrite("CaptureFrameHBITMAP() DllCall ConvertRGBAtoBMP @error=" & @error)
+		 If Not FileExists($gAdbScreenCapPathHost & "\" & $fnBMP) Then
+			FileDelete($gAdbScreenCapPathHost & "\" & $fnRGBA)
+			Return 0
+		 EndIf
+
+		 ; Load bmp to memory
+		 Local $hBitmap = _GDIPlus_BitmapCreateFromFile($gAdbScreenCapPathHost & "\" & $fnBMP)
+		 $hHBITMAP = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap)
+		 _GDIPlus_BitmapDispose($hBitmap)
+
+		 FileDelete($gAdbScreenCapPathHost & "\*.rgba")
+		 FileDelete($gAdbScreenCapPathHost & "\*.bmp")
+	  EndIf
 
    Else
 	  Local $cPos = GetClientPos()
@@ -689,6 +736,29 @@ Func CaptureFrameHBITMAP(Const $fromFunc, $x1=0, $y1=0, $x2=$gBlueStacksWidth, $
 EndFunc
 
 Func TestBackgroundScrape()
+   ; If MEmu then start an ADB Shell
+   If $gSelectedEmulator = $eEmulatorMEmu Then
+	  Local $shellStarted = True
+
+	  $shellStarted = VirtualBoxCloseAdbShellProcesses()
+
+	  If $shellStarted Then $shellStarted = AdbStartShell()
+	  DebugWrite("TestBackgroundScrape() ADB Shell: " & $shellStarted)
+
+	  If $shellStarted = False Then
+		 _GUICtrlButton_SetCheck($GUI_BackgroundModeCheckBox, False)
+
+		 DebugWrite("TestBackgroundScrape() Background mode disabled")
+		 Local $res = MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Background mode disabled", _
+			"Background mode has been disabled, unable to open an ADB shell." & @CRLF & @CRLF & _
+			"Since ClAsHbOt is now operating in the foreground, the MEmu window must be visible " & _
+			"and not obscured at any time.")
+
+		 VirtualBoxCloseAdbShellProcesses()
+		 Return False
+	  EndIf
+   EndIf
+
    Local $hHBITMAP = CaptureFrameHBITMAP("TestBackGroundScrape")
 
    Local $tBitmap = DllStructCreate("int bmType; int bmWidth; int bmHeight; int bmWidthBytes; ushort bmPlanes; ushort bmBitsPixel; ptr bmBits")

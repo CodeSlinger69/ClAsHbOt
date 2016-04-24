@@ -15,6 +15,7 @@ FairPlay changes todo
 - Click/drag to deploy troops, rather than clicking once for each troop that gets deployed
 
 Notes:
+- Supports MEmu.  System bar must be set to bottom, Settings/Nav Bar Position = "Bottom"
 
 #ce
 
@@ -42,6 +43,7 @@ Opt("GUIOnEventMode", 1)
 #include <File.au3>
 #include <WindowsConstants.au3>
 #include <SendMessage.au3>
+#include <GDIPlus.au3>
 
 ; CoC Bot Includes
 #include <Globals.au3>
@@ -50,6 +52,8 @@ Opt("GUIOnEventMode", 1)
 #include <RegionDefs.au3>
 #include <GUI.au3>
 #include <Settings.au3>
+#include <Emulator.au3>
+#include <Adb.au3>
 #include <Scraper.au3>
 #include <ArmyManager.au3>
 #include <CollectLoot.au3>
@@ -63,9 +67,9 @@ Opt("GUIOnEventMode", 1)
 #include <AutoRaidStrategy3.au3>
 #include <AutoRaidStrategy4.au3>
 #include <Mouse.au3>
-#include <BlueStacks.au3>
 #include <Screen.au3>
 #include <Donate.au3>
+#include <MsgBox.au3>
 #include <Test.au3>
 
 Main()
@@ -80,14 +84,14 @@ Func Main()
 
    ReadSettings()
 
-   StartBlueStacks()
+   StartEmulator()
 
    InitScraper()
 
 ; Uncomment lines below to quickly test various features of the bot
 ;Local $hHBITMAP = CaptureFrameHBITMAP("Debug")
 ;DebugWrite("Current screen: " & WhereAmI($hHBITMAP))
-;ZoomOut2()
+;ZoomOut($hHBITMAP)
 ;TestMyStuff()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
@@ -108,6 +112,7 @@ Func Main()
 ;TestReloadDefenses()
 ;TestDropZones()
 ;_WinAPI_DeleteObject($hHBITMAP)
+;AdbStartShell()
 ;Exit
 
    InitGUI()
@@ -123,6 +128,12 @@ Func MainApplicationLoop()
    Local $snipeTHCorner
 
    While 1
+	  ; If Background Mode was clicked, run a check
+	  If $gBackgroundModeClicked Then
+		 TestBackgroundScrape()
+		 $gBackgroundModeClicked = False
+	  EndIf
+
 	  ; Get frame
 	  Local $hBITMAP = CaptureFrameHBITMAP("MainApplicationLoop, Stage " & $gAutoStage)
 
@@ -189,12 +200,6 @@ Func MainApplicationLoop()
 	  If $gAutoNeedToCollectEndingLoot And WhereAmI($hBITMAP)=$eScreenMain Then
 		 CaptureAutoEndLoot()
 		 $gAutoNeedToCollectEndingLoot = False
-	  EndIf
-
-	  ; If Background Mode was clicked, run a check
-	  If $gBackgroundModeClicked Then
-		 TestBackgroundScrape()
-		 $gBackgroundModeClicked = False
 	  EndIf
 
 	  ; Are we in the middle of a raid?
@@ -310,6 +315,7 @@ Func MainApplicationLoop()
 			$gAutoRaidClicked Or _
 			$gBackgroundModeClicked
 
+		 If $somethingWasClicked Then ExitLoop
 		 If $gAutoStage=$eAutoFindMatch Or $gAutoStage=$eAutoExecuteRaid Or $gAutoStage=$eAutoExecuteSnipe Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED And TimerDiff($lastOnlineCheckTimer) >= $gOnlineCheckInterval Then ExitLoop
 		 If _GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED And TimerDiff($lastCollectLootTimer) >= $gCollectLootInterval Then ExitLoop

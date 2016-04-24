@@ -19,11 +19,14 @@ public:
     static void Init();
 	static void Shutdown();
     static Mat ImgRead(const WCHAR* u16_File);
+	static void ImgWrite(Mat i_Mat, const WCHAR* u16_File);
     static Mat CopyBmpToMat(Gdiplus::Bitmap* pi_Bmp);
     static Mat CopyBmpDataToMat(Gdiplus::BitmapData* pi_Data);
+	static Gdiplus::Bitmap* CopyMatToBmp(Mat& i_Mat);
 	static std::string CVtype2str(const int type);
 
 private:
+    static CLSID GetEncoderClsid(const WCHAR* u16_File);
 	static ULONG_PTR u32_Token;
     static BOOL mb_InitDone;
 };

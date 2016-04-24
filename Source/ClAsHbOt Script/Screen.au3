@@ -41,7 +41,11 @@ Func GoOffline(ByRef $hBMP)
 
    ; Click Android back button
    DebugWrite("GoOffline() Clicking Android back button")
-   RandomWeightedClick($rAndroidBackButton)
+   If $gSelectedEmulator = $eEmulatorBlueStacks1 Then
+	  RandomWeightedClick($rAndroidBackButton_BlueStacks)
+   Else
+	  RandomWeightedClick($rAndroidBackButton_MEmu)
+   EndIf
    Sleep(500)
 
    ; Wait for Confirm Exit button (can't use WaitForButton function here, as it detects
@@ -346,24 +350,31 @@ EndFunc
 Func ZoomOut(ByRef $hBMP)
    ; Virtual key codes: https://msdn.microsoft.com/en-us/library/dd375731(VS.85).aspx
    Local $VK_DOWN = 0x28
+   Local $VK_F3 = 0x72
 
-   ; Zoom out for 5 seconds, or until black strip appears on top of screen, indicating full zoom out
-   ; If we can't zoom out within 5 seconds, then something is wrong; stop bot and display message box.
+   Local $zoomOutKey = $gSelectedEmulator = $eEmulatorBlueStacks1 ? $VK_DOWN : $VK_F3
+
+   ; Zoom out for 15 tries, or until black strip appears on top of screen, indicating full zoom out
+   ; If we can't zoom out within 15 tries, then something is wrong; stop bot and display message box.
    Local $t = TimerInit()
    Local $p = IsColorPresent($hBMP, $rZoomedOutFullColor)
 
    If WhereAmI($hBMP)<>$eScreenMain Then Return
    If IsColorPresent($hBMP, $rZoomedOutFullColor) Then Return
 
-   While TimerDiff($t)<5000 And $p=False
+   Local $zoomCount = 0
+   While $zoomCount<15 And $p=False
 
-	  _SendMessage($gBlueStacksHwnd, $WM_KEYDOWN, $VK_DOWN, 0)
+	  _SendMessage($gEmulatorHwnd, $WM_KEYDOWN, $zoomOutKey, 0)
 	  Sleep(100)
-	  _SendMessage($gBlueStacksHwnd, $WM_KEYUP, $VK_DOWN, 0)
+	  _SendMessage($gEmulatorHwnd, $WM_KEYUP, $zoomOutKey, 0)
+	  Sleep(500)
 
 	  _WinAPI_DeleteObject($hBMP)
 	  $hBMP = CaptureFrameHBITMAP("ZoomOut")
 	  $p = IsColorPresent($hBMP, $rZoomedOutFullColor)
+
+	  $zoomCount += 1
    WEnd
 
    If $p=False Then

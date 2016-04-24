@@ -41,14 +41,16 @@ Global $gTroopTrainingCheckInterval = 180000
 Global $gPossibleKick = 0
 Global $gLastPossibleKickTime = TimerInit()
 
-; BlueStacks
-Global $gTitle = "BlueStacks App Player"
-Global $gAppClassInstance = "[CLASS:BlueStacksApp; INSTANCE:1]"
-GLobal $gBlueStacksPID = 0
-Global $gBlueStacksHwnd = 0
-Global $gBlueStacksControlHwnd = 0
-Global $gBlueStacksWidth = 860
-Global $gBlueStacksHeight = 733
+; Emulators
+Global Enum $eEmulatorBlueStacks1, $eEmulatorMEmu, $eEmulatorCount
+Global $gSelectedEmulator = $eEmulatorBlueStacks1
+; name, title, appclassinstance, client width, client height, client offset x, client offset y
+Global $gEmulatorData[$eEmulatorCount][7] = [ _
+   [ "BlueStacks", "BlueStacks App Player", "[CLASS:BlueStacksApp; INSTANCE:1]", 860, 733, 0, 0 ], _
+   [ "MEmu",       "MEmu 2.",               "[CLASS:subWin; INSTANCE:1]",        860, 769, 4, 34 ] ]
+GLobal $gEmulatorPID = 0
+Global $gEmulatorHwnd = 0
+Global $gEmulatorControlHwnd = 0
 Global $gScreenCenter[2] = [429, 337] ; Color at this point = 0xF1BE5A
 Global $gNorthPoint[2] = [429, 69] ; also update in the DLL if this changes
 Global $gWestPoint[2] = [71, 337] ; also update in the DLL if this changes
@@ -56,6 +58,14 @@ Global $gEastPoint[2] = [787, 337] ; also update in the DLL if this changes
 Global $gSouthPoint[2] = [429, 605] ; also update in the DLL if this changes
 ; Note to self: due to Jan 26, 2016 CoC release, the max y extent for buttons is 680,
 ;   to avoid clicking on Android system bar icons
+
+; Android Debugger - experimental code to grab screen shots, send mouse events
+; Only good with MEmu for now, BlueStacks ADB is unstable
+Global $gAdbPrompt = "ClAsHbOt:"
+Global $gAdbShellPid = 0
+Global $gAdbMouseDevice = ""
+Global $gAdbScreenCapPathHost = ""
+Global $gAdbScreenCapPathAndroid = ""
 
 ; Settings
 Global $gIniFile = "CoC Bot.ini"

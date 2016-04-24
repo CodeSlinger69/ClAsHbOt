@@ -26,7 +26,7 @@ Global $GUIImages[12] = [ _
 
 
 Func InitGUI()
-   Local $p = WinGetPos($gTitle)
+   Local $p = WinGetPos($gEmulatorData[$gSelectedEmulator][1])
    If _OsVersionTest($VER_GREATER_EQUAL, 10) Then
 	  $GUI = GUICreate("ClAsHbOt v" & $gVersion, $GUI_Width, $GUI_Height, $p[0]+$p[2]-5, $p[1])
    Else
@@ -259,29 +259,29 @@ Func HotKeyPressed()
 EndFunc
 
 Func GUIKeepOnlineCheckBox()
-   DebugWrite("Keep Online clicked")
    $gKeepOnlineClicked = (_GUICtrlButton_GetCheck($GUI_KeepOnlineCheckBox) = $BST_CHECKED) ? True : False
+   DebugWrite("Keep Online clicked: " & $gKeepOnlineClicked)
 EndFunc
 
 Func GUICollectLootCheckBox()
-   DebugWrite("Collect Loot clicked")
    $gCollectLootClicked = (_GUICtrlButton_GetCheck($GUI_CollectLootCheckBox) = $BST_CHECKED) ? True : False
+   DebugWrite("Collect Loot clicked: " & $gCollectLootClicked)
 EndFunc
 
 Func GUIDonateTroopsCheckBox()
-   DebugWrite("Donate Troops clicked")
    $gDonateTroopsClicked = (_GUICtrlButton_GetCheck($GUI_DonateTroopsCheckBox) = $BST_CHECKED) ? True : False
    $gDonateTroopsStartup = $gDonateTroopsClicked
+   DebugWrite("Donate Troops clicked: " & $gDonateTroopsClicked)
 EndFunc
 
 Func GUIReloadDefensesCheckBox()
-   DebugWrite("Reload Defenses clicked")
    $gReloadDefensesClicked = (_GUICtrlButton_GetCheck($GUI_ReloadDefensesCheckBox) = $BST_CHECKED) ? True : False
+   DebugWrite("Reload Defenses clicked: " & $gReloadDefensesClicked)
 EndFunc
 
 Func GUIBackgroundModeCheckBox()
-   DebugWrite("Background Mode clicked")
    $gBackgroundModeClicked = (_GUICtrlButton_GetCheck($GUI_BackgroundModeCheckBox) = $BST_CHECKED) ? True : False
+   DebugWrite("Background Mode clicked: " & $gBackgroundModeClicked)
 EndFunc
 
 Func GUIFindMatchCheckBox()

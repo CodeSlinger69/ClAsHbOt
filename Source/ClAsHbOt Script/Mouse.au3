@@ -1,27 +1,34 @@
 Func RandomWeightedClick(Const $button, Const $scale = 1, Const $density = 1, Const $centerX = 0, Const $centerY = 0)
    Local $xClick, $yClick
    RandomWeightedCoords($button, $xClick, $yClick, $scale, $density, $centerX, $centerY)
+
    _ControlClick($xClick, $yClick)
 EndFunc
 
 ; Adapted from ClashGameBot https://mybot.run
 Func _ControlClick(Const $x, Const $y, Const $numClicks = 1, Const $delay = 0)
+   Local $emuX = $x + $gEmulatorData[$gSelectedEmulator][5]
+   Local $emuY = $y + $gEmulatorData[$gSelectedEmulator][6]
+
    For $i = 1 To $numClicks
-	  ControlClick($gTitle, "", "", "left", "1", $x, $y)
+	  ControlClick($gEmulatorData[$gSelectedEmulator][1], "", "", "left", "1", $emuX, $emuY)
 	  Sleep($delay)
    Next
 EndFunc
 
 Func _ClickHold(Const $x, Const $y, Const $duration)
+   Local $emuX = $x + $gEmulatorData[$gSelectedEmulator][5]
+   Local $emuY = $y + $gEmulatorData[$gSelectedEmulator][6]
+
    Local $MK_LBUTTON  = 0x0001
    Local $WM_LBUTTONDOWN  = 0x0201
    Local $WM_LBUTTONUP  = 0x0202
 
-   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksHwnd, "int", $WM_LBUTTONDOWN, "int", _
-			$MK_LBUTTON, "long", _MakeLong($x, $y))
+   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gEmulatorHwnd, "int", $WM_LBUTTONDOWN, "int", _
+			$MK_LBUTTON, "long", _MakeLong($emuX, $emuY))
    Sleep($duration)
-   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gBlueStacksHwnd, "int", $WM_LBUTTONUP, "int", _
-			$MK_LBUTTON, "long", _MakeLong($x, $y))
+   DllCall("user32.dll", "int", "SendMessage", "hwnd", $gEmulatorHwnd, "int", $WM_LBUTTONUP, "int", _
+			$MK_LBUTTON, "long", _MakeLong($emuX, $emuY))
 EndFunc
 
 Func _MakeLong($LoWord, $HiWord)
