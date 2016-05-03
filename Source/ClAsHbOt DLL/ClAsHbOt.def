@@ -6,5 +6,4 @@ EXPORTS
    LocateSlots
    ScrapeFuzzyText
    ScrapeExactText
-   ConvertRGBAtoBMP
 

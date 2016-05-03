@@ -99,46 +99,6 @@ bool __stdcall ScrapeExactText(HBITMAP hBmp, const fontType fontT, const FontReg
 	return r;
 }
 
-bool __stdcall ConvertRGBAtoBMP(const char* sourceFile, const char* targetFile, const int x1, const int y1, const int x2, const int y2)
-{
-	ifstream ifs(sourceFile, std::ios_base::binary);
-
-	if (ifs)
-	{
-		// Read the file size
-		int width, height, format;
-		ifs.read((char*)&width, sizeof(width));
-		ifs.read((char*)&height, sizeof(height));
-		ifs.read((char*)&format, sizeof(format));
-
-		// Read the pixels
-		vector<char> pixels;
-		pixels.reserve(width*height*4);
-		ifs.read(pixels.data(), width*height*4);
-
-		ifs.close();
-
-		// Load pixels into Mat and crop
-		Mat bitmap = Mat(height, width, CV_8UC4, pixels.data());
-		cvtColor(bitmap, bitmap, CV_RGBA2BGR);
-
-		//char s[500];
-		//sprintf_s(s, 500, "File %s: %d %d %d %d %d %d %d %d", sourceFile, bitmap.cols, bitmap.rows, x1, y1, x2, y2, x2-x1, y2-y1);
-		//logger->WriteLog(s);
-
-		Mat croppedBitmap = bitmap(Rect(x1, y1, x2-x1, y2-y1));
-
-		// Write the bmp file
-		string fn(targetFile);
-		wstring wfn = utf8_decode(fn);
-		CGdiPlus::ImgWrite(croppedBitmap, wfn.c_str());
-
-		return true;
-	}
-
-	return false;
-}
-
 void split(const string &s, const char delim, vector<string> &elems)
 {
     stringstream ss(s);
@@ -146,6 +106,37 @@ void split(const string &s, const char delim, vector<string> &elems)
     while (getline(ss, item, delim)) {
         elems.push_back(item);
     }
+}
+
+int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
+{
+   UINT  num = 0;          // number of image encoders
+   UINT  size = 0;         // size of the image encoder array in bytes
+
+   Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
+
+   Gdiplus::GetImageEncodersSize(&num, &size);
+   if(size == 0)
+      return -1;  // Failure
+
+   pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
+   if(pImageCodecInfo == NULL)
+      return -1;  // Failure
+
+   GetImageEncoders(num, size, pImageCodecInfo);
+
+   for(UINT j = 0; j < num; ++j)
+   {
+      if( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
+      {
+         *pClsid = pImageCodecInfo[j].Clsid;
+         free(pImageCodecInfo);
+         return j;  // Success
+      }    
+   }
+
+   free(pImageCodecInfo);
+   return -1;  // Failure
 }
 
 // Convert a wide Unicode string to an UTF8 string

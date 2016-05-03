@@ -445,12 +445,14 @@ Func TestArmyOverviewTroopTimeRemaining()
    _WinAPI_DeleteObject($hBITMAP)
 EndFunc
 
+#include <GDIPlus.au3>
 Func TestDropZones()
    Local $mX[1], $mY[1], $conf[1], $matchCount
    Local $res = FindAllBMPs($eSearchTypeDropZone, 22*22, $mX, $mY, $conf, $matchCount)
 
    ; Display matched points on image
    Local $hHBITMAP = CaptureFrameHBITMAP("TestDropZones")
+   _GDIPlus_Startup()
    Local $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBITMAP)
    Local $hGraphic = _GDIPlus_ImageGetGraphicsContext($hBitmap)
    Local $hPen = _GDIPlus_PenCreate(0x880000FF, 10) ;color format AARRGGBB (hex)
@@ -466,6 +468,7 @@ Func TestDropZones()
    _GDIPlus_PenDispose($hPen)
    _GDIPlus_GraphicsDispose($hGraphic)
    _GDIPlus_ImageDispose($hBitmap)
+   _GDIPlus_Shutdown()
 
    _WinAPI_DeleteObject($hHBITMAP)
 
