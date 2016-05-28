@@ -9,6 +9,9 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 5/23/2016 update todo
 - Barracks: Baby Dragon & Miner images
 - Army Overview: Baby Dragon & Miner images
+- Raid Slots: Baby Dragon & Miner images
+- Donate: Baby Dragon & Miner images
+- Adjust .ini and test donation of baby dragon and miner troops
 
 Other To Do
 - Capture "grayed" raid slot images for L1-L4 warden
