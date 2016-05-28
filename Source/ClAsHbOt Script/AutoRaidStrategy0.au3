@@ -126,6 +126,7 @@ Func AutoRaidExecuteRaidStrategy0(ByRef $hBMP)
    EndIf
 
    ; Deploy breakers
+   Sleep(3000)
    If $troopIndex[$eTroopWallBreaker][4] > 0 And _GUICtrlButton_GetCheck($GUI_AutoRaidUseBreakers) = $BST_CHECKED Then
 	  DebugWrite("Deploying Breakers")
 	  DeployTroopsToSafeBoxes($eTroopWallBreaker, $troopIndex, $direction)

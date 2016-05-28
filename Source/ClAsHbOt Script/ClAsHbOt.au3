@@ -6,6 +6,10 @@ Atutomatic farming bot for Clash of Clans, with a few other features.
 3/21/2016 update todo
 - Storage images; Gold: L10.76
 
+5/23/2016 update todo
+- Barracks: Baby Dragon & Miner images
+- Army Overview: Baby Dragon & Miner images
+
 Other To Do
 - Capture "grayed" raid slot images for L1-L4 warden
 
@@ -18,14 +22,14 @@ Notes:
 
 #ce
 
-Global $gVersion = "20160415"
+Global $gVersion = "20160528"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
 #pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
 #pragma compile(ProductName, ClAsHbOt)
-#pragma compile(ProductVersion, 2016.04.15)
-#pragma compile(FileVersion, 2016.04.15)
+#pragma compile(ProductVersion, 2016.05.28)
+#pragma compile(FileVersion, 2016.05.28)
 #pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
 #pragma compile(Out, ClAsHbOt.exe)
 
@@ -93,9 +97,8 @@ Func Main()
 ;TestRaidTroopsCount()
 ;TestArmyOverviewStatus()
 ;TestArmyOverviewTroopTimeRemaining()
-;TestBarracksStatus()
-;TestBarracksTroopSlots()
-;TestBuiltTroops()
+;TestBarracks()
+;TestArmyOverview()
 ;TestEndBattleLoot()
 ;TestEndBattleBonus()
 ;TestDeployBoxCalcs()

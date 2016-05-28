@@ -289,7 +289,6 @@ EndFunc
 
 Func DequeueTroops(ByRef $hBMP)
    Local $dequeueTries = 6
-
    While IsButtonPresent($hBMP, $rTrainTroopsWindowDequeueButton) And $dequeueTries>0 And _
 		 _GUICtrlButton_GetCheck($GUI_AutoRaidCheckBox)=$BST_CHECKED
 

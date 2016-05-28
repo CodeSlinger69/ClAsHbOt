@@ -159,14 +159,12 @@ Func TestRaidTroopsCount()
    Next
 EndFunc
 
-Func TestBarracksStatus()
-   Local $hHBITMAP = CaptureFrameHBITMAP("TestBarracksStatus")
+Func TestBarracks()
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestBarracks")
    Local $queueStatus = ScrapeFuzzyText($hHBITMAP, $fontBarracksStatus, $rBarracksWindowTextBox)
    DebugWrite("Barracks queue status: " & $queueStatus)
    _WinAPI_DeleteObject($hHBITMAP)
-EndFunc
 
-Func TestBarracksTroopSlots()
    Local $troopSlots[$gTroopCountExcludingHeroes][4]
    For $i = $eTroopBarbarian To $eTroopLavaHound
 	  $troopSlots[$i][0] = -1
@@ -181,7 +179,12 @@ Func TestBarracksTroopSlots()
    Next
 EndFunc
 
-Func TestBuiltTroops()
+Func TestArmyOverview()
+   Local $hHBITMAP = CaptureFrameHBITMAP("TestArmyOverview")
+   Local $queueStatus = ScrapeFuzzyText($hHBITMAP, $fontArmyOverviewStatus, $rArmyOverviewWindowTextBox)
+   DebugWrite("Army Overview queue status: " & $queueStatus)
+   _WinAPI_DeleteObject($hHBITMAP)
+
    Local $builtTroopCounts[$eTroopCount][5]
    For $i = 0 To UBound($builtTroopCounts)-1
 	  $builtTroopCounts[$i][0] = -1
