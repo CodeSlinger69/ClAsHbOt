@@ -27,7 +27,7 @@ Func AutoRaid(ByRef $hBMP, ByRef $timer, ByRef $THCorner)
    Case $eAutoWaitForTrainingToComplete
 	  If WhereAmI($hBMP) <> $eScreenMain Then Return
 
-	  DebugWrite("AutoRaid() Stage: Wait For Training")
+	  ;DebugWrite("AutoRaid() Stage: Wait For Training")
 
 	  If TimerDiff($timer) >= $gTroopTrainingCheckInterval Then
 		 AutoQueueTroops(False, $gTroopTrainingCheckInterval)

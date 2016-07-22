@@ -3,18 +3,17 @@ ClAsHbOt!
 
 Atutomatic farming bot for Clash of Clans, with a few other features.
 
-3/21/2016 update todo
-- Storage images; Gold: L10.76
-
-5/23/2016 update todo
-- Barracks: Baby Dragon & Miner images
-- Army Overview: Baby Dragon & Miner images
-- Raid Slots: Baby Dragon & Miner images
-- Donate: Baby Dragon & Miner images
-- Adjust .ini and test donation of baby dragon and miner troops
-
-Other To Do
+Minor todos
+- Need gold storage L10.76 image
 - Capture "grayed" raid slot images for L1-L4 warden
+
+Major todos
+- Adjust .ini and test donation of baby dragon and miner troops
+- Fix donate to work with reversed chat box
+- Add donate image for skeleton spell
+
+Other improvements
+- Read hero time remaining to determine how long to stay offline
 
 FairPlay changes todo
 - Adjust/randomize the troop drops on attacks. Might finally need to address the red-line as well.
@@ -25,14 +24,14 @@ Notes:
 
 #ce
 
-Global $gVersion = "20160528"
+Global $gVersion = "20160722"
 
 ; For compiling
 #pragma compile(Icon, "cube.ico")
 #pragma compile(FileDescription, ClAsHbOt - fully open source farm bot)
 #pragma compile(ProductName, ClAsHbOt)
-#pragma compile(ProductVersion, 2016.05.28)
-#pragma compile(FileVersion, 2016.05.28)
+#pragma compile(ProductVersion, 2016.07.22)
+#pragma compile(FileVersion, 2016.07.22)
 #pragma compile(LegalCopyright, https://github.com/CodeSlinger69/ClAsHbOt)
 #pragma compile(Out, ClAsHbOt.exe)
 
@@ -94,14 +93,15 @@ Func Main()
 ; Uncomment lines below to quickly test various features of the bot
 ;Local $hHBITMAP = CaptureFrameHBITMAP("Debug")
 ;DebugWrite("Current screen: " & WhereAmI($hHBITMAP))
+;_WinAPI_DeleteObject($hHBITMAP)
 ;ZoomOut2()
 ;TestMyStuff()
 ;TestRaidLoot()
 ;TestRaidTroopsCount()
+;TestArmyOverview()
 ;TestArmyOverviewStatus()
 ;TestArmyOverviewTroopTimeRemaining()
 ;TestBarracks()
-;TestArmyOverview()
 ;TestEndBattleLoot()
 ;TestEndBattleBonus()
 ;TestDeployBoxCalcs()
@@ -113,7 +113,6 @@ Func Main()
 ;TestCollectMyLoot()
 ;TestReloadDefenses()
 ;TestDropZones()
-;_WinAPI_DeleteObject($hHBITMAP)
 ;Exit
 
    InitGUI()

@@ -75,6 +75,7 @@ Func InitGUI()
    $y += 19
    $GUI_DonateTroopsCheckBox = GUICtrlCreateCheckbox("Donate Troops", $x+5, $y, $w-6, 25)
    GUICtrlSetOnEvent($GUI_DonateTroopsCheckBox, "GUIDonateTroopsCheckBox")
+   GUICtrlSetState($GUI_DonateTroopsCheckBox, $GUI_DISABLE)
 
    $y += 19
    $GUI_ReloadDefensesCheckBox = GUICtrlCreateCheckbox("Reload Defenses 00:00", $x+5, $y, $w-6, 25)
