@@ -36,8 +36,8 @@ Global $rChatTextBoxAsOffset[10] = [-80, -54, 185, -40, 0xffffff, 140, 0, 0, 0, 
 ; Button Present Color - center, radius
 Global $rScreenAndroidHomeCoCIconButton[8] = [0, 0, 68, 68, 0, 0, 0, 0]
 Global $rScreenPlayStoreOpenButton[8] = [0, 0, 304, 35, 0, 0, 0, 0]
-Global $rAndroidMessageButton1[8] = [164, 384, 694, 430, 175, 318, 0x282828, 0]
-Global $rAndroidMessageButton2[8] = [164, 393, 694, 439, 175, 308, 0x282828, 0]
+Global $rAndroidMessageButton1[8] = [156, 384, 703, 430, 157, 318, 0x33b5e5, 0]
+Global $rAndroidMessageButton2[8] = [156, 393, 703, 439, 175, 308, 0x33b5e5, 0]
 Global $rAndroidBackButton[8] = [29, 702, 62, 718, 0, 0, 0, 0] ; button is semi-transparent, can't use color effectively
 Global $rConfirmExitButton[8] = [444, 400, 582, 456, 505, 447, 0x5FAC10, 0]
 Global $rMainScreenAttackNoStarsButton[8] = [16, 625, 108, 680, 73, 664, 0xD56440, 6]
